@@ -18,14 +18,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-apply from: "$rootDir/config/gradle/dependencies.gradle"
-
 configurations {
     excludeInternalDoclet
 }
 
 dependencies {
-    excludeInternalDoclet "io.spine.tools:spine-javadoc:${versions.spineTools}"
+    excludeInternalDoclet "io.spine.tools:spine-javadoc:$spineToolsVersion"
 }
 
 task noInternalJavadoc(type: Javadoc) {
