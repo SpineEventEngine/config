@@ -55,7 +55,7 @@ def build = [
     slf4j                  : "org.slf4j:slf4j-api:$versions.slf4j",
     protobuf               : ["com.google.protobuf:protobuf-java:$versions.protobuf",
                               "com.google.protobuf:protobuf-java-util:$versions.protobuf"],
-    jsr305Annotations      : "com.google.code.findbugs:jsr305:$versions.findBugs",
+    jsr305Annotations      : "com.google.code.findbugs:jsr305:$versions.findBugs"
 ]
 
 //noinspection GroovyAssignabilityCheck
