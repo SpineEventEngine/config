@@ -26,7 +26,6 @@
 # Therefore, instructions below are superset of instructions required for all the projects.
 
 # IntelliJ IDEA modules and interim config files.
-*.iml
 .idea/**
 
 # Do not ignore code style settings.
