@@ -70,7 +70,7 @@ def test = [
     junit4        : "junit:junit:4.12",
     junit5Jupiter : ["org.junit.jupiter:junit-jupiter-api:5.0.2",
                      "org.apiguardian:apiguardian-api:1.0.0"],
-    slf4          : "org.slf4j:slf4j-jdk14:${versions.slf4j}",
+    slf4j          : "org.slf4j:slf4j-jdk14:${versions.slf4j}",
     cfQual        : "org.checkerframework:checker-qual:${versions.checkerFramework}",
     guavaTestlib  : "com.google.guava:guava-testlib:${versions.guava}",
     mockito       : "org.mockito:mockito-core:2.12.0",
