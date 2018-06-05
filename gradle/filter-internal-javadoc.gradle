@@ -18,20 +18,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-repositories {
-    // Spine releases repository.
-    maven { url = spineRepository }
-
-    // Spine snapshots repository.
-    maven { url = spineSnapshotsRepository }
-}
-
 configurations {
     excludeInternalDoclet
 }
 
 dependencies {
-    excludeInternalDoclet "io.spine.tools:spine-javadoc:$spineToolsVersion"
+    excludeInternalDoclet "io.spine.tools:spine-javadoc:${versions.spineTools}"
 }
 
 task noInternalJavadoc(type: Javadoc) {
