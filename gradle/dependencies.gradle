@@ -26,7 +26,7 @@ def versions = [
     findBugs         : "3.0.1",
     guava            : "25.1-jre",
     protobuf         : "3.5.1",
-    gRpc             : "1.10.0"
+    grpc             : "1.12.0"
 ]
 
 //noinspection GroovyAssignabilityCheck
