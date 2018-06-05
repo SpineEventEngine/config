@@ -20,6 +20,8 @@
 
 // Apply this script to add ability to publish the needed artifacts.
 
+final String credentialsPropertyFile = "credentials.properties";
+
 String repositoryUserName = null
 String repositoryUserPassword = null
 
