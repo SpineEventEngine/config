@@ -49,13 +49,18 @@ def build = [
     errorProneTestHelpers  : "com.google.errorprone:error_prone_test_helpers:$versions.errorProne",
     checkerDataflow        : ["org.checkerframework:dataflow:$versions.checkerFramework",
                               "org.checkerframework:javacutil:$versions.checkerFramework"],
-    gradleErrorPronePlugin : "net.ltgt.gradle:gradle-errorprone-plugin:$versions.errorPronePlugin",
-    protobufGradlePlugin   : "com.google.protobuf:protobuf-gradle-plugin:$versions.protobufPlugin",
     guava                  : "com.google.guava:guava:$versions.guava",
     slf4j                  : "org.slf4j:slf4j-api:$versions.slf4j",
     protobuf               : ["com.google.protobuf:protobuf-java:$versions.protobuf",
                               "com.google.protobuf:protobuf-java-util:$versions.protobuf"],
-    jsr305Annotations      : "com.google.code.findbugs:jsr305:$versions.findBugs"
+    jsr305Annotations      : "com.google.code.findbugs:jsr305:$versions.findBugs",
+
+    ci: "true" == System.getenv("CI"),
+
+    gradlePlugins: [
+        errorProne: "net.ltgt.gradle:gradle-errorprone-plugin:$versions.errorPronePlugin",
+        protobuf: "com.google.protobuf:protobuf-gradle-plugin:$versions.protobufPlugin"
+    ]
 ]
 
 //noinspection GroovyAssignabilityCheck
