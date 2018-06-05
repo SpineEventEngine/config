@@ -10,3 +10,7 @@ which shares the configuration:
  * `.travis._yml` — to be renamed to `.travis.yml`. 
     The file extension in this repository uses the underscore prefix to prevent Travis builds
     of this repository.
+ * `ext.gradle` — defines:
+    1. the version of Spine Base which is used by the project (which uses `config`)
+    2. the version under which artifacts of the project will be published.
+    
