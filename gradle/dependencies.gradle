@@ -39,7 +39,7 @@ def versions = [
     guava            : "25.1-jre",
     protobuf         : "3.5.1",
     grpc             : "1.12.0",
-    spineTools       : "0.10.35-SNAPSHOT"
+    spineTools       : "0.10.40-SNAPSHOT"
 ]
 
 //noinspection GroovyAssignabilityCheck
