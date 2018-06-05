@@ -40,7 +40,6 @@ def versions = [
     guava            : "25.1-jre",
     protobuf         : "3.5.1",
     grpc             : "1.12.0",
-    spineTools       : "0.10.40-SNAPSHOT"
 ]
 
 //noinspection GroovyAssignabilityCheck
@@ -57,7 +56,6 @@ def build = [
     protobuf               : ["com.google.protobuf:protobuf-java:$versions.protobuf",
                               "com.google.protobuf:protobuf-java-util:$versions.protobuf"],
     jsr305Annotations      : "com.google.code.findbugs:jsr305:$versions.findBugs",
-    spineTools             : "io.spine.tools:spine-model-compiler:$versions.spineTools"
 ]
 
 //noinspection GroovyAssignabilityCheck
