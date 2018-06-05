@@ -79,9 +79,9 @@ def test = [
 
 //noinspection GroovyAssignabilityCheck
 def scripts = [
-    testArtifacts          = "$rootDir/config/scripts/test-artifacts.gradle",
-    generateDescriptorSet  = "$rootDir/config/scripts/generate-descriptor-set.gradle",
-    filterInternalJavadocs = "$rootDir/config/scripts/filter-internal-javadoc.gradle"
+    testArtifacts          : "$rootDir/config/scripts/test-artifacts.gradle",
+    generateDescriptorSet  : "$rootDir/config/scripts/generate-descriptor-set.gradle",
+    filterInternalJavadocs : "$rootDir/config/scripts/filter-internal-javadoc.gradle"
 ]
 
 ext.deps = [
