@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+################################################################################
+#
+# The script to update the project configuration files.
+#
+# The code of the script assumes that:
+#   1. The project uses this code as a Git sub-module installed in the `config`
+#      directory under the project root.
+#   2. The script is called from the root of the project.
+#
+################################################################################
+
+cd ./config
+
+echo "Updating IDEA configuration."
+cp -R .idea ..
+
+echo "Updating CI config files."
+cp .codacy.yaml ..
+cp .codecov.yml ..
+cp .gitattributes ..
+cp .gitignore ..
+cp .travis._yml ../.travis.yml
+cp credentials.tar.enc ..
+cp gcs.properties ..
+
+# Copy `ext.gradle` only if it is not yet created in the project.
+file=./../ext.gradle
+if [ ! -f "$file" ]; then
+    echo "Creating ext.gradle"
+    cp ext.gradle ..
+fi
+
+cd ..
