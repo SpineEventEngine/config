@@ -13,10 +13,10 @@
 
 cd ./config
 
-echo "Updating IDEA configuration."
+echo "Updating IDEA configuration"
 cp -R .idea ..
 
-echo "Updating CI config files."
+echo "Updating CI config files"
 cp .codacy.yaml ..
 cp .codecov.yml ..
 cp .gitattributes ..
@@ -26,10 +26,11 @@ cp credentials.tar.enc ..
 cp gcs.properties ..
 
 # Copy `ext.gradle` only if it is not yet created in the project.
-file=./../ext.gradle
-if [ ! -f "$file" ]; then
+if [ ! -f ../ext.gradle ]; then
     echo "Creating ext.gradle"
     cp ext.gradle ..
 fi
 
 cd ..
+
+echo "Done."
