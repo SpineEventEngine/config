@@ -1,6 +1,20 @@
-Dependencies and build configurations shared among sub-projects.
+Dependencies and CI configurations shared among sub-projects. 
 
-## Updating project configuration
+The code of this repository should be added to a target project as a Git sub-module.
+
+## Adding to your project
+
+To add a sub-module:
+```bash
+git submodule add https://github.com/SpineEventEngine/config config
+``` 
+This will only add a sub-module with the reference to the repository. 
+In order to get the code, please run:
+```bash
+git submodule update --init --recursive
+```
+
+## Updating project with new configuration
 
 Run the following command from the root of your project.
 ```bash
@@ -11,16 +25,21 @@ The following files will be copied to the root directory of a project
 which shares the configuration:
 
  * `.codacy.yaml`
- * `codecov.yml`
- * `gitattributes`
- * `gitignore`
- * `.travis.yml` 
- 
-    The file extension of `.travis._yml` in this repository uses the underscore prefix to prevent 
-    unnecessary Travis builds of this repository.
+ * `.codecov.yml`
+ * `.gitattributes`
+ * `.gitignore`
  * `ext.gradle`
  
     This fill will be copied only if it does not exist in your project. It defines:
     1. the version of Spine Base which is used by the project (which uses `config`)
     2. the version under which artifacts of the project will be published.
      
+## Updating the `config` directory in your project 
+
+```bash
+git submodule update
+```
+
+## Further reading
+
+  [GitHub: Working with submodules](https://blog.github.com/2016-02-01-working-with-submodules/)

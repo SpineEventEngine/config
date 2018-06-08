@@ -21,8 +21,6 @@ cp .codacy.yaml ..
 cp .codecov.yml ..
 cp .gitattributes ..
 cp .gitignore ..
-cp .travis._yml ../.travis.yml
-cp credentials.tar.enc ..
 cp gcs.properties ..
 
 # Copy `ext.gradle` only if it is not yet created in the project.
