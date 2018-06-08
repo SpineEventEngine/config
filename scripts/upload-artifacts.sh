@@ -19,11 +19,15 @@ function getProp() {
     grep "${1}" config/gcs.properties | cut -d'=' -f2
 }
 
+# Figure out the target folder name from the name of remote origin repository.
+#   (inspired by https://stackoverflow.com/q/8190392/2395775)
+folderName=$( git remote -v | head -n1 | awk '{print $2}' | sed 's/.*\///' | sed 's/\.git//' )
+
 # Upload the prepared reports to GCS.
 dpl --provider=gcs \
     --access-key-id=GOOGX66ER6DXLZH7IKQF \
     --secret-access-key=${GCS_SECRET} \
     --bucket="$(getProp 'artifacts.bucket')" \
-    --upload-dir="$(getProp 'artifacts.folder')"/${TRAVIS_BUILD_NUMBER}-${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} \
+    --upload-dir="$folderName/builds"/${TRAVIS_BUILD_NUMBER}-${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} \
     --local-dir=reports \
     --skip_cleanup=true
