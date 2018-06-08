@@ -40,6 +40,8 @@ which shares the configuration:
 git submodule update
 ```
 
+Then pull from the server via IDEA or command line. 
+
 ## Further reading
 
   [GitHub: Working with submodules](https://blog.github.com/2016-02-01-working-with-submodules/)
