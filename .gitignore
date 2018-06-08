@@ -32,8 +32,9 @@
 .idea/libraries/**
 .idea/modules/**
 
-# Do not ignore compiler settings
+# Do not ignore the following IDEA settings
 !.idea/compiler.xml
+!.idea/misc.xml
 
 # Gradle interim configs
 .gradle/**
