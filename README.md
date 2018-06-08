@@ -23,7 +23,8 @@ Run the following command from the root of your project.
 
 The following files will be copied to the root directory of a project 
 which shares the configuration:
-
+ 
+ * `.idea` directory with shared IDEA settings
  * `.codacy.yaml`
  * `.codecov.yml`
  * `.gitattributes`
