@@ -31,7 +31,6 @@ echo "Updating CI config files"
 cp .codacy.yaml ..
 cp .codecov.yml ..
 cp .gitattributes ..
-cp gcs.properties ..
 
 # Copy `.gitignore` only if it's not yet created.
 if [ ! -f ../.gitignore ]; then
