@@ -31,8 +31,13 @@ echo "Updating CI config files"
 cp .codacy.yaml ..
 cp .codecov.yml ..
 cp .gitattributes ..
-cp .gitignore ..
 cp gcs.properties ..
+
+# Copy `.gitignore` only if it's not yet created.
+if [ ! -f ../.gitignore ]; then
+    echo "Creating .gitignore"
+    cp .gitignore ..
+fi
 
 # Copy `ext.gradle` only if it is not yet created in the project.
 if [ ! -f ../ext.gradle ]; then
