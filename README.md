@@ -18,11 +18,13 @@ git submodule update --init --recursive
 
 Run the following command from the root of your project.
 ```bash
-./config/update
+./config/pull
 ```
 
-The following files will be copied to the root directory of a project 
-which shares the configuration:
+It will get the latest code from the remote repo, and then copy shared files into the root of your
+project. 
+
+The following files will be copied:
  
  * `.idea` directory with shared IDEA settings
  * `.codacy.yaml`
@@ -35,31 +37,6 @@ which shares the configuration:
     1. the version of Spine Base which is used by the project (which uses `config`)
     2. the version under which artifacts of the project will be published.
      
-## Updating the `config` directory in your project 
-
-In order to get point the `config` submodule to the latest version in the repository, please run: 
-```bash
-git submodule update
-```
-In this state the repository under `config` still does not have a current branch. 
-
-You'll need to set the current branch. Please note that these operations are performed inside 
-the `config` directory.
-
-```bash
-cd config
-git checkout master
-```
-
-Once you have the current branch, pull the changes from the server via IDEA or command line:
-```bash
-git pull
-``` 
-
-Make sure to return to the root of your project:
-```bash
-cd ..
-```
 ## Further reading
 
   * [GitHub: Working with submodules](https://blog.github.com/2016-02-01-working-with-submodules/)
