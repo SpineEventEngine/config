@@ -36,12 +36,13 @@ which shares the configuration:
      
 ## Updating the `config` directory in your project 
 
+In order to get point the `config` submodule to the latest version in the repository, please run: 
 ```bash
 git submodule update
 ```
-
-Then pull from the server via IDEA or command line. 
+Then, pull changes from the server via IDEA or command line. 
 
 ## Further reading
 
   [GitHub: Working with submodules](https://blog.github.com/2016-02-01-working-with-submodules/)
+  [Pro Git: Git Tools - Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
