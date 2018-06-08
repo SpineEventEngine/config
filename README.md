@@ -40,9 +40,26 @@ In order to get point the `config` submodule to the latest version in the reposi
 ```bash
 git submodule update
 ```
-Then, pull changes from the server via IDEA or command line. 
+In this state the repository under `config` still does not have a current branch. 
 
+You'll need to set the current branch. Please note that these operations are performed inside 
+the `config` directory.
+
+```bash
+cd config
+git checkout master
+```
+
+Once you have the current branch, pull the changes from the server via IDEA or command line:
+```bash
+git pull
+``` 
+
+Make sure to return to the root of your project:
+```bash
+cd ..
+```
 ## Further reading
 
-  [GitHub: Working with submodules](https://blog.github.com/2016-02-01-working-with-submodules/)
-  [Pro Git: Git Tools - Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
+  * [GitHub: Working with submodules](https://blog.github.com/2016-02-01-working-with-submodules/)
+  * [Pro Git: Git Tools - Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
