@@ -47,6 +47,7 @@ def versions = [
     guava            : "25.1-jre",
     protobuf         : "3.5.1",
     grpc             : "1.12.0",
+    junit5           : "5.2"
 ]
 
 //noinspection GroovyAssignabilityCheck
@@ -78,8 +79,10 @@ def gen = [
 //noinspection GroovyAssignabilityCheck
 def test = [
     junit4        : "junit:junit:4.12",
-    junit5Jupiter : ["org.junit.jupiter:junit-jupiter-api:5.0.2",
+    junit5Api     : ["org.junit.jupiter:junit-jupiter-api:$versions.junit5",
                      "org.apiguardian:apiguardian-api:1.0.0"],
+    junit5Runner  : ["org.junit.jupiter:junit-jupiter-engine:$versions.junit5",
+                     "org.junit.vintage:junit-vintage-engine:$versions.junit5"],
     slf4j         : "org.slf4j:slf4j-jdk14:$versions.slf4j",
     cfQual        : "org.checkerframework:checker-qual:$versions.checkerFramework",
     guavaTestlib  : "com.google.guava:guava-testlib:$versions.guava",
