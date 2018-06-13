@@ -52,11 +52,15 @@ def versions = [
 
 //noinspection GroovyAssignabilityCheck
 def build = [
+    errorProneAnnotations  : "org.checkerframework:checker-qual:$versions.errorProne",
     errorProneCheckApi     : "com.google.errorprone:error_prone_check_api:$versions.errorProne",
     errorProneCore         : "com.google.errorprone:error_prone_core:$versions.errorProne",
     errorProneTestHelpers  : "com.google.errorprone:error_prone_test_helpers:$versions.errorProne",
+
+    checkerAnnotations     : "org.checkerframework:checker-qual:$versions.checkerFramework",
     checkerDataflow        : ["org.checkerframework:dataflow:$versions.checkerFramework",
                               "org.checkerframework:javacutil:$versions.checkerFramework"],
+        
     guava                  : "com.google.guava:guava:$versions.guava",
     slf4j                  : "org.slf4j:slf4j-api:$versions.slf4j",
     protobuf               : ["com.google.protobuf:protobuf-java:$versions.protobuf",
