@@ -61,6 +61,9 @@ def build = [
     slf4j                  : "org.slf4j:slf4j-api:$versions.slf4j",
     protobuf               : ["com.google.protobuf:protobuf-java:$versions.protobuf",
                               "com.google.protobuf:protobuf-java-util:$versions.protobuf"],
+    protoc                 : "com.google.protobuf:protoc:${versions.protobuf}",
+
+    //TODO:2018-06-13:alexander.yevsyukov: Remove this dependency after Guava migrates from it.
     jsr305Annotations      : "com.google.code.findbugs:jsr305:$versions.findBugs",
 
     ci: "true" == System.getenv("CI"),
