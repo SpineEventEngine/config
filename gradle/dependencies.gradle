@@ -42,7 +42,7 @@ def versions = [
     checkerFramework : "2.5.1",
     errorProne       : "2.1.1",
     errorPronePlugin : "0.0.14",
-    protobufPlugin   : "0.8.4",
+    protobufPlugin   : "0.8.5",
     findBugs         : "3.0.2",
     guava            : "25.1-jre",
     protobuf         : "3.5.1",
@@ -52,11 +52,15 @@ def versions = [
 
 //noinspection GroovyAssignabilityCheck
 def build = [
+    errorProneAnnotations  : "org.checkerframework:checker-qual:$versions.errorProne",
     errorProneCheckApi     : "com.google.errorprone:error_prone_check_api:$versions.errorProne",
     errorProneCore         : "com.google.errorprone:error_prone_core:$versions.errorProne",
     errorProneTestHelpers  : "com.google.errorprone:error_prone_test_helpers:$versions.errorProne",
+
+    checkerAnnotations     : "org.checkerframework:checker-qual:$versions.checkerFramework",
     checkerDataflow        : ["org.checkerframework:dataflow:$versions.checkerFramework",
                               "org.checkerframework:javacutil:$versions.checkerFramework"],
+        
     guava                  : "com.google.guava:guava:$versions.guava",
     slf4j                  : "org.slf4j:slf4j-api:$versions.slf4j",
     protobuf               : ["com.google.protobuf:protobuf-java:$versions.protobuf",
