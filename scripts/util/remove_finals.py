@@ -112,7 +112,7 @@ def _remove_finals(file_content):
 def _write_updated_contents(file_path, content):
     """Writes the new content into the specified file.
 
-    The file old content is overridden.
+    File's old content is overridden.
 
     In case of an error prints a log message and does nothing, and does not propagate the
     exception, so the function can safely write large bulks of files one-by-one.
