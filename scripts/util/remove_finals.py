@@ -119,7 +119,7 @@ def _write_updated_contents(file_path, content):
 
     Args:
         file_path: the absolute path to the file.
-        content: the new file content, i.e. the list of file strings.
+        content: the new file content, i.e. the list of file lines.
     """
     try:
         with open(file_path, 'w') as f:
@@ -135,19 +135,19 @@ def _remove_final_if_necessary(line, file_content, line_index):
     Assumes the line contains the `final` modifier in it.
 
     The method tries to recognize the scope in which the `final` modifier is applied and if the
-    scope is method, i.e. the modifier is applied to the local variable, removes it.
+    scope is a method, i.e. the modifier is applied to a local variable, removes it.
 
-    Additionally, the method never removes `final` from the lines having access modifier (`public`,
-    `private`, `protected`), this serves as an extra protection from removing the modifier from
-    class fields.
+    Additionally, the method never removes `final` from the lines containing access modifier
+    (`public`, `private`, `protected`), this serves as extra protection from removing the modifier
+    from class fields.
 
     Args:
         line: the line to process.
         file_content: the file content, i.e. the list of file strings.
-        line_index: the index of the line in the file contents.
+        line_index: the index of the line in the file content.
 
     Returns:
-        str: the new line with `final` keyword removed or the same line as input.
+        str: the new line with the `final` keyword removed, or the same line as input.
     """
     final_scope = _get_final_keyword_scope(line, file_content, line_index)
 
@@ -173,18 +173,23 @@ def _get_final_keyword_scope(line, file_content, line_index):
 
     For the lines containing no `final` keyword, the method returns `undefined`.
 
+    As it is relatively hard to determine that final belongs to a local variable, this function
+    just handles all other most common cases like class field declaration, class declaration, doc,
+    etc. If no such scope is found, the function by default assumes that the `final` scope is
+    `method`.
+
     Args:
         line: the line to check.
         file_content: the file content, i.e. the list of file strings.
         line_index: the index of the line in the file content.
 
     Returns:
-        str: the `final` keyword scope, for example 'class', 'method', 'doc'.
+        str: the `final` keyword scope, for example: 'class', 'method', 'doc'.
     """
     if 'final ' not in line:
         return 'undefined'
 
-    if _is_class_declaration(line):
+    if _final_is_class_declaration(line):
         return 'class'
 
     if _final_is_comment(line) or _final_is_javadoc(line):
@@ -208,10 +213,10 @@ def _remove_final_keyword(line):
     return line.replace('final ', '')
 
 
-def _is_class_declaration(line):
+def _final_is_class_declaration(line):
     """Checks whether the line containing `final` modifier is a class declaration.
 
-    Will return `False` for the lines containing no `final` modifier.
+    Returns `False` for the lines containing no `final` modifier.
 
     Args:
         line: the line to check.
@@ -225,7 +230,7 @@ def _is_class_declaration(line):
 def _final_is_comment(line):
     """Checks whether the `final` modifier in line is inside a comment.
 
-    Will return `False` for the lines containing no `final` modifier.
+    Always returns `False` for the lines containing no `final` modifier.
 
     Args:
         line: the line to check.
@@ -239,7 +244,7 @@ def _final_is_comment(line):
 def _final_is_javadoc(line):
     """Checks whether the `final` modifier in line is inside a Javadoc.
 
-    Will return `False` for the lines containing no `final` modifier.
+    Always returns `False` for the lines containing no `final` modifier.
 
     Args:
         line: the line to check.
@@ -253,7 +258,7 @@ def _final_is_javadoc(line):
 def _final_is_inside_doc(line, doc_start_symbol):
     """Checks whether the `final` modifier in line is inside a doc defined by starting symbol.
 
-    Doc starting symbols can be, for example, `//` for the ordinary comment or `*` for the Javadoc.
+    Doc starting symbols can be, for example, `//` for the ordinary comment and `*` for the Javadoc.
 
     Will return `False` for the lines containing no `final` modifier.
 
@@ -280,8 +285,7 @@ def _is_class_field(line_index, file_content):
         file_content: the file content, i.e. the list of file lines.
 
     Returns:
-        bool: `True` if the line at the specified index is a class declaration and `False`
-        otherwise.
+        bool: `True` if the line at the specified index is a class field and `False` otherwise.
     """
     scope_line_index, scope_line = _find_scope_defining_line(line_index, file_content)
 
@@ -318,11 +322,10 @@ def _find_scope_defining_line(line_index, file_content):
         file_content: the file content, i.e. the list of file lines.
 
     Returns:
-        int: the index of the scope defining line in the file content or `-1`.
-        str: the scope defining line or `None`.
+        int: the index of the scope defining line in the file content, or `-1`.
+        str: the scope defining line, or `None`.
     """
     preceding_lines = file_content[:line_index]
-
     closed_bracket_count = 0
     for i, line in enumerate(reversed(preceding_lines)):
         if '}' in line:
@@ -347,7 +350,7 @@ def _extends_is_in_generic(line, file_content, line_index):
 
     Example of the line which would cause the method to return `False`:
 
-        `extends RecordBasedRepository<I, E, S> {`
+        `public final class EventClass extends MessageClass {`
 
     For the lines without the 'extends' statement the method will always return `False`.
 
