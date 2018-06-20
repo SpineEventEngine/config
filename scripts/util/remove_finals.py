@@ -26,8 +26,13 @@ import argparse
 import os
 
 
-def main(dir_path):
-    scan_dir_and_remove_finals(dir_path)
+def main():
+    parser = argparse.ArgumentParser(
+        description='Scan directory with Java code and remove `final` modifier from all '
+                    'local variables.')
+    parser.add_argument('directory_path', type=str, help='an absolute path to the directory')
+    args = parser.parse_args()
+    scan_dir_and_remove_finals(args.directory_path)
 
 
 def scan_dir_and_remove_finals(dir_path):
@@ -375,9 +380,4 @@ def _extends_is_in_generic(line, file_content, line_index):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description='Scan directory with Java code and remove `final` modifier from all '
-                    'local variables.')
-    parser.add_argument('directory_path', type=str, help='an absolute path to the directory')
-    args = parser.parse_args()
-    main(args.directory_path)
+    main()
