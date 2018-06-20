@@ -3,9 +3,6 @@ variables in the Java code.
 
 Changed files are re-written in-place.
 
-As to why you may need this, see
-http://mail.openjdk.java.net/pipermail/platform-jep-discuss/2016-December/000066.html.
-
 The changed code should still be reviewed manually, as there are corner cases which cannot be
 parsed normally. For such cases the script tends to generate more false negatives than false
 positives.
