@@ -170,10 +170,9 @@ def _get_final_keyword_scope(line, file_content, line_index):
 
     For the lines containing no `final` keyword, the method returns `undefined`.
 
-    As it is relatively hard to determine that final belongs to a local variable, this function
+    As it is relatively hard to determine that `final` belongs to a local variable, this function
     just handles all other most common cases like class field declaration, class declaration, doc,
-    etc. If no such scope is found, the function by default assumes that the `final` scope is
-    `method`.
+    etc. If the scope doesn't belong to one of them, the function by default assumes it is `method`.
 
     Args:
         line: the line to check.
