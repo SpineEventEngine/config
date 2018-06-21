@@ -132,8 +132,8 @@ def _write_updated_contents(file_path, content):
 def _remove_final_where_necessary(line, file_content, line_index):
     """Removes all `final` keywords which refer to the local variables from the specified line.
 
-    Most often there is only one such keyword, but the method can handle lines with multiple cases
-    too.
+    Most often there is only one such keyword, but the method can handle lines with multiple
+    occurrences too.
 
     The method tries to recognize the scope in which the `final` modifier is applied and if the
     scope is a method, i.e. the keyword is applied to a local variable, removes it.
