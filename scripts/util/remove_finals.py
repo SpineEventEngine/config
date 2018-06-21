@@ -43,7 +43,7 @@ def scan_dir_and_remove_finals(dir_path):
     Files are changed in-place.
 
     Args:
-       dir_path: the absolute path to the directory.
+        dir_path: the absolute path to the directory.
     """
     for root, dirs, files in os.walk(dir_path):
         for file_name in files:
@@ -59,7 +59,7 @@ def scan_and_remove_finals(file_path):
     The changed file content is saved to the file in-place.
 
     Args:
-       file_path: the absolute path to the file.
+        file_path: the absolute path to the file.
     """
     if not (os.path.isfile(file_path) and os.access(file_path, os.W_OK)):
         print 'Skipping file %s as it cannot be read' % file_path
@@ -78,7 +78,7 @@ def _read_file_contents(file_path):
     exception, so the function can safely read large bulks of files one-by-one.
 
     Args:
-       file_path: the absolute path to the file.
+        file_path: the absolute path to the file.
 
     Returns:
         list: the file content, i.e. the list of file lines.
