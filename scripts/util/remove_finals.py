@@ -100,7 +100,7 @@ def _remove_finals(file_content):
         file_content: the content of the file, i.e. the list of file lines.
 
     Returns:
-        list: the new file content with `final` keyword removed.
+        list: the new file content with the `final` keyword removed where necessary.
     """
     new_content = []
     for index, line in enumerate(file_content):
