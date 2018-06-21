@@ -18,7 +18,7 @@ Usage:
 
     python remove_finals.py *directory path*
 
-    where *directory path* is an absolute path to the directory with Java files you want to
+    where the *directory path* is an absolute path to the directory with Java files you want to
     refactor, for example: "/home/user/SpineEventEngine/core-java".
 """
 
