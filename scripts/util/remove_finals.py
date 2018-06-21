@@ -256,7 +256,7 @@ def _final_is_class_declaration(line):
         line: the line to check.
 
     Returns:
-        bool: `True` if line with `final` is class declaration, `False` otherwise.
+        bool: `True` if the line is class declaration, `False` otherwise.
     """
     return 'final class ' in line
 
