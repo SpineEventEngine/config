@@ -47,7 +47,7 @@ def scan_dir_and_remove_finals(dir_path):
     """
     for root, dirs, files in os.walk(dir_path):
         for file_name in files:
-            if file_name.endswith('.java') and 'EventFactory.java' in file_name:
+            if file_name.endswith('.java'):
                 file_path = os.path.join(root, file_name)
                 print 'Processing file %s' % file_path
                 scan_and_remove_finals(file_path)
