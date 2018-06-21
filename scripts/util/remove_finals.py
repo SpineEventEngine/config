@@ -24,6 +24,7 @@ Usage:
 
 import argparse
 import os
+import re
 
 
 def main():
@@ -103,11 +104,8 @@ def _remove_finals(file_content):
     """
     new_content = []
     for index, line in enumerate(file_content):
-        if 'final ' in line:
-            new_line = _remove_final_if_necessary(line, file_content, index)
-            new_content.append(new_line)
-        else:
-            new_content.append(line)
+        new_line = _remove_final_where_necessary(line, file_content, index)
+        new_content.append(new_line)
     return new_content
 
 
@@ -131,13 +129,14 @@ def _write_updated_contents(file_path, content):
         print 'Cannot open/access file %s for writing', file_path
 
 
-def _remove_final_if_necessary(line, file_content, line_index):
-    """Removes the `final` modifier from the specified line if it refers to the local variable.
+def _remove_final_where_necessary(line, file_content, line_index):
+    """Removes all `final` keywords which refer to the local variables from the specified line.
 
-    Assumes the line contains the `final` modifier in it.
+    Most often there is only one such keyword, but the method can handle lines with multiple cases
+    too.
 
     The method tries to recognize the scope in which the `final` modifier is applied and if the
-    scope is a method, i.e. the modifier is applied to a local variable, removes it.
+    scope is a method, i.e. the keyword is applied to a local variable, removes it.
 
     Additionally, the method never removes `final` from the lines containing access modifier
     (`public`, `private`, `protected`), this serves as extra protection from removing the modifier
@@ -145,17 +144,58 @@ def _remove_final_if_necessary(line, file_content, line_index):
 
     Args:
         line: the line to process.
-        file_content: the file content, i.e. the list of file strings.
+        file_content: the file content, i.e. the list of file lines.
         line_index: the index of the line in the file content.
 
     Returns:
-        str: the new line with the `final` keyword removed, or the same line as input.
+        str: the new line with the `final` keyword referring to local variables removed.
     """
-    final_scope = _get_final_keyword_scope(line, file_content, line_index)
+    indices_where_remove = []
+    for match in re.finditer('final ', line):
+        index_of_final = match.start()
+        if _is_removing_final_necessary(line, index_of_final, file_content, line_index):
+            indices_where_remove.append(index_of_final)
+    return _remove_final_keyword(line, indices_where_remove)
 
-    if not _contains_access_modifier(line) and final_scope == 'method':
-        return _remove_final_keyword(line)
-    return line
+
+def _is_removing_final_necessary(line, index_of_final, file_content, line_index):
+    """Checks if the `final` keyword at the specified index in the specified line should be removed.
+
+    Always returns `False` for the lines containing access modifiers.
+
+    Args:
+        line: the line to process.
+        index_of_final: the index where the `final` keyword is located in the line.
+        file_content: the file content, i.e. the list of file lines.
+        line_index: the index of the line in the file content.
+
+    Returns:
+        bool: `True` if the `final` keyword should be removed and `False` otherwise.
+    """
+    final_scope = _get_final_keyword_scope(line, index_of_final, file_content, line_index)
+    return not _contains_access_modifier(line) and final_scope == 'method'
+
+
+def _remove_final_keyword(line, indices_where_remove):
+    """Removes the `final` keyword from the line at the specified indices.
+
+    Returns the original line if the index list is empty.
+
+    Removes the `final` keyword and also a space after it.
+
+    Args:
+        line: the line to remove keyword from.
+        indices_where_remove: the indices where the `final` keywords to be removed are located.
+
+    Returns:
+        str: the line with the keyword deleted where necessary.
+    """
+    indices_for_removal = []
+    for index in indices_where_remove:
+        keyword_indices = range(index, index + len('final '))
+        indices_for_removal.extend(keyword_indices)
+    new_line = ''.join([s for i, s in enumerate(line) if i not in indices_for_removal])
+    return new_line
 
 
 def _contains_access_modifier(line):
@@ -170,17 +210,19 @@ def _contains_access_modifier(line):
     return 'public ' in line or 'private ' in line or 'protected ' in line
 
 
-def _get_final_keyword_scope(line, file_content, line_index):
+def _get_final_keyword_scope(line, index_of_final, file_content, line_index):
     """Obtains the scope of the `final` keyword contained in the line.
 
     For the lines containing no `final` keyword, the method returns `undefined`.
 
     As it is relatively hard to determine that `final` belongs to a local variable, this function
-    just handles all other most common cases like class field declaration, class declaration, doc,
-    etc. If the scope doesn't belong to one of them, the function by default assumes it is `method`.
+    just searches for the other most common cases like class field declaration, class declaration,
+    doc, etc. If the scope doesn't belong to one of them, the function by default assumes it is
+    `method`.
 
     Args:
         line: the line to check.
+        index_of_final: the index where the `final` keyword is located in the line.
         file_content: the file content, i.e. the list of file strings.
         line_index: the index of the line in the file content.
 
@@ -193,28 +235,16 @@ def _get_final_keyword_scope(line, file_content, line_index):
     if _final_is_class_declaration(line):
         return 'class'
 
-    if _final_is_comment(line) or _final_is_javadoc(line):
+    if _final_is_comment(line, index_of_final) or _final_is_javadoc(line, index_of_final):
         return 'doc'
 
-    if _final_is_string_literal(line):
+    if _final_is_string_literal(line, index_of_final):
         return 'literal'
 
     if _is_class_field(line_index, file_content):
         return 'class'
 
     return 'method'
-
-
-def _remove_final_keyword(line):
-    """Removes the `final` keyword from the line by simple search/replace operation.
-
-    Args:
-        line: the line to remove keyword from.
-
-    Returns:
-        str: the line without keyword.
-    """
-    return line.replace('final ', '')
 
 
 def _final_is_class_declaration(line):
@@ -231,43 +261,40 @@ def _final_is_class_declaration(line):
     return 'final class ' in line
 
 
-def _final_is_comment(line):
-    """Checks whether the `final` modifier in line is inside a comment.
-
-    Always returns `False` for the lines containing no `final` modifier.
+def _final_is_comment(line, index_of_final):
+    """Checks whether the `final` modifier is inside a comment.
 
     Args:
         line: the line to check.
+        index_of_final: the index where the `final` keyword is located in the line.
 
     Returns:
         bool: `True` if the `final` modifier is inside a comment and `False` otherwise.
     """
-    return _final_is_inside_doc(line, '//')
+    return _final_is_inside_doc(line, index_of_final, '//')
 
 
-def _final_is_javadoc(line):
-    """Checks whether the `final` modifier in line is inside a Javadoc.
-
-    Always returns `False` for the lines containing no `final` modifier.
+def _final_is_javadoc(line, index_of_final):
+    """Checks whether the `final` modifier is inside a Javadoc.
 
     Args:
         line: the line to check.
+        index_of_final: the index where the `final` keyword is located in the line.
 
     Returns:
         bool: `True` if the `final` modifier is inside a Javadoc and `False` otherwise.
     """
-    return _final_is_inside_doc(line, '*')
+    return _final_is_inside_doc(line, index_of_final, '*')
 
 
-def _final_is_inside_doc(line, doc_start_symbol):
-    """Checks whether the `final` modifier in line is inside a doc defined by starting symbol.
+def _final_is_inside_doc(line, index_of_final, doc_start_symbol):
+    """Checks whether the `final` modifier is inside a doc defined by starting symbol.
 
     Doc starting symbols can be, for example, `//` for the ordinary comment and `*` for the Javadoc.
 
-    Will return `False` for the lines containing no `final` modifier.
-
     Args:
         line: the line to check.
+        index_of_final: the index where the `final` keyword is located in the line.
         doc_start_symbol: the symbol defining where the code ends and the doc starts.
 
     Returns:
@@ -277,26 +304,24 @@ def _final_is_inside_doc(line, doc_start_symbol):
         return False
 
     doc_start = line.find(doc_start_symbol)
-    final_is_part_of_doc = line.find('final ') > doc_start
+    final_is_part_of_doc = index_of_final > doc_start
     return final_is_part_of_doc
 
 
-def _final_is_string_literal(line):
-    """Checks whether the `final` modifier in line is inside a string literal.
-
-    Will return `False` for the lines containing no `final` modifier.
+def _final_is_string_literal(line, index_of_final):
+    """Checks whether the `final` modifier is inside a string literal.
 
     Args:
         line: the line to check.
+        index_of_final: the index where the `final` keyword is located in the line.
 
     Returns:
         bool: `True` if the `final` modifier is inside a literal and `False` otherwise.
     """
-    if 'final ' not in line:
+    if index_of_final <= 0:
         return False
 
-    final_start = line.find('final ')
-    preceding_line = line[:final_start]
+    preceding_line = line[:index_of_final]
     quotes_count = preceding_line.count('"')
     there_is_unclosed_quote = quotes_count % 2 > 0
     return there_is_unclosed_quote
