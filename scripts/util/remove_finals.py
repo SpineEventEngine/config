@@ -46,7 +46,7 @@ def scan_dir_and_remove_finals(dir_path):
     """
     for root, dirs, files in os.walk(dir_path):
         for file_name in files:
-            if file_name.endswith('.java'):
+            if file_name.endswith('.java') and 'EventFactory.java' in file_name:
                 file_path = os.path.join(root, file_name)
                 print 'Processing file %s' % file_path
                 scan_and_remove_finals(file_path)
@@ -196,6 +196,9 @@ def _get_final_keyword_scope(line, file_content, line_index):
     if _final_is_comment(line) or _final_is_javadoc(line):
         return 'doc'
 
+    if _final_is_string_literal(line):
+        return 'literal'
+
     if _is_class_field(line_index, file_content):
         return 'class'
 
@@ -276,6 +279,27 @@ def _final_is_inside_doc(line, doc_start_symbol):
     doc_start = line.find(doc_start_symbol)
     final_is_part_of_doc = line.find('final ') > doc_start
     return final_is_part_of_doc
+
+
+def _final_is_string_literal(line):
+    """Checks whether the `final` modifier in line is inside a string literal.
+
+    Will return `False` for the lines containing no `final` modifier.
+
+    Args:
+        line: the line to check.
+
+    Returns:
+        bool: `True` if the `final` modifier is inside a literal and `False` otherwise.
+    """
+    if 'final ' not in line:
+        return False
+
+    final_start = line.find('final ')
+    preceding_line = line[:final_start]
+    quotes_count = preceding_line.count('"')
+    there_is_unclosed_quote = quotes_count % 2 > 0
+    return there_is_unclosed_quote
 
 
 def _is_class_field(line_index, file_content):
