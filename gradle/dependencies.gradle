@@ -39,14 +39,14 @@ ext.repos = [
 //noinspection GroovyAssignabilityCheck
 def versions = [
     slf4j            : "1.7.25",
-    checkerFramework : "2.5.1",
-    errorProne       : "2.1.1",
+    checkerFramework : "2.5.2",
+    errorProne       : "2.3.1",
     errorPronePlugin : "0.0.14",
     protobufPlugin   : "0.8.5",
     findBugs         : "3.0.2",
     guava            : "25.1-jre",
-    protobuf         : "3.5.1",
-    grpc             : "1.12.0",
+    protobuf         : "3.6.0",
+    grpc             : "1.13.1",
     junit5           : "5.2.0"
 ]
 
