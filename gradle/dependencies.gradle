@@ -37,12 +37,13 @@ ext.repos = [
 ]
 
 //noinspection GroovyAssignabilityCheck
-def versions = [
+final def versions = [
     slf4j            : "1.7.25",
     checkerFramework : "2.5.2",
     errorProne       : "2.3.1",
     errorPronePlugin : "0.0.14",
     protobufPlugin   : "0.8.5",
+    appenginePlugin  : "1.3.5",
     findBugs         : "3.0.2",
     guava            : "25.1-jre",
     protobuf         : "3.6.0",
@@ -51,7 +52,7 @@ def versions = [
 ]
 
 //noinspection GroovyAssignabilityCheck
-def build = [
+final def build = [
     errorProneAnnotations  : "org.checkerframework:checker-qual:$versions.errorProne",
     errorProneCheckApi     : "com.google.errorprone:error_prone_check_api:$versions.errorProne",
     errorProneCore         : "com.google.errorprone:error_prone_core:$versions.errorProne",
@@ -65,7 +66,7 @@ def build = [
     slf4j                  : "org.slf4j:slf4j-api:$versions.slf4j",
     protobuf               : ["com.google.protobuf:protobuf-java:$versions.protobuf",
                               "com.google.protobuf:protobuf-java-util:$versions.protobuf"],
-    protoc                 : "com.google.protobuf:protoc:${versions.protobuf}",
+    protoc                 : "com.google.protobuf:protoc:$versions.protobuf",
 
     //TODO:2018-06-13:alexander.yevsyukov: Remove this dependency after Guava migrates from it.
     jsr305Annotations      : "com.google.code.findbugs:jsr305:$versions.findBugs",
@@ -74,17 +75,18 @@ def build = [
 
     gradlePlugins: [
         errorProne: "net.ltgt.gradle:gradle-errorprone-plugin:$versions.errorPronePlugin",
-        protobuf: "com.google.protobuf:protobuf-gradle-plugin:$versions.protobufPlugin"
+        protobuf: "com.google.protobuf:protobuf-gradle-plugin:$versions.protobufPlugin",
+        appengine: "com.google.cloud.tools:appengine-gradle-plugin:$versions.appenginePlugin"
     ]
 ]
 
 //noinspection GroovyAssignabilityCheck
-def gen = [
+final def gen = [
     javaPoet : "com.squareup:javapoet:1.9.0"
 ]
 
 //noinspection GroovyAssignabilityCheck
-def test = [
+final def test = [
     junit4        : "junit:junit:4.12",
     junit5Api     : ["org.junit.jupiter:junit-jupiter-api:$versions.junit5",
                      "org.apiguardian:apiguardian-api:1.0.0"],
@@ -98,7 +100,7 @@ def test = [
 ]
 
 //noinspection GroovyAssignabilityCheck
-def scripts = [
+final def scripts = [
     testArtifacts          : "$rootDir/config/gradle/test-artifacts.gradle",
     generateDescriptorSet  : "$rootDir/config/gradle/generate-descriptor-set.gradle",
     filterInternalJavadocs : "$rootDir/config/gradle/filter-internal-javadoc.gradle",
