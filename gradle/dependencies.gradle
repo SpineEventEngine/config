@@ -102,7 +102,7 @@ final def test = [
 //noinspection GroovyAssignabilityCheck
 final def scripts = [
     testArtifacts          : "$rootDir/config/gradle/test-artifacts.gradle",
-    generateDescriptorSet  : "$rootDir/config/gradle/generate-descriptor-set.gradle",
+    testOutput             : "$rootDir/config/gradle/test-output.gradle",
     filterInternalJavadocs : "$rootDir/config/gradle/filter-internal-javadoc.gradle",
     jacoco                 : "$rootDir/config/gradle/jacoco.gradle",
     publish                : "$rootDir/config/gradle/publish.gradle"
