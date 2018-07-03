@@ -61,15 +61,15 @@ final def build = [
     checkerAnnotations     : "org.checkerframework:checker-qual:$versions.checkerFramework",
     checkerDataflow        : ["org.checkerframework:dataflow:$versions.checkerFramework",
                               "org.checkerframework:javacutil:$versions.checkerFramework"],
+
+    //TODO:2018-06-13:alexander.yevsyukov: Remove this dependency after Guava migrates from it.
+    jsr305Annotations      : "com.google.code.findbugs:jsr305:$versions.findBugs",
         
     guava                  : "com.google.guava:guava:$versions.guava",
     slf4j                  : "org.slf4j:slf4j-api:$versions.slf4j",
     protobuf               : ["com.google.protobuf:protobuf-java:$versions.protobuf",
                               "com.google.protobuf:protobuf-java-util:$versions.protobuf"],
     protoc                 : "com.google.protobuf:protoc:$versions.protobuf",
-
-    //TODO:2018-06-13:alexander.yevsyukov: Remove this dependency after Guava migrates from it.
-    jsr305Annotations      : "com.google.code.findbugs:jsr305:$versions.findBugs",
 
     ci: "true" == System.getenv("CI"),
 
@@ -83,6 +83,14 @@ final def build = [
 //noinspection GroovyAssignabilityCheck
 final def gen = [
     javaPoet : "com.squareup:javapoet:1.9.0"
+]
+
+//noinspection GroovyAssignabilityCheck
+final def grpc = [
+    grpcStub               : "io.grpc:grpc-stub:$versions.grpc",
+    grpcOkHttp             : "io.grpc:grpc-okhttp:$versions.grpc",
+    grpcProtobuf           : "io.grpc:grpc-protobuf:$versions.grpc",
+    grpcNetty              : "io.grpc:grpc-netty:$versions.grpc",
 ]
 
 //noinspection GroovyAssignabilityCheck
@@ -109,6 +117,7 @@ final def scripts = [
 
 ext.deps = [
     "build"    : build,
+    "grpc"     : grpc,
     "gen"      : gen,
     "test"     : test,
     "versions" : versions,
