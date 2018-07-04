@@ -53,7 +53,7 @@ final def versions = [
 
 //noinspection GroovyAssignabilityCheck
 final def build = [
-    errorProneAnnotations  : "org.checkerframework:checker-qual:$versions.errorProne",
+    errorProneAnnotations  : "com.google.errorprone:error_prone_annotations:$versions.errorProne",
     errorProneCheckApi     : "com.google.errorprone:error_prone_check_api:$versions.errorProne",
     errorProneCore         : "com.google.errorprone:error_prone_core:$versions.errorProne",
     errorProneTestHelpers  : "com.google.errorprone:error_prone_test_helpers:$versions.errorProne",
@@ -61,15 +61,15 @@ final def build = [
     checkerAnnotations     : "org.checkerframework:checker-qual:$versions.checkerFramework",
     checkerDataflow        : ["org.checkerframework:dataflow:$versions.checkerFramework",
                               "org.checkerframework:javacutil:$versions.checkerFramework"],
+
+    //TODO:2018-06-13:alexander.yevsyukov: Remove this dependency after Guava migrates from it.
+    jsr305Annotations      : "com.google.code.findbugs:jsr305:$versions.findBugs",
         
     guava                  : "com.google.guava:guava:$versions.guava",
     slf4j                  : "org.slf4j:slf4j-api:$versions.slf4j",
     protobuf               : ["com.google.protobuf:protobuf-java:$versions.protobuf",
                               "com.google.protobuf:protobuf-java-util:$versions.protobuf"],
     protoc                 : "com.google.protobuf:protoc:$versions.protobuf",
-
-    //TODO:2018-06-13:alexander.yevsyukov: Remove this dependency after Guava migrates from it.
-    jsr305Annotations      : "com.google.code.findbugs:jsr305:$versions.findBugs",
 
     ci: "true" == System.getenv("CI"),
 
@@ -86,6 +86,14 @@ final def gen = [
 ]
 
 //noinspection GroovyAssignabilityCheck
+final def grpc = [
+    grpcStub               : "io.grpc:grpc-stub:$versions.grpc",
+    grpcOkHttp             : "io.grpc:grpc-okhttp:$versions.grpc",
+    grpcProtobuf           : "io.grpc:grpc-protobuf:$versions.grpc",
+    grpcNetty              : "io.grpc:grpc-netty:$versions.grpc",
+]
+
+//noinspection GroovyAssignabilityCheck
 final def test = [
     junit4        : "junit:junit:4.12",
     junit5Api     : ["org.junit.jupiter:junit-jupiter-api:$versions.junit5",
@@ -93,7 +101,6 @@ final def test = [
     junit5Runner  : ["org.junit.jupiter:junit-jupiter-engine:$versions.junit5",
                      "org.junit.vintage:junit-vintage-engine:$versions.junit5"],
     slf4j         : "org.slf4j:slf4j-jdk14:$versions.slf4j",
-    cfQual        : "org.checkerframework:checker-qual:$versions.checkerFramework",
     guavaTestlib  : "com.google.guava:guava-testlib:$versions.guava",
     mockito       : "org.mockito:mockito-core:2.12.0",
     hamcrest      : "org.hamcrest:hamcrest-all:1.3"
@@ -110,6 +117,7 @@ final def scripts = [
 
 ext.deps = [
     "build"    : build,
+    "grpc"     : grpc,
     "gen"      : gen,
     "test"     : test,
     "versions" : versions,
