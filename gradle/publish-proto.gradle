@@ -148,6 +148,7 @@ task assembleProto(type: Jar) {
     description "Assembles a JAR artifact with all Proto definitions from the classpath."
     from { collectProto() }
     include { isProtoFileOrDir(it.file) }
+    classifier "proto"
 }
 
 /**
@@ -198,9 +199,7 @@ publishing {
 
             from components.java
 
-            artifact assembleProto {
-                classifier = "proto"
-            }
+            artifacts = [assembleProto]
         }
     }
 }
