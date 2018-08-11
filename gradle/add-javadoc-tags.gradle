@@ -22,7 +22,7 @@
  * This script enables the new Javadoc tags in the build.
  *
  * The tags are:
- * 1. @apiNote - additional notes and commentaries regarding the API
+ * 1. @apiNote - the additional notes and commentaries regarding the API
  * 2. @implSpec - the implementation specification
  * 3. @implNote - the commentaries and notes about the implementation
  *
