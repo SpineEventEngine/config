@@ -114,6 +114,7 @@ final def test = [
 final def scripts = [
     testArtifacts          : "$rootDir/config/gradle/test-artifacts.gradle",
     testOutput             : "$rootDir/config/gradle/test-output.gradle",
+    addJavadocTags         : "$rootDir/config/gradle/add-javadoc-tags.gradle",
     filterInternalJavadocs : "$rootDir/config/gradle/filter-internal-javadoc.gradle",
     jacoco                 : "$rootDir/config/gradle/jacoco.gradle",
     publish                : "$rootDir/config/gradle/publish.gradle",
