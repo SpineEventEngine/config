@@ -98,6 +98,7 @@ final def grpc = [
 final def test = [
     junit4        : "junit:junit:4.12",
     junit5Api     : ["org.junit.jupiter:junit-jupiter-api:$versions.junit5",
+                     "org.junit.jupiter:junit-jupiter-params:$versions.junit5",
                      "org.apiguardian:apiguardian-api:1.0.0"],
     junit5Runner  : ["org.junit.jupiter:junit-jupiter-engine:$versions.junit5",
                      "org.junit.vintage:junit-vintage-engine:$versions.junit5"],
