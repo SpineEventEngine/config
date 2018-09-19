@@ -39,3 +39,15 @@ javadoc {
                     "implSpec:a:Implementation Requirements:",
                     "implNote:a:Implementation Note:"]
 }
+
+// The below config avoids numerous warnings for missing @param tags.
+// As suggested by Stephen Colebourne:
+//   https://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
+// See also:
+//   https://github.com/GPars/GPars/blob/master/build.gradle#L268
+//
+if (JavaVersion.current().isJava8Compatible()) {
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}
