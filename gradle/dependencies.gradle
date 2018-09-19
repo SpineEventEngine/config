@@ -120,6 +120,7 @@ final def scripts = [
     jacoco                 : "$rootDir/config/gradle/jacoco.gradle",
     publish                : "$rootDir/config/gradle/publish.gradle",
     publishProto           : "$rootDir/config/gradle/publish-proto.gradle",
+    javacArgs              : "$rootDir/config/gradle/javac-args.gradle"
 ]
 
 ext.deps = [
