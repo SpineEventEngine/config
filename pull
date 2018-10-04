@@ -38,9 +38,9 @@ if [ ! -f ../.gitignore ]; then
     cp .gitignore ..
 fi
 
-# Copy `ext.gradle` only if it is not yet created in the project.
-if [ ! -f ../ext.gradle ]; then
-    echo "Creating ext.gradle"
+# Copy `version.gradle` only if it is not yet created in the project.
+if [ ! -f ../version.gradle ]; then
+    echo "Creating version.gradle"
     cp ext.gradle ..
 fi
 
