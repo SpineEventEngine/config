@@ -86,13 +86,23 @@ projectsToPublish.each {
             }
         }
 
+        final boolean isSnapshots = currentProject.version.endsWith('-SNAPSHOT')
         // As per https://discuss.gradle.org/t/maven-publish-specify-a-repo-as-being-a-snapshot-repo/374/2
-        final String repositorySuffix = currentProject.version.endsWith('-SNAPSHOT') ? '-snapshots' : ''
+        final String repositorySuffix = isSnapshots ? '-snapshots' : ''
 
         publishing {
             repositories {
                 maven {
-                    url = "http://maven.teamdev.com/repository/spine${repositorySuffix}"
+                    // Old Archiva URL:
+                    // url = "http://maven.teamdev.com/repository/spine${repositorySuffix}"
+                    
+                    // New CloudRepo URL
+                    final String publicRepo = isSnapshots ? repos.spineSnapshots : repos.spine
+                    // We publish via private repository URL. 
+                    final urlToPublish = publicRepo.replace("/public", "")
+                    
+                    url = urlToPublish 
+
                     credentials {
                         username = "${repositoryUserName}"
                         password = "${repositoryUserPassword}"

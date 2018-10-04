@@ -27,8 +27,16 @@
 
 // Specific repositories.
 ext.repos = [
-    spine             : "http://maven.teamdev.com/repository/spine",
-    spineSnapshots    : "http://maven.teamdev.com/repository/spine-snapshots",
+
+    // Old Archiva Repositories
+    //    spine             : "http://maven.teamdev.com/repository/spine",
+    //    spineSnapshots    : "http://maven.teamdev.com/repository/spine-snapshots",
+    oldSpine          : "http://maven.teamdev.com/repository/spine", 
+    oldSpineSnapshots : "http://maven.teamdev.com/repository/spine-snapshots",
+        
+    // New CloudRepo Repositories
+    spine             : "https://spine.mycloudrepo.io/public/repositories/releases",
+    spineSnapshots    : "https://spine.mycloudrepo.io/public/repositories/snapshots",
 
     // Snapshots of Error Prone and Guava.
     sonatypeSnapshots : "https://oss.sonatype.org/content/repositories/snapshots",
@@ -49,7 +57,7 @@ final def versions = [
     guava            : "26.0-jre",
     protobuf         : "3.6.1",
     grpc             : "1.15.0",
-    junit5           : "5.3.1", 
+    junit5           : "5.3.1",
     truth            : "0.42"
 ]
 
