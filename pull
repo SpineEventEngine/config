@@ -41,7 +41,7 @@ fi
 # Copy `version.gradle` only if it is not yet created in the project.
 if [ ! -f ../version.gradle ]; then
     echo "Creating version.gradle"
-    cp ext.gradle ..
+    cp version.gradle ..
 fi
 
 cd ..
