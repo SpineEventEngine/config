@@ -20,6 +20,7 @@
 
 // Apply this script to add ability to publish the needed artifacts.
 
+// See `dependencies.gradle` for the selection of the target repository.
 final String credentialsPropertyFile = publishToRepository.credentials
 
 String repositoryUserName = null
