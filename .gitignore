@@ -67,7 +67,11 @@ gradle-app.setting
 
 # Login details to Maven repository.
 # Each workstation should have developer's login defined in this file.
+credentials.tar
 credentials.properties
+cloudrepo.properties
+deploy_key_rsa
+gcs-auth-key.json
 
 # Log files
 *.log
