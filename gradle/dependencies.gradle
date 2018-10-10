@@ -80,6 +80,7 @@ final def versions = [
     protobuf         : "3.6.1",
     grpc             : "1.15.0",
     junit5           : "5.3.1",
+    junitPioneer     : "0.2.0",
     truth            : "0.42"
 ]
 
@@ -134,6 +135,7 @@ final def test = [
                      "org.apiguardian:apiguardian-api:1.0.0"],
     junit5Runner  : ["org.junit.jupiter:junit-jupiter-engine:$versions.junit5",
                      "org.junit.vintage:junit-vintage-engine:$versions.junit5"],
+    junitPioneer  : "org.junit-pioneer:junit-pioneer:0.2.0",
     slf4j         : "org.slf4j:slf4j-jdk14:$versions.slf4j",
     guavaTestlib  : "com.google.guava:guava-testlib:$versions.guava",
     mockito       : "org.mockito:mockito-core:2.12.0",
