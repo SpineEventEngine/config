@@ -135,7 +135,7 @@ final def test = [
                      "org.apiguardian:apiguardian-api:1.0.0"],
     junit5Runner  : ["org.junit.jupiter:junit-jupiter-engine:$versions.junit5",
                      "org.junit.vintage:junit-vintage-engine:$versions.junit5"],
-    junitPioneer  : "org.junit-pioneer:junit-pioneer:0.2.0",
+    junitPioneer  : "org.junit-pioneer:junit-pioneer:$versions.junitPioneer",
     slf4j         : "org.slf4j:slf4j-jdk14:$versions.slf4j",
     guavaTestlib  : "com.google.guava:guava-testlib:$versions.guava",
     mockito       : "org.mockito:mockito-core:2.12.0",
