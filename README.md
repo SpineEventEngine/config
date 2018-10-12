@@ -36,7 +36,11 @@ The following files will be copied:
     This fill will be copied only if it does not exist in your project. It defines:
     1. the version of Spine Base which is used by the project (which uses `config`)
     2. the version under which artifacts of the project will be published.
-     
+
+## Adding credentials to new repository
+
+Please see [this page](https://github.com/SpineEventEngine/config/wiki/Encrypting-Credential-Files-for-Travis).
+
 ## Further reading
 
   * [GitHub: Working with submodules](https://blog.github.com/2016-02-01-working-with-submodules/)
