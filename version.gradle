@@ -19,7 +19,8 @@
  */
 
 /**
- * Declares the version of the artifacts to publish and 
+ * Declares the version of the artifacts to publish and versions of
+ * project-specific general dependencies.
  *
  * This file is used in both module `build.gradle` scripts and in the integration tests,
  * as we want to manage the versions in a single source.
@@ -31,7 +32,6 @@
 final def SPINE_VERSION = '0.10.99-SNAPSHOT'
 
 ext {
-    versionToPublish = SPINE_VERSION
-    spineBaseVersion = SPINE_VERSION 
+    spineBaseVersion = SPINE_VERSION
     versionToPublish = SPINE_VERSION
 }
