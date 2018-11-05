@@ -74,6 +74,7 @@ final def versions = [
     errorProneJavac  : "9+181-r4173-1", // taken from here: https://github.com/tbroyer/gradle-errorprone-plugin/blob/v0.6/build.gradle.kts    
     errorPronePlugin : "0.6",
     protobufPlugin   : "0.8.5",
+    appengineApi     : "1.9.67",
     appenginePlugin  : "1.3.5",
     findBugs         : "3.0.2",
     guava            : "26.0-jre",
@@ -81,7 +82,9 @@ final def versions = [
     grpc             : "1.15.0",
     junit5           : "5.3.1",
     junitPioneer     : "0.2.0",
-    truth            : "0.42"
+    truth            : "0.42",
+    httpClient       : "1.26.0",
+    apacheValidator  : "1.4.0"
 ]
 
 //noinspection GroovyAssignabilityCheck
@@ -104,6 +107,9 @@ final def build = [
     protobuf               : ["com.google.protobuf:protobuf-java:$versions.protobuf",
                               "com.google.protobuf:protobuf-java-util:$versions.protobuf"],
     protoc                 : "com.google.protobuf:protoc:$versions.protobuf",
+    googleHttpClient       : "com.google.http-client:google-http-client:$versions.httpClient",
+    appengineApi           : "com.google.appengine:appengine-api-1.0-sdk:$versions.appengineApi",
+    apacheValidator        : "commons-validator:commons-validator:$versions.apacheValidator",
 
     ci: "true" == System.getenv("CI"),
 
