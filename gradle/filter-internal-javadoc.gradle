@@ -24,10 +24,10 @@ configurations {
 
 dependencies {
     /*
-       The variable spineVersion must be defined in the `ext` section of the `version.gradle`
+       The variable spineBaseVersion must be defined in the `ext` section of the `version.gradle`
        file of the project which imports `config` as a sub-module.
       */
-    excludeInternalDoclet "io.spine.tools:spine-javadoc-filter:$spineVersion"
+    excludeInternalDoclet "io.spine.tools:spine-javadoc-filter:$spineBaseVersion"
 }
 
 task noInternalJavadoc(type: Javadoc) {
