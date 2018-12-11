@@ -20,7 +20,7 @@
 
 // Apply this script to enable JaCoCo test report.
 //
-// This task aggregates the XML report results from all the subprojects.
+// This task aggregates the XML report results from all Java subprojects.
 // Inspired by: https://gist.github.com/aalmiray/e6f54aa4b3803be0bcac
 
 // Required to grab dependencies for `jacocoRootReport` task.
@@ -30,10 +30,59 @@ repositories {
 
 import groovy.io.FileType
 
+// Evaluate this script only after all subprojects were evaluated.
+// Only after that it is possible to say which of the subprojects are Java projects.
+evaluationDependsOnChildren()
+
+final def javaProjects = subprojects.findAll { it.pluginManager.hasPlugin('java') }
+
+// Create an aggregate coverage report across Java modules,
+// excluding the generated content from the coverage stats.
+//
+task jacocoRootReport(dependsOn: javaProjects.test, type: JacocoReport) {
+    // It is required to set some default value in order for the task to initialize.
+    // This value is overridden in `#doFirst` section.
+    additionalSourceDirs = files()
+    sourceDirectories = files()
+    executionData = files()
+    classDirectories = files()
+
+    reports {
+        html.enabled = true
+        xml.enabled = true
+        csv.enabled = false
+    }
+    onlyIf = {
+        true
+    }
+    // Handle subprojects after their evaluation, when the task is run.
+    doFirst {
+        additionalSourceDirs = CodebaseFilter.nonGeneratedOnly(files(javaProjects.sourceSets.main.java.srcDirs))
+        sourceDirectories = CodebaseFilter.nonGeneratedOnly(files(javaProjects.sourceSets.main.java.srcDirs))
+
+        final def allExecutionData = files(javaProjects.jacocoTestReport.executionData)
+        // In case some modules do not have the JaCoCo execution data files.
+        executionData = files(allExecutionData.findAll {
+            it.exists()
+        })
+
+        println("Starting to compose an aggregate coverage report across modules.")
+
+        final def filter = new CodebaseFilter(project,
+                javaProjects.sourceSets.main.java.srcDirs,
+                javaProjects.sourceSets.main.output)
+        final def nonGeneratedFiles = filter.findNonGeneratedCompiledFiles()
+        classDirectories = files(nonGeneratedFiles)
+    }
+}
+
+if (project.tasks.findByName('check')) {
+    check.dependsOn jacocoRootReport
+}
 
 /**
- * Serves to distinguish the {@code .java} and {@code .class} files built from the Protobuf definitions
- * from the human-created production code.
+ * Serves to distinguish the {@code .java} and {@code .class} files built from
+ * the Protobuf definitions from the human-created production code.
  */
 class CodebaseFilter {
 
@@ -154,39 +203,3 @@ class CodebaseFilter {
         return nonGeneratedClassTree
     }
 }
-
-// Create an aggregate coverage report across modules, excluding the generated content from the coverage stats.
-//
-task jacocoRootReport(dependsOn: subprojects.test, type: JacocoReport) {
-    additionalSourceDirs = CodebaseFilter.nonGeneratedOnly(files(subprojects.sourceSets.main.java.srcDirs))
-    sourceDirectories = CodebaseFilter.nonGeneratedOnly(files(subprojects.sourceSets.main.java.srcDirs))
-
-    // It is required to set some default value in order for the task to initialize.
-    // This value is overridden in `#doFirst` section.
-    classDirectories = files(subprojects.sourceSets.main.output)
-    executionData = files(subprojects.jacocoTestReport.executionData)
-    reports {
-        html.enabled = true
-        xml.enabled = true
-        csv.enabled = false
-    }
-    onlyIf = {
-        true
-    }
-    doFirst {
-        // In case some modules do not have the JaCoCo execution data files.
-        executionData = files(executionData.findAll {
-            it.exists()
-        })
-
-        println("Starting to compose an aggregate coverage report across modules.")
-
-        final def filter = new CodebaseFilter(project,
-                subprojects.sourceSets.main.java.srcDirs,
-                subprojects.sourceSets.main.output)
-        final def nonGeneratedFiles = filter.findNonGeneratedCompiledFiles()
-        classDirectories = files(nonGeneratedFiles)
-    }
-}
-
-check.dependsOn jacocoRootReport
