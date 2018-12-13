@@ -26,6 +26,9 @@
  * 2. @implSpec - the implementation specification
  * 3. @implNote - the commentaries and notes about the implementation
  *
+ * It also explicitly states the encoding of the source files from which the javadoc is composed,
+ * broadening the range of environments that the `javadoc` task is runnable under.
+ *
  * For the detailed description of the new tags, see:
  * https://blog.codefx.org/java/new-javadoc-tags/#apiNote-implSpec-and-implNote
  *
