@@ -38,6 +38,7 @@ javadoc {
     options.tags = ["apiNote:a:API Note:",
                     "implSpec:a:Implementation Requirements:",
                     "implNote:a:Implementation Note:"]
+    options.encoding = 'UTF-8'
 }
 
 // The below config avoids numerous warnings for missing @param tags.
