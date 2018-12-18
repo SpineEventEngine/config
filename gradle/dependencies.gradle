@@ -84,7 +84,8 @@ final def versions = [
     junitPioneer     : "0.2.0",
     truth            : "0.42",
     httpClient       : "1.27.0",
-    apacheValidator  : "1.4.0"
+    apacheValidator  : "1.4.0",
+    firebaseAdmin    : "6.6.0",
 ]
 
 //noinspection GroovyAssignabilityCheck
@@ -110,6 +111,8 @@ final def build = [
     googleHttpClient       : "com.google.http-client:google-http-client:$versions.httpClient",
     appengineApi           : "com.google.appengine:appengine-api-1.0-sdk:$versions.appengineApi",
     apacheValidator        : "commons-validator:commons-validator:$versions.apacheValidator",
+
+    firebaseAdmin          : "com.google.firebase:firebase-admin:$versions.firebaseAdmin",
 
     ci: "true" == System.getenv("CI"),
 
