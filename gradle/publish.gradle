@@ -66,6 +66,8 @@ projectsToPublish.each {
     project(":$it") { final currentProject ->
         apply plugin: 'maven-publish'
 
+        println "Applying `maven-publish` plugin to ${currentProject.name}."
+
         // Artifact IDs are composed as "spine-<project.name>". Example:
         //
         //      "spine-model-compiler"
