@@ -184,10 +184,11 @@ class CodebaseFilter {
 
         final def generatedClassNames = getGeneratedClassNames()
         final def nonGeneratedClassTree = outputDirs.collect {
-            println("Filtering out the generated classes for ${it.getClassesDir()}")
+            final def srcFile = new File(it.getClassesDirs().getAsPath())
+            println("Filtering out the generated classes for ${srcFile}")
 
             // return the filtered `fileTree`s as a collected result.
-            project.fileTree(dir: it.getClassesDir(), exclude: { final details ->
+            project.fileTree(dir: srcFile, exclude: { final details ->
                 final def file = details.file
                 def className = parseClassName(file, JAVA_OUTPUT_FOLDER_MARKER, COMPILED_CLASS_FILE_EXTENSION)
 
