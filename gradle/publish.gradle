@@ -76,11 +76,11 @@ projectsToPublish.each {
         //
         final String artifactIdForPublishing = "spine-${currentProject.name}"
 
-        currentProject.afterEvaluate {
-            publishing {
+        final def publishingAction = {
+            currentProject.publishing {
                 publications {
                     mavenJava(MavenPublication) {
-                        groupId = "${group}"
+                        groupId = "${currentProject.group}"
                         artifactId = "${artifactIdForPublishing}"
                         version = "${currentProject.version}"
 
@@ -92,6 +92,11 @@ projectsToPublish.each {
                     }
                 }
             }
+        }
+        if (currentProject.state.executed) {
+            publishingAction()
+        } else {
+            currentProject.afterEvaluate(publishingAction)
         }
 
         final boolean isSnapshots = currentProject.version.endsWith('-SNAPSHOT')
