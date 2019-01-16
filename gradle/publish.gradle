@@ -76,18 +76,20 @@ projectsToPublish.each {
         //
         final String artifactIdForPublishing = "spine-${currentProject.name}"
 
-        publishing {
-            publications {
-                mavenJava(MavenPublication) {
-                    groupId = "${group}"
-                    artifactId = "${artifactIdForPublishing}"
-                    version = "${currentProject.version}"
+        currentProject.afterEvaluate {
+            publishing {
+                publications {
+                    mavenJava(MavenPublication) {
+                        groupId = "${group}"
+                        artifactId = "${artifactIdForPublishing}"
+                        version = "${currentProject.version}"
 
-                    from components.java
+                        from components.java
 
-                    artifact sourceJar
-                    artifact testOutputJar
-                    artifact javadocJar
+                        artifact sourceJar
+                        artifact testOutputJar
+                        artifact javadocJar
+                    }
                 }
             }
         }
