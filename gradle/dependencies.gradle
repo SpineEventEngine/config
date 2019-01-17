@@ -198,7 +198,10 @@ ext.forceConfiguration = { final configurationContainer ->
                     deps.test.truth,
                     deps.test.junit5Api,
                     deps.test.junit4,
-                    "org.codehaus.plexus:plexus-utils:3.0.17"
+                    
+                    // Transitive dependencies of 3rd party components that we don't use directly.
+                    "org.codehaus.plexus:plexus-utils:3.0.17",
+                    "com.squareup.okio:okio:1.13.0"
             )
         }
     }
