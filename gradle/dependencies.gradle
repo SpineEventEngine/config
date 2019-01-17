@@ -175,3 +175,66 @@ ext.deps = [
     "versions" : versions,
     "scripts"  : scripts  
 ]
+
+/**
+ * Forces default dependencies for the passed object which has {@code configurations} property.
+ *
+ * <p>Typically this should be applied to {@link ScriptHandler} (if in {@code buildscript} section),
+ * or to {@link Project} (if in project definition section).
+ */
+ext.forceConfiguration = { final configurationContainer ->
+
+    configurationContainer.configurations.all {
+        resolutionStrategy {
+            failOnVersionConflict()
+            cacheChangingModulesFor(0, 'seconds')
+            force(
+                    deps.build.errorProneAnnotations,
+                    deps.build.jsr305Annotations,
+                    deps.build.checkerAnnotations,
+                    deps.build.guava,
+                    deps.build.protobuf,
+                    deps.test.guavaTestlib,
+                    deps.test.truth,
+                    deps.test.junit5Api,
+                    deps.test.junit4,
+                    "org.codehaus.plexus:plexus-utils:3.0.17"
+            )
+        }
+    }
+}
+
+/**
+ * Adds default repositories to the passed object which has {@code repositories} property.
+ * 
+ * <p>Typically this should be applied to {@link ScriptHandler} (if in {@code buildscript} section),
+ * or to {@link Project} (if in project definition section).
+ */
+ext.defaultRepositories = { final repositoryContainer ->
+
+    repositoryContainer.repositories {
+        mavenLocal()
+        maven {
+            url = repos.spine
+            content {
+                includeGroup 'io.spine'
+                includeGroup 'io.spine.tools'
+            }
+            mavenContent {
+                releasesOnly()
+            }
+        }
+        maven {
+            url = repos.spineSnapshots
+            content {
+                includeGroup 'io.spine'
+                includeGroup 'io.spine.tools'
+            }
+            mavenContent {
+                snapshotsOnly()
+            }
+        }
+        jcenter()
+        maven { url = repos.gradlePlugins }
+    }
+}
