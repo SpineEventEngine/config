@@ -1,0 +1,58 @@
+/*
+ * Copyright 2019, TeamDev. All rights reserved.
+ *
+ * Redistribution and use in source and/or binary forms, with or without
+ * modification, must retain the above copyright notice and the following
+ * disclaimer.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
+/**
+ * This script updates the version in package.json.
+ */
+
+ext.JS_PACKAGE_FILE_LOCATION = "$projectDir/package.json"
+ext.JS_PACKAGES_VERSION = versionToPublishJs
+
+Object readJsonFile(final String sourcePath) {
+    def final packageJsonFile = file(sourcePath)
+    return new JsonSlurper().parseText(packageJsonFile.text)
+}
+
+String prettify(final String jsonText) {
+    def prettyText = JsonOutput.prettyPrint(jsonText)
+    prettyText = prettyText.replace('  ', ' ')
+    prettyText = prettyText.replaceAll(/\{\s+}/, '{}')
+    prettyText = prettyText + '\n'
+    return prettyText
+}
+
+void updatePackageJson(final jsonObject, final String destinationPath) {
+    def final updatedText = JsonOutput.toJson(jsonObject)
+    def final prettyText = prettify(updatedText)
+    new File(destinationPath).text = prettyText
+}
+
+void updatePackageJsonVersion() {
+    def final packageFile = JS_PACKAGE_FILE_LOCATION
+    def final packageJsonObject = readJsonFile(packageFile)
+
+    packageJsonObject['version'] = JS_PACKAGES_VERSION
+    updatePackageJson(packageJsonObject, packageFile)
+}
+
+updatePackageJsonVersion()
