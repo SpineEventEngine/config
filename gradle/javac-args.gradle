@@ -22,19 +22,15 @@
  * This script configures Java Compiler.
  */
 
+
+// Explicitly states the encoding of the source and test source files, ensuring
+// correct execution of the `javac` task.
+
 compileJava {
-
-    // Explicitly states the encoding of the source files, ensuring correct execution
-    // of the `javac` task.
-
     options.encoding = 'UTF-8'
 }
 
 compileTestJava {
-
-    // Explicitly states the encoding of the test source files, ensuring correct execution
-    // of the `javac` task.
-
     options.encoding = 'UTF-8'
 }
 
@@ -47,6 +43,6 @@ tasks.withType(JavaCompile) {
     //
     // For more config details see: 
     //    https://github.com/tbroyer/gradle-errorprone-plugin/tree/v0.6#usage
-    
+
     options.errorprone.errorproneArgs << "-XepExcludedPaths:.*/generated/.*" << "-Xep:ClassCanBeStatic:OFF"
 }
