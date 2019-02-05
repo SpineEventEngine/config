@@ -75,7 +75,7 @@ task installDependencies {
     description = 'Installs the JavaScript dependencies.'
 
     inputs.file packageJsonFile
-    output.files(fileTree(nodeModulesDir))
+    outputs.files(fileTree(nodeModulesDir))
 
     doLast {
         npm 'install'
