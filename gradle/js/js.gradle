@@ -96,6 +96,7 @@ task cleanJs {
 
     doLast {
         delete buildJs.outputs
+        delete compileProtoToJs.outputs
         delete installDependencies.outputs
     }
 }
@@ -114,7 +115,7 @@ task buildJs {
     dependsOn updatePackageVersion
     dependsOn installDependencies
     dependsOn compileProtoToJs
-    build.dependsOn buildJs
+    assemble.dependsOn buildJs
 }
 
 /**
