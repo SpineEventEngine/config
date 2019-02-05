@@ -75,7 +75,7 @@ task installDependencies {
     description = 'Installs the JavaScript dependencies.'
 
     inputs.file packageJsonFile
-    inputs.files(fileTree(nodeModulesDir))
+    output.files(fileTree(nodeModulesDir))
 
     doLast {
         npm 'install'
@@ -83,16 +83,17 @@ task installDependencies {
 }
 
 /**
- * Cleans installed NPM packages.
+ * Cleans output of `buildJs` and dependant tasks.
  */
-task cleanDependencies {
+task cleanJs {
     group = JAVA_SCRIPT_TASK_GROUP
-    description = 'Cleans the JavaScript dependencies.'
+    description = 'Cleans the output of JavaScript build.'
 
-    clean.dependsOn cleanDependencies
+    clean.dependsOn cleanJs
 
     doLast {
-        delete nodeModulesDir
+        delete buildJs.outputs
+        delete installDependencies.outputs
     }
 }
 
