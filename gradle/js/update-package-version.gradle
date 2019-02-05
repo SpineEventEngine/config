@@ -28,8 +28,8 @@ import groovy.json.JsonSlurper
 /**
  * Updates the package.json version to the specified one.
  * 
- * <p>The path of the package.json and the version to set are set to default values,
- * but can be set to custom values:
+ * <p>The path of the package.json and the version to set has default values,
+ * but can be redefined:
  * 
  * <pre>{@code
  * updatePackageVersion.packageJsonPath = "custom/package.json"
