@@ -22,37 +22,52 @@ import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
 /**
- * This script updates the version in package.json.
+ * This script declares a task to update the version in in a package.json file.
  */
 
-ext.JS_PACKAGE_FILE_LOCATION = "$projectDir/package.json"
-ext.JS_PACKAGES_VERSION = versionToPublishJs
+/**
+ * Updates the package.json version to the specified one.
+ * 
+ * <p>The path of the package.json and the version to set are set to default values,
+ * but can be set to custom values:
+ * 
+ * <pre>{@code
+ * updatePackageVersion.packageJsonPath = "custom/package.json"
+ * updatePackageVersion.newVersion = npmPackageVersion
+ * }</pre>
+ */
+task updatePackageVersion() {
+    
+    ext.packageJsonPath = "$projectDir/package.json"
+    ext.newVersion = versionToPublishJs
+
+    doLast {
+        updatePackageJsonVersion(packageJsonPath as String, newVersion as String)
+    }
+}
+
+void updatePackageJsonVersion(final String packageJsonPath, final String newVersion) {
+    def final packageJsonObject = readJsonFile(packageJsonPath)
+
+    packageJsonObject['version'] = newVersion
+    updatePackageJson(packageJsonObject, packageJsonPath)
+}
 
 Object readJsonFile(final String sourcePath) {
     def final packageJsonFile = file(sourcePath)
     return new JsonSlurper().parseText(packageJsonFile.text)
 }
 
-String prettify(final String jsonText) {
+static void updatePackageJson(final jsonObject, final String destinationPath) {
+    def final updatedText = JsonOutput.toJson(jsonObject)
+    def final prettyText = prettify(updatedText)
+    new File(destinationPath).text = prettyText
+}
+
+static String prettify(final String jsonText) {
     def prettyText = JsonOutput.prettyPrint(jsonText)
     prettyText = prettyText.replace('  ', ' ')
     prettyText = prettyText.replaceAll(/\{\s+}/, '{}')
     prettyText = prettyText + '\n'
     return prettyText
 }
-
-void updatePackageJson(final jsonObject, final String destinationPath) {
-    def final updatedText = JsonOutput.toJson(jsonObject)
-    def final prettyText = prettify(updatedText)
-    new File(destinationPath).text = prettyText
-}
-
-void updatePackageJsonVersion() {
-    def final packageFile = JS_PACKAGE_FILE_LOCATION
-    def final packageJsonObject = readJsonFile(packageFile)
-
-    packageJsonObject['version'] = JS_PACKAGES_VERSION
-    updatePackageJson(packageJsonObject, packageFile)
-}
-
-updatePackageJsonVersion()

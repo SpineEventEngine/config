@@ -159,12 +159,15 @@ final def test = [
 final def scripts = [
     testArtifacts          : "$rootDir/config/gradle/test-artifacts.gradle",
     testOutput             : "$rootDir/config/gradle/test-output.gradle",
-    javadocOptions          : "$rootDir/config/gradle/javadoc-options.gradle",
+    javadocOptions         : "$rootDir/config/gradle/javadoc-options.gradle",
     filterInternalJavadocs : "$rootDir/config/gradle/filter-internal-javadoc.gradle",
     jacoco                 : "$rootDir/config/gradle/jacoco.gradle",
     publish                : "$rootDir/config/gradle/publish.gradle",
     publishProto           : "$rootDir/config/gradle/publish-proto.gradle",
-    javacArgs              : "$rootDir/config/gradle/javac-args.gradle"
+    javacArgs              : "$rootDir/config/gradle/javac-args.gradle",
+    js                     : "$rootDir/config/gradle/js/js.gradle",
+    npmCli                 : "$rootDir/config/gradle/js/npm-cli.gradle",
+    updatePackageVersion   : "$rootDir/config/gradle/js/update-package-version.gradle"
 ]
 
 ext.deps = [

@@ -1,0 +1,243 @@
+/*
+ * Copyright 2019, TeamDev. All rights reserved.
+ *
+ * Redistribution and use in source and/or binary forms, with or without
+ * modification, must retain the above copyright notice and the following
+ * disclaimer.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * This build script contains a Gradle plugin for JavaScript modules.
+ *
+ * <p>The plugin configures NPM tools execution and connects the JS assembly and test routines
+ * with the Gradle execution process.
+ *
+ * <p>The plugin defines tasks for:
+ * <ul>
+ *     <li>downloading NPM dependencies -                   {@code installDependencies};
+ *     <li>compile Protobuf into JavaScript -               {@code compileProtoToJs};
+ *     <li>publishing NPM artifacts into the NPM registry - {@code publishJs};
+ *     <li>linking the module to the local NPM registry -   {@code link}
+ * </ul>
+ *
+ * <p>Most of the tasks launch a separate process which runs an NPM CLI command, so it's necessary
+ * that the NPM command line tool is installed.
+ *
+ * <p>In order to publish the NPM module, it is required that the {@code NPM_TOKEN} environment
+ * variable is set to a valid NPM auth token. If the token is not set, a dummy value is added to
+ * the NPM execution process, which is sufficient for the local development.
+ */
+
+apply from: deps.scripts.npmCli
+apply from: deps.scripts.updatePackageVersion
+
+//ext {
+//    JAVA_SCRIPT_TASK_GROUP = 'JavaScript'
+//
+//    workDirectory = "$projectDir"
+//    publicationDirectory = "$buildDir/npm-publication/"
+//    srcDir = "$projectDir/main"
+//    testSrcDir = "$projectDir/test"
+//    genProtoBaseDir = projectDir
+//    genProtoSubDir = "proto"
+//    genProtoMain = "$genProtoBaseDir/main/$genProtoSubDir"
+//    genProtoTest = "$genProtoBaseDir/test/$genProtoSubDir"
+//    nodeModulesDir = "$projectDir/node_modules"
+//
+//    npm = { final String... command ->
+//        ext.executeNpm(workDirectory as File, command)
+//    }
+//}
+//
+///**
+// * Compiles Protobuf sources into JavaScript.
+// *
+// * <p>This is a lifecycle task. It performs no action but triggers all the tasks which perform
+// * the compilation.
+// */
+//task compileProtoToJs {
+//    description = "Compiles Protobuf sources into JavaScript."
+//}
+//
+//protobuf {
+//    generatedFilesBaseDir = genProtoBaseDir
+//    protoc {
+//        artifact = deps.build.protoc
+//    }
+//    generateProtoTasks {
+//        all().each { final task ->
+//            task.builtins {
+//                // Do not use java builtin output in this project.
+//                remove java
+//
+//                // For information on JavaScript code generation please see
+//                // https://github.com/google/protobuf/blob/master/js/README.md
+//                js {
+//                    option "import_style=commonjs"
+//                    outputSubDir = genProtoSubDir
+//                }
+//
+//                task.generateDescriptorSet = true
+//                task.descriptorSetOptions.path = "${projectDir}/build/descriptors/${task.sourceSet.name}/known_types.desc"
+//            }
+//            compileProtoToJs.dependsOn task
+//        }
+//    }
+//}
+//
+//apply plugin: 'io.spine.tools.proto-js-plugin'
+//
+///**
+// * Cleans old module dependencies and build outputs.
+// */
+//task deleteCompiled {
+//    group = JAVA_SCRIPT_TASK_GROUP
+//    description = 'Cleans old module dependencies and build outputs.'
+//
+//    doLast {
+//        delete buildJs.outputs
+//        delete installDependencies.outputs
+//        delete genProtoMain
+//        delete genProtoTest
+//    }
+//}
+//
+///**
+// * Installs the module dependencies using the `npm install` command.
+// */
+//task installDependencies {
+//    group = JAVA_SCRIPT_TASK_GROUP
+//    description = 'Installs the JavaScript dependencies.'
+//
+//    inputs.files "$projectDir/package.json"
+//    outputs.files nodeModulesDir
+//
+//    dependsOn compileProtoToJs
+//
+//    doLast {
+//        npm 'install'
+//    }
+//}
+//
+//protoJs {
+//    mainGenProtoDir = genProtoMain
+//    testGenProtoDir = genProtoTest
+//
+//    generateParsersTask().dependsOn compileProtoToJs
+//    installDependencies.dependsOn generateParsersTask()
+//}
+//
+///**
+// * Assembles the bundled version of JS sources.
+// *
+// * This task is an analog of `build` for JS.
+// *
+// * To include a task into the JS build, depend `buildJs` onto that task.
+// */
+//task buildJs {
+//    group = JAVA_SCRIPT_TASK_GROUP
+//    description = "Assembles the JavaScript source files."
+//
+//    outputs.files "$projectDir/dist"
+//
+//    doLast {
+//        npm 'run', 'build'
+//        npm 'run', 'build-dev'
+//    }
+//
+//    dependsOn installDependencies
+//}
+//
+///**
+// * Copies bundled JS sources to the temporary NPM publication directory.
+// */
+//task copyBundeledJs(type: Copy) {
+//    group = JAVA_SCRIPT_TASK_GROUP
+//    description = 'Copies assembled JavaScript sources to the NPM publication directory.'
+//
+//    from buildJs.outputs
+//    into "$publicationDirectory/dist"
+//
+//    dependsOn buildJs
+//}
+//
+///**
+// * Transpiles JS sources before publishing them to NPM.
+// *
+// * Puts the resulting files to the temporary NPM publication directory.
+// */
+//task transpileSources {
+//    group = JAVA_SCRIPT_TASK_GROUP
+//    description = "Transpiles sources before publishing."
+//
+//    doLast {
+//        npm 'run', 'transpile-before-publish'
+//    }
+//}
+//
+///**
+// * Copies all remaining files into a temporary NPM publication directory.
+// *
+// * This task finalizes assembling of files in the temporary NPM publication
+// * directory which they are published from.
+// */
+//task prepareJsPublication(type: Copy) {
+//    group = JAVA_SCRIPT_TASK_GROUP
+//    description = 'Prepares the NPM package for publish.'
+//
+//    from (projectDir) {
+//        include 'index.js'
+//        include 'package.json'
+//        include '.npmrc'
+//    }
+//
+//    into publicationDirectory
+//
+//    dependsOn buildJs
+//    dependsOn copyBundeledJs
+//    dependsOn transpileSources
+//}
+//
+///**
+// * Publishes the NPM package locally with `npm link`.
+// */
+//task link {
+//    group = JAVA_SCRIPT_TASK_GROUP
+//    description = "Publishes the NPM package locally."
+//
+//    doLast {
+//        executeNpm(publicationDirectory as File, 'link')
+//    }
+//
+//    dependsOn prepareJsPublication
+//}
+//
+///**
+// * Publishes the NPM package with `npm publish`.
+// */
+//task publishJs {
+//    group = JAVA_SCRIPT_TASK_GROUP
+//    description = 'Publishes the NPM package.'
+//
+//    doLast {
+//        executeNpm(publicationDirectory as File, 'publish')
+//    }
+//
+//    dependsOn prepareJsPublication
+//}
+//
+//build.dependsOn buildJs
+//clean.dependsOn deleteCompiled
+//publish.dependsOn publishJs
