@@ -19,12 +19,12 @@
  */
 
 /**
- * This build script contains a Gradle plugin for JavaScript modules.
+ * This script declares common Gradle tasks required for JavaScript modules.
  *
- * <p>The plugin configures NPM tools execution and connects the JS assembly and test routines
- * with the Gradle execution process.
+ * <p>Most of the tasks launch a separate process which runs an NPM CLI command, so it's necessary
+ * that the NPM command line tool is installed.
  *
- * <p>The plugin defines tasks for:
+ * <p>The most important tasks:
  * <ul>
  *     <li>downloading NPM dependencies -                   {@code installDependencies};
  *     <li>compile Protobuf into JavaScript -               {@code compileProtoToJs};
@@ -32,8 +32,11 @@
  *     <li>linking the module to the local NPM registry -   {@code link}
  * </ul>
  *
- * <p>Most of the tasks launch a separate process which runs an NPM CLI command, so it's necessary
- * that the NPM command line tool is installed.
+ * <p>It is expected that declared tasks will be additionally configured according to the
+ * needs of a project. E.g. {@code prepareJsPublication} does nothing by default, so it
+ * should be additionally configured.
+ *
+ * <p>This script doesn't configure Protobuf plugin and Spine's Protobuf JS plugin.
  *
  * <p>In order to publish the NPM module, it is required that the {@code NPM_TOKEN} environment
  * variable is set to a valid NPM auth token. If the token is not set, a dummy value is added to
@@ -155,4 +158,8 @@ task publishJs {
 
     dependsOn prepareJsPublication
     publish.dependsOn publishJs
+}
+
+idea.module {
+    excludeDirs += file(nodeModulesDir)
 }
