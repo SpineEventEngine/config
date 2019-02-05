@@ -26,7 +26,11 @@
  * the NPM execution process, which is sufficient for the local development.
  */
 
-final String publicationDirectory = "$buildDir/npm-publication/"
+apply from: deps.scripts.jsBuildTasks
+
+ext {
+    publicationDirectory = "$buildDir/npm-publication/"
+}
 
 /**
  * Copies the NPM publication files into a temporary directory which they are published from.
