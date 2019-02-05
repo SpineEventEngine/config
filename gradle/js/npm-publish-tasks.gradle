@@ -1,0 +1,72 @@
+/*
+ * Copyright 2019, TeamDev. All rights reserved.
+ *
+ * Redistribution and use in source and/or binary forms, with or without
+ * modification, must retain the above copyright notice and the following
+ * disclaimer.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * The script declares tasks for publishing to NPM.
+ *
+ * <p>In order to publish the NPM module, it is required that the {@code NPM_TOKEN} environment
+ * variable is set to a valid NPM auth token. If the token is not set, a dummy value is added to
+ * the NPM execution process, which is sufficient for the local development.
+ */
+
+final String publicationDirectory = "$buildDir/npm-publication/"
+
+/**
+ * Copies the NPM publication files into a temporary directory which they are published from.
+ *
+ * <p>Files to copy should be specified by a user of the task.
+ */
+task prepareJsPublication(type: Copy) {
+    group = JAVA_SCRIPT_TASK_GROUP
+    description = 'Prepares the NPM package for publish.'
+
+    into publicationDirectory
+
+    dependsOn buildJs
+}
+
+/**
+ * Publishes the NPM package locally with `npm link`.
+ */
+task link {
+    group = JAVA_SCRIPT_TASK_GROUP
+    description = "Publishes the NPM package locally."
+
+    doLast {
+        executeNpm(publicationDirectory as File, 'link')
+    }
+
+    dependsOn prepareJsPublication
+}
+
+/**
+ * Publishes the NPM package with `npm publish`.
+ */
+task publishJs {
+    group = JAVA_SCRIPT_TASK_GROUP
+    description = 'Publishes the NPM package.'
+
+    doLast {
+        executeNpm(publicationDirectory as File, 'publish')
+    }
+
+    dependsOn prepareJsPublication
+    publish.dependsOn publishJs
+}

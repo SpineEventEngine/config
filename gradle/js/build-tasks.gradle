@@ -24,23 +24,7 @@
  * <p>Most of the tasks launch a separate process which runs an NPM CLI command, so it's necessary
  * that the NPM command line tool is installed.
  *
- * <p>The most important tasks:
- * <ul>
- *     <li>downloading NPM dependencies -                   {@code installDependencies};
- *     <li>compile Protobuf into JavaScript -               {@code compileProtoToJs};
- *     <li>publishing NPM artifacts into the NPM registry - {@code publishJs};
- *     <li>linking the module to the local NPM registry -   {@code link}
- * </ul>
- *
- * <p>It is expected that declared tasks will be additionally configured according to the
- * needs of a project. E.g. {@code prepareJsPublication} does nothing by default, so it
- * should be additionally configured.
- *
  * <p>This script doesn't configure Protobuf plugin and Spine's Protobuf JS plugin.
- *
- * <p>In order to publish the NPM module, it is required that the {@code NPM_TOKEN} environment
- * variable is set to a valid NPM auth token. If the token is not set, a dummy value is added to
- * the NPM execution process, which is sufficient for the local development.
  */
 
 ext {
@@ -49,7 +33,6 @@ ext {
     workDirectory = "$projectDir"
     nodeModulesDir = "$projectDir/node_modules"
     packageJsonFile = "$projectDir/package.json"
-    publicationDirectory = "$buildDir/npm-publication/"
 
     npm = { final String... command ->
         ext.executeNpm(workDirectory as File, command)
@@ -116,49 +99,6 @@ task buildJs {
     dependsOn installDependencies
     dependsOn compileProtoToJs
     assemble.dependsOn buildJs
-}
-
-/**
- * Copies the NPM publication files into a temporary directory which they are published from.
- *
- * <p>Files to copy should be specified by a user of the task.
- */
-task prepareJsPublication(type: Copy) {
-    group = JAVA_SCRIPT_TASK_GROUP
-    description = 'Prepares the NPM package for publish.'
-
-    into publicationDirectory
-
-    dependsOn buildJs
-}
-
-/**
- * Publishes the NPM package locally with `npm link`.
- */
-task link {
-    group = JAVA_SCRIPT_TASK_GROUP
-    description = "Publishes the NPM package locally."
-
-    doLast {
-        executeNpm(publicationDirectory as File, 'link')
-    }
-
-    dependsOn prepareJsPublication
-}
-
-/**
- * Publishes the NPM package with `npm publish`.
- */
-task publishJs {
-    group = JAVA_SCRIPT_TASK_GROUP
-    description = 'Publishes the NPM package.'
-
-    doLast {
-        executeNpm(publicationDirectory as File, 'publish')
-    }
-
-    dependsOn prepareJsPublication
-    publish.dependsOn publishJs
 }
 
 idea.module {
