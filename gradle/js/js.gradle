@@ -75,7 +75,7 @@ task installDependencies {
     description = 'Installs the JavaScript dependencies.'
 
     inputs.file packageJsonFile
-    outputs.files(fileTree(nodeModulesDir))
+    outputs.dir nodeModulesDir
 
     doLast {
         npm 'install'
@@ -116,7 +116,7 @@ task buildJs {
 
 /**
  * Copies the NPM publication files into a temporary directory which they are published from.
- * 
+ *
  * <p>Files to copy should be specified by a user of the task.
  */
 task prepareJsPublication(type: Copy) {
