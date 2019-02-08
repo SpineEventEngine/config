@@ -33,15 +33,19 @@ ext {
 }
 
 /**
- * Copies the NPM publication files into a temporary directory which they are published from.
+ * A task to prepare files for publication.
  *
- * <p>Files to copy should be specified by a user of the task.
+ * <p>Does nothing by default, so a user should configure this task
+ * to copy all required files to the {@code publicationDirectory}.
+ * 
+ * <p>The task is performed before {@code link} and {@code publishJs} tasks.
+ * 
+ * <p>The task isn't a {@code copy} task since it causes side effects
+ * like a removal of the publication directory. See https://github.com/gradle/gradle/issues/1012.
  */
-task prepareJsPublication(type: Copy) {
+task prepareJsPublication {
     group = JAVA_SCRIPT_TASK_GROUP
     description = 'Prepares the NPM package for publish.'
-
-    into publicationDirectory
 
     dependsOn buildJs
 }
