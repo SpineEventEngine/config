@@ -68,6 +68,9 @@ task publishJs {
     description = 'Publishes the NPM package.'
 
     doLast {
+        fileTree(publicationDirectory).visit { FileVisitDetails details ->
+            println details.file.path
+        }
         executeNpm(publicationDirectory as File, 'publish')
     }
 
