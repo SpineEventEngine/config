@@ -18,30 +18,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 /*
- * This script configures Gradle PMD plugin.
- *
- * Currently a warning on "use incremental analysis" is always emitted. But there is no way
- * to enable it due to a Gradle issue.
- *
- * See https://github.com/gradle/gradle/issues/8277.
+ * This script configures Gradle Checkstyle plugin.
  */
-pmd {
-    toolVersion = "${deps.versions.pmd}"
-    consoleOutput= true
 
-    // The build is going to fail in case of violations.
-    ignoreFailures = false
+checkstyle {
+    toolVersion = "${deps.versions.checkstyle}"
+    configFile = file("$rootDir/config/quality/checkstyle.xml")
 
-    // Disable the default rule set to use the custom rules (see below).
-    ruleSets = []
-
-    // A set of custom rules.
-    ruleSetFiles = files("$rootDir/config/quality/pmd.xml")
-
-    reportsDir = file("build/reports/pmd")
-
-    // Just analyze the main sources; do not analyze tests.
-    sourceSets = [sourceSets.main]
+    // Disable checking the test sources.
+    checkstyleTest.enabled = false
 }
