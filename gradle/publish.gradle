@@ -33,15 +33,18 @@ if (credentialsFile.exists()) {
     properties.load(credentialsFile.newDataInputStream())
     repositoryUserName = properties.getProperty("user.name")
     repositoryUserPassword = properties.getProperty("user.password")
-} else {
-    logger.error("Credentials file $credentialsFile does not exist.")
 }
 
 task checkPublishingCredentials {
     doLast {
         if (repositoryUserName == null || repositoryUserPassword == null) {
-            throw new InvalidUserDataException("Please set up valid credentials. " +
-                    "Credentials must be set in '${credentialsPropertyFile}' file in the project\'s root.")
+            logger.error("Credentials file `$credentialsFile` does not exist.")
+
+            throw new InvalidUserDataException(
+                    "Please set up valid credentials." +
+                            " Credentials must be set in `${credentialsPropertyFile}` file in" +
+                            " the project root."
+            )
         }
         println "Publishing build as ${repositoryUserName}"
     }
