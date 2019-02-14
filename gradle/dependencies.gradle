@@ -43,10 +43,8 @@ ext.publishingRepos = [
     ]
 ]
 
-// Repository to into with to publish artifacts.
-ext {
-    publishToRepository = publishingRepos.cloudRepo
-}
+// Repository to publish artifacts into.
+ext.publishToRepository = publishingRepos.cloudRepo
 
 // Specific repositories.
 ext.repos = [
