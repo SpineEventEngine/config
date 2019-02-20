@@ -81,13 +81,13 @@ final def versions = [
     protobuf         : "3.6.1",
     grpc             : "1.18.0",
     junit4           : "4.12",
-    junit5           : "5.3.1",
-    junitPioneer     : "0.2.0",
+    junit5           : "5.4.0",
+    junitPioneer     : "0.3.0",
     truth            : "0.42",
-    httpClient       : "1.27.0",
-    apacheValidator  : "1.4.0",
+    httpClient       : "1.28.0",
+    apacheValidator  : "1.6.0",
     firebaseAdmin    : "6.7.0",
-    roaster          : '2.20.1.Final'
+    roaster          : '2.20.8.Final'
 ]
 
 //noinspection GroovyAssignabilityCheck
