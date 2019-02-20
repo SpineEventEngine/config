@@ -67,7 +67,7 @@ ext.repos = [
 //noinspection GroovyAssignabilityCheck
 final def versions = [
     slf4j            : "1.7.25",
-    checkerFramework : "2.5.2",
+    checkerFramework : "2.6.0",
     errorProne       : "2.3.2",
     errorProneJavac  : "9+181-r4173-1", // taken from here: https://github.com/tbroyer/gradle-errorprone-plugin/blob/v0.6/build.gradle.kts    
     errorPronePlugin : "0.6",
