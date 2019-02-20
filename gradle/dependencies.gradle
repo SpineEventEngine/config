@@ -86,7 +86,7 @@ final def versions = [
     truth            : "0.42",
     httpClient       : "1.27.0",
     apacheValidator  : "1.4.0",
-    firebaseAdmin    : "6.6.0",
+    firebaseAdmin    : "6.7.0",
     roaster          : '2.20.1.Final'
 ]
 
