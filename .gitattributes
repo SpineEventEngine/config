@@ -40,7 +40,7 @@ LICENSE text
 *.bat text eol=crlf
 
 # Declare files that will always have LF line endings on checkout.
-#.sh text eol=lf
+*.sh text eol=lf
 gradlew text eol=lf
 pull text eol=lf
 
