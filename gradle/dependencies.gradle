@@ -228,6 +228,7 @@ ext.defaultRepositories = { final repositoryContainer ->
             content {
                 includeGroup 'io.spine'
                 includeGroup 'io.spine.tools'
+                includeGroup 'io.spine.gcloud'
             }
             mavenContent {
                 releasesOnly()
@@ -238,6 +239,7 @@ ext.defaultRepositories = { final repositoryContainer ->
             content {
                 includeGroup 'io.spine'
                 includeGroup 'io.spine.tools'
+                includeGroup 'io.spine.gcloud'
             }
             mavenContent {
                 snapshotsOnly()
