@@ -170,7 +170,8 @@ final def scripts = [
     npmCli                 : "$rootDir/config/gradle/js/npm-cli.gradle",
     updatePackageVersion   : "$rootDir/config/gradle/js/update-package-version.gradle",
     pmd                    : "$rootDir/config/gradle/pmd.gradle",
-    checkstyle             : "$rootDir/config/gradle/checkstyle.gradle"
+    checkstyle             : "$rootDir/config/gradle/checkstyle.gradle",
+    runBuild               : "$rootDir/config/gradle/run-build.gradle"
 ]
 
 ext.deps = [
