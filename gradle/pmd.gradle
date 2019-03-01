@@ -45,3 +45,6 @@ pmd {
     // Just analyze the main sources; do not analyze tests.
     sourceSets = [sourceSets.main]
 }
+
+// Workaround for https://github.com/pmd/pmd/issues/1705.
+pmdMain.classpath += sourceSets.main.runtimeClasspath
