@@ -104,7 +104,7 @@ task buildJs {
 /**
  * Tests the JS sources.
  *
- * This task is an analog of `test` for JS.
+ * This task is automatically executed after `test` task if it is scheduled to run.
  */
 task testJs {
     group = JAVA_SCRIPT_TASK_GROUP
@@ -112,7 +112,7 @@ task testJs {
 
     dependsOn installDependencies
     dependsOn compileProtoToJs
-    test.dependsOn testJs
+    test.finalizedBy testJs
 }
 
 idea.module {
