@@ -101,6 +101,20 @@ task buildJs {
     assemble.dependsOn buildJs
 }
 
+/**
+ * Tests the JS sources.
+ *
+ * This task is an analog of `test` for JS.
+ */
+task testJs {
+    group = JAVA_SCRIPT_TASK_GROUP
+    description = "Tests the JavaScript source files."
+
+    dependsOn installDependencies
+    dependsOn compileProtoToJs
+    test.dependsOn testJs
+}
+
 idea.module {
     excludeDirs += file(nodeModulesDir)
 }
