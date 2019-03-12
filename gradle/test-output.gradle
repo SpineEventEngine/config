@@ -27,15 +27,15 @@
  *    of tests and their results.
  */
 
-test {
-    testLogging {
+tasks.withType(Test).each {
+    it.testLogging {
         showStandardStreams = true
         showExceptions = true
         showStackTraces = true
         showCauses = true
     }
 
-    afterSuite { final testDescriptor, final result ->
+    it.afterSuite { final testDescriptor, final result ->
         // If the descriptor has no parent, then it is the root test suite, i.e. it includes the
         // info about all the run tests.
         if (!testDescriptor.parent) {
