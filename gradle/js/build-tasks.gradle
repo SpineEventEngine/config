@@ -101,6 +101,23 @@ task buildJs {
     assemble.dependsOn buildJs
 }
 
+/**
+ * Tests the JS sources.
+ *
+ * If `check` task is scheduled to run, this task is automatically added to
+ * the task graph and will be executed after `test` task completion.
+ */
+task testJs {
+    group = JAVA_SCRIPT_TASK_GROUP
+    description = "Tests the JavaScript source files."
+
+    dependsOn installDependencies
+    dependsOn compileProtoToJs
+    check.dependsOn testJs
+
+    testJs.mustRunAfter test
+}
+
 idea.module {
     excludeDirs += file(nodeModulesDir)
 }
