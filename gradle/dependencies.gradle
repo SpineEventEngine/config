@@ -208,7 +208,10 @@ ext.forceConfiguration = { final configurationContainer ->
                     
                     // Transitive dependencies of 3rd party components that we don't use directly.
                     "org.codehaus.plexus:plexus-utils:3.0.17",
-                    "com.squareup.okio:okio:1.13.0"
+                    "com.squareup.okio:okio:1.13.0",
+
+                    // Force discontinued transitive dependency until everybody migrates off it.
+                    "org.checkerframework:checker-compat-qual:2.5.3"
             )
         }
     }
