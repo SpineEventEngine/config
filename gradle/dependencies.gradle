@@ -212,7 +212,10 @@ ext.forceConfiguration = { final configurationContainer ->
                     "com.squareup.okio:okio:1.13.0",
 
                     // Force discontinued transitive dependency until everybody migrates off it.
-                    "org.checkerframework:checker-compat-qual:2.5.3"
+                    "org.checkerframework:checker-compat-qual:2.5.3",
+
+                    // Force the Gradle Protobuf plugin version.
+                    deps.build.gradlePlugins.protobuf
             )
         }
     }
