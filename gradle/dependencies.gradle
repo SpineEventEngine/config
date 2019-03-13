@@ -85,7 +85,7 @@ final def versions = [
     junitPioneer     : "0.3.0",
     truth            : "0.42",
     httpClient       : "1.28.0",
-    apacheValidator  : "1.6.0",
+    apacheValidator  : "1.6",
     firebaseAdmin    : "6.7.0",
     roaster          : '2.20.8.Final'
 ]
