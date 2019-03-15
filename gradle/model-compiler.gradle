@@ -25,10 +25,10 @@
  * — all messages in Protobuf files ending with "commands.proto" are marked as `CommandMessage`;
  * — all messages in Protobuf files ending with "events.proto" are marked as `EventMessage`;
  * — all messages in Protobuf files ending with "rejections.proto" are marked as `RejectionMessage`;
- * — all messages that qualify to be UUID values are marked as `UuidValue`.
+ * — all messages that qualify to be UUID messages are marked as `UuidValue`.
  *
  * And the following method generations are applied:
- * — all messages that qualify to be UUID values have helper `generate` and `of` methods
+ * — all messages that qualify to be UUID messages have helper `generate` and `of` methods
  *   generated using `UuidMethodFactory`;
  * — all messages that have validating builders have helper `vBuilder` and instance `toVBuilder`
  *   methods generated using `VBuilderMethodFactory`.
