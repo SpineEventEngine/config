@@ -77,7 +77,7 @@ task installNodePackages {
 /**
  * Audits the module dependencies using the `npm audit` command.
  *
- * Sets minimum level of vulnerability for npm audit to exit with a non-zero exit code
+ * Sets the minimum level of vulnerability for `npm audit` to exit with a non-zero exit code
  * to "high".
  */
 task auditNodePackages {
