@@ -69,6 +69,8 @@ task installNodePackages {
     outputs.dir nodeModulesDir
 
     doLast {
+        // To turn off npm audit when installing all packages. Use `auditNodePackages` task
+        // to check installed Node packages for vulnerabilities.
         npm 'set', 'audit', 'false'
         npm 'install'
     }
