@@ -55,17 +55,56 @@ task compileProtoToJs {
 
 /**
  * Installs the module dependencies using the `npm install` command.
+ *
+ * The `npm install` command is executed with the vulnerability check disabled since
+ * it cannot fail the task execution despite on vulnerabilities found.
+ *
+ * To check installed Node packages for vulnerabilities execute `auditNodePackages` task.
  */
-task installDependencies {
+task installNodePackages {
     group = JAVA_SCRIPT_TASK_GROUP
-    description = 'Installs the JavaScript dependencies.'
+    description = 'Installs the module`s Node dependencies.'
 
     inputs.file packageJsonFile
     outputs.dir nodeModulesDir
 
     doLast {
+        // To turn off npm audit when installing all packages. Use `auditNodePackages` task
+        // to check installed Node packages for vulnerabilities.
+        npm 'set', 'audit', 'false'
         npm 'install'
     }
+}
+
+/**
+ * Audits the module dependencies using the `npm audit` command.
+ *
+ * Sets the minimum level of vulnerability for `npm audit` to exit with a non-zero exit code
+ * to "high".
+ */
+task auditNodePackages {
+    group = JAVA_SCRIPT_TASK_GROUP
+    description = 'Audits the module`s Node dependencies.'
+
+    inputs.dir nodeModulesDir
+
+    doLast {
+        npm 'set', 'audit-level', 'high'
+        npm 'audit'
+    }
+}
+
+/**
+ * Installs the module dependencies and checks them for vulnerabilities.
+ */
+task installDependencies {
+    group = JAVA_SCRIPT_TASK_GROUP
+    description = 'Installs the JavaScript dependencies.'
+
+    dependsOn installNodePackages
+    dependsOn auditNodePackages
+
+    auditNodePackages.mustRunAfter installNodePackages
 }
 
 /**
@@ -80,7 +119,7 @@ task cleanJs {
     doLast {
         delete buildJs.outputs
         delete compileProtoToJs.outputs
-        delete installDependencies.outputs
+        delete installNodePackages.outputs
     }
 }
 
