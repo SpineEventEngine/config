@@ -94,8 +94,13 @@ task auditNodePackages {
     }
 }
 
+// TODO:2019-03-25:yegor.udovchenko: Remove mentioning an explicit npm upgrade in `.travis.yml`
+// (when Travis has a good version by default).
+// See https://github.com/SpineEventEngine/config/issues/53
 /**
  * Installs the module dependencies and checks them for vulnerabilities.
+ *
+ * Note when using this task in your project, the `npm` version should be `6.1.0` or higher.
  */
 task installDependencies {
     group = JAVA_SCRIPT_TASK_GROUP
