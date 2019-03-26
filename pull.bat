@@ -46,7 +46,6 @@ echo "Updating IDEA configuration"
 xcopy /S/E/I/F/Y .idea ..\.idea
 
 echo "Updating CI config files"
-xcopy /F/Y .codacy.yaml ..\
 xcopy /F/Y .codecov.yml ..\
 xcopy /F/Y .gitattributes ..\
 

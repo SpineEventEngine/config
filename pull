@@ -48,7 +48,6 @@ echo "Updating IDEA configuration"
 cp -R .idea ..
 
 echo "Updating CI config files"
-cp .codacy.yaml ..
 cp .codecov.yml ..
 cp .gitattributes ..
 
