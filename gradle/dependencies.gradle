@@ -67,27 +67,27 @@ ext.repos = [
 //noinspection GroovyAssignabilityCheck
 final def versions = [
     slf4j            : "1.7.25",
-    checkerFramework : "2.5.2",
+    checkerFramework : "2.6.0",
     errorProne       : "2.3.2",
     errorProneJavac  : "9+181-r4173-1", // taken from here: https://github.com/tbroyer/gradle-errorprone-plugin/blob/v0.6/build.gradle.kts    
     errorPronePlugin : "0.6",
     pmd              : "6.11.0",
     checkstyle       : "8.17",
-    protobufPlugin   : "0.8.5",
+    protobufPlugin   : "0.8.8",
     appengineApi     : "1.9.70",
     appenginePlugin  : "1.3.5",
     findBugs         : "3.0.2",
-    guava            : "27.0.1-jre",
+    guava            : "27.1-jre",
     protobuf         : "3.6.1",
-    grpc             : "1.15.0",
+    grpc             : "1.18.0",
     junit4           : "4.12",
-    junit5           : "5.3.1",
-    junitPioneer     : "0.2.0",
+    junit5           : "5.4.0",
+    junitPioneer     : "0.3.0",
     truth            : "0.42",
-    httpClient       : "1.27.0",
-    apacheValidator  : "1.4.0",
-    firebaseAdmin    : "6.6.0",
-    roaster          : '2.20.1.Final'
+    httpClient       : "1.28.0",
+    apacheValidator  : "1.6",
+    firebaseAdmin    : "6.7.0",
+    roaster          : '2.20.8.Final'
 ]
 
 //noinspection GroovyAssignabilityCheck
@@ -111,6 +111,7 @@ final def build = [
                               "com.google.protobuf:protobuf-java-util:$versions.protobuf"],
     protoc                 : "com.google.protobuf:protoc:$versions.protobuf",
     googleHttpClient       : "com.google.http-client:google-http-client:$versions.httpClient",
+    googleHttpClientApache : "com.google.http-client:google-http-client-apache:$versions.httpClient",
     appengineApi           : "com.google.appengine:appengine-api-1.0-sdk:$versions.appengineApi",
     apacheValidator        : "commons-validator:commons-validator:$versions.apacheValidator",
 
@@ -208,7 +209,13 @@ ext.forceConfiguration = { final configurationContainer ->
                     
                     // Transitive dependencies of 3rd party components that we don't use directly.
                     "org.codehaus.plexus:plexus-utils:3.0.17",
-                    "com.squareup.okio:okio:1.13.0"
+                    "com.squareup.okio:okio:1.13.0",
+
+                    // Force discontinued transitive dependency until everybody migrates off it.
+                    "org.checkerframework:checker-compat-qual:2.5.3",
+
+                    // Force the Gradle Protobuf plugin version.
+                    deps.build.gradlePlugins.protobuf
             )
         }
     }
