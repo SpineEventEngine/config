@@ -52,7 +52,10 @@
             <property name="severity" value="warning"/>
         </module>
     </module>
-    <module name="JavadocPackage"/>
+    <module name="JavadocPackage">
+        <!-- apiNote, implSpec, and implNote are not available in Checkstyle by default. -->
+        <property name="allowUnknownTags" value="true"/>
+    </module>
     <module name="NewlineAtEndOfFile"/>
     <module name="UniqueProperties"/>
 </module>
