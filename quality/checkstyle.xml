@@ -37,7 +37,10 @@
         <module name="EqualsAvoidNull"/>
         <module name="HideUtilityClassConstructor"/>
         <module name="InnerAssignment"/>
-        <module name="JavadocType"/>
+        <module name="JavadocType">
+            <!-- apiNote, implSpec, and implNote are not available in Checkstyle by default. -->
+            <property name="allowUnknownTags" value="true"/>
+        </module>
         <module name="MissingDeprecated"/>
         <module name="MissingOverride"/>
         <module name="MultipleStringLiterals"/>
