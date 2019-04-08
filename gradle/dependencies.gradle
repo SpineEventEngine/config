@@ -172,7 +172,8 @@ final def scripts = [
     updatePackageVersion   : "$rootDir/config/gradle/js/update-package-version.gradle",
     pmd                    : "$rootDir/config/gradle/pmd.gradle",
     checkstyle             : "$rootDir/config/gradle/checkstyle.gradle",
-    runBuild               : "$rootDir/config/gradle/run-build.gradle"
+    runBuild               : "$rootDir/config/gradle/run-build.gradle",
+    modelCompiler          : "$rootDir/config/gradle/model-compiler.gradle"
 ]
 
 ext.deps = [
