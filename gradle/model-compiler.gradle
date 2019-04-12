@@ -47,7 +47,7 @@ modelCompiler {
     }
 
     methods {
-        applyFactory "io.spine.tools.protoc.method.uuid.UuidMethodFactory", messages().uuid()
-        applyFactory "io.spine.tools.protoc.method.vbuilder.VBuilderMethodFactory", messages().all()
+        applyFactory "io.spine.code.generate.java.UuidMethodFactory", messages().uuid()
+        applyFactory "io.spine.code.generate.java.VBuilderMethodFactory", messages().all()
     }
 }
