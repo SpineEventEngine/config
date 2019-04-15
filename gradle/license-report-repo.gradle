@@ -19,22 +19,31 @@
  */
 
 /**
- * This script concatenates the per-project license reports and puts the resulting file into
- * a repository root folder.
+ * This script launches the per-project license report generation, concatenates the results
+ * and puts the resulting file into a repository root folder.
  *
- * Use `updateAggregatedDependencyReport` task.
- *
- * NOTE: this script assumes the per-project reports are already in place.
+ * The script also configures the `build` task to be finalized by the license report routines.
  *
  * See `license-report-project.gradle` for a per-project license report generation.
  */
 
 apply from: deps.scripts.licenseReportCommon
 
-task updateAggregatedDependencyReport {
-    final paths = subprojects.collect {
-        "${it.buildDir}${licenseReportConfig.relativePath}/${licenseReportConfig.outputFilename}"
+task reportLicensesInRepo {
+    subprojects.each {
+        subprojects.each { dependsOn("${it.name}:generateLicenseReport") }
     }
 
-    (new File("$rootDir/$licenseReportConfig.outputFilename")).text = files(paths).collect{it.getText()}.join("\n\n\n")
+    doLast {
+        final paths = subprojects.collect {
+            "${it.buildDir}${licenseReportConfig.relativePath}/${licenseReportConfig.outputFilename}"
+        }
+
+        println "Aggregating the reports from the subprojects."
+        final aggregatedContent = paths.collect { (new File(it)).getText() }.join("\n\n\n")
+
+        (new File("$rootDir/$licenseReportConfig.outputFilename")).text = aggregatedContent
+    }
 }
+
+build.finalizedBy reportLicensesInRepo
