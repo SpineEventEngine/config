@@ -45,7 +45,7 @@ apply from: deps.scripts.licenseReportCommon
 final reportOutputDir = "${project.buildDir}" + licenseReportConfig.relativePath
 licenseReport {
     outputDir = "$reportOutputDir"
-    excludeGroups = ['io.spine', 'io.spine.tools']
+    excludeGroups = ['io.spine', 'io.spine.tools', 'io.spine.gcloud']
     configurations = ALL
     renderers = [new MarkdownReportRenderer(licenseReportConfig.outputFilename)]
 }
