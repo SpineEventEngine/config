@@ -43,8 +43,6 @@ import com.google.common.collect.Lists
  *     apply from: "$rootDir/config/gradle/publish-proto.gradle"
  *     }
  * </pre>
- * 
- * @author Dmytro Dashenkov
  */
 
 buildscript {
