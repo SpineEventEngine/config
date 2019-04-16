@@ -87,7 +87,8 @@ final def versions = [
     httpClient       : "1.28.0",
     apacheValidator  : "1.6",
     firebaseAdmin    : "6.7.0",
-    roaster          : '2.20.8.Final'
+    roaster          : '2.20.8.Final',
+    licensePlugin    : '1.6'
 ]
 
 //noinspection GroovyAssignabilityCheck
@@ -120,9 +121,10 @@ final def build = [
     ci: "true" == System.getenv("CI"),
 
     gradlePlugins: [
-        errorProne: "net.ltgt.gradle:gradle-errorprone-plugin:$versions.errorPronePlugin",
-        protobuf: "com.google.protobuf:protobuf-gradle-plugin:$versions.protobufPlugin",
-        appengine: "com.google.cloud.tools:appengine-gradle-plugin:$versions.appenginePlugin"
+        errorProne      : "net.ltgt.gradle:gradle-errorprone-plugin:$versions.errorPronePlugin",
+        protobuf        : "com.google.protobuf:protobuf-gradle-plugin:$versions.protobufPlugin",
+        appengine       : "com.google.cloud.tools:appengine-gradle-plugin:$versions.appenginePlugin",
+        licenseReport   : "com.github.jk1:gradle-license-report:$versions.licensePlugin"
     ]
 ]
 
@@ -173,7 +175,10 @@ final def scripts = [
     pmd                    : "$rootDir/config/gradle/pmd.gradle",
     checkstyle             : "$rootDir/config/gradle/checkstyle.gradle",
     runBuild               : "$rootDir/config/gradle/run-build.gradle",
-    modelCompiler          : "$rootDir/config/gradle/model-compiler.gradle"
+    modelCompiler          : "$rootDir/config/gradle/model-compiler.gradle",
+    licenseReportCommon    : "$rootDir/config/gradle/license-report-common.gradle",
+    projectLicenseReport   : "$rootDir/config/gradle/license-report-project.gradle",
+    repoLicenseReport      : "$rootDir/config/gradle/license-report-repo.gradle"
 ]
 
 ext.deps = [
