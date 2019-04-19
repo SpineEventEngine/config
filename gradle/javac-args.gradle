@@ -44,5 +44,5 @@ tasks.withType(JavaCompile) {
     // For more config details see: 
     //    https://github.com/tbroyer/gradle-errorprone-plugin/tree/v0.6#usage
 
-    options.errorprone.errorproneArgs << "-XepExcludedPaths:.*/generated/.*" << "-Xep:ClassCanBeStatic:OFF"
+    options.errorprone.errorproneArgs.addAll "-XepExcludedPaths:.*/generated/.*", "-Xep:ClassCanBeStatic:OFF"
 }
