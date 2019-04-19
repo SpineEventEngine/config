@@ -67,28 +67,29 @@ ext.repos = [
 //noinspection GroovyAssignabilityCheck
 final def versions = [
     slf4j            : "1.7.26",
-    checkerFramework : "2.7.0",
-    errorProne       : "2.3.2",
-    errorProneJavac  : "9+181-r4173-1", // taken from here: https://github.com/tbroyer/gradle-errorprone-plugin/blob/v0.6/build.gradle.kts    
-    errorPronePlugin : "0.6",
-    pmd              : "6.11.0",
-    checkstyle       : "8.17",
+    checkerFramework : "2.8.0",
+    errorProne       : "2.3.3",
+    errorProneJavac  : "9+181-r4173-1", // taken from here: https://github.com/tbroyer/gradle-errorprone-plugin/blob/v0.8/build.gradle.kts
+    errorPronePlugin : "0.8",
+    pmd              : "6.13.0",
+    checkstyle       : "8.19",
     protobufPlugin   : "0.8.8",
-    appengineApi     : "1.9.70",
+    appengineApi     : "1.9.73",
     appenginePlugin  : "1.3.5",
     findBugs         : "3.0.2",
     guava            : "27.1-jre",
-    protobuf         : "3.6.1",
-    grpc             : "1.18.0",
+    protobuf         : "3.7.1",
+    grpc             : "1.20.0",
     junit4           : "4.12",
-    junit5           : "5.4.0",
+    junit5           : "5.4.2",
     junitPioneer     : "0.3.0",
-    truth            : "0.43",
-    httpClient       : "1.28.0",
+    truth            : "0.44",
+    httpClient       : "1.29.0",
     apacheValidator  : "1.6",
-    firebaseAdmin    : "6.7.0",
+    firebaseAdmin    : "6.8.0",
     roaster          : '2.20.8.Final',
-    licensePlugin    : '1.6'
+    licensePlugin    : '1.6',
+    javaPoet         : '1.11.0'
 ]
 
 //noinspection GroovyAssignabilityCheck
@@ -130,7 +131,7 @@ final def build = [
 
 //noinspection GroovyAssignabilityCheck
 final def gen = [
-    javaPoet : "com.squareup:javapoet:1.9.0"
+    javaPoet : "com.squareup:javapoet:$versions.javaPoet"
 ]
 
 //noinspection GroovyAssignabilityCheck
