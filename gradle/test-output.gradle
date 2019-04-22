@@ -33,6 +33,7 @@ tasks.withType(Test).each {
         showExceptions = true
         showStackTraces = true
         showCauses = true
+        exceptionFormat = 'full'
     }
 
     it.afterSuite { final testDescriptor, final result ->
