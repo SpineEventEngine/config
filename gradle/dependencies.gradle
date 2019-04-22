@@ -89,7 +89,9 @@ final def versions = [
     firebaseAdmin    : "6.8.0",
     roaster          : '2.20.8.Final',
     licensePlugin    : '1.6',
-    javaPoet         : '1.11.0'
+    javaPoet         : '1.11.0',
+    autoService      : '1.0-rc5',
+    autoCommon       : '0.10'
 ]
 
 //noinspection GroovyAssignabilityCheck
@@ -103,6 +105,11 @@ final def build = [
     checkerAnnotations     : "org.checkerframework:checker-qual:$versions.checkerFramework",
     checkerDataflow        : ["org.checkerframework:dataflow:$versions.checkerFramework",
                               "org.checkerframework:javacutil:$versions.checkerFramework"],
+
+    autoService            : [
+            annotations : "com.google.auto.service:auto-service-annotations:$versions.autoService",
+            processor   : "com.google.auto.service:auto-service:$versions.autoService"
+    ],
 
     //TODO:2018-06-13:alexander.yevsyukov: Remove this dependency after Guava migrates from it.
     jsr305Annotations      : "com.google.code.findbugs:jsr305:$versions.findBugs",
