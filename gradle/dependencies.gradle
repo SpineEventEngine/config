@@ -91,7 +91,8 @@ final def versions = [
     licensePlugin    : '1.6',
     javaPoet         : '1.11.0',
     autoService      : '1.0-rc5',
-    autoCommon       : '0.10'
+    autoCommon       : '0.10',
+    jackson          : '2.9.8'
 ]
 
 //noinspection GroovyAssignabilityCheck
@@ -126,6 +127,7 @@ final def build = [
     apacheValidator        : "commons-validator:commons-validator:$versions.apacheValidator",
 
     firebaseAdmin          : "com.google.firebase:firebase-admin:$versions.firebaseAdmin",
+    jacksonDatabind        : "com.fasterxml.jackson.core:jackson-databind:$versions.jackson",
 
     ci: "true" == System.getenv("CI"),
 
