@@ -52,5 +52,5 @@ tasks.withType(JavaCompile) {
                                              '-Xep:ClassCanBeStatic:OFF',
                                              '-Xep:UnusedMethod:OFF',
                                              '-Xep:UnusedVariable:OFF',
-                                             '-Xep:CheckReturnValue')
+                                             '-Xep:CheckReturnValue:OFF')
 }
