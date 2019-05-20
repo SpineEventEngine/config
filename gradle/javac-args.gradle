@@ -49,8 +49,8 @@ tasks.withType(JavaCompile) {
     //    https://github.com/tbroyer/gradle-errorprone-plugin/tree/master#usage
 
     options.errorprone.errorproneArgs.addAll('-XepExcludedPaths:.*/generated/.*',
-            '-Xep:ClassCanBeStatic:OFF',
-            '-Xep:UnusedMethod:OFF',
-            '-Xep:UnusedVariable:OFF')
-
+                                             '-Xep:ClassCanBeStatic:OFF',
+                                             '-Xep:UnusedMethod:OFF',
+                                             '-Xep:UnusedVariable:OFF',
+                                             '-Xep:CheckReturnValue')
 }
