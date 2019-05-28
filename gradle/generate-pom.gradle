@@ -11,7 +11,7 @@ import org.gradle.api.internal.artifacts.dependencies.AbstractExternalModuleDepe
  * Configures the {@code build} task to generate the {@code pom.xml} file.
  *
  * Also configures the {@code clean} task to delete the generated {@code pom.xml} file.
- * 
+ *
  * To generate the script, {@code apply} from this file.
  */
 
@@ -47,6 +47,7 @@ class ProjectPomXml {
             "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
     private static final String MODEL_VERSION = "<modelVersion>4.0.0</modelVersion>"
     private static final String CLOSING_PROJECT_TAG = "</project>"
+    private static final String SPINE_INCEPTION_YEAR = "2015"
 
     private final Project project
     private final String artifactId
@@ -70,10 +71,34 @@ class ProjectPomXml {
     void writeTo(String filePath) {
         FileWriter fileWriter = new FileWriter(filePath, true)
         writeHeader(fileWriter)
+        writeLicenceInfo(fileWriter)
+        writeInceptionYear(fileWriter)
         writeRootProjectData(fileWriter)
         writeProjectDependencies(fileWriter)
         writeClosingProjectTag(fileWriter)
         fileWriter.close()
+    }
+
+
+    /**
+     * Writes the inception year tag using the specified writer.
+     *
+     * <p>Used writer will not be closed.
+     */
+    private static final void writeInceptionYear(FileWriter writer) {
+        MarkupBuilder xmlBuilder = new MarkupBuilder(writer)
+        xmlBuilder.inceptionYear(SPINE_INCEPTION_YEAR)
+    }
+
+    /**
+     * Writes licencing information using the specified writer.
+     *
+     * <p>More on licences <a href="https://maven.apache.org/pom.html#Licenses">here</a>.
+     *
+     * <p>Used writer will not be closed.
+     */
+    private static void writeLicenceInfo(FileWriter fileWriter) {
+        SpineLicenceAsXml.writeUsing(fileWriter)
     }
 
     /** Writes all of the project dependencies in a {@code dependencies} tag using the specified writer.
