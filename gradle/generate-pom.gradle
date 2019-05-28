@@ -130,9 +130,11 @@ class ProjectPomXml {
                         "structure per-subproject." +
                         System.lineSeparator()
         String descriptionComment =
-                String.format("<!-- %s %s %s -->",
+                String.format("%s<!-- %s %s %s -->%s",
+                        System.lineSeparator(),
                         System.lineSeparator(),
                         description,
+                        System.lineSeparator(),
                         System.lineSeparator())
         fileWriter.write(descriptionComment)
     }
