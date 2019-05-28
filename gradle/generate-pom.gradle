@@ -49,13 +49,11 @@ class ProjectPomXml {
     private static final String CLOSING_PROJECT_TAG = "</project>"
 
     private final Project project
-    private final String groupId
     private final String artifactId
     private final String version
 
     ProjectPomXml(Project project) {
         this.project = project
-        this.groupId = project.group
         this.artifactId = project.name
         this.version = project.version
     }
@@ -88,13 +86,12 @@ class ProjectPomXml {
     }
 
     /**
-     * Writes the group ID, artifact name and the version of the current project using the specified writer.
+     * Writes the artifact name and the version of the current project using the specified writer.
      *
      * <p>Used writer will not be closed.
      */
     private void writeRootProjectData(FileWriter fileWriter) {
         MarkupBuilder xmlBuilder = new MarkupBuilder(fileWriter)
-        xmlBuilder.groupId(this.groupId)
         xmlBuilder.artifactId(this.artifactId)
         xmlBuilder.version(this.version)
     }
