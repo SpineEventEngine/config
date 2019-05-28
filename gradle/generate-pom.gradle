@@ -71,6 +71,7 @@ class ProjectPomXml {
     void writeTo(String filePath) {
         FileWriter fileWriter = new FileWriter(filePath, true)
         writeHeader(fileWriter)
+        writeDescribingComment(fileWriter)
         writeLicenceInfo(fileWriter)
         writeInceptionYear(fileWriter)
         writeRootProjectData(fileWriter)
@@ -109,6 +110,33 @@ class ProjectPomXml {
         ProjectDependenciesAsXml projectDeps = ProjectDependenciesAsXml.of(project)
         projectDeps.writeUsing(fileWriter)
     }
+
+
+    /**
+     * Writes a description comment that describes the nature of the generated {@code pom.xml} file
+     * using the specified writer.
+     *
+     * <p>Used writer will not be closed.
+     */
+    private static void writeDescribingComment(FileWriter fileWriter) {
+        String description =
+                System.lineSeparator() +
+                        "This file was generated using the Gradle `generatePom` task. " +
+                        System.lineSeparator() +
+                        "This file is not suitable for `maven` build tasks. It only describes the " +
+                        "first-level dependencies of " +
+                        System.lineSeparator() +
+                        "all modules and does not describe the project " +
+                        "structure per-subproject." +
+                        System.lineSeparator()
+        String descriptionComment =
+                String.format("<!-- %s %s %s -->",
+                        System.lineSeparator(),
+                        description,
+                        System.lineSeparator())
+        fileWriter.write(descriptionComment)
+    }
+
 
     /**
      * Writes the artifact name and the version of the current project using the specified writer.
@@ -241,5 +269,33 @@ class ProjectDependenciesAsXml {
         boolean nameMatches = it.name.equals(dependency.name)
         boolean versionMatches = it.version.equals(dependency.version)
         return groupMatches && nameMatches && versionMatches
+    }
+}
+
+/**
+ * Information about the licences used by Spine in XML form.
+ */
+class SpineLicenceAsXml {
+    private static final String NAME = "Apache License, Version 2.0"
+    private static final String URL = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    private static final String DISTRIBUTION = "repo"
+
+    /** Prevents instantiation. */
+    private SpineLicenceAsXml() {
+    }
+
+    /** Writes information about the Spine licence using the specified writer.
+     *
+     * <p>Used writer will not be closed.
+     */
+    static void writeUsing(FileWriter fileWriter) {
+        MarkupBuilder xmlBuilder = new MarkupBuilder(fileWriter)
+        xmlBuilder.licenses {
+            license {
+                name(NAME)
+                url(URL)
+                distribution(DISTRIBUTION)
+            }
+        }
     }
 }
