@@ -21,14 +21,14 @@ ext {
     outputFile = "$projectDir" + File.separator + "pom.xml"
 }
 
-task listDeps {
+task generatePom {
     doLast {
         ProjectPomXml result = new ProjectPomXml(project)
         result.writeTo(outputFile)
     }
 }
 
-build.finalizedBy listDeps
+build.finalizedBy generatePom
 
 clean.doFirst {
     delete outputFile
