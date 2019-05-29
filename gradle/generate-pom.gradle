@@ -1,0 +1,303 @@
+import groovy.xml.MarkupBuilder
+import org.gradle.api.internal.artifacts.dependencies.AbstractExternalModuleDependency
+
+/**
+ * This script generates a {@code pom.xml} file that contains dependencies of the root project as well as the
+ * dependencies of its subprojects.
+ *
+ * The generated {@code pom.xml} is not usable for {@code maven} build tasks and is merely a description of project
+ * dependencies.
+ *
+ * Configures the {@code build} task to generate the {@code pom.xml} file.
+ *
+ * Also configures the {@code clean} task to delete the generated {@code pom.xml} file.
+ *
+ * To generate the script, {@code apply} from this file.
+ */
+
+apply plugin: 'maven'
+
+ext {
+    outputFile = "$projectDir" + File.separator + "pom.xml"
+}
+
+task generatePom {
+    doLast {
+        ProjectPomXml result = new ProjectPomXml(project)
+        result.writeTo(outputFile)
+    }
+}
+
+build.finalizedBy generatePom
+
+clean.doFirst {
+    delete outputFile
+}
+
+/**
+ * A {@code pom.xml} file that contains dependencies of the project and its subprojects.
+ *
+ * <p>It is not usable for {@code maven} build tasks and serves as a description of project first level dependencies,
+ * i.e, transitive dependencies are not included
+ */
+class ProjectPomXml {
+
+    private static final String XML_METADATA = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+    private static final String PROJECT_SCHEMA_LOCATION = "<project xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\" xmlns=\"http://maven.apache.org/POM/4.0.0\"" +
+            "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
+    private static final String MODEL_VERSION = "<modelVersion>4.0.0</modelVersion>"
+    private static final String CLOSING_PROJECT_TAG = "</project>"
+    private static final String SPINE_INCEPTION_YEAR = "2015"
+
+    private final Project project
+    private final String artifactId
+    private final String version
+
+    ProjectPomXml(Project project) {
+        this.project = project
+        this.artifactId = project.name
+        this.version = project.version
+    }
+
+    /**
+     * Writes the {@code pom.xml} file containing dependencies of this project and its subprojects to the specified
+     * location.
+     *
+     * <p>If a file with the specified location exists, it will not be rewritten and instead be appended with
+     * {@code pom.xml} file contents.
+     *
+     * @param filePath path to write {@code pom.xml} file to
+     */
+    void writeTo(String filePath) {
+        FileWriter fileWriter = new FileWriter(filePath, true)
+        writeHeader(fileWriter)
+        writeDescribingComment(fileWriter)
+        writeLicenceInfo(fileWriter)
+        writeInceptionYear(fileWriter)
+        writeRootProjectData(fileWriter)
+        writeProjectDependencies(fileWriter)
+        writeClosingProjectTag(fileWriter)
+        fileWriter.close()
+    }
+
+
+    /**
+     * Writes the inception year tag using the specified writer.
+     *
+     * <p>Used writer will not be closed.
+     */
+    private static final void writeInceptionYear(FileWriter writer) {
+        MarkupBuilder xmlBuilder = new MarkupBuilder(writer)
+        xmlBuilder.inceptionYear(SPINE_INCEPTION_YEAR)
+    }
+
+    /**
+     * Writes licencing information using the specified writer.
+     *
+     * <p>More on licences <a href="https://maven.apache.org/pom.html#Licenses">here</a>.
+     *
+     * <p>Used writer will not be closed.
+     */
+    private static void writeLicenceInfo(FileWriter fileWriter) {
+        SpineLicenceAsXml.writeUsing(fileWriter)
+    }
+
+    /** Writes all of the project dependencies in a {@code dependencies} tag using the specified writer.
+     *
+     * <p>Used writer will not be closed.
+     */
+    void writeProjectDependencies(FileWriter fileWriter) {
+        ProjectDependenciesAsXml projectDeps = ProjectDependenciesAsXml.of(project)
+        projectDeps.writeUsing(fileWriter)
+    }
+
+
+    /**
+     * Writes a description comment that describes the nature of the generated {@code pom.xml} file
+     * using the specified writer.
+     *
+     * <p>Used writer will not be closed.
+     */
+    private static void writeDescribingComment(FileWriter fileWriter) {
+        String description =
+                System.lineSeparator() +
+                        "This file was generated using the Gradle `generatePom` task. " +
+                        System.lineSeparator() +
+                        "This file is not suitable for `maven` build tasks. It only describes the " +
+                        "first-level dependencies of " +
+                        System.lineSeparator() +
+                        "all modules and does not describe the project " +
+                        "structure per-subproject." +
+                        System.lineSeparator()
+        String descriptionComment =
+                String.format("%s<!-- %s %s %s -->%s",
+                        System.lineSeparator(),
+                        System.lineSeparator(),
+                        description,
+                        System.lineSeparator(),
+                        System.lineSeparator())
+        fileWriter.write(descriptionComment)
+    }
+
+
+    /**
+     * Writes the artifact name and the version of the current project using the specified writer.
+     *
+     * <p>Used writer will not be closed.
+     */
+    private void writeRootProjectData(FileWriter fileWriter) {
+        MarkupBuilder xmlBuilder = new MarkupBuilder(fileWriter)
+        xmlBuilder.artifactId(this.artifactId)
+        xmlBuilder.version(this.version)
+    }
+
+    /**
+     * Writes the XML metadata using the specified writer.
+     *
+     * <p>Used writer will not be closed.
+     */
+    private static void writeHeader(FileWriter fileWriter) {
+        fileWriter.write(XML_METADATA)
+        fileWriter.write(System.lineSeparator())
+        fileWriter.write(PROJECT_SCHEMA_LOCATION)
+        fileWriter.write(System.lineSeparator())
+        fileWriter.write(MODEL_VERSION)
+        fileWriter.write(System.lineSeparator())
+    }
+
+    /**
+     * Writes a closing {@code project} tag and a newline symbol using the specified writer.
+     *
+     * <p>Used writer will not be closed.
+     */
+    private static void writeClosingProjectTag(FileWriter fileWriter) {
+        fileWriter.write(CLOSING_PROJECT_TAG)
+        fileWriter.write(System.lineSeparator())
+    }
+}
+
+/**
+ * Dependencies of the project expressed as XML.
+ *
+ * <p>Subprojects dependencies are included, transitive dependencies are not included.
+ *
+ * <p>Example:
+ * <pre>
+ * {@code
+ *  <dependencies>
+ *      <dependency>
+ *          <groupId>io.spine</groupId>
+ *          <artifactId>base</artifactId>
+ *          <version>1.0.0-pre7</version>
+ *}
+ * </pre>
+ */
+class ProjectDependenciesAsXml {
+
+    private final Set<Dependency> firstLevelDependencies
+
+    private ProjectDependenciesAsXml(Set<Dependency> dependencySet) {
+        this.firstLevelDependencies = new HashSet<>(dependencySet)
+    }
+
+    /** Creates a new instance based on the specified project. */
+    static ProjectDependenciesAsXml of(Project project) {
+        Set<Dependency> dependencies = projectDependencies(project)
+        return new ProjectDependenciesAsXml(dependencies)
+    }
+
+    /** Writes the dependencies using the specified writer.
+     *
+     * <p>Used writer will not be closed.
+     */
+    void writeUsing(FileWriter fileWriter) {
+        MarkupBuilder xmlBuilder = new MarkupBuilder(fileWriter)
+        xmlBuilder.dependencies() {
+            firstLevelDependencies.each { projectDep ->
+                dependency {
+                    groupId(projectDep.group)
+                    artifactId(projectDep.name)
+                    version(projectDep.version)
+                }
+            }
+        }
+    }
+
+    private static Set<Dependency> projectDependencies(Project project) {
+        Set<Dependency> firstLevelDependencies = new HashSet<>()
+        project.subprojects.forEach { subproject ->
+            Set<Dependency> subprojectDeps = dependenciesFromAllConfigurations(subproject)
+            firstLevelDependencies.addAll(subprojectDeps)
+        }
+        return firstLevelDependencies
+    }
+
+    private static Set<Dependency> dependenciesFromAllConfigurations(Project project) {
+        Set<Dependency> result = new HashSet<>()
+        project.configurations.forEach { configuration ->
+            configuration.dependencies.forEach {
+                if (isExternal(it)) {
+                    /* 
+                       Note that despite using the `Set` data structure, `result` will still contain duplicates
+                       and an additional check is necessary. 
+                     */
+                    addIfNotPresent(it, result)
+                }
+            }
+        }
+        return result
+    }
+
+    private static boolean isExternal(Dependency dependency) {
+        return AbstractExternalModuleDependency.isAssignableFrom(dependency.class)
+    }
+
+    private static void addIfNotPresent(Dependency dependency, Set<Dependency> dependencySet) {
+        boolean isDuplicate = dependencySet.stream()
+                .anyMatch { dependenciesEqual(it, dependency) }
+        if (!isDuplicate) {
+            dependencySet.add(dependency)
+        }
+    }
+
+    /**
+     *  Returns whether the first specified dependency is equal to the second specified dependency.
+     *
+     *  <p>Comparison is performed based on the group ID, name and the version. If either of those
+     *  criteria differs between specified dependencies, {@code false} is returned.
+     */
+    private static boolean dependenciesEqual(Dependency it, Dependency dependency) {
+        boolean groupMatches = it.group.equals(dependency.group)
+        boolean nameMatches = it.name.equals(dependency.name)
+        boolean versionMatches = it.version.equals(dependency.version)
+        return groupMatches && nameMatches && versionMatches
+    }
+}
+
+/**
+ * Information about the licences used by Spine in XML form.
+ */
+class SpineLicenceAsXml {
+    private static final String NAME = "Apache License, Version 2.0"
+    private static final String URL = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    private static final String DISTRIBUTION = "repo"
+
+    /** Prevents instantiation. */
+    private SpineLicenceAsXml() {
+    }
+
+    /** Writes information about the Spine licence using the specified writer.
+     *
+     * <p>Used writer will not be closed.
+     */
+    static void writeUsing(FileWriter fileWriter) {
+        MarkupBuilder xmlBuilder = new MarkupBuilder(fileWriter)
+        xmlBuilder.licenses {
+            license {
+                name(NAME)
+                url(URL)
+                distribution(DISTRIBUTION)
+            }
+        }
+    }
+}
