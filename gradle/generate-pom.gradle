@@ -102,7 +102,8 @@ class ProjectPomXml {
         SpineLicenceAsXml.writeUsing(fileWriter)
     }
 
-    /** Writes all of the project dependencies in a {@code dependencies} tag using the specified writer.
+    /** 
+     * Writes all of the project dependencies in a {@code dependencies} tag using the specified writer.
      *
      * <p>Used writer will not be closed.
      */
@@ -206,7 +207,8 @@ class ProjectDependenciesAsXml {
         return new ProjectDependenciesAsXml(dependencies)
     }
 
-    /** Writes the dependencies using the specified writer.
+    /** 
+     * Writes the dependencies using the specified writer.
      *
      * <p>Used writer will not be closed.
      */
@@ -286,7 +288,8 @@ class SpineLicenceAsXml {
     private SpineLicenceAsXml() {
     }
 
-    /** Writes information about the Spine licence using the specified writer.
+    /** 
+     * Writes information about the Spine licence using the specified writer.
      *
      * <p>Used writer will not be closed.
      */
