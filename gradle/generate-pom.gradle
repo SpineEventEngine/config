@@ -48,6 +48,7 @@ class ProjectPomXml {
     private static final String MODEL_VERSION = "<modelVersion>4.0.0</modelVersion>"
     private static final String CLOSING_PROJECT_TAG = "</project>"
     private static final String SPINE_INCEPTION_YEAR = "2015"
+    private static final String NEW_LINE = System.lineSeparator()
 
     private final Project project
     private final String artifactId
@@ -71,55 +72,74 @@ class ProjectPomXml {
     void writeTo(String filePath) {
         FileWriter fileWriter = new FileWriter(filePath, true)
         writeHeader(fileWriter)
-        writeDescribingComment(fileWriter)
-        writeLicenceInfo(fileWriter)
-        writeInceptionYear(fileWriter)
-        writeRootProjectData(fileWriter)
-        writeProjectDependencies(fileWriter)
-        writeClosingProjectTag(fileWriter)
+
+        writeBlocks(fileWriter,
+                describingComment(),
+                rootProjectData(),
+                inceptionYear(),
+                licence(),
+                projectDependencies()
+        )
         fileWriter.close()
     }
 
-
     /**
-     * Writes the inception year tag using the specified writer.
+     * Writes the specified lines using the specified writer, dividing them by platforms line
+     * separator.
      *
-     * <p>Used writer will not be closed.
+     * The written lines are also padded with platforms line separator from both sides
+     *
+     * <p>Used writer will not be closed
      */
-    private static final void writeInceptionYear(FileWriter writer) {
+    void writeBlocks(FileWriter writer, String... lines) {
+        writer.write(NEW_LINE)
+        for (String line : lines) {
+            writer.write(line)
+            writer.write(NEW_LINE)
+            writer.write(NEW_LINE)
+        }
+        writer.write(NEW_LINE)
+    }
+    /**
+     * Obtains a String that represents a tag with the inception year of Spine.
+     */
+    private static String inceptionYear() {
+        Writer writer = new StringWriter()
         MarkupBuilder xmlBuilder = new MarkupBuilder(writer)
         xmlBuilder.inceptionYear(SPINE_INCEPTION_YEAR)
+        return writer.toString()
     }
 
     /**
-     * Writes licencing information using the specified writer.
+     * Obtains licence information about Spine.
      *
      * <p>More on licences <a href="https://maven.apache.org/pom.html#Licenses">here</a>.
-     *
-     * <p>Used writer will not be closed.
      */
-    private static void writeLicenceInfo(FileWriter fileWriter) {
-        SpineLicenceAsXml.writeUsing(fileWriter)
+    private static String licence() {
+        Writer writer = new StringWriter()
+        SpineLicenceAsXml.writeUsing(writer)
+        return writer.toString()
     }
 
-    /** 
-     * Writes all of the project dependencies in a {@code dependencies} tag using the specified writer.
+    /**
+     * Obtains a string that contains project dependencies as XML.
      *
-     * <p>Used writer will not be closed.
+     * <p>Obtained string also contains a closing project tag.
      */
-    void writeProjectDependencies(FileWriter fileWriter) {
+    private String projectDependencies() {
+        Writer writer = new StringWriter()
         ProjectDependenciesAsXml projectDeps = ProjectDependenciesAsXml.of(project)
-        projectDeps.writeUsing(fileWriter)
+        projectDeps.writeUsing(writer)
+        writer.write(NEW_LINE)
+        writer.write(CLOSING_PROJECT_TAG)
+        return writer.toString()
     }
 
 
     /**
-     * Writes a description comment that describes the nature of the generated {@code pom.xml} file
-     * using the specified writer.
-     *
-     * <p>Used writer will not be closed.
+     * Obtains a description comment that describes the nature of the generated {@code pom.xml} file.
      */
-    private static void writeDescribingComment(FileWriter fileWriter) {
+    private static String describingComment() {
         String description =
                 System.lineSeparator() +
                         "This file was generated using the Gradle `generatePom` task. " +
@@ -131,25 +151,23 @@ class ProjectPomXml {
                         "structure per-subproject." +
                         System.lineSeparator()
         String descriptionComment =
-                String.format("%s<!-- %s %s %s -->%s",
-                        System.lineSeparator(),
+                String.format("<!-- %s %s %s -->",
                         System.lineSeparator(),
                         description,
-                        System.lineSeparator(),
                         System.lineSeparator())
-        fileWriter.write(descriptionComment)
+        return descriptionComment
     }
 
 
     /**
-     * Writes the artifact name and the version of the current project using the specified writer.
-     *
-     * <p>Used writer will not be closed.
+     * Obtains a string that contains the name and the version of the current project.
      */
-    private void writeRootProjectData(FileWriter fileWriter) {
-        MarkupBuilder xmlBuilder = new MarkupBuilder(fileWriter)
+    private String rootProjectData() {
+        Writer writer = new StringWriter()
+        MarkupBuilder xmlBuilder = new MarkupBuilder(writer)
         xmlBuilder.artifactId(this.artifactId)
         xmlBuilder.version(this.version)
+        return writer.toString()
     }
 
     /**
@@ -163,16 +181,6 @@ class ProjectPomXml {
         fileWriter.write(PROJECT_SCHEMA_LOCATION)
         fileWriter.write(System.lineSeparator())
         fileWriter.write(MODEL_VERSION)
-        fileWriter.write(System.lineSeparator())
-    }
-
-    /**
-     * Writes a closing {@code project} tag and a newline symbol using the specified writer.
-     *
-     * <p>Used writer will not be closed.
-     */
-    private static void writeClosingProjectTag(FileWriter fileWriter) {
-        fileWriter.write(CLOSING_PROJECT_TAG)
         fileWriter.write(System.lineSeparator())
     }
 }
@@ -207,13 +215,13 @@ class ProjectDependenciesAsXml {
         return new ProjectDependenciesAsXml(dependencies)
     }
 
-    /** 
+    /**
      * Writes the dependencies using the specified writer.
      *
      * <p>Used writer will not be closed.
      */
-    void writeUsing(FileWriter fileWriter) {
-        MarkupBuilder xmlBuilder = new MarkupBuilder(fileWriter)
+    void writeUsing(Writer writer) {
+        MarkupBuilder xmlBuilder = new MarkupBuilder(writer)
         xmlBuilder.dependencies() {
             firstLevelDependencies.each { projectDep ->
                 dependency {
@@ -288,17 +296,15 @@ class SpineLicenceAsXml {
     private SpineLicenceAsXml() {
     }
 
-    /** 
+    /**
      * Writes information about the Spine licence using the specified writer.
-     *
-     * <p>Used writer will not be closed.
      */
-    static void writeUsing(FileWriter fileWriter) {
+    static void writeUsing(Writer fileWriter) {
         MarkupBuilder xmlBuilder = new MarkupBuilder(fileWriter)
         xmlBuilder.licenses {
             license {
                 name(NAME)
-                url(URL)
+                url(SpineLicenceAsXml.URL)
                 distribution(DISTRIBUTION)
             }
         }
