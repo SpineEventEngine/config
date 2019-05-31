@@ -12,7 +12,7 @@ import org.gradle.api.internal.artifacts.dependencies.AbstractExternalModuleDepe
  *
  * Also configures the {@code clean} task to delete the generated {@code pom.xml} file.
  *
- * To generate the script, {@code apply} from this file.
+ * To generate the pom, {@code apply} from this file.
  */
 
 apply plugin: 'maven'
@@ -91,7 +91,7 @@ class ProjectPomXml {
      *
      * <p>Used writer will not be closed
      */
-    void writeBlocks(FileWriter writer, String... lines) {
+    static void writeBlocks(FileWriter writer, String... lines) {
         writer.write(NEW_LINE)
         for (String line : lines) {
             writer.write(line)
@@ -225,7 +225,7 @@ class ProjectDependenciesAsXml {
         xmlBuilder.dependencies() {
             firstLevelDependencies
                     .stream()
-                    .sorted(Comparator.comparingInt{it.dependencyPriority() })
+                    .sorted()
                     .forEach { projectDep ->
                         xmlBuilder.dependency {
                             groupId(projectDep.dependency().group)
@@ -258,7 +258,7 @@ class ProjectDependenciesAsXml {
                        and an additional check is necessary.
                      */
                     DependencyWithScope dependency = DependencyWithScope.of(it, configuration)
-                    addIfNotPresent(dependency, result)
+                    result.add(dependency)
                 }
             }
         }
@@ -267,31 +267,6 @@ class ProjectDependenciesAsXml {
 
     private static boolean isExternal(Dependency dependency) {
         return AbstractExternalModuleDependency.isAssignableFrom(dependency.class)
-    }
-
-    private static void addIfNotPresent(DependencyWithScope dependency,
-                                        Set<DependencyWithScope> dependencySet) {
-        boolean isDuplicate = dependencySet.stream()
-                .anyMatch { dependenciesEqual(it, dependency) }
-        if (!isDuplicate) {
-            dependencySet.add(dependency)
-        }
-    }
-
-    /**
-     *  Returns whether the first specified dependency is equal to the second specified dependency.
-     *
-     *  <p>Comparison is performed based on the group ID, name and the version. If either of those
-     *  criteria differs between specified dependencies, {@code false} is returned.
-     */
-    private static boolean dependenciesEqual(DependencyWithScope it, DependencyWithScope that) {
-        Dependency firstDependency = it.dependency()
-        Dependency secondDependency = that.dependency()
-
-        boolean groupMatches = firstDependency.group.equals(secondDependency.group)
-        boolean nameMatches = firstDependency.name.equals(secondDependency.name)
-        boolean versionMatches = firstDependency.version.equals(secondDependency.version)
-        return groupMatches && nameMatches && versionMatches
     }
 }
 
@@ -303,9 +278,10 @@ class ProjectDependenciesAsXml {
  *     More on dependency scopes </a>.
  *
  */
-class DependencyWithScope {
+class DependencyWithScope implements Comparable<DependencyWithScope> {
 
     private static Map<String, DependencyScope> KNOWN_SCOPES
+
     private final Dependency dependency
     private final DependencyScope scope
     private final Configuration tempConfig
@@ -329,18 +305,6 @@ class DependencyWithScope {
             return 2
         }
         return 3
-    }
-
-    String groupId() {
-        return dependency.groupId
-    }
-
-    String name() {
-        return dependency.name
-    }
-
-    String version() {
-        return dependency.version
     }
 
     String scopeName() {
@@ -381,6 +345,44 @@ class DependencyWithScope {
         return scope != DependencyScope.UNDEFINED
     }
 
+    @Override
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        DependencyWithScope that = (DependencyWithScope) o
+
+        if (dependency.group != that.dependency.group) return false
+        if (dependency.name != that.dependency.name) return false
+        if (dependency.version != that.dependency.version) return false
+        if (scope != that.scope) return false
+
+        return true
+    }
+
+    @Override
+    int hashCode() {
+        int result
+        result = (dependency != null ? dependency.hashCode() : 0)
+        result = 31 * result + (scope != null ? scope.hashCode() : 0)
+        return result
+    }
+
+    @Override
+    int compareTo(DependencyWithScope o) {
+        if (this.scope().equals(o.scope())) {
+            Dependency thatDependency = o.dependency()
+            if (this.dependency().group.equals(thatDependency.group)) {
+                if (this.dependency().name.equals(thatDependency)) {
+                    return this.dependency().version.compareTo(thatDependency.name)
+                }
+                return this.dependency().name.compareTo(thatDependency.name)
+            }
+            return this.dependency().group.compareTo(thatDependency.group)
+        }
+        return dependencyPriority() - o.dependencyPriority()
+    }
+
     static enum DependencyScope {
         UNDEFINED(""),
         COMPILE("compile"),
@@ -402,7 +404,6 @@ class DependencyWithScope {
         String scopeName() {
             return name
         }
-
     }
 }
 
