@@ -1,6 +1,8 @@
 import groovy.xml.MarkupBuilder
 import org.gradle.api.internal.artifacts.dependencies.AbstractExternalModuleDependency
 
+import static java.util.stream.Collectors.toSet
+
 /**
  * This script generates a {@code pom.xml} file that contains dependencies of the root project as well as the
  * dependencies of its subprojects.
@@ -205,8 +207,8 @@ class ProjectDependenciesAsXml {
 
     private final Set<DependencyWithScope> firstLevelDependencies
 
-    private ProjectDependenciesAsXml(Set<Dependency> dependencySet) {
-        this.firstLevelDependencies = new HashSet<>(dependencySet)
+    private ProjectDependenciesAsXml(Set<DependencyWithScope> dependencySet) {
+        this.firstLevelDependencies = new TreeSet<>(dependencySet)
     }
 
     /** Creates a new instance based on the specified project. */
@@ -224,8 +226,6 @@ class ProjectDependenciesAsXml {
         MarkupBuilder xmlBuilder = new MarkupBuilder(writer)
         xmlBuilder.dependencies() {
             firstLevelDependencies
-                    .stream()
-                    .sorted()
                     .forEach { projectDep ->
                         xmlBuilder.dependency {
                             groupId(projectDep.dependency().group)
@@ -245,7 +245,7 @@ class ProjectDependenciesAsXml {
             Set<DependencyWithScope> subprojectDeps = dependenciesFromAllConfigurations(subproject)
             firstLevelDependencies.addAll(subprojectDeps)
         }
-        return firstLevelDependencies
+        return firstLevelDependencies.stream().sorted().distinct().collect(toSet())
     }
 
     private static Set<DependencyWithScope> dependenciesFromAllConfigurations(Project project) {
@@ -253,10 +253,6 @@ class ProjectDependenciesAsXml {
         project.configurations.forEach { configuration ->
             configuration.dependencies.forEach {
                 if (isExternal(it)) {
-                    /*
-                       Note that despite using the `Set` data structure, `result` will still contain duplicates
-                       and an additional check is necessary.
-                     */
                     DependencyWithScope dependency = DependencyWithScope.of(it, configuration)
                     result.add(dependency)
                 }
@@ -325,7 +321,6 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
         if (configurationName.toLowerCase().startsWith("test")) {
             return new DependencyWithScope(dependency, DependencyScope.TEST, configuration)
         }
-        // Fallback to compile.
         return new DependencyWithScope(dependency, DependencyScope.UNDEFINED, configuration)
     }
 
@@ -363,7 +358,6 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
     int hashCode() {
         int result
         result = (dependency != null ? dependency.hashCode() : 0)
-        result = 31 * result + (scope != null ? scope.hashCode() : 0)
         return result
     }
 
