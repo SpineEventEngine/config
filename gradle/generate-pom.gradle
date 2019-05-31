@@ -223,15 +223,19 @@ class ProjectDependenciesAsXml {
     void writeUsing(Writer writer) {
         MarkupBuilder xmlBuilder = new MarkupBuilder(writer)
         xmlBuilder.dependencies() {
-            firstLevelDependencies.each { projectDep ->
-                dependency {
-                    groupId(projectDep.dependency().group)
-                    artifactId(projectDep.dependency().name)
-                    version(projectDep.dependency().version)
-                    config(projectDep.configuration().name)
-                    scope(projectDep.scope())
-                }
-            }
+            firstLevelDependencies
+                    .stream()
+                    .sorted(Comparator.comparingInt{it.dependencyPriority() })
+                    .forEach { projectDep ->
+                        xmlBuilder.dependency {
+                            groupId(projectDep.dependency().group)
+                            artifactId(projectDep.dependency().name)
+                            version(projectDep.dependency().version)
+                            if (projectDep.hasDefinedScope()) {
+                                scope(projectDep.scopeName())
+                            }
+                        }
+                    }
         }
     }
 
@@ -249,9 +253,9 @@ class ProjectDependenciesAsXml {
         project.configurations.forEach { configuration ->
             configuration.dependencies.forEach {
                 if (isExternal(it)) {
-                    /* 
+                    /*
                        Note that despite using the `Set` data structure, `result` will still contain duplicates
-                       and an additional check is necessary. 
+                       and an additional check is necessary.
                      */
                     DependencyWithScope dependency = DependencyWithScope.of(it, configuration)
                     addIfNotPresent(dependency, result)
@@ -308,10 +312,39 @@ class DependencyWithScope {
 
     static {
         KNOWN_SCOPES = new HashMap<>()
-        KNOWN_SCOPES.put("compile", DependencyScope.compile)
-        KNOWN_SCOPES.put("implementation", DependencyScope.compile)
-        KNOWN_SCOPES.put("api", DependencyScope.compile)
-        KNOWN_SCOPES.put("runtime", DependencyScope.runtime)
+        KNOWN_SCOPES.put("compile", DependencyScope.COMPILE)
+        KNOWN_SCOPES.put("implementation", DependencyScope.COMPILE)
+        KNOWN_SCOPES.put("api", DependencyScope.COMPILE)
+        KNOWN_SCOPES.put("runtime", DependencyScope.RUNTIME)
+    }
+
+    int dependencyPriority() {
+        if (scope.equals(DependencyScope.COMPILE)) {
+            return 0
+        }
+        if (scope.equals(DependencyScope.RUNTIME)) {
+            return 1
+        }
+        if (scope.equals(DependencyScope.TEST)) {
+            return 2
+        }
+        return 3
+    }
+
+    String groupId() {
+        return dependency.groupId
+    }
+
+    String name() {
+        return dependency.name
+    }
+
+    String version() {
+        return dependency.version
+    }
+
+    String scopeName() {
+        return scope.scopeName()
     }
 
     private DependencyWithScope(Dependency dependency, DependencyScope scope, Configuration config) {
@@ -326,10 +359,10 @@ class DependencyWithScope {
             return new DependencyWithScope(dependency, KNOWN_SCOPES.get(configurationName), configuration)
         }
         if (configurationName.toLowerCase().startsWith("test")) {
-            return new DependencyWithScope(dependency, DependencyScope.test, configuration)
+            return new DependencyWithScope(dependency, DependencyScope.TEST, configuration)
         }
         // Fallback to compile.
-        return new DependencyWithScope(dependency, DependencyScope.system, configuration)
+        return new DependencyWithScope(dependency, DependencyScope.UNDEFINED, configuration)
     }
 
     Dependency dependency() {
@@ -344,16 +377,32 @@ class DependencyWithScope {
         return this.tempConfig
     }
 
+    boolean hasDefinedScope() {
+        return scope != DependencyScope.UNDEFINED
+    }
+
     static enum DependencyScope {
-        compile,
-        provided,
-        runtime,
-        test,
-        system
+        UNDEFINED(""),
+        COMPILE("compile"),
+        PROVIDED("provided"),
+        RUNTIME("runtime"),
+        TEST("test"),
+        SYSTEM("system")
         /*
             import is also a scope, however, it can't be used outside the `<dependencyManagement>`
             section, which is outside of the scope of this script
          */
+
+        private final String name
+
+        DependencyScope(String name) {
+            this.name = name
+        }
+
+        String scopeName() {
+            return name
+        }
+
     }
 }
 
