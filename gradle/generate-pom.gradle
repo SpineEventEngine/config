@@ -203,7 +203,7 @@ class ProjectPomXml {
  */
 class ProjectDependenciesAsXml {
 
-    private final Set<Dependency> firstLevelDependencies
+    private final Set<DependencyWithScope> firstLevelDependencies
 
     private ProjectDependenciesAsXml(Set<Dependency> dependencySet) {
         this.firstLevelDependencies = new HashSet<>(dependencySet)
@@ -211,7 +211,7 @@ class ProjectDependenciesAsXml {
 
     /** Creates a new instance based on the specified project. */
     static ProjectDependenciesAsXml of(Project project) {
-        Set<Dependency> dependencies = projectDependencies(project)
+        Set<DependencyWithScope> dependencies = projectDependencies(project)
         return new ProjectDependenciesAsXml(dependencies)
     }
 
@@ -225,25 +225,27 @@ class ProjectDependenciesAsXml {
         xmlBuilder.dependencies() {
             firstLevelDependencies.each { projectDep ->
                 dependency {
-                    groupId(projectDep.group)
-                    artifactId(projectDep.name)
-                    version(projectDep.version)
+                    groupId(projectDep.dependency().group)
+                    artifactId(projectDep.dependency().name)
+                    version(projectDep.dependency().version)
+                    config(projectDep.configuration().name)
+                    scope(projectDep.scope())
                 }
             }
         }
     }
 
-    private static Set<Dependency> projectDependencies(Project project) {
-        Set<Dependency> firstLevelDependencies = new HashSet<>()
+    private static Set<DependencyWithScope> projectDependencies(Project project) {
+        Set<DependencyWithScope> firstLevelDependencies = new HashSet<>()
         project.subprojects.forEach { subproject ->
-            Set<Dependency> subprojectDeps = dependenciesFromAllConfigurations(subproject)
+            Set<DependencyWithScope> subprojectDeps = dependenciesFromAllConfigurations(subproject)
             firstLevelDependencies.addAll(subprojectDeps)
         }
         return firstLevelDependencies
     }
 
-    private static Set<Dependency> dependenciesFromAllConfigurations(Project project) {
-        Set<Dependency> result = new HashSet<>()
+    private static Set<DependencyWithScope> dependenciesFromAllConfigurations(Project project) {
+        Set<DependencyWithScope> result = new HashSet<>()
         project.configurations.forEach { configuration ->
             configuration.dependencies.forEach {
                 if (isExternal(it)) {
@@ -251,7 +253,8 @@ class ProjectDependenciesAsXml {
                        Note that despite using the `Set` data structure, `result` will still contain duplicates
                        and an additional check is necessary. 
                      */
-                    addIfNotPresent(it, result)
+                    DependencyWithScope dependency = DependencyWithScope.of(it, configuration)
+                    addIfNotPresent(dependency, result)
                 }
             }
         }
@@ -262,7 +265,8 @@ class ProjectDependenciesAsXml {
         return AbstractExternalModuleDependency.isAssignableFrom(dependency.class)
     }
 
-    private static void addIfNotPresent(Dependency dependency, Set<Dependency> dependencySet) {
+    private static void addIfNotPresent(DependencyWithScope dependency,
+                                        Set<DependencyWithScope> dependencySet) {
         boolean isDuplicate = dependencySet.stream()
                 .anyMatch { dependenciesEqual(it, dependency) }
         if (!isDuplicate) {
@@ -276,13 +280,83 @@ class ProjectDependenciesAsXml {
      *  <p>Comparison is performed based on the group ID, name and the version. If either of those
      *  criteria differs between specified dependencies, {@code false} is returned.
      */
-    private static boolean dependenciesEqual(Dependency it, Dependency dependency) {
-        boolean groupMatches = it.group.equals(dependency.group)
-        boolean nameMatches = it.name.equals(dependency.name)
-        boolean versionMatches = it.version.equals(dependency.version)
+    private static boolean dependenciesEqual(DependencyWithScope it, DependencyWithScope that) {
+        Dependency firstDependency = it.dependency()
+        Dependency secondDependency = that.dependency()
+
+        boolean groupMatches = firstDependency.group.equals(secondDependency.group)
+        boolean nameMatches = firstDependency.name.equals(secondDependency.name)
+        boolean versionMatches = firstDependency.version.equals(secondDependency.version)
         return groupMatches && nameMatches && versionMatches
     }
 }
+
+/**
+ * A project dependency with its scope.
+ *
+ * @see
+ * <a href="https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope">
+ *     More on dependency scopes </a>.
+ *
+ */
+class DependencyWithScope {
+
+    private static Map<String, DependencyScope> KNOWN_SCOPES
+    private final Dependency dependency
+    private final DependencyScope scope
+    private final Configuration tempConfig
+
+    static {
+        KNOWN_SCOPES = new HashMap<>()
+        KNOWN_SCOPES.put("compile", DependencyScope.compile)
+        KNOWN_SCOPES.put("implementation", DependencyScope.compile)
+        KNOWN_SCOPES.put("api", DependencyScope.compile)
+        KNOWN_SCOPES.put("runtime", DependencyScope.runtime)
+    }
+
+    private DependencyWithScope(Dependency dependency, DependencyScope scope, Configuration config) {
+        this.dependency = dependency
+        this.scope = scope
+        this.tempConfig = config
+    }
+
+    static DependencyWithScope of(Dependency dependency, Configuration configuration) {
+        String configurationName = configuration.name
+        if (KNOWN_SCOPES.containsKey(configurationName)) {
+            return new DependencyWithScope(dependency, KNOWN_SCOPES.get(configurationName), configuration)
+        }
+        if (configurationName.toLowerCase().startsWith("test")) {
+            return new DependencyWithScope(dependency, DependencyScope.test, configuration)
+        }
+        // Fallback to compile.
+        return new DependencyWithScope(dependency, DependencyScope.system, configuration)
+    }
+
+    Dependency dependency() {
+        return this.dependency
+    }
+
+    DependencyScope scope() {
+        return this.scope
+    }
+
+    Configuration configuration() {
+        return this.tempConfig
+    }
+
+    static enum DependencyScope {
+        compile,
+        provided,
+        runtime,
+        test,
+        system
+        /*
+            import is also a scope, however, it can't be used outside the `<dependencyManagement>`
+            section, which is outside of the scope of this script
+         */
+    }
+}
+
 
 /**
  * Information about the licences used by Spine in XML form.
