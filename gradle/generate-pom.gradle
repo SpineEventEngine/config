@@ -355,7 +355,6 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
         if (dependency.group != that.dependency.group) return false
         if (dependency.name != that.dependency.name) return false
         if (dependency.version != that.dependency.version) return false
-        if (scope != that.scope) return false
 
         return true
     }
