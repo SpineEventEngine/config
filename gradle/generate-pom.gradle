@@ -272,7 +272,6 @@ class ProjectDependenciesAsXml {
  * @see
  * <a href="https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope">
  *     More on dependency scopes </a>.
- *
  */
 class DependencyWithScope implements Comparable<DependencyWithScope> {
 
@@ -280,7 +279,6 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
 
     private final Dependency dependency
     private final DependencyScope scope
-    private final Configuration tempConfig
 
     static {
         KNOWN_SCOPES = new HashMap<>()
@@ -307,21 +305,20 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
         return scope.scopeName()
     }
 
-    private DependencyWithScope(Dependency dependency, DependencyScope scope, Configuration config) {
+    private DependencyWithScope(Dependency dependency, DependencyScope scope) {
         this.dependency = dependency
         this.scope = scope
-        this.tempConfig = config
     }
 
     static DependencyWithScope of(Dependency dependency, Configuration configuration) {
         String configurationName = configuration.name
         if (KNOWN_SCOPES.containsKey(configurationName)) {
-            return new DependencyWithScope(dependency, KNOWN_SCOPES.get(configurationName), configuration)
+            return new DependencyWithScope(dependency, KNOWN_SCOPES.get(configurationName))
         }
         if (configurationName.toLowerCase().startsWith("test")) {
-            return new DependencyWithScope(dependency, DependencyScope.TEST, configuration)
+            return new DependencyWithScope(dependency, DependencyScope.TEST)
         }
-        return new DependencyWithScope(dependency, DependencyScope.UNDEFINED, configuration)
+        return new DependencyWithScope(dependency, DependencyScope.UNDEFINED)
     }
 
     Dependency dependency() {
@@ -384,7 +381,7 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
         TEST("test"),
         SYSTEM("system")
         /*
-            import is also a scope, however, it can't be used outside the `<dependencyManagement>`
+            `import` is also a scope, however, it can't be used outside the `<dependencyManagement>`
             section, which is outside of the scope of this script
          */
 
@@ -399,7 +396,6 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
         }
     }
 }
-
 
 /**
  * Information about the licences used by Spine in XML form.
