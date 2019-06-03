@@ -282,12 +282,57 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
 
     static {
         KNOWN_SCOPES = new HashMap<>()
+
+        /*
+         * Configurations from the Gradle Java plugin that are known to be mapped to the `compile`
+         * scope.
+         *
+         * Dependencies with the `compile` Maven scope are propagated to dependent projects.
+         *
+         * More at https://docs.gradle.org/current/userguide/java_plugin.html#tab:configurations
+         */
         KNOWN_SCOPES.put("compile", DependencyScope.COMPILE)
         KNOWN_SCOPES.put("implementation", DependencyScope.COMPILE)
         KNOWN_SCOPES.put("api", DependencyScope.COMPILE)
+
+        /*
+         * Configurations from the Gradle Java plugin that are known to be mapped to the `runtime`
+         * scope.
+         *
+         * Dependencies with the `runtime` Maven scopes are required for execution only.
+         */
         KNOWN_SCOPES.put("runtime", DependencyScope.RUNTIME)
+        KNOWN_SCOPES.put("runtimeOnly", DependencyScope.RUNTIME)
     }
 
+    private DependencyWithScope(Dependency dependency, DependencyScope scope) {
+        this.dependency = dependency
+        this.scope = scope
+    }
+
+
+    /**
+     * Creates a new instance based on the specified dependency and its configuration.
+     *
+     * <p>The scope of the dependency is based on the name of the configuration.
+     */
+    static DependencyWithScope of(Dependency dependency, Configuration configuration) {
+        String configurationName = configuration.name
+        if (KNOWN_SCOPES.containsKey(configurationName)) {
+            return new DependencyWithScope(dependency, KNOWN_SCOPES.get(configurationName))
+        }
+        if (configurationName.toLowerCase().startsWith("test")) {
+            return new DependencyWithScope(dependency, DependencyScope.TEST)
+        }
+        return new DependencyWithScope(dependency, DependencyScope.UNDEFINED)
+    }
+
+    /**
+     * Obtains the layout priority of a scope.
+     *
+     * Layout priority determines what scopes come first in the generated {@code pom.xml} file.
+     * Dependencies with a lower priority number appear higher up.
+     */
     int dependencyPriority() {
         if (scope.equals(DependencyScope.COMPILE)) {
             return 0
@@ -301,41 +346,26 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
         return 3
     }
 
+    /** Obtains the scope name of this dependency .*/
     String scopeName() {
         return scope.scopeName()
     }
 
-    private DependencyWithScope(Dependency dependency, DependencyScope scope) {
-        this.dependency = dependency
-        this.scope = scope
-    }
-
-    static DependencyWithScope of(Dependency dependency, Configuration configuration) {
-        String configurationName = configuration.name
-        if (KNOWN_SCOPES.containsKey(configurationName)) {
-            return new DependencyWithScope(dependency, KNOWN_SCOPES.get(configurationName))
-        }
-        if (configurationName.toLowerCase().startsWith("test")) {
-            return new DependencyWithScope(dependency, DependencyScope.TEST)
-        }
-        return new DependencyWithScope(dependency, DependencyScope.UNDEFINED)
-    }
-
+    /** Obtains the Gradle dependency. */
     Dependency dependency() {
         return this.dependency
     }
 
+    /** Obtains the Maven scope of this dependency. */
     DependencyScope scope() {
         return this.scope
     }
 
-    Configuration configuration() {
-        return this.tempConfig
-    }
-
-    boolean hasDefinedScope() {
-        return scope != DependencyScope.UNDEFINED
-    }
+    /** Returns {@code true} if this dependency has a defined scope.
+     *
+     * Returns {@code false} otherwise.
+     */
+    boolean hasDefinedScope() { return scope != DependencyScope.UNDEFINED }
 
     @Override
     boolean equals(o) {
@@ -353,8 +383,7 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
 
     @Override
     int hashCode() {
-        int result
-        result = (dependency != null ? dependency.hashCode() : 0)
+        int result = (dependency != null ? dependency.hashCode() : 0)
         return result
     }
 
@@ -373,6 +402,9 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
         return dependencyPriority() - o.dependencyPriority()
     }
 
+    /**
+     * A Maven dependency scope.
+     */
     static enum DependencyScope {
         UNDEFINED(""),
         COMPILE("compile"),
@@ -381,9 +413,9 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
         TEST("test"),
         SYSTEM("system")
         /*
-            `import` is also a scope, however, it can't be used outside the `<dependencyManagement>`
-            section, which is outside of the scope of this script
-         */
+        `import` is also a scope, however, it can't be used outside the `<dependencyManagement>`
+        section, which is outside of the scope of this script
+       */
 
         private final String name
 
@@ -391,10 +423,12 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
             this.name = name
         }
 
+        /** Obtains the name of this scope. */
         String scopeName() {
             return name
         }
     }
+
 }
 
 /**
