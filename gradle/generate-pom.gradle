@@ -44,6 +44,7 @@ ext {
 }
 
 task generatePom {
+    delete outputFile
     doLast {
         ProjectPomXml result = new ProjectPomXml(project)
         result.writeTo(outputFile)
