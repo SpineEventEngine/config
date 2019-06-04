@@ -24,11 +24,11 @@ import org.gradle.api.internal.artifacts.dependencies.AbstractExternalModuleDepe
 import static java.util.stream.Collectors.toSet
 
 /**
- * This script generates a {@code pom.xml} file that contains dependencies of the root project as well as the
- * dependencies of its subprojects.
+ * This script generates a {@code pom.xml} file that contains dependencies of the root project as
+ * well as the dependencies of its subprojects.
  *
- * The generated {@code pom.xml} is not usable for {@code maven} build tasks and is merely a description of project
- * dependencies.
+ * The generated {@code pom.xml} is not usable for {@code maven} build tasks and is merely a
+ * description of project dependencies.
  *
  * Configures the {@code build} task to generate the {@code pom.xml} file.
  *
@@ -82,8 +82,8 @@ clean.doFirst {
 /**
  * A {@code pom.xml} file that contains dependencies of the project and its subprojects.
  *
- * <p>It is not usable for {@code maven} build tasks and serves as a description of project first level dependencies,
- * i.e, transitive dependencies are not included
+ * <p>It is not usable for {@code maven} build tasks and serves as a description of project first
+ * level dependencies, i.e. transitive dependencies are not included
  */
 class ProjectPomXml {
 
@@ -155,6 +155,7 @@ class ProjectPomXml {
         }
         writer.write(NEW_LINE)
     }
+
     /**
      * Obtains a String that represents a tag with the inception year of Spine.
      */
@@ -190,7 +191,6 @@ class ProjectPomXml {
         return writer.toString()
     }
 
-
     /**
      * Obtains a description comment that describes the nature of the generated {@code pom.xml} file.
      */
@@ -212,7 +212,6 @@ class ProjectPomXml {
                         System.lineSeparator())
         return descriptionComment
     }
-
 
     /**
      * Obtains a string that contains the name and the version of the current project.
@@ -418,7 +417,8 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
         return this.scope
     }
 
-    /** Returns {@code true} if this dependency has a defined scope.
+    /**
+     * Returns {@code true} if this dependency has a defined scope.
      *
      * Returns {@code false} otherwise.
      */
@@ -485,13 +485,13 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
             return name
         }
     }
-
 }
 
 /**
  * Information about the licences used by Spine in XML form.
  */
 class SpineLicenceAsXml {
+
     private static final String NAME = "Apache License, Version 2.0"
     private static final String URL = "https://www.apache.org/licenses/LICENSE-2.0.txt"
     private static final String DISTRIBUTION = "repo"
@@ -523,6 +523,7 @@ class SpineLicenceAsXml {
  * <p>Includes group ID, artifact name and the version.
  */
 class RootProjectData {
+
     private final Project project
     private final String groupId
     private final String artifactId
