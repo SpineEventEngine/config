@@ -35,6 +35,25 @@ import static java.util.stream.Collectors.toSet
  * Also configures the {@code clean} task to delete the generated {@code pom.xml} file.
  *
  * To generate the pom, {@code apply} from this file.
+ *
+ * Note that the generated {@code pom.xml} includes the group ID, artifact ID and the version of the
+ * project this script was applied to. In case you want to override the default values, do so in
+ * the {@code ext} block like so:
+ *
+ * <pre>
+ * {@code
+ * ext {
+ *     groupId = 'custom-group-id'
+ *     artifactId = 'custom-artifact-id'
+ *     version = 'custom-version'
+ * }
+ * }
+ * </pre>
+ *
+ * By default, those values are taken from the {@code project} object, which may or may not include
+ * them. If the project does not have these values and they are not specified in the {@code ext}
+ * block, the result {@code pom.xml} file is going to contain empty blocks,
+ * e.g. {@code <groupId></groupId>}
  */
 
 apply plugin: 'maven'
@@ -45,8 +64,11 @@ ext {
 
 task generatePom {
     delete outputFile
+
     doLast {
-        ProjectPomXml result = new ProjectPomXml(project)
+        ExtraPropertiesExtension extension = rootProject.ext
+        RootProjectData projectData = RootProjectData.fromEither(project, extension)
+        ProjectPomXml result = ProjectPomXml.from(projectData)
         result.writeTo(outputFile)
     }
 }
@@ -74,13 +96,23 @@ class ProjectPomXml {
     private static final String NEW_LINE = System.lineSeparator()
 
     private final Project project
+    private final String groupId
     private final String artifactId
     private final String version
 
-    ProjectPomXml(Project project) {
+    private ProjectPomXml(Project project, String groupId, String artifactId, String version) {
         this.project = project
-        this.artifactId = project.name
-        this.version = project.version
+        this.groupId = groupId
+        this.artifactId = artifactId
+        this.version = version
+    }
+
+    /** Creates a new instance based on the specified project data. */
+    static ProjectPomXml from(RootProjectData projectData) {
+        return new ProjectPomXml(projectData.project(),
+                projectData.groupId(),
+                projectData.artifactId(),
+                projectData.version())
     }
 
     /**
@@ -188,6 +220,7 @@ class ProjectPomXml {
     private String rootProjectData() {
         Writer writer = new StringWriter()
         MarkupBuilder xmlBuilder = new MarkupBuilder(writer)
+        xmlBuilder.groupId(this.groupId)
         xmlBuilder.artifactId(this.artifactId)
         xmlBuilder.version(this.version)
         return writer.toString()
@@ -476,5 +509,65 @@ class SpineLicenceAsXml {
                 distribution(DISTRIBUTION)
             }
         }
+    }
+}
+
+/**
+ * Information about the root project.
+ *
+ * <p>Root project is the project for which the {@code generatePom} is executed.
+ *
+ * <p>Includes group ID, artifact name and the version.
+ */
+class RootProjectData {
+    private final Project project
+    private final String groupId
+    private final String artifactId
+    private final String version
+
+    private RootProjectData(Project project, String group, String artifactId, String version) {
+        this.project = project
+        this.groupId = group
+        this.artifactId = artifactId
+        this.version = version
+    }
+
+    /**
+     * Creates a new instance.
+     *
+     * <p>Data from the specified project is prioritized.
+     * If a property (group ID, artifact name or version) is not found in the project,
+     * it is taken from the specified extension.
+     */
+    static RootProjectData fromEither(Project project, /* or */ ExtraPropertiesExtension extension) {
+        boolean groupMissingFromProject = project.group == null || project.group.isEmpty()
+        boolean nameMissingFromProject = project.name == null || project.name.isEmpty()
+        boolean versionMissingFromProject = project.version == null || project.version.isEmpty()
+
+        String groupId = groupMissingFromProject ? extension.groupId : project.group
+        String name = nameMissingFromProject ? extension.artifactId : project.name
+        String version = versionMissingFromProject ? extension.version : project.version
+
+        return new RootProjectData(project, groupId, name, version)
+    }
+
+    /** Obtains the project object matching the root project. */
+    Project project() {
+        return this.project
+    }
+
+    /** Obtains the group ID of the root project. */
+    String groupId() {
+        return this.groupId
+    }
+
+    /** Obtains the artifact ID of the root project. */
+    String artifactId() {
+        return this.artifactId
+    }
+
+    /** Obtains the version of the root project. */
+    String version() {
+        return this.version
     }
 }
