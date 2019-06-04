@@ -329,13 +329,17 @@ class ProjectDependenciesAsXml {
  */
 class DependencyWithScope implements Comparable<DependencyWithScope> {
 
-    private static Map<String, DependencyScope> KNOWN_SCOPES
+    /**
+     * A map that contains the relations of known Gradle configuration names
+     * to their Maven dependency scope equivalents.
+     */
+    private static Map<String, DependencyScope> CONFIG_TO_SCOPE
 
     private final Dependency dependency
     private final DependencyScope scope
 
     static {
-        KNOWN_SCOPES = new HashMap<>()
+        CONFIG_TO_SCOPE = new HashMap<>()
 
         /*
          * Configurations from the Gradle Java plugin that are known to be mapped to the `compile`
@@ -345,9 +349,9 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
          *
          * More at https://docs.gradle.org/current/userguide/java_plugin.html#tab:configurations
          */
-        KNOWN_SCOPES.put("compile", DependencyScope.COMPILE)
-        KNOWN_SCOPES.put("implementation", DependencyScope.COMPILE)
-        KNOWN_SCOPES.put("api", DependencyScope.COMPILE)
+        CONFIG_TO_SCOPE.put("compile", DependencyScope.COMPILE)
+        CONFIG_TO_SCOPE.put("implementation", DependencyScope.COMPILE)
+        CONFIG_TO_SCOPE.put("api", DependencyScope.COMPILE)
 
         /*
          * Configurations from the Gradle Java plugin that are known to be mapped to the `runtime`
@@ -355,15 +359,14 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
          *
          * Dependencies with the `runtime` Maven scopes are required for execution only.
          */
-        KNOWN_SCOPES.put("runtime", DependencyScope.RUNTIME)
-        KNOWN_SCOPES.put("runtimeOnly", DependencyScope.RUNTIME)
+        CONFIG_TO_SCOPE.put("runtime", DependencyScope.RUNTIME)
+        CONFIG_TO_SCOPE.put("runtimeOnly", DependencyScope.RUNTIME)
     }
 
     private DependencyWithScope(Dependency dependency, DependencyScope scope) {
         this.dependency = dependency
         this.scope = scope
     }
-
 
     /**
      * Creates a new instance based on the specified dependency and its configuration.
@@ -372,8 +375,8 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
      */
     static DependencyWithScope of(Dependency dependency, Configuration configuration) {
         String configurationName = configuration.name
-        if (KNOWN_SCOPES.containsKey(configurationName)) {
-            return new DependencyWithScope(dependency, KNOWN_SCOPES.get(configurationName))
+        if (CONFIG_TO_SCOPE.containsKey(configurationName)) {
+            return new DependencyWithScope(dependency, CONFIG_TO_SCOPE.get(configurationName))
         }
         if (configurationName.toLowerCase().startsWith("test")) {
             return new DependencyWithScope(dependency, DependencyScope.TEST)
