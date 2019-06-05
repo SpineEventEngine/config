@@ -328,14 +328,14 @@ class ProjectDependenciesAsXml {
  */
 class DependencyWithScope implements Comparable<DependencyWithScope> {
 
+    private final Dependency dependency
+    private final DependencyScope scope
+
     /**
      * A map that contains the relations of known Gradle configuration names
      * to their Maven dependency scope equivalents.
      */
     private static Map<String, DependencyScope> CONFIG_TO_SCOPE
-
-    private final Dependency dependency
-    private final DependencyScope scope
 
     static {
         CONFIG_TO_SCOPE = new HashMap<>()
@@ -387,7 +387,7 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
      * Obtains the layout priority of a scope.
      *
      * Layout priority determines what scopes come first in the generated {@code pom.xml} file.
-     * Dependencies with a lower priority number appear higher up.
+     * Dependencies with a lower priority number go on top.
      */
     int dependencyPriority() {
         if (scope.equals(DependencyScope.COMPILE)) {
@@ -418,9 +418,7 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
     }
 
     /**
-     * Returns {@code true} if this dependency has a defined scope.
-     *
-     * Returns {@code false} otherwise.
+     * Returns {@code true} if this dependency has a defined scope, returns {@code false} otherwise.
      */
     boolean hasDefinedScope() { return scope != DependencyScope.UNDEFINED }
 
