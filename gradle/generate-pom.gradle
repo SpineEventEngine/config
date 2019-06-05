@@ -1,18 +1,59 @@
+/*
+ * Copyright 2019, TeamDev. All rights reserved.
+ *
+ * Redistribution and use in source and/or binary forms, with or without
+ * modification, must retain the above copyright notice and the following
+ * disclaimer.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 import groovy.xml.MarkupBuilder
 import org.gradle.api.internal.artifacts.dependencies.AbstractExternalModuleDependency
 
+import static java.util.stream.Collectors.toSet
+
 /**
- * This script generates a {@code pom.xml} file that contains dependencies of the root project as well as the
- * dependencies of its subprojects.
+ * This script generates a {@code pom.xml} file that contains dependencies of the root project as
+ * well as the dependencies of its subprojects.
  *
- * The generated {@code pom.xml} is not usable for {@code maven} build tasks and is merely a description of project
- * dependencies.
+ * The generated {@code pom.xml} is not usable for {@code maven} build tasks and is merely a
+ * description of project dependencies.
  *
  * Configures the {@code build} task to generate the {@code pom.xml} file.
  *
  * Also configures the {@code clean} task to delete the generated {@code pom.xml} file.
  *
- * To generate the script, {@code apply} from this file.
+ * To generate the pom, {@code apply} from this file.
+ *
+ * Note that the generated {@code pom.xml} includes the group ID, artifact ID and the version of the
+ * project this script was applied to. In case you want to override the default values, do so in
+ * the {@code ext} block like so:
+ *
+ * <pre>
+ * {@code
+ * ext {
+ *     groupId = 'custom-group-id'
+ *     artifactId = 'custom-artifact-id'
+ *     version = 'custom-version'
+ * }
+ * }
+ * </pre>
+ *
+ * By default, those values are taken from the {@code project} object, which may or may not include
+ * them. If the project does not have these values and they are not specified in the {@code ext}
+ * block, the result {@code pom.xml} file is going to contain empty blocks,
+ * e.g. {@code <groupId></groupId>}
  */
 
 apply plugin: 'maven'
@@ -22,8 +63,12 @@ ext {
 }
 
 task generatePom {
+    delete outputFile
+
     doLast {
-        ProjectPomXml result = new ProjectPomXml(project)
+        ExtraPropertiesExtension extension = rootProject.ext
+        RootProjectData projectData = RootProjectData.fromEither(project, extension)
+        ProjectPomXml result = ProjectPomXml.from(projectData)
         result.writeTo(outputFile)
     }
 }
@@ -37,8 +82,8 @@ clean.doFirst {
 /**
  * A {@code pom.xml} file that contains dependencies of the project and its subprojects.
  *
- * <p>It is not usable for {@code maven} build tasks and serves as a description of project first level dependencies,
- * i.e, transitive dependencies are not included
+ * <p>It is not usable for {@code maven} build tasks and serves as a description of project first
+ * level dependencies, i.e. transitive dependencies are not included
  */
 class ProjectPomXml {
 
@@ -51,13 +96,23 @@ class ProjectPomXml {
     private static final String NEW_LINE = System.lineSeparator()
 
     private final Project project
+    private final String groupId
     private final String artifactId
     private final String version
 
-    ProjectPomXml(Project project) {
+    private ProjectPomXml(Project project, String groupId, String artifactId, String version) {
         this.project = project
-        this.artifactId = project.name
-        this.version = project.version
+        this.groupId = groupId
+        this.artifactId = artifactId
+        this.version = version
+    }
+
+    /** Creates a new instance based on the specified project data. */
+    static ProjectPomXml from(RootProjectData projectData) {
+        return new ProjectPomXml(projectData.project(),
+                projectData.groupId(),
+                projectData.artifactId(),
+                projectData.version())
     }
 
     /**
@@ -91,7 +146,7 @@ class ProjectPomXml {
      *
      * <p>Used writer will not be closed
      */
-    void writeBlocks(FileWriter writer, String... lines) {
+    static void writeBlocks(FileWriter writer, String... lines) {
         writer.write(NEW_LINE)
         for (String line : lines) {
             writer.write(line)
@@ -100,6 +155,7 @@ class ProjectPomXml {
         }
         writer.write(NEW_LINE)
     }
+
     /**
      * Obtains a String that represents a tag with the inception year of Spine.
      */
@@ -135,7 +191,6 @@ class ProjectPomXml {
         return writer.toString()
     }
 
-
     /**
      * Obtains a description comment that describes the nature of the generated {@code pom.xml} file.
      */
@@ -158,13 +213,13 @@ class ProjectPomXml {
         return descriptionComment
     }
 
-
     /**
      * Obtains a string that contains the name and the version of the current project.
      */
     private String rootProjectData() {
         Writer writer = new StringWriter()
         MarkupBuilder xmlBuilder = new MarkupBuilder(writer)
+        xmlBuilder.groupId(this.groupId)
         xmlBuilder.artifactId(this.artifactId)
         xmlBuilder.version(this.version)
         return writer.toString()
@@ -203,15 +258,15 @@ class ProjectPomXml {
  */
 class ProjectDependenciesAsXml {
 
-    private final Set<Dependency> firstLevelDependencies
+    private final Set<DependencyWithScope> firstLevelDependencies
 
-    private ProjectDependenciesAsXml(Set<Dependency> dependencySet) {
-        this.firstLevelDependencies = new HashSet<>(dependencySet)
+    private ProjectDependenciesAsXml(Set<DependencyWithScope> dependencySet) {
+        this.firstLevelDependencies = new TreeSet<>(dependencySet)
     }
 
     /** Creates a new instance based on the specified project. */
     static ProjectDependenciesAsXml of(Project project) {
-        Set<Dependency> dependencies = projectDependencies(project)
+        Set<DependencyWithScope> dependencies = projectDependencies(project)
         return new ProjectDependenciesAsXml(dependencies)
     }
 
@@ -223,35 +278,36 @@ class ProjectDependenciesAsXml {
     void writeUsing(Writer writer) {
         MarkupBuilder xmlBuilder = new MarkupBuilder(writer)
         xmlBuilder.dependencies() {
-            firstLevelDependencies.each { projectDep ->
-                dependency {
-                    groupId(projectDep.group)
-                    artifactId(projectDep.name)
-                    version(projectDep.version)
-                }
-            }
+            firstLevelDependencies
+                    .forEach { projectDep ->
+                        xmlBuilder.dependency {
+                            groupId(projectDep.dependency().group)
+                            artifactId(projectDep.dependency().name)
+                            version(projectDep.dependency().version)
+                            if (projectDep.hasDefinedScope()) {
+                                scope(projectDep.scopeName())
+                            }
+                        }
+                    }
         }
     }
 
-    private static Set<Dependency> projectDependencies(Project project) {
-        Set<Dependency> firstLevelDependencies = new HashSet<>()
+    private static Set<DependencyWithScope> projectDependencies(Project project) {
+        Set<DependencyWithScope> firstLevelDependencies = new HashSet<>()
         project.subprojects.forEach { subproject ->
-            Set<Dependency> subprojectDeps = dependenciesFromAllConfigurations(subproject)
+            Set<DependencyWithScope> subprojectDeps = dependenciesFromAllConfigurations(subproject)
             firstLevelDependencies.addAll(subprojectDeps)
         }
-        return firstLevelDependencies
+        return firstLevelDependencies.stream().sorted().distinct().collect(toSet())
     }
 
-    private static Set<Dependency> dependenciesFromAllConfigurations(Project project) {
-        Set<Dependency> result = new HashSet<>()
+    private static Set<DependencyWithScope> dependenciesFromAllConfigurations(Project project) {
+        Set<DependencyWithScope> result = new HashSet<>()
         project.configurations.forEach { configuration ->
             configuration.dependencies.forEach {
                 if (isExternal(it)) {
-                    /* 
-                       Note that despite using the `Set` data structure, `result` will still contain duplicates
-                       and an additional check is necessary. 
-                     */
-                    addIfNotPresent(it, result)
+                    DependencyWithScope dependency = DependencyWithScope.of(it, configuration)
+                    result.add(dependency)
                 }
             }
         }
@@ -261,26 +317,171 @@ class ProjectDependenciesAsXml {
     private static boolean isExternal(Dependency dependency) {
         return AbstractExternalModuleDependency.isAssignableFrom(dependency.class)
     }
+}
 
-    private static void addIfNotPresent(Dependency dependency, Set<Dependency> dependencySet) {
-        boolean isDuplicate = dependencySet.stream()
-                .anyMatch { dependenciesEqual(it, dependency) }
-        if (!isDuplicate) {
-            dependencySet.add(dependency)
-        }
+/**
+ * A project dependency with its scope.
+ *
+ * @see
+ * <a href="https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope">
+ *     More on dependency scopes </a>.
+ */
+class DependencyWithScope implements Comparable<DependencyWithScope> {
+
+    private final Dependency dependency
+    private final DependencyScope scope
+
+    /**
+     * A map that contains the relations of known Gradle configuration names
+     * to their Maven dependency scope equivalents.
+     */
+    private static Map<String, DependencyScope> CONFIG_TO_SCOPE
+
+    static {
+        CONFIG_TO_SCOPE = new HashMap<>()
+
+        /*
+         * Configurations from the Gradle Java plugin that are known to be mapped to the `compile`
+         * scope.
+         *
+         * Dependencies with the `compile` Maven scope are propagated to dependent projects.
+         *
+         * More at https://docs.gradle.org/current/userguide/java_plugin.html#tab:configurations
+         */
+        CONFIG_TO_SCOPE.put("compile", DependencyScope.COMPILE)
+        CONFIG_TO_SCOPE.put("implementation", DependencyScope.COMPILE)
+        CONFIG_TO_SCOPE.put("api", DependencyScope.COMPILE)
+
+        /*
+         * Configurations from the Gradle Java plugin that are known to be mapped to the `runtime`
+         * scope.
+         *
+         * Dependencies with the `runtime` Maven scopes are required for execution only.
+         */
+        CONFIG_TO_SCOPE.put("runtime", DependencyScope.RUNTIME)
+        CONFIG_TO_SCOPE.put("runtimeOnly", DependencyScope.RUNTIME)
+    }
+
+    private DependencyWithScope(Dependency dependency, DependencyScope scope) {
+        this.dependency = dependency
+        this.scope = scope
     }
 
     /**
-     *  Returns whether the first specified dependency is equal to the second specified dependency.
+     * Creates a new instance based on the specified dependency and its configuration.
      *
-     *  <p>Comparison is performed based on the group ID, name and the version. If either of those
-     *  criteria differs between specified dependencies, {@code false} is returned.
+     * <p>The scope of the dependency is based on the name of the configuration.
      */
-    private static boolean dependenciesEqual(Dependency it, Dependency dependency) {
-        boolean groupMatches = it.group.equals(dependency.group)
-        boolean nameMatches = it.name.equals(dependency.name)
-        boolean versionMatches = it.version.equals(dependency.version)
-        return groupMatches && nameMatches && versionMatches
+    static DependencyWithScope of(Dependency dependency, Configuration configuration) {
+        String configurationName = configuration.name
+        if (CONFIG_TO_SCOPE.containsKey(configurationName)) {
+            return new DependencyWithScope(dependency, CONFIG_TO_SCOPE.get(configurationName))
+        }
+        if (configurationName.toLowerCase().startsWith("test")) {
+            return new DependencyWithScope(dependency, DependencyScope.TEST)
+        }
+        return new DependencyWithScope(dependency, DependencyScope.UNDEFINED)
+    }
+
+    /**
+     * Obtains the layout priority of a scope.
+     *
+     * Layout priority determines what scopes come first in the generated {@code pom.xml} file.
+     * Dependencies with a lower priority number go on top.
+     */
+    int dependencyPriority() {
+        if (scope.equals(DependencyScope.COMPILE)) {
+            return 0
+        }
+        if (scope.equals(DependencyScope.RUNTIME)) {
+            return 1
+        }
+        if (scope.equals(DependencyScope.TEST)) {
+            return 2
+        }
+        return 3
+    }
+
+    /** Obtains the scope name of this dependency .*/
+    String scopeName() {
+        return scope.scopeName()
+    }
+
+    /** Obtains the Gradle dependency. */
+    Dependency dependency() {
+        return this.dependency
+    }
+
+    /** Obtains the Maven scope of this dependency. */
+    DependencyScope scope() {
+        return this.scope
+    }
+
+    /**
+     * Returns {@code true} if this dependency has a defined scope, returns {@code false} otherwise.
+     */
+    boolean hasDefinedScope() { return scope != DependencyScope.UNDEFINED }
+
+    @Override
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        DependencyWithScope that = (DependencyWithScope) o
+
+        if (dependency.group != that.dependency.group) return false
+        if (dependency.name != that.dependency.name) return false
+        if (dependency.version != that.dependency.version) return false
+
+        return true
+    }
+
+    @Override
+    int hashCode() {
+        int result = (dependency != null ? dependency.hashCode() : 0)
+        return result
+    }
+
+    @Override
+    int compareTo(DependencyWithScope o) {
+        if (this.scope().equals(o.scope())) {
+            Dependency thatDependency = o.dependency()
+            if (this.dependency().group.equals(thatDependency.group)) {
+                if (this.dependency().name.equals(thatDependency)) {
+                    return this.dependency().version.compareTo(thatDependency.name)
+                }
+                return this.dependency().name.compareTo(thatDependency.name)
+            }
+            return this.dependency().group.compareTo(thatDependency.group)
+        }
+        return dependencyPriority() - o.dependencyPriority()
+    }
+
+    /**
+     * A Maven dependency scope.
+     */
+    static enum DependencyScope {
+        UNDEFINED(""),
+        COMPILE("compile"),
+        PROVIDED("provided"),
+        RUNTIME("runtime"),
+        TEST("test"),
+        SYSTEM("system")
+        /*
+        `import` is also a scope, however, it can't be used outside the `<dependencyManagement>`
+        section, which is outside of the scope of this script
+       */
+
+        private final String name
+
+        DependencyScope(String name) {
+            this.name = name
+        }
+
+        /** Obtains the name of this scope. */
+        String scopeName() {
+            return name
+        }
     }
 }
 
@@ -288,6 +489,7 @@ class ProjectDependenciesAsXml {
  * Information about the licences used by Spine in XML form.
  */
 class SpineLicenceAsXml {
+
     private static final String NAME = "Apache License, Version 2.0"
     private static final String URL = "https://www.apache.org/licenses/LICENSE-2.0.txt"
     private static final String DISTRIBUTION = "repo"
@@ -308,5 +510,66 @@ class SpineLicenceAsXml {
                 distribution(DISTRIBUTION)
             }
         }
+    }
+}
+
+/**
+ * Information about the root project.
+ *
+ * <p>Root project is the project for which the {@code generatePom} is executed.
+ *
+ * <p>Includes group ID, artifact name and the version.
+ */
+class RootProjectData {
+
+    private final Project project
+    private final String groupId
+    private final String artifactId
+    private final String version
+
+    private RootProjectData(Project project, String group, String artifactId, String version) {
+        this.project = project
+        this.groupId = group
+        this.artifactId = artifactId
+        this.version = version
+    }
+
+    /**
+     * Creates a new instance.
+     *
+     * <p>Data from the specified project is prioritized.
+     * If a property (group ID, artifact name or version) is not found in the project,
+     * it is taken from the specified extension.
+     */
+    static RootProjectData fromEither(Project project, /* or */ ExtraPropertiesExtension extension) {
+        boolean groupMissingFromProject = project.group == null || project.group.isEmpty()
+        boolean nameMissingFromProject = project.name == null || project.name.isEmpty()
+        boolean versionMissingFromProject = project.version == null || project.version.isEmpty()
+
+        String groupId = groupMissingFromProject ? extension.groupId : project.group
+        String name = nameMissingFromProject ? extension.artifactId : project.name
+        String version = versionMissingFromProject ? extension.version : project.version
+
+        return new RootProjectData(project, groupId, name, version)
+    }
+
+    /** Obtains the project object matching the root project. */
+    Project project() {
+        return this.project
+    }
+
+    /** Obtains the group ID of the root project. */
+    String groupId() {
+        return this.groupId
+    }
+
+    /** Obtains the artifact ID of the root project. */
+    String artifactId() {
+        return this.artifactId
+    }
+
+    /** Obtains the version of the root project. */
+    String version() {
+        return this.version
     }
 }
