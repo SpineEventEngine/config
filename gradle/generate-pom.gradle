@@ -18,7 +18,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 import groovy.xml.MarkupBuilder
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.internal.artifacts.dependencies.AbstractExternalModuleDependency
 
 import static java.util.stream.Collectors.toSet
@@ -59,24 +61,24 @@ import static java.util.stream.Collectors.toSet
 apply plugin: 'maven'
 
 ext {
-    outputFile = "$projectDir" + File.separator + "pom.xml"
+    pomFile = "${projectDir}${File.separator}pom.xml"
 }
 
 task generatePom {
-    delete outputFile
 
     doLast {
+        delete pomFile
         ExtraPropertiesExtension extension = rootProject.ext
         RootProjectData projectData = RootProjectData.fromEither(project, extension)
         ProjectPomXml result = ProjectPomXml.from(projectData)
-        result.writeTo(outputFile)
+        result.writeTo(pomFile)
     }
 }
 
 build.finalizedBy generatePom
 
 clean.doFirst {
-    delete outputFile
+    delete pomFile
 }
 
 /**
