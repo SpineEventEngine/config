@@ -70,7 +70,7 @@ final def versions = [
     checkerFramework : "2.8.2",
     errorProne       : "2.3.3",
     errorProneJavac  : "9+181-r4173-1", // taken from here: https://github.com/tbroyer/gradle-errorprone-plugin/blob/v0.8/build.gradle.kts
-    errorPronePlugin : "0.8",
+    errorPronePlugin : "0.8.1",
     pmd              : "6.13.0",
     checkstyle       : "8.19",
     protobufPlugin   : "0.8.8",
@@ -151,10 +151,12 @@ final def gen = [
 
 //noinspection GroovyAssignabilityCheck
 final def grpc = [
+    grpcCore               : "io.grpc:grpc-core:$versions.grpc",
     grpcStub               : "io.grpc:grpc-stub:$versions.grpc",
     grpcOkHttp             : "io.grpc:grpc-okhttp:$versions.grpc",
     grpcProtobuf           : "io.grpc:grpc-protobuf:$versions.grpc",
     grpcNetty              : "io.grpc:grpc-netty:$versions.grpc",
+    grpcContext            : "io.grpc:grpc-context:$versions.grpc"
 ]
 
 //noinspection GroovyAssignabilityCheck
@@ -238,6 +240,8 @@ ext.forceConfiguration = { final configurationContainer ->
 
                     // Force discontinued transitive dependency until everybody migrates off it.
                     "org.checkerframework:checker-compat-qual:2.5.3",
+
+                    "commons-logging:commons-logging:1.2",
 
                     // Force the Gradle Protobuf plugin version.
                     deps.build.gradlePlugins.protobuf
