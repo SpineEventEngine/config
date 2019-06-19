@@ -20,7 +20,6 @@
 
 
 import groovy.xml.MarkupBuilder
-import org.gradle.api.artifacts.Dependency
 import org.gradle.api.internal.artifacts.dependencies.AbstractExternalModuleDependency
 
 import static java.util.stream.Collectors.toSet
