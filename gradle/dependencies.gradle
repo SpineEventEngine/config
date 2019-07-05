@@ -180,6 +180,7 @@ final def test = [
 final def scripts = [
     testArtifacts          : "$rootDir/config/gradle/test-artifacts.gradle",
     testOutput             : "$rootDir/config/gradle/test-output.gradle",
+    slowTests              : "$rootDir/config/gradle/slow-tests.gradle",
     javadocOptions         : "$rootDir/config/gradle/javadoc-options.gradle",
     filterInternalJavadocs : "$rootDir/config/gradle/filter-internal-javadoc.gradle",
     jacoco                 : "$rootDir/config/gradle/jacoco.gradle",
