@@ -29,7 +29,7 @@ test {
     }
 }
 
-task functionalTest(type: Test) {
+task slowTest(type: Test) {
     description = 'Executes JUnit tests tagged as "slow".'
     group = 'Verification'
 
