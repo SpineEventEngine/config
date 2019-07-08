@@ -295,6 +295,7 @@ class ProjectDependenciesAsXml {
 
     private static Set<DependencyWithScope> projectDependencies(Project project) {
         Set<DependencyWithScope> firstLevelDependencies = new HashSet<>()
+        firstLevelDependencies.addAll(dependenciesFromAllConfigurations(project))
         project.subprojects.forEach { subproject ->
             Set<DependencyWithScope> subprojectDeps = dependenciesFromAllConfigurations(subproject)
             firstLevelDependencies.addAll(subprojectDeps)
