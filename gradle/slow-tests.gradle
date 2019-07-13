@@ -38,3 +38,10 @@ task slowTest(type: Test) {
     }
     mustRunAfter test
 }
+
+task allTest {
+    description = 'Executes all JUnit tests, including the "slow" ones.'
+    group = 'Verification'
+
+    dependsOn 'test', 'slowTest'
+}
