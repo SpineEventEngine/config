@@ -120,22 +120,24 @@ class ProjectPomXml {
      * Writes the {@code pom.xml} file containing dependencies of this project and its subprojects to the specified
      * location.
      *
-     * <p>If a file with the specified location exists, it will not be rewritten and instead be appended with
-     * {@code pom.xml} file contents.
+     * <p>If a file with the specified location exists, its contents will be substituted with a new
+     * {@code pom.xml}.
      *
      * @param filePath path to write {@code pom.xml} file to
      */
     void writeTo(String filePath) {
-        FileWriter fileWriter = new FileWriter(filePath, true)
-        writeHeader(fileWriter)
+        FileWriter fileWriter = new FileWriter(filePath)
+        StringWriter stringWriter = new StringWriter()
+        writeHeader(stringWriter)
 
-        writeBlocks(fileWriter,
+        writeBlocks(stringWriter,
                 describingComment(),
                 rootProjectData(),
                 inceptionYear(),
                 licence(),
                 projectDependencies()
         )
+        fileWriter.write(stringWriter.toString())
         fileWriter.close()
     }
 
@@ -144,10 +146,8 @@ class ProjectPomXml {
      * separator.
      *
      * The written lines are also padded with platforms line separator from both sides
-     *
-     * <p>Used writer will not be closed
      */
-    static void writeBlocks(FileWriter writer, String... lines) {
+    static void writeBlocks(StringWriter writer, String... lines) {
         writer.write(NEW_LINE)
         for (String line : lines) {
             writer.write(line)
@@ -228,16 +228,14 @@ class ProjectPomXml {
 
     /**
      * Writes the XML metadata using the specified writer.
-     *
-     * <p>Used writer will not be closed.
      */
-    private static void writeHeader(FileWriter fileWriter) {
-        fileWriter.write(XML_METADATA)
-        fileWriter.write(System.lineSeparator())
-        fileWriter.write(PROJECT_SCHEMA_LOCATION)
-        fileWriter.write(System.lineSeparator())
-        fileWriter.write(MODEL_VERSION)
-        fileWriter.write(System.lineSeparator())
+    private static void writeHeader(StringWriter stringWriter) {
+        stringWriter.write(XML_METADATA)
+        stringWriter.write(System.lineSeparator())
+        stringWriter.write(PROJECT_SCHEMA_LOCATION)
+        stringWriter.write(System.lineSeparator())
+        stringWriter.write(MODEL_VERSION)
+        stringWriter.write(System.lineSeparator())
     }
 }
 
@@ -305,7 +303,12 @@ class ProjectDependenciesAsXml {
 
     private static Set<DependencyWithScope> dependenciesFromAllConfigurations(Project project) {
         Set<DependencyWithScope> result = new HashSet<>()
-        project.configurations.forEach { configuration ->
+        project.configurations.forEach { c ->
+            def configuration = c
+            if (isResolvable(c)) {
+                // Force configuration resolution.
+                configuration.resolvedConfiguration
+            }
             configuration.dependencies.forEach {
                 if (isExternal(it)) {
                     DependencyWithScope dependency = DependencyWithScope.of(it, configuration)
@@ -314,6 +317,10 @@ class ProjectDependenciesAsXml {
             }
         }
         return result
+    }
+
+    static boolean isResolvable(Configuration config) {
+        config.hasProperty("canBeResolved") && config.canBeResolved
     }
 
     private static boolean isExternal(Dependency dependency) {
