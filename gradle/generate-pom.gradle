@@ -300,7 +300,12 @@ class ProjectDependenciesAsXml {
 
     private static Set<DependencyWithScope> dependenciesFromAllConfigurations(Project project) {
         Set<DependencyWithScope> result = new HashSet<>()
-        project.configurations.forEach { configuration ->
+        project.configurations.forEach { c ->
+            def configuration = c
+            if (isResolvable(c)) {
+                // Force configuration resolution.
+                configuration.resolvedConfiguration
+            }
             configuration.dependencies.forEach {
                 if (isExternal(it)) {
                     DependencyWithScope dependency = DependencyWithScope.of(it, configuration)
@@ -309,6 +314,10 @@ class ProjectDependenciesAsXml {
             }
         }
         return result
+    }
+
+    static boolean isResolvable(Configuration config) {
+        config.hasProperty("canBeResolved") && config.canBeResolved
     }
 
     private static boolean isExternal(Dependency dependency) {
