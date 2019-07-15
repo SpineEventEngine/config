@@ -55,6 +55,12 @@ task jacocoRootReport(dependsOn: javaProjects*.tasks*.withType(Test), type: Jaco
     onlyIf = {
         true
     }
+    javaProjects.each {
+        final slowTestTask = it.tasks.findByName('slowTest')
+        if (slowTestTask != null) {
+            it.jacocoTestReport.executionData slowTestTask
+        }
+    }
     // Handle subprojects after their evaluation, when the task is run.
     doFirst {
         additionalSourceDirs = CodebaseFilter.nonGeneratedOnly(files(javaProjects.sourceSets.main.java.srcDirs))

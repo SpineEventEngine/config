@@ -37,6 +37,17 @@ task slowTest(type: Test) {
         includeTags slowTag
     }
     mustRunAfter test
+
+    jacoco {
+        // See the default configuration at https://docs.gradle.org/current/userguide/jacoco_plugin.html#sec:configuring_the_jacoco_plugin
+        enabled = true
+        destinationFile = file("${buildDir}/jacoco/${name}.exec")
+        includeNoLocationClasses = false
+        dumpOnExit = true
+        address = "localhost"
+        port = 6300
+        jmx = false
+    }
 }
 
 task allTest {
