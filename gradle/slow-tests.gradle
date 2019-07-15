@@ -25,7 +25,7 @@ task fastTest(type: Test) {
     group = 'Verification'
 
     useJUnitPlatform {
-        includeTags slowTag
+        excludeTags slowTag
     }
 }
 
