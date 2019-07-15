@@ -20,12 +20,12 @@
 
 final def slowTag = 'slow' // See io.spine.testing.SlowTest
 
-// Configure the default `test` task to run only non-slow tests.
-test {
-    useJUnitPlatform {
-        includeEngines 'junit-jupiter'
+task fastTest(type: Test) {
+    description = 'Executes all JUnit tests but the ones tagged as "slow".'
+    group = 'Verification'
 
-        excludeTags slowTag
+    useJUnitPlatform {
+        includeTags slowTag
     }
 }
 
@@ -36,23 +36,5 @@ task slowTest(type: Test) {
     useJUnitPlatform {
         includeTags slowTag
     }
-    mustRunAfter test
-
-    jacoco {
-        // See the default configuration at https://docs.gradle.org/current/userguide/jacoco_plugin.html#sec:configuring_the_jacoco_plugin
-        enabled = true
-        destinationFile = file("${buildDir}/jacoco/${name}.exec")
-        includeNoLocationClasses = false
-        dumpOnExit = true
-        address = "localhost"
-        port = 6300
-        jmx = false
-    }
-}
-
-task allTest {
-    description = 'Executes all JUnit tests, including the "slow" ones.'
-    group = 'Verification'
-
-    dependsOn 'test', 'slowTest'
+    mustRunAfter quickTest
 }
