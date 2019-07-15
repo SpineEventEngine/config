@@ -36,5 +36,5 @@ task slowTest(type: Test) {
     useJUnitPlatform {
         includeTags slowTag
     }
-    mustRunAfter quickTest
+    shouldRunAfter quickTest
 }
