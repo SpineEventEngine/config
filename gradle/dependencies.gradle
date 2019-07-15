@@ -132,6 +132,9 @@ final def build = [
     firebaseAdmin          : "com.google.firebase:firebase-admin:$versions.firebaseAdmin",
     jacksonDatabind        : "com.fasterxml.jackson.core:jackson-databind:$versions.jackson",
 
+    roasterApi             : "org.jboss.forge.roaster:roaster-api:$versions.roaster",
+    roasterJdt             : "org.jboss.forge.roaster:roaster-jdt:$versions.roaster",
+
     ci: "true" == System.getenv("CI"),
 
     gradlePlugins: [
