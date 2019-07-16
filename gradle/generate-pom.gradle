@@ -33,8 +33,6 @@ import static java.util.stream.Collectors.toSet
  *
  * Configures the {@code build} task to generate the {@code pom.xml} file.
  *
- * Also configures the {@code clean} task to delete the generated {@code pom.xml} file.
- *
  * To generate the pom, {@code apply} from this file.
  *
  * Note that the generated {@code pom.xml} includes the group ID, artifact ID and the version of the
@@ -75,10 +73,6 @@ task generatePom {
 }
 
 build.finalizedBy generatePom
-
-clean.doFirst {
-    delete pomFile
-}
 
 /**
  * A {@code pom.xml} file that contains dependencies of the project and its subprojects.
