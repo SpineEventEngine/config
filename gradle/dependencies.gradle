@@ -245,6 +245,7 @@ ext.forceConfiguration = { final configurationContainer ->
                     deps.test.junit4,
                     
                     // Transitive dependencies of 3rd party components that we don't use directly.
+                    "com.google.j2objc:j2objc-annotations:1.3",
                     "org.codehaus.plexus:plexus-utils:3.0.17",
                     "com.squareup.okio:okio:1.13.0",
 
