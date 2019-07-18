@@ -66,8 +66,8 @@ ext.repos = [
 
 //noinspection GroovyAssignabilityCheck
 final def versions = [
-    slf4j            : "1.7.26",
-    checkerFramework : "2.8.2",
+    slf4j            : "1.7.26", // deprecated, remove after full migration.
+    checkerFramework : "2.9.0",
     errorProne       : "2.3.3",
     errorProneJavac  : "9+181-r4173-1", // taken from here: https://github.com/tbroyer/gradle-errorprone-plugin/blob/v0.8/build.gradle.kts
     errorPronePlugin : "0.8.1",
@@ -86,7 +86,6 @@ final def versions = [
     junitPioneer     : "0.3.0",
     truth            : "0.44",
     httpClient       : "1.29.0",
-    apacheValidator  : "1.6",
     firebaseAdmin    : "6.8.0",
     roaster          : '2.20.8.Final',
     licensePlugin    : '1.6',
@@ -128,7 +127,6 @@ final def build = [
     googleHttpClient       : "com.google.http-client:google-http-client:$versions.httpClient",
     googleHttpClientApache : "com.google.http-client:google-http-client-apache:$versions.httpClient",
     appengineApi           : "com.google.appengine:appengine-api-1.0-sdk:$versions.appengineApi",
-    apacheValidator        : "commons-validator:commons-validator:$versions.apacheValidator",
 
     firebaseAdmin          : "com.google.firebase:firebase-admin:$versions.firebaseAdmin",
     jacksonDatabind        : "com.fasterxml.jackson.core:jackson-databind:$versions.jackson",
