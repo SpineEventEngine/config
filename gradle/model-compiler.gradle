@@ -30,8 +30,6 @@
  * And the following method generations are applied:
  * — all messages that qualify to be UUID messages have helper `generate` and `of` methods
  *   generated using `UuidMethodFactory`;
- * — all messages that have validating builders have helper `vBuilder` and instance `toVBuilder`
- *   methods generated using `VBuilderMethodFactory`.
  *
  * Be aware that the root project `buildscript` should already have a classpath
  * `io.spine.tools:spine-model-compiler:<version>` classpath dependency.

@@ -64,7 +64,7 @@ configure(project.rootProject) {
                     .redirectOutput(debugOut)
                     .start()
             if (process.waitFor() != 0) {
-                throw new GradleException("Unable to build validating builders. See $errorOut for details.")
+                throw new GradleException("Build FAILED. See $errorOut for details.")
             }
         }
     }
