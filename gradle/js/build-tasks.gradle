@@ -39,8 +39,8 @@ ext {
     }
 }
 
-apply from: deps.scripts.npmCli
-apply from: deps.scripts.updatePackageVersion
+apply from: "$rootDir/gradle/js/npm-cli.gradle"
+apply from: "$rootDir/gradle/js/update-package-version.gradle"
 
 /**
  * Compiles Protobuf sources into JavaScript.
