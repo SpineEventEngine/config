@@ -22,21 +22,12 @@
  * This script configures Java Compiler.
  */
 
-
-// Explicitly states the encoding of the source and test source files, ensuring
-// correct execution of the `javac` task.
-
-compileJava {
-    options.encoding = 'UTF-8'
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-}
-
-compileTestJava {
-    options.encoding = 'UTF-8'
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-}
-
 tasks.withType(JavaCompile) {
+
+    // Explicitly states the encoding of the source and test source files, ensuring
+    // correct execution of the `javac` task.
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 
     // Configure Error Prone:
     // 1. Exclude generated sources from being analyzed by Error Prone.
