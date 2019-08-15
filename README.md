@@ -25,7 +25,6 @@ It will get the latest code from the remote repo, and then copy shared files int
 project. The following files will be copied:
  
  * `.idea` - a directory with shared IntelliJ IDEA settings
- * `.codacy.yaml`
  * `.codecov.yml`
  * `.gitattributes`
  * `.gitignore`
