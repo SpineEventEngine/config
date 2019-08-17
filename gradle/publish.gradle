@@ -56,7 +56,6 @@ task publish {
     }
 }
 
-@SuppressWarnings("GroovyAssignabilityCheck") // Avoiding `Method call is ambiguous` warning in IDEA.
 void dependPublish(final Project project) {
     final Set<Task> credentialsTasks = getTasksByName("readPublishingCredentials", false)
     project.getTasksByName("publish", false).each { final task ->
