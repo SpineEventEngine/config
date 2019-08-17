@@ -64,7 +64,6 @@ ext.repos = [
     gradlePlugins     : "https://plugins.gradle.org/m2/"
 ]
 
-//noinspection GroovyAssignabilityCheck
 final def versions = [
     slf4j            : "1.7.26", // deprecated, remove after full migration.
     checkerFramework : "2.9.0",
@@ -96,7 +95,6 @@ final def versions = [
     jackson          : '2.9.9.2'
 ]
 
-//noinspection GroovyAssignabilityCheck
 final def build = [
     errorProneJavac        : "com.google.errorprone:javac:$versions.errorProneJavac",
     errorProneAnnotations: [
@@ -145,12 +143,10 @@ final def build = [
     ]
 ]
 
-//noinspection GroovyAssignabilityCheck
 final def gen = [
     javaPoet : "com.squareup:javapoet:$versions.javaPoet"
 ]
 
-//noinspection GroovyAssignabilityCheck
 final def grpc = [
     grpcCore               : "io.grpc:grpc-core:$versions.grpc",
     grpcStub               : "io.grpc:grpc-stub:$versions.grpc",
@@ -166,7 +162,6 @@ final def runtime = [
     floggerSlf4J         : "com.google.flogger:slf4j-backend-factory:$versions.flogger"
 ]
 
-//noinspection GroovyAssignabilityCheck
 final def test = [
     junit4        : "junit:junit:$versions.junit4",
     junit5Api     : ["org.junit.jupiter:junit-jupiter-api:$versions.junit5",
@@ -183,7 +178,6 @@ final def test = [
                      "com.google.truth.extensions:truth-proto-extension:$versions.truth"]
 ]
 
-//noinspection GroovyAssignabilityCheck
 final def scripts = [
     testArtifacts          : "$rootDir/config/gradle/test-artifacts.gradle",
     testOutput             : "$rootDir/config/gradle/test-output.gradle",
