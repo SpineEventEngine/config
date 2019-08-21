@@ -29,7 +29,8 @@
  */
 pmd {
     toolVersion = "${deps.versions.pmd}"
-    consoleOutput= true
+    consoleOutput = true
+    incrementalAnalysis = true
 
     // The build is going to fail in case of violations.
     ignoreFailures = false
