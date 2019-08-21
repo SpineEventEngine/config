@@ -18,10 +18,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Apply this script to enable JaCoCo test report.
+// Apply this script to enable the combined JaCoCo test report.
 //
-// This task aggregates the XML report results from all Java subprojects.
+// This task combines the XML report results from all Java sub-projects.
 // Inspired by: https://gist.github.com/aalmiray/e6f54aa4b3803be0bcac
+//
+// This task runs after `:check` task.
 
 // Required to grab dependencies for `jacocoRootReport` task.
 repositories {
@@ -30,22 +32,22 @@ repositories {
 
 import groovy.io.FileType
 
-// Evaluate this script only after all subprojects were evaluated.
-// Only after that it is possible to say which of the subprojects are Java projects.
+// Evaluate this script only after all sub-projects were evaluated.
+// Only after that it is possible to say which of the sub-projects are Java projects.
 evaluationDependsOnChildren()
 
 final def javaProjects = subprojects.findAll { it.pluginManager.hasPlugin('java') }
 
-// Create an aggregate coverage report across Java modules,
+// Create an combined coverage report across Java modules,
 // excluding the generated content from the coverage stats.
 //
 task jacocoRootReport(dependsOn: javaProjects.test, type: JacocoReport) {
     // It is required to set some default value in order for the task to initialize.
     // This value is overridden in `#doFirst` section.
-    additionalSourceDirs = files()
-    sourceDirectories = files()
-    executionData = files()
-    classDirectories = files()
+    additionalSourceDirs.from files()
+    sourceDirectories.from  files()
+    executionData.from files()
+    classDirectories.from files()
 
     reports {
         html.enabled = true
@@ -55,24 +57,24 @@ task jacocoRootReport(dependsOn: javaProjects.test, type: JacocoReport) {
     onlyIf = {
         true
     }
-    // Handle subprojects after their evaluation, when the task is run.
+    // Handle sub-projects after their evaluation, when the task is run.
     doFirst {
-        additionalSourceDirs = CodebaseFilter.nonGeneratedOnly(files(javaProjects.sourceSets.main.java.srcDirs))
-        sourceDirectories = CodebaseFilter.nonGeneratedOnly(files(javaProjects.sourceSets.main.java.srcDirs))
+        additionalSourceDirs.from CodebaseFilter.nonGeneratedOnly(files(javaProjects.sourceSets.main.java.srcDirs))
+        sourceDirectories.from CodebaseFilter.nonGeneratedOnly(files(javaProjects.sourceSets.main.java.srcDirs))
 
         final def allExecutionData = files(javaProjects.jacocoTestReport.executionData)
         // In case some modules do not have the JaCoCo execution data files.
-        executionData = files(allExecutionData.findAll {
+        executionData.from files(allExecutionData.findAll {
             it.exists()
         })
 
-        println("Starting to compose an aggregate coverage report across modules.")
+        println("Starting to compose a combined coverage report across Java modules.")
 
         final def filter = new CodebaseFilter(project,
                 javaProjects.sourceSets.main.java.srcDirs,
                 javaProjects.sourceSets.main.output)
         final def nonGeneratedFiles = filter.findNonGeneratedCompiledFiles()
-        classDirectories = files(nonGeneratedFiles)
+        classDirectories.from files(nonGeneratedFiles)
     }
 }
 
@@ -139,7 +141,6 @@ class CodebaseFilter {
         }
     }
 
-    @SuppressWarnings("GroovyAssignabilityCheck")  // a workaround for https://youtrack.jetbrains.com/issue/IDEA-141744
     private LinkedList<String> getGeneratedClassNames() {
         final def sourceFiles = project.files(javaSrcDirs)
         final def generatedSourceFiles = generatedOnly(sourceFiles)
@@ -174,7 +175,6 @@ class CodebaseFilter {
         return generatedClassNames
     }
 
-    @SuppressWarnings("GroovyAssignabilityCheck")  // a workaround for https://youtrack.jetbrains.com/issue/IDEA-141744
     List<FileTree> findNonGeneratedCompiledFiles() {
         println(" - Available source dirs: ")
         final def srcDirs = project.files(javaSrcDirs)
