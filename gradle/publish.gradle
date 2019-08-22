@@ -56,8 +56,8 @@ task publish {
     }
 }
 
-void dependPublish(final Project project) {
-    final Set<Task> credentialsTasks = getTasksByName("readPublishingCredentials", false)
+void dependPublish(final project) {
+    final credentialsTasks = getTasksByName("readPublishingCredentials", false)
     project.getTasksByName("publish", false).each { final task ->
         task.dependsOn credentialsTasks
     }
@@ -69,6 +69,12 @@ projectsToPublish.each {
         apply plugin: 'maven-publish'
 
         logger.debug("Applying `maven-publish` plugin to ${currentProject.name}.")
+
+        currentProject.artifacts {
+            archives sourceJar
+            archives testOutputJar
+            archives javadocJar
+        }
 
         // Artifact IDs are composed as "spine-<project.name>". Example:
         //
@@ -88,9 +94,7 @@ projectsToPublish.each {
 
                         from components.java
 
-                        artifact sourceJar
-                        artifact testOutputJar
-                        artifact javadocJar
+                        artifacts = configurations.archives.allArtifacts
                     }
                 }
             }
