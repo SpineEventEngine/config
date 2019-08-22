@@ -18,7 +18,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Apply this script to add ability to publish the needed artifacts.
+/*
+  Apply this script to add ability to publish the needed artifacts.
+
+  To publish more artifacts for a certain project, add them to the archives configuration:
+  ```
+  artifacts {
+      archives myCustomJarTask
+  }
+  ```
+ */
+
+//
 
 // See `dependencies.gradle` for the selection of the target repository.
 final String credentialsPropertyFile = publishToRepository.credentials
