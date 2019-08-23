@@ -29,8 +29,6 @@
   ```
  */
 
-//
-
 // See `dependencies.gradle` for the selection of the target repository.
 final String credentialsPropertyFile = publishToRepository.credentials
 
