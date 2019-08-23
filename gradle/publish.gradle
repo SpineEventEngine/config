@@ -18,7 +18,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Apply this script to add ability to publish the needed artifacts.
+/*
+  Apply this script to add ability to publish the needed artifacts.
+
+  To publish more artifacts for a certain project, add them to the archives configuration:
+  ```
+  artifacts {
+      archives myCustomJarTask
+  }
+  ```
+ */
 
 // See `dependencies.gradle` for the selection of the target repository.
 final String credentialsPropertyFile = publishToRepository.credentials
@@ -56,8 +65,8 @@ task publish {
     }
 }
 
-void dependPublish(final Project project) {
-    final Set<Task> credentialsTasks = getTasksByName("readPublishingCredentials", false)
+void dependPublish(final project) {
+    final credentialsTasks = getTasksByName("readPublishingCredentials", false)
     project.getTasksByName("publish", false).each { final task ->
         task.dependsOn credentialsTasks
     }
@@ -69,6 +78,12 @@ projectsToPublish.each {
         apply plugin: 'maven-publish'
 
         logger.debug("Applying `maven-publish` plugin to ${currentProject.name}.")
+
+        currentProject.artifacts {
+            archives sourceJar
+            archives testOutputJar
+            archives javadocJar
+        }
 
         // Artifact IDs are composed as "spine-<project.name>". Example:
         //
@@ -88,9 +103,7 @@ projectsToPublish.each {
 
                         from components.java
 
-                        artifact sourceJar
-                        artifact testOutputJar
-                        artifact javadocJar
+                        artifacts = configurations.archives.allArtifacts
                     }
                 }
             }

@@ -56,6 +56,17 @@ buildscript {
     }
 }
 
+task assembleProto(type: Jar) {
+    description "Assembles a JAR artifact with all Proto definitions from the classpath."
+    from { collectProto() }
+    include { isProtoFileOrDir(it.file) }
+    classifier 'proto'
+}
+
+artifacts {
+    archives assembleProto
+}
+
 /**
  * Collects all the directories from current project and its dependencies (including zip tree
  * directories) which contain {@code .proto} definitions.
@@ -95,7 +106,7 @@ Collection<File> collectProto() {
                  * As a side effect, the message is shown upon `./gradlew clean build` or upon
                  * a newly created version of framework build etc.
                  */
-                logger.error(
+                logger.debug(
                         "${e.message}${System.lineSeparator()}The proto artifact may be corrupted."
                 )
             }
@@ -142,13 +153,6 @@ JarFileName jarName(final File jar) {
     }
 }
 
-task assembleProto(type: Jar) {
-    description "Assembles a JAR artifact with all Proto definitions from the classpath."
-    from { collectProto() }
-    include { isProtoFileOrDir(it.file) }
-    classifier "proto"
-}
-
 /**
  * Checks if the given abstract pathname represents either a {@code .proto} file, or a directory
  * containing proto files.
@@ -185,21 +189,6 @@ boolean isProtoFileOrDir(final File candidate) {
  */
 boolean isProtoFile(final File file) {
     return file.isFile() && file.name.endsWith(".proto")
-}
-
-final String artifactIdForPublishing = "spine-${project.name}"
-publishing {
-    publications {
-        mavenProto(MavenPublication) {
-            groupId = "${group}"
-            artifactId = "${artifactIdForPublishing}"
-            version = "${version}"
-
-            from components.java
-
-            artifacts = [assembleProto]
-        }
-    }
 }
 
 /**
