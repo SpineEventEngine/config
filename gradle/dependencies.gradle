@@ -84,7 +84,7 @@ final def versions = [
     junit5           : "5.5.1",
     junitPlatform    : "1.5.1",
     junitPioneer     : "0.3.0",
-    truth            : "1.0",
+    truth            : "0.44",
     httpClient       : "1.29.0",
     firebaseAdmin    : "6.8.0",
     roaster          : '2.20.8.Final',
