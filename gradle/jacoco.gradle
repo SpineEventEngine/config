@@ -41,7 +41,7 @@ final def javaProjects = subprojects.findAll { it.pluginManager.hasPlugin('java'
 // Create an combined coverage report across Java modules,
 // excluding the generated content from the coverage stats.
 //
-task jacocoRootReport(dependsOn: javaProjects.test, type: JacocoReport) {
+task jacocoRootReport(dependsOn: javaProjects.jacocoTestReport, type: JacocoReport) {
     // It is required to set some default value in order for the task to initialize.
     // This value is overridden in `#doFirst` section.
     additionalSourceDirs.from files()
