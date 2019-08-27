@@ -65,6 +65,7 @@ task jacocoRootReport(dependsOn: javaProjects.jacocoTestReport, type: JacocoRepo
         final def allExecutionData = files(javaProjects.jacocoTestReport.executionData)
         // In case some modules do not have the JaCoCo execution data files.
         executionData.from files(allExecutionData.findAll {
+            println it.exists() ? "File $it exists" : "File $it DOES NOT exist"
             it.exists()
         })
 
@@ -187,18 +188,17 @@ class CodebaseFilter {
             final def srcFile = new File(it.getClassesDirs().getAsPath())
             println("Filtering out the generated classes for ${srcFile}")
 
-            // return the filtered `fileTree`s as a collected result.
-            project.fileTree(dir: srcFile, exclude: { final details ->
-                final def file = details.file
-                def className = parseClassName(file, JAVA_OUTPUT_FOLDER_MARKER, COMPILED_CLASS_FILE_EXTENSION)
+            // Return the filtered `fileTree`s as a collected result.
+            return project.fileTree(dir: srcFile, exclude: { final details ->
+                def className = parseClassName(details.file, JAVA_OUTPUT_FOLDER_MARKER, COMPILED_CLASS_FILE_EXTENSION)
 
                 // Handling anonymous classes as well.
                 // They should be associated with the same `.java` file as their parent class.
                 if (className != null && className.contains(ANONYMOUS_CLASS_MARKER)) {
-                    //assuming there cannot be more that a single `$`.
+                    // Assuming there cannot be more that a single `$`.
                     className = className.split(ANONYMOUS_CLASS_PATTERN)[0]
                 }
-                generatedClassNames.contains(className)
+                return generatedClassNames.contains(className)
             })
         }
         return nonGeneratedClassTree
