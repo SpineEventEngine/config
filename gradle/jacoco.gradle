@@ -46,7 +46,7 @@ task jacocoRootReport(dependsOn: javaProjects.jacocoTestReport, type: JacocoRepo
     final def sourceDirs = CodebaseFilter.nonGeneratedOnly(files(javaProjects.sourceSets.main.java.srcDirs))
     additionalSourceDirs.from sourceDirs
     sourceDirectories.from sourceDirs
-    executionData.from files(javaProjects.jacocoTestReport.executionData)
+    executionData.builtBy javaProjects.jacocoTestReport
 
     final def filter = new CodebaseFilter(project,
             javaProjects.sourceSets.main.java.srcDirs,
