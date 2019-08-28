@@ -36,7 +36,7 @@ import groovy.io.FileType
 // Only after that it is possible to say which of the sub-projects are Java projects.
 //evaluationDependsOnChildren()
 
-final def javaProjects = subprojects.findAll { it.pluginManager.hasPlugin('java') }
+final def javaProjects = subprojects.findAll { it.pluginManager.hasPlugin('jacoco') }
 
 // Create an combined coverage report across Java modules,
 // excluding the generated content from the coverage stats.
