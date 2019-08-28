@@ -34,7 +34,7 @@ import groovy.io.FileType
 
 // Evaluate this script only after all sub-projects were evaluated.
 // Only after that it is possible to say which of the sub-projects are Java projects.
-//evaluationDependsOnChildren()
+evaluationDependsOnChildren()
 
 final def javaProjects = subprojects.findAll { it.pluginManager.hasPlugin('jacoco') }
 
