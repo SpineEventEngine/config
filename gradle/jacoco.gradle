@@ -37,16 +37,26 @@ import groovy.io.FileType
 evaluationDependsOnChildren()
 
 final def javaProjects = subprojects.findAll { it.pluginManager.hasPlugin('jacoco') }
+final def jacocoReports = file("${rootProject.buildDir}/subreports/jacoco/")
+
+task copyReports(dependsOn: javaProjects.jacocoTestReport, type: Copy) {
+    description = "Copies JaCoCo reports from subprojects into a single directory in the root project."
+
+    from files(javaProjects.jacocoTestReport.executionData)
+    into jacocoReports
+
+    rename { "${UUID.randomUUID().toString()}.exec" }
+}
 
 // Create an combined coverage report across Java modules,
 // excluding the generated content from the coverage stats.
 //
-task jacocoRootReport(dependsOn: javaProjects.jacocoTestReport, type: JacocoReport) {
+task jacocoRootReport(dependsOn: ':copyReports', type: JacocoReport) {
 
     final def sourceDirs = CodebaseFilter.nonGeneratedOnly(files(javaProjects.sourceSets.main.java.srcDirs))
     additionalSourceDirs.from sourceDirs
     sourceDirectories.from sourceDirs
-    executionData.builtBy javaProjects.jacocoTestReport
+    executionData.from fileTree(jacocoReports)
 
     final def filter = new CodebaseFilter(project,
             javaProjects.sourceSets.main.java.srcDirs,
