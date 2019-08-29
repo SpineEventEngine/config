@@ -189,6 +189,7 @@ final def scripts = [
     publishProto           : "$rootDir/config/gradle/publish-proto.gradle",
     javacArgs              : "$rootDir/config/gradle/javac-args.gradle",
     jsBuildTasks           : "$rootDir/config/gradle/js/build-tasks.gradle",
+    jsConfigureProto       : "$rootDir/config/gradle/js/configure-proto.gradle",
     npmPublishTasks        : "$rootDir/config/gradle/js/npm-publish-tasks.gradle",
     npmCli                 : "$rootDir/config/gradle/js/npm-cli.gradle",
     updatePackageVersion   : "$rootDir/config/gradle/js/update-package-version.gradle",
