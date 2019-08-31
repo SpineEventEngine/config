@@ -92,7 +92,8 @@ final def versions = [
     javaPoet         : '1.11.0',
     autoService      : '1.0-rc5',
     autoCommon       : '0.10',
-    jackson          : '2.9.9.2'
+    jackson          : '2.9.9.2',
+    animalSniffer    : '1.18'
 ]
 
 final def build = [
@@ -132,6 +133,7 @@ final def build = [
 
     roasterApi             : "org.jboss.forge.roaster:roaster-api:$versions.roaster",
     roasterJdt             : "org.jboss.forge.roaster:roaster-jdt:$versions.roaster",
+    animalSniffer          : "org.codehaus.mojo:animal-sniffer-annotations:$versions.animalSniffer",
 
     ci: "true" == System.getenv("CI"),
 
@@ -232,6 +234,7 @@ ext.forceConfiguration = { final configurationContainer ->
                     deps.build.checkerAnnotations,
                     deps.build.autoCommon,
                     deps.build.guava,
+                    deps.build.animalSniffer,
                     deps.build.protobuf,
                     deps.test.guavaTestlib,
                     deps.test.truth,
