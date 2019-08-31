@@ -76,7 +76,7 @@ final def versions = [
     appengineApi     : "1.9.73",
     appenginePlugin  : "1.3.5",
     findBugs         : "3.0.2",
-    guava            : "28.0-jre",
+    guava            : "28.1-jre",
     protobuf         : "3.9.0",
     grpc             : "1.22.0",
     flogger          : "0.4",
