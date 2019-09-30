@@ -21,29 +21,14 @@
 final def GROUP = 'Dart'
 final def packageIndex = "$projectDir/.packages" as File
 
-/**
- * Executes the given `pub` command depending on the current OS.
- *
- * @param params the command params, platform-independent
- */
-def runPub(final String... params) {
-    exec {
-        workingDir = projectDir
-        final String command = Os.isFamily(Os.FAMILY_WINDOWS) ? 'pub.bat' : 'pub'
-        commandLine = [command] + Arrays.asList(params)
-    }
-}
-
-task resolveDependencies {
+task resolveDependencies(type: Exec) {
     group = GROUP
     description = 'Fetches the dependencies declared via `pubspec.yaml`.'
 
     inputs.file "$projectDir/pubspec.yaml"
     outputs.file packageIndex
 
-    doLast {
-        runPub 'get'
-    }
+    commandLine 'pub', 'get'
 
     mustRunAfter 'cleanPackageIndex'
 }
@@ -58,13 +43,11 @@ task cleanPackageIndex(type: Delete) {
 
 tasks['clean'].dependsOn 'cleanPackageIndex'
 
-task testDart {
+task testDart(type: Exec) {
     group = GROUP
     description = 'Runs Dart tests declared in the `./test` directory. See `https://pub.dev/packages/test#running-tests`.'
 
-    doLast {
-        runPub 'run', 'test'
-    }
+    commandLine 'pub', 'run', 'test'
 
     mustRunAfter 'resolveDependencies'
 }
