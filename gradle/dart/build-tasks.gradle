@@ -23,7 +23,7 @@ apply from: "$rootDir/config/gradle/dart/pub-cli.gradle"
 final def GROUP = 'Dart'
 final def packageIndex = "$projectDir/.packages" as File
 
-task resolveDependencies(type: Exec) {
+task resolveDependencies {
     group = GROUP
     description = 'Fetches the dependencies declared via `pubspec.yaml`.'
 
@@ -42,3 +42,12 @@ task cleanPackageIndex(type: Delete) {
 }
 
 tasks['clean'].dependsOn 'cleanPackageIndex'
+
+task testDart {
+    group = GROUP
+    description = 'Runs Dart tests declared in the `./test` directory.'
+
+    doLast {
+        executePub 'run', 'test', './test'
+    }
+}
