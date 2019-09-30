@@ -33,7 +33,11 @@ task resolveDependencies {
     doLast {
         executePub 'get'
     }
+
+    mustRunAfter 'cleanPackageIndex'
 }
+
+tasks['assemble'].dependsOn 'resolveDependencies'
 
 task cleanPackageIndex(type: Delete) {
     group = GROUP
@@ -45,9 +49,13 @@ tasks['clean'].dependsOn 'cleanPackageIndex'
 
 task testDart {
     group = GROUP
-    description = 'Runs Dart tests declared in the `./test` directory.'
+    description = 'Runs Dart tests declared in the `./test` directory. See https://pub.dev/packages/test#running-tests'
 
     doLast {
-        executePub 'run', 'test', './test'
+        executePub 'run', 'test'
     }
+
+    mustRunAfter 'resolveDependencies'
 }
+
+tasks['check'].dependsOn 'testDart'
