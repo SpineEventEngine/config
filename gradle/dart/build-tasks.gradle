@@ -18,10 +18,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-apply from: "$rootDir/config/gradle/dart/pub-cli.gradle"
-
 final def GROUP = 'Dart'
 final def packageIndex = "$projectDir/.packages" as File
+
+/**
+ * Executes the given `pub` command depending on the current OS.
+ *
+ * @param params the command params, platform-independent
+ */
+def runPub(final String... params) {
+    exec {
+        workingDir = projectDir
+        final String command = Os.isFamily(Os.FAMILY_WINDOWS) ? 'pub.bat' : 'pub'
+        commandLine = [command] + Arrays.asList(params)
+    }
+}
 
 task resolveDependencies {
     group = GROUP
@@ -31,7 +42,7 @@ task resolveDependencies {
     outputs.file packageIndex
 
     doLast {
-        executePub 'get'
+        runPub 'get'
     }
 
     mustRunAfter 'cleanPackageIndex'
@@ -52,7 +63,7 @@ task testDart {
     description = 'Runs Dart tests declared in the `./test` directory. See `https://pub.dev/packages/test#running-tests`.'
 
     doLast {
-        executePub 'run', 'test'
+        runPub 'run', 'test'
     }
 
     mustRunAfter 'resolveDependencies'
