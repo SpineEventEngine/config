@@ -49,7 +49,7 @@ task testDart(type: Exec) {
 
     commandLine 'pub', 'run', 'test'
 
-    mustRunAfter 'resolveDependencies'
+    dependsOn 'resolveDependencies'
 }
 
 tasks['check'].dependsOn 'testDart'
