@@ -18,6 +18,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.tools.ant.taskdefs.condition.Os
+
 final def GROUP = 'Dart'
 final def packageIndex = "$projectDir/.packages" as File
 
@@ -28,7 +30,8 @@ task resolveDependencies(type: Exec) {
     inputs.file "$projectDir/pubspec.yaml"
     outputs.file packageIndex
 
-    commandLine 'pub', 'get'
+    final extension = Os.isFamily(Os.FAMILY_WINDOWS) ? '.bat' : ''
+    commandLine 'pub' + extension, 'get'
 
     mustRunAfter 'cleanPackageIndex'
 }
