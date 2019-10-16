@@ -39,9 +39,25 @@ task stagePubPublication(type: Copy) {
     dependsOn 'assemble', 'check'
 }
 
+/**
+ *  A Dart analog of {@code publish}.
+ */
 task publishToPub(type: Exec) {
+    description = 'Publishes this package to Pub.'
 
     commandLine 'pub', 'publish', '--trace'
+
+    workingDir publicationDir
+    dependsOn 'stagePubPublication'
+}
+
+/**
+ *  A Dart analog of {@code publishToMavenLocal}.
+ */
+task activateLocally(type: Exec) {
+    description = 'Activates this package locally.'
+
+    commandLine 'pub', 'global', 'activate', '--source', 'path', publicationDir, '--trace'
 
     workingDir publicationDir
     dependsOn 'stagePubPublication'
