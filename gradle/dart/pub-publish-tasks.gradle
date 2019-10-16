@@ -21,6 +21,8 @@
 import java.nio.file.Files
 
 final def publicationDir = Files.createTempDirectory(project.name)
+final def extension = Os.isFamily(Os.FAMILY_WINDOWS) ? '.bat' : ''
+final def PUB_EXECUTABLE = 'pub' + extension
 
 task stagePubPublication(type: Copy) {
     description = 'Prepares the Dart package for Pub publication.'
@@ -45,7 +47,7 @@ task stagePubPublication(type: Copy) {
 task publishToPub(type: Exec) {
     description = 'Publishes this package to Pub.'
 
-    commandLine 'pub', 'publish', '--trace'
+    commandLine PUB_EXECUTABLE, 'publish', '--trace'
 
     workingDir publicationDir
     dependsOn 'stagePubPublication'
@@ -57,7 +59,7 @@ task publishToPub(type: Exec) {
 task activateLocally(type: Exec) {
     description = 'Activates this package locally.'
 
-    commandLine 'pub', 'global', 'activate', '--source', 'path', publicationDir, '--trace'
+    commandLine PUB_EXECUTABLE, 'global', 'activate', '--source', 'path', publicationDir, '--trace'
 
     workingDir publicationDir
     dependsOn 'stagePubPublication'
