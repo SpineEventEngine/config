@@ -29,7 +29,7 @@ task stagePubPublication(type: Copy) {
 
     from fileTree(projectDir) {
         include '**/*.dart', 'pubspec.yaml', '**/*.md'
-        exclude 'proto/', 'build', '**/.*'
+        exclude 'proto/', 'generated/', 'build/', '**/.*'
     }
     from "$rootDir/LICENSE"
     into publicationDir
