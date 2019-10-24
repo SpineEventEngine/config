@@ -195,8 +195,6 @@ final def scripts = [
     npmPublishTasks        : "$rootDir/config/gradle/js/npm-publish-tasks.gradle",
     npmCli                 : "$rootDir/config/gradle/js/npm-cli.gradle",
     updatePackageVersion   : "$rootDir/config/gradle/js/update-package-version.gradle",
-    dartBuildTasks         : "$rootDir/config/gradle/dart/build-tasks.gradle",
-    pubPublishTasks        : "$rootDir/config/gradle/dart/pub-publish-tasks.gradle",
     pmd                    : "$rootDir/config/gradle/pmd.gradle",
     checkstyle             : "$rootDir/config/gradle/checkstyle.gradle",
     runBuild               : "$rootDir/config/gradle/run-build.gradle",
