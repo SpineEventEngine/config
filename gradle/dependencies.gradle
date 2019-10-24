@@ -78,7 +78,7 @@ final def versions = [
     findBugs         : "3.0.2",
     guava            : "28.1-jre",
     protobuf         : "3.10.0",
-    grpc             : "1.22.0",
+    grpc             : "1.24.1", // 1.24.3 is already out, but not at public Maven repos.
     flogger          : "0.4",
     junit4           : "4.12",
     junit5           : "5.5.1",
