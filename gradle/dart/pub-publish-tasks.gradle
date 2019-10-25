@@ -38,7 +38,7 @@ task stagePubPublication(type: Copy) {
         logger.debug("Prepared Pub publication in directory `$publicationDir`.")
     }
 
-    dependsOn 'assemble', 'check'
+    dependsOn 'assemble'
 }
 
 /**
