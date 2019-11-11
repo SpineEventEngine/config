@@ -86,6 +86,7 @@ final def versions = [
         junitPioneer     : '0.3.0',
         truth            : '1.0',
         httpClient       : '1.33.0',
+        apacheHttpClient : '2.1.2',
         firebaseAdmin    : '6.11.0',
         roaster          : '2.21.1.Final',
         licensePlugin    : '1.11',
@@ -125,7 +126,7 @@ final def build = [
                                   "com.google.protobuf:protobuf-java-util:$versions.protobuf"],
         protoc                 : "com.google.protobuf:protoc:$versions.protobuf",
         googleHttpClient       : "com.google.http-client:google-http-client:$versions.httpClient",
-        googleHttpClientApache : "com.google.http-client:google-http-client-apache:$versions.httpClient",
+        googleHttpClientApache : "com.google.http-client:google-http-client-apache:$versions.apacheHttpClient",
         appengineApi           : "com.google.appengine:appengine-api-1.0-sdk:$versions.appengineApi",
 
         firebaseAdmin          : "com.google.firebase:firebase-admin:$versions.firebaseAdmin",
