@@ -155,6 +155,7 @@ final def grpc = [
         grpcOkHttp             : "io.grpc:grpc-okhttp:$versions.grpc",
         grpcProtobuf           : "io.grpc:grpc-protobuf:$versions.grpc",
         grpcNetty              : "io.grpc:grpc-netty:$versions.grpc",
+        grpcNettyShaded        : "io.grpc:grpc-netty-shaded:$versions.grpc",
         grpcContext            : "io.grpc:grpc-context:$versions.grpc"
 ]
 
