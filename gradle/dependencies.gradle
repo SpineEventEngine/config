@@ -31,15 +31,15 @@
 ext.publishingRepos = [
 
         mavenTeamDev: [
-                releases    : "http://maven.teamdev.com/repository/spine",
-                snapshots   : "http://maven.teamdev.com/repository/spine-snapshots",
-                credentials : "credentials.properties"
+                releases    : 'http://maven.teamdev.com/repository/spine',
+                snapshots   : 'http://maven.teamdev.com/repository/spine-snapshots',
+                credentials : 'credentials.properties'
         ],
 
         cloudRepo: [
-                releases    : "https://spine.mycloudrepo.io/public/repositories/releases",
-                snapshots   : "https://spine.mycloudrepo.io/public/repositories/snapshots",
-                credentials : "cloudrepo.properties"
+                releases    : 'https://spine.mycloudrepo.io/public/repositories/releases',
+                snapshots   : 'https://spine.mycloudrepo.io/public/repositories/snapshots',
+                credentials : 'cloudrepo.properties'
         ]
 ]
 
@@ -59,9 +59,9 @@ ext.repos = [
         spineSnapshots    : publishingRepos.cloudRepo.snapshots,
 
         // Snapshots of Error Prone and Guava.
-        sonatypeSnapshots : "https://oss.sonatype.org/content/repositories/snapshots",
+        sonatypeSnapshots : 'https://oss.sonatype.org/content/repositories/snapshots',
 
-        gradlePlugins     : "https://plugins.gradle.org/m2/"
+        gradlePlugins     : 'https://plugins.gradle.org/m2/'
 ]
 
 final def versions = [
@@ -77,16 +77,16 @@ final def versions = [
         appenginePlugin  : '2.2.0',
         findBugs         : '3.0.2',
         guava            : '28.1-jre',
-        protobuf         : "3.10.0",
-        grpc             : "1.25.0",
-        flogger          : "0.4",
-        junit4           : "4.12",
-        junit5           : "5.5.2",
-        junitPlatform    : "1.5.1",
-        junitPioneer     : "0.3.0",
-        truth            : "1.0",
-        httpClient       : "1.33.0",
-        firebaseAdmin    : "6.11.0",
+        protobuf         : '3.10.0',
+        grpc             : '1.25.0',
+        flogger          : '0.4',
+        junit4           : '4.12',
+        junit5           : '5.5.2',
+        junitPlatform    : '1.5.1',
+        junitPioneer     : '0.3.0',
+        truth            : '1.0',
+        httpClient       : '1.33.0',
+        firebaseAdmin    : '6.11.0',
         roaster          : '2.21.1.Final',
         licensePlugin    : '1.11',
         javaPoet         : '1.11.0',
@@ -135,7 +135,7 @@ final def build = [
         roasterJdt             : "org.jboss.forge.roaster:roaster-jdt:$versions.roaster",
         animalSniffer          : "org.codehaus.mojo:animal-sniffer-annotations:$versions.animalSniffer",
 
-        ci: "true" == System.getenv("CI"),
+        ci: 'true' == System.getenv('CI'),
 
         gradlePlugins: [
                 errorProne      : "net.ltgt.gradle:gradle-errorprone-plugin:$versions.errorPronePlugin",
@@ -169,7 +169,7 @@ final def test = [
         junit4        : "junit:junit:$versions.junit4",
         junit5Api     : ["org.junit.jupiter:junit-jupiter-api:$versions.junit5",
                          "org.junit.jupiter:junit-jupiter-params:$versions.junit5",
-                         "org.apiguardian:apiguardian-api:1.0.0"],
+                         'org.apiguardian:apiguardian-api:1.0.0'],
         junit5Runner  : "org.junit.jupiter:junit-jupiter-engine:$versions.junit5",
         junitPioneer  : "org.junit-pioneer:junit-pioneer:$versions.junitPioneer",
         slf4j         : "org.slf4j:slf4j-jdk14:$versions.slf4j",
@@ -209,13 +209,13 @@ final def scripts = [
 ]
 
 ext.deps = [
-        "build"    : build,
-        "grpc"     : grpc,
-        "gen"      : gen,
-        "runtime"  : runtime,
-        "test"     : test,
-        "versions" : versions,
-        "scripts"  : scripts,
+        'build'    : build,
+        'grpc'     : grpc,
+        'gen'      : gen,
+        'runtime'  : runtime,
+        'test'     : test,
+        'versions' : versions,
+        'scripts'  : scripts,
 ]
 
 /**
@@ -245,15 +245,15 @@ ext.forceConfiguration = { final configurationContainer ->
                     deps.test.junit4,
 
                     // Transitive dependencies of 3rd party components that we don't use directly.
-                    "com.google.code.gson:gson:2.8.5",
-                    "com.google.j2objc:j2objc-annotations:1.3",
-                    "org.codehaus.plexus:plexus-utils:3.0.17",
-                    "com.squareup.okio:okio:1.13.0",
+                    'com.google.code.gson:gson:2.8.5',
+                    'com.google.j2objc:j2objc-annotations:1.3',
+                    'org.codehaus.plexus:plexus-utils:3.0.17',
+                    'com.squareup.okio:okio:1.13.0',
 
                     // Force discontinued transitive dependency until everybody migrates off it.
-                    "org.checkerframework:checker-compat-qual:2.5.3",
+                    'org.checkerframework:checker-compat-qual:2.5.3',
 
-                    "commons-logging:commons-logging:1.2",
+                    'commons-logging:commons-logging:1.2',
 
                     // Force the Gradle Protobuf plugin version.
                     deps.build.gradlePlugins.protobuf
