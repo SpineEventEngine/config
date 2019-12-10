@@ -250,6 +250,7 @@ ext.forceConfiguration = { final configurationContainer ->
                     'com.google.j2objc:j2objc-annotations:1.3',
                     'org.codehaus.plexus:plexus-utils:3.0.17',
                     'com.squareup.okio:okio:1.13.0',
+                    'commons-cli:commons-cli:1.4',
 
                     // Force discontinued transitive dependency until everybody migrates off it.
                     'org.checkerframework:checker-compat-qual:2.5.3',
