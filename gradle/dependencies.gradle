@@ -72,7 +72,7 @@ final def versions = [
         errorPronePlugin : '1.1.1',
         pmd              : '6.19.0',
         checkstyle       : '8.26',
-        protobufPlugin   : '0.8.10',
+        protobufPlugin   : '0.8.11',
         appengineApi     : '1.9.76',
         appenginePlugin  : '2.2.0',
         findBugs         : '3.0.2',
