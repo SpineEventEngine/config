@@ -22,6 +22,8 @@
  * This script defines the common configuration for license report scripts.
  */
 
+apply plugin: 'base'
+
 ext.licenseReportConfig = [
         // The output filename
         outputFilename  : "license-report.md",
