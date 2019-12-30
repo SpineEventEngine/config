@@ -47,3 +47,4 @@ task reportLicensesInRepo {
 }
 
 build.finalizedBy reportLicensesInRepo
+reportLicensesInRepo.dependsOn assemble
