@@ -55,7 +55,9 @@ import static java.util.stream.Collectors.toSet
  * e.g. {@code <groupId></groupId>}
  */
 
-apply plugin: 'maven'
+// In some cases, the `base` plugin, which is by default is added by e.g. `java`, is not yet added.
+// `base` plugin defines the `build` task. This script needs it.
+apply plugin: 'base'
 
 ext {
     pomFile = "${projectDir}${File.separator}pom.xml"
