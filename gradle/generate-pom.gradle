@@ -19,6 +19,7 @@
  */
 
 
+import com.sun.tools.classfile.Dependency
 import groovy.xml.MarkupBuilder
 import org.gradle.api.internal.artifacts.dependencies.AbstractExternalModuleDependency
 
@@ -75,6 +76,7 @@ task generatePom {
 }
 
 build.finalizedBy generatePom
+generatePom.dependsOn assemble
 
 /**
  * A {@code pom.xml} file that contains dependencies of the project and its subprojects.
