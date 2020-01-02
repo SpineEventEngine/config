@@ -29,9 +29,13 @@
 
 apply from: deps.scripts.licenseReportCommon
 
-task reportLicensesInRepo {
+task reportLicensesInRepo { final Task task ->
     subprojects.each {
-        subprojects.each { dependsOn("${it.name}:generateLicenseReport") }
+        subprojects.each {
+            final def generateLicenseReport = it.tasks.findByName('generateLicenseReport')
+            task.dependsOn(generateLicenseReport)
+            generateLicenseReport.dependsOn(it.tasks.findByName('assemble'))
+        }
     }
 
     doLast {
