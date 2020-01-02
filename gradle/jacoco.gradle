@@ -32,6 +32,9 @@ repositories {
 
 import groovy.io.FileType
 
+// Adds the `:check` task.
+apply plugin: 'base'
+
 // Evaluate this script only after all sub-projects were evaluated.
 // Only after that it is possible to say which of the sub-projects are Java projects.
 evaluationDependsOnChildren()
@@ -75,9 +78,7 @@ task jacocoRootReport(dependsOn: ':copyReports', type: JacocoReport) {
     }
 }
 
-if (project.tasks.findByName('check')) {
-    check.dependsOn jacocoRootReport
-}
+check.dependsOn jacocoRootReport
 
 /**
  * Serves to distinguish the {@code .java} and {@code .class} files built from
