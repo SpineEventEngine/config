@@ -285,14 +285,6 @@ ext.defaultRepositories = { final repositoryContainer ->
                 releasesOnly()
             }
         }
-        maven {
-            url = repos.spineSnapshots
-            content {
-                includeGroup 'io.spine'
-                includeGroup 'io.spine.tools'
-                includeGroup 'io.spine.gcloud'
-            }
-        }
         jcenter()
         maven { url = repos.gradlePlugins }
     }
