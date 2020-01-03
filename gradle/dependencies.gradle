@@ -66,34 +66,34 @@ ext.repos = [
 
 final def versions = [
         slf4j            : '1.7.29', // deprecated, remove after full migration.
-        checkerFramework : '3.0.0',
-        errorProne       : '2.3.3',
+        checkerFramework : '3.0.1',
+        errorProne       : '2.3.4',
         errorProneJavac  : '9+181-r4173-1', // taken from here: https://github.com/tbroyer/gradle-errorprone-plugin/blob/v0.8/build.gradle.kts
         errorPronePlugin : '1.1.1',
-        pmd              : '6.19.0',
-        checkstyle       : '8.26',
+        pmd              : '6.20.0',
+        checkstyle       : '8.28',
         protobufPlugin   : '0.8.11',
-        appengineApi     : '1.9.76',
+        appengineApi     : '1.9.77',
         appenginePlugin  : '2.2.0',
         findBugs         : '3.0.2',
         guava            : '28.1-jre',
-        protobuf         : '3.10.0',
-        grpc             : '1.25.0',
+        protobuf         : '3.11.1',
+        grpc             : '1.26.0',
         flogger          : '0.4',
         junit4           : '4.12',
         junit5           : '5.5.2',
-        junitPlatform    : '1.5.1',
-        junitPioneer     : '0.3.0',
+        junitPlatform    : '1.5.2',
+        junitPioneer     : '0.4.2',
         truth            : '1.0',
-        httpClient       : '1.33.0',
+        httpClient       : '1.34.0',
         apacheHttpClient : '2.1.2',
-        firebaseAdmin    : '6.11.0',
+        firebaseAdmin    : '6.12.0',
         roaster          : '2.21.1.Final',
-        licensePlugin    : '1.11',
-        javaPoet         : '1.11.0',
+        licensePlugin    : '1.12',
+        javaPoet         : '1.11.1',
         autoService      : '1.0-rc6',
         autoCommon       : '0.10',
-        jackson          : '2.9.10.1',
+        jackson          : '2.10.1',
         animalSniffer    : '1.18'
 ]
 
@@ -246,14 +246,14 @@ ext.forceConfiguration = { final configurationContainer ->
                     deps.test.junit4,
 
                     // Transitive dependencies of 3rd party components that we don't use directly.
-                    'com.google.code.gson:gson:2.8.5',
+                    'com.google.code.gson:gson:2.8.6',
                     'com.google.j2objc:j2objc-annotations:1.3',
-                    'org.codehaus.plexus:plexus-utils:3.0.17',
-                    'com.squareup.okio:okio:1.13.0',
+                    'org.codehaus.plexus:plexus-utils:3.3.0',
+                    'com.squareup.okio:okio:1.17.5', // Last version before next major.
                     'commons-cli:commons-cli:1.4',
 
                     // Force discontinued transitive dependency until everybody migrates off it.
-                    'org.checkerframework:checker-compat-qual:2.5.3',
+                    'org.checkerframework:checker-compat-qual:2.5.5',
 
                     'commons-logging:commons-logging:1.2',
 
