@@ -93,7 +93,7 @@ final def versions = [
         javaPoet         : '1.11.1',
         autoService      : '1.0-rc6',
         autoCommon       : '0.10',
-        jackson          : '2.10.1',
+        jackson          : '2.9.10.1',
         animalSniffer    : '1.18'
 ]
 
