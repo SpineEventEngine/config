@@ -1,7 +1,7 @@
 @echo off
 
 rem
-rem Copyright 2019, TeamDev. All rights reserved.
+rem Copyright 2020, TeamDev. All rights reserved.
 rem
 rem Redistribution and use in source and/or binary forms, with or without
 rem modification, must retain the above copyright notice and the following
