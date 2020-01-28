@@ -49,4 +49,9 @@ modelCompiler {
     methods {
         applyFactory "io.spine.code.gen.java.UuidMethodFactory", messages().uuid()
     }
+
+    nestedClasses {
+        applyFactory "io.spine.code.gen.java.ColumnFactory", messages().queryable()
+        applyFactory "io.spine.code.gen.java.FieldFactory", messages().subscribable()
+    }
 }
