@@ -50,8 +50,13 @@ modelCompiler {
         applyFactory "io.spine.code.gen.java.UuidMethodFactory", messages().uuid()
     }
 
-    nestedClasses {
-        applyFactory "io.spine.code.gen.java.ColumnFactory", messages().queryable()
-        applyFactory "io.spine.code.gen.java.FieldFactory", messages().subscribable()
+    columns {
+        generate = true
+    }
+
+    fields {
+        generateFor messages().inFiles(suffix: "events.proto"), markAs("io.spine.base.EventMessageField")
+        generateFor messages().inFiles(suffix: "rejections.proto"), markAs("io.spine.base.EventMessageField")
+        generateFor messages().entityState(), markAs("io.spine.base.EntityStateField")
     }
 }
