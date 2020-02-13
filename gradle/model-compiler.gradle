@@ -49,4 +49,14 @@ modelCompiler {
     methods {
         applyFactory "io.spine.code.gen.java.UuidMethodFactory", messages().uuid()
     }
+
+    columns {
+        generate = true
+    }
+
+    fields {
+        generateFor messages().inFiles(suffix: "events.proto"), markAs("io.spine.base.EventMessageField")
+        generateFor messages().inFiles(suffix: "rejections.proto"), markAs("io.spine.base.EventMessageField")
+        generateFor messages().entityState(), markAs("io.spine.base.EntityStateField")
+    }
 }
