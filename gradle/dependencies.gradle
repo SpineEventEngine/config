@@ -71,7 +71,7 @@ final def versions = [
         errorProneJavac  : '9+181-r4173-1', // taken from here: https://github.com/tbroyer/gradle-errorprone-plugin/blob/v0.8/build.gradle.kts
         errorPronePlugin : '1.1.1',
         pmd              : '6.20.0',
-        checkstyle       : '8.28',
+        checkstyle       : '8.29',
         protobufPlugin   : '0.8.11',
         appengineApi     : '1.9.77',
         appenginePlugin  : '2.2.0',
