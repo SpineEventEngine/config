@@ -104,7 +104,7 @@ task auditNodePackages {
 // The audit can be enabled again when the NPM audit service proves to be stable enough so its
 // availability is not an issue when doing project builds.
 //
-// The related Spine `config` issue: https://github.com/SpineEventEngine/config/issues/64.
+// The related Spine `config` issue: 'https://github.com/SpineEventEngine/config/issues/64'.
 auditNodePackages.enabled = false
 
 /**
