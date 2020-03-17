@@ -206,7 +206,8 @@ final def scripts = [
         licenseReportCommon    : "$rootDir/config/gradle/license-report-common.gradle",
         projectLicenseReport   : "$rootDir/config/gradle/license-report-project.gradle",
         repoLicenseReport      : "$rootDir/config/gradle/license-report-repo.gradle",
-        generatePom            : "$rootDir/config/gradle/generate-pom.gradle"
+        generatePom            : "$rootDir/config/gradle/generate-pom.gradle",
+        updateGitHubPages      : "$rootDir/config/gradle/update-gh-pages.gradle"
 ]
 
 ext.deps = [
