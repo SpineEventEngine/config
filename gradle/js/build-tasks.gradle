@@ -97,7 +97,7 @@ task auditNodePackages {
 // Disable the NPM audit.
 //
 // The audit periodically fails due to NPM service being not available. Although the corresponding
-// issue (https://npm.community/t/enoaudit-from-registry-npmjs-org-503/4642) is closed, the problem
+// issue ('https://npm.community/t/enoaudit-from-registry-npmjs-org-503/4642') is closed, the problem
 // still persists. Due to these issues, the developers building projects which include NPM audit
 // task must constantly restart their builds locally and on CI.
 //
