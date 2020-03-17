@@ -29,7 +29,7 @@
  * ```
  * After that, the `updateGitHubPages` task will be available for that project.
  *
- * By default, the non-internal Javadoc is included into the publication. If need, the publication
+ * By default, the non-internal Javadoc is included into the publication. If needed, the publication
  * may be extended to include other files. To do so, append more files/file collections to
  * the `generatedDocs` extension property of the respective project.
  *
