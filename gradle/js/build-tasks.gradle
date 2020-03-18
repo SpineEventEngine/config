@@ -39,6 +39,7 @@ ext {
     }
 }
 
+apply plugin: 'base'
 apply from: deps.scripts.npmCli
 apply from: deps.scripts.updatePackageVersion
 
@@ -85,6 +86,7 @@ task installNodePackages {
 task auditNodePackages {
     group = JAVA_SCRIPT_TASK_GROUP
     description = 'Audits the module`s Node dependencies.'
+    dependsOn installNodePackages
 
     inputs.dir nodeModulesDir
 
@@ -94,18 +96,7 @@ task auditNodePackages {
     }
 }
 
-/**
- * Installs the module dependencies and checks them for vulnerabilities.
- */
-task installDependencies {
-    group = JAVA_SCRIPT_TASK_GROUP
-    description = 'Installs the JavaScript dependencies.'
-
-    dependsOn installNodePackages
-    dependsOn auditNodePackages
-
-    auditNodePackages.mustRunAfter installNodePackages
-}
+check.dependsOn auditNodePackages
 
 /**
  * Cleans output of `buildJs` and dependant tasks.
@@ -135,7 +126,7 @@ task buildJs {
     description = "Assembles the JavaScript source files."
 
     dependsOn updatePackageVersion
-    dependsOn installDependencies
+    dependsOn installNodePackages
     dependsOn compileProtoToJs
     assemble.dependsOn buildJs
 }
@@ -150,7 +141,7 @@ task testJs {
     group = JAVA_SCRIPT_TASK_GROUP
     description = "Tests the JavaScript source files."
 
-    dependsOn installDependencies
+    dependsOn installNodePackages
     dependsOn compileProtoToJs
     check.dependsOn testJs
 
