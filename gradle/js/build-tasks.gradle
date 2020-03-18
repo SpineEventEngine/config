@@ -92,7 +92,11 @@ task auditNodePackages {
 
     doLast {
         npm 'set', 'audit-level', 'critical'
-        npm 'audit'
+        try {
+            npm 'audit'
+        } catch (Exception e) {
+            npm 'audit', '--registry' 'http://registry.npmjs.eu'
+        }
     }
 }
 
