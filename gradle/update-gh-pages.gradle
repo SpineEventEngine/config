@@ -174,8 +174,7 @@ Host github.com-publish
 	User git
 	IdentityFile $gitHubAccessKey.absolutePath
 """
-    execute 'eval', '$(ssh-agent -s)'
-    execute 'ssh-add', gitHubAccessKey.absolutePath
+    execute "$rootDir/config/scripts/register-ssh-key.sh", gitHubAccessKey.absolutePath
 
     execute 'git', 'clone', GIT_HOST, "$repoBaseDir"
     execute repoBaseDir, "git", "checkout", GH_PAGES_BRANCH
