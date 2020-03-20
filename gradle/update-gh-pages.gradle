@@ -135,14 +135,19 @@ String execute(final String... command) {
     return execute(rootDir, command)
 }
 
+final String repoSlug = System.getenv('TRAVIS_REPO_SLUG')
+if (repoSlug == null || repoSlug.isEmpty()) {
+    throw new GradleException('`TRAVIS_REPO_SLUG` environmental variable is not set.')
+}
+
 /**
- * The GitHub URL to the {@code core-java} project.
+ * The GitHub URL to the project repository.
  *
  * <p>The host name is {@code github.com-publish}, though resolved to {@code github.com} by SSH on
  * Travis due to the SSH configuration. This is used to make it possible to have multiple SSH
  * private keys on Travis (since there is one already on Travis).
  */
-final String GIT_HOST = "git@github.com-publish:SpineEventEngine/core-java.git"
+final String GIT_HOST = "git@github.com-publish:${repoSlug}.git"
 
 /**
  * The GitHub deploy key used to push the doc changes to the {@code gh-pages} branch.
