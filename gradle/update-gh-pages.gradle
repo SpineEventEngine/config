@@ -157,9 +157,11 @@ updateGitHubPages.doLast {
     /**
      * The GitHub URL to the project repository.
      *
-     * <p>The host name is {@code github.com-publish}, though resolved to {@code github.com} by SSH on
-     * Travis due to the SSH configuration. This is used to make it possible to have multiple SSH
-     * private keys on Travis (since there is one already on Travis).
+     * <p>A Travis SI instance comes with an RSA key. However, of course, the default key has no
+     * privileges in Spine repositories. Thus, we add our own RSA key — `deploy_rsa_key`. It must
+     * have write rights in the associated repository. Also, we don't want that key to be used for
+     * anything else but GitHub Pages publishing. Thus, we configure the SSH agent to use
+     * the `deploy_rsa_key` only for specific references, namely in `github.com-publish`.
      */
     final String GIT_HOST = "git@github.com-publish:${repoSlug}.git"
 
