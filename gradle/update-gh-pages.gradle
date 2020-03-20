@@ -120,7 +120,8 @@ String execute(final File baseDir, final String... command) {
         return result.out
     } else {
         final String errorMsg = "Command `$command` finished with exit code $result.exitCode:" +
-                " ${System.lineSeparator()}${result.error}"
+                " ${System.lineSeparator()}${result.error}" +
+                " ${System.lineSeparator()}${result.out}"
         throw new IllegalStateException(errorMsg)
     }
 }
@@ -135,20 +136,6 @@ String execute(final String... command) {
     return execute(rootDir, command)
 }
 
-final String repoSlug = System.getenv('TRAVIS_REPO_SLUG')
-if (repoSlug == null || repoSlug.isEmpty()) {
-    throw new GradleException('`TRAVIS_REPO_SLUG` environmental variable is not set.')
-}
-
-/**
- * The GitHub URL to the project repository.
- *
- * <p>The host name is {@code github.com-publish}, though resolved to {@code github.com} by SSH on
- * Travis due to the SSH configuration. This is used to make it possible to have multiple SSH
- * private keys on Travis (since there is one already on Travis).
- */
-final String GIT_HOST = "git@github.com-publish:${repoSlug}.git"
-
 /**
  * The GitHub deploy key used to push the doc changes to the {@code gh-pages} branch.
  */
@@ -161,6 +148,20 @@ updateGitHubPages.doLast {
     }
 
     final def GH_PAGES_BRANCH = "gh-pages"
+
+    final String repoSlug = System.getenv('TRAVIS_REPO_SLUG')
+    if (repoSlug == null || repoSlug.isEmpty()) {
+        throw new GradleException('`TRAVIS_REPO_SLUG` environmental variable is not set.')
+    }
+
+    /**
+     * The GitHub URL to the project repository.
+     *
+     * <p>The host name is {@code github.com-publish}, though resolved to {@code github.com} by SSH on
+     * Travis due to the SSH configuration. This is used to make it possible to have multiple SSH
+     * private keys on Travis (since there is one already on Travis).
+     */
+    final String GIT_HOST = "git@github.com-publish:${repoSlug}.git"
 
     final def repoBaseDir = "$repositoryTempDir/$GH_PAGES_BRANCH" as File
     final def docDirPostfix = "reference/$project.name"
