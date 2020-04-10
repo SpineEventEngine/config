@@ -36,12 +36,23 @@
  * or to the specific child projects.
  */
 
+ext {
+    javadocOptions = [
+
+            // New tags which are used in the code and titles for them.
+            "tags" : ["apiNote:a:API Note:",
+                      "implSpec:a:Implementation Requirements:",
+                      "implNote:a:Implementation Note:"],
+
+            // Encoding of the source files.
+            "encoding" : 'UTF-8'
+    ]
+}
+
 javadoc {
     source = sourceSets.main.allJava
-    options.tags = ["apiNote:a:API Note:",
-                    "implSpec:a:Implementation Requirements:",
-                    "implNote:a:Implementation Note:"]
-    options.encoding = 'UTF-8'
+    options.tags = javadocOptions.tags
+    options.encoding = javadocOptions.encoding
 }
 
 // The below config avoids numerous warnings for missing @param tags.
