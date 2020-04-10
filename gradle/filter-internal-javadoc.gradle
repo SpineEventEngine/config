@@ -30,6 +30,7 @@ dependencies {
     excludeInternalDoclet "io.spine.tools:spine-javadoc-filter:$spineBaseVersion"
 }
 
+// This task uses constants defined in `javadoc-options.gradle`.
 task noInternalJavadoc(type: Javadoc) {
     source = sourceSets.main.allJava.filter {
         !it.absolutePath.contains('generated')
@@ -37,13 +38,13 @@ task noInternalJavadoc(type: Javadoc) {
     classpath = javadoc.getClasspath()
 
     options {
+        tags = javadocOptions.tags
+        encoding = javadocOptions.encoding
+
         // Doclet fully qualified name.
         doclet = 'io.spine.tools.javadoc.ExcludeInternalDoclet'
 
         // Path to the JAR containing the doclet.
         docletpath = configurations.excludeInternalDoclet.files.asType(List)
-
-        // Encoding of the source files.
-        encoding = 'UTF8'
     }
 }
