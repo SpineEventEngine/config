@@ -151,7 +151,10 @@ updateGitHubPages.doLast {
 
     final String repoSlug = System.getenv('TRAVIS_REPO_SLUG')
     if (repoSlug == null || repoSlug.isEmpty()) {
-        throw new GradleException('`TRAVIS_REPO_SLUG` environmental variable is not set.')
+        throw new GradleException(
+                '`TRAVIS_REPO_SLUG` environmental variable is not set.' +
+                        ' Publishing must be performed from the CI environment.'
+        )
     }
 
     /**
