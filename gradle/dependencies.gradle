@@ -37,21 +37,21 @@ ext.repos = [
 ]
 
 //noinspection GroovyAssignabilityCheck
-def versions = [
+final def versions = [
     slf4j            : "1.7.25",
     checkerFramework : "2.5.1",
-    errorProne       : "2.1.1",
+    errorProne       : "2.3.4",
     errorPronePlugin : "0.0.14",
     protobufPlugin   : "0.8.5",
     findBugs         : "3.0.2",
-    guava            : "25.1-jre",
-    protobuf         : "3.5.1",
-    grpc             : "1.12.0",
-    junit5           : "5.2.0"
+    guava            : "29.0-jre",
+    protobuf         : "3.11.4",
+    grpc             : "1.28.1",
+    junit5           : "5.6.2"
 ]
 
 //noinspection GroovyAssignabilityCheck
-def build = [
+final def build = [
     errorProneAnnotations  : "org.checkerframework:checker-qual:$versions.errorProne",
     errorProneCheckApi     : "com.google.errorprone:error_prone_check_api:$versions.errorProne",
     errorProneCore         : "com.google.errorprone:error_prone_core:$versions.errorProne",
@@ -79,12 +79,12 @@ def build = [
 ]
 
 //noinspection GroovyAssignabilityCheck
-def gen = [
+final def gen = [
     javaPoet : "com.squareup:javapoet:1.9.0"
 ]
 
 //noinspection GroovyAssignabilityCheck
-def test = [
+final def test = [
     junit4        : "junit:junit:4.12",
     junit5Api     : ["org.junit.jupiter:junit-jupiter-api:$versions.junit5",
                      "org.apiguardian:apiguardian-api:1.0.0"],
@@ -98,7 +98,7 @@ def test = [
 ]
 
 //noinspection GroovyAssignabilityCheck
-def scripts = [
+final def scripts = [
     testArtifacts          : "$rootDir/config/gradle/test-artifacts.gradle",
     generateDescriptorSet  : "$rootDir/config/gradle/generate-descriptor-set.gradle",
     filterInternalJavadocs : "$rootDir/config/gradle/filter-internal-javadoc.gradle",
