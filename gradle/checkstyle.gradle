@@ -18,18 +18,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Apply this script if it is needed to use test classes of the current project in other projects.
-// The dependency looks like this:
-//
-// testCompile project(path: ":projectWithTests", configuration: 'testArtifacts')
-//
-configurations {
-    testArtifacts.extendsFrom testRuntime
-}
-task testJar(type: Jar) {
-    classifier "test"
-    from sourceSets.test.output
-}
-artifacts {
-    testArtifacts testJar
+/*
+ * This script configures Gradle Checkstyle plugin.
+ */
+
+checkstyle {
+    toolVersion = "${deps.versions.checkstyle}"
+    configFile = file("$rootDir/config/quality/checkstyle.xml")
+
+    // Disable checking the test sources.
+    checkstyleTest.enabled = false
 }

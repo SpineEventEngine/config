@@ -1,5 +1,5 @@
 /*
- * Copyright 2018, TeamDev. All rights reserved.
+ * Copyright 2020, TeamDev. All rights reserved.
  *
  * Redistribution and use in source and/or binary forms, with or without
  * modification, must retain the above copyright notice and the following
@@ -18,10 +18,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-ext {
-    // The version of the Spine Base module to be used in the project.
-    spineBaseVersion = '0.10.40-SNAPSHOT'
+/**
+ * This script defines the common configuration for license report scripts.
+ */
 
-    // Publish artifacts of this project with the same version number as Base.
-    versionToPublish = spineBaseVersion
-}
+apply plugin: 'base'
+
+ext.licenseReportConfig = [
+        // The output filename
+        outputFilename  : "license-report.md",
+
+        // The path to a directory, to which a per-project report is generated.
+        relativePath    : "/reports/dependency-license/dependency"
+]

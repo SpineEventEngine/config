@@ -18,18 +18,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Apply this script if it is needed to use test classes of the current project in other projects.
-// The dependency looks like this:
-//
-// testCompile project(path: ":projectWithTests", configuration: 'testArtifacts')
-//
-configurations {
-    testArtifacts.extendsFrom testRuntime
+
+/*
+ * This script configures Gradle PMD plugin.
+ */
+pmd {
+    toolVersion = "${deps.versions.pmd}"
+    consoleOutput = true
+    incrementalAnalysis = true
+
+    // The build is going to fail in case of violations.
+    ignoreFailures = false
+
+    // Disable the default rule set to use the custom rules (see below).
+    ruleSets = []
+
+    // A set of custom rules.
+    ruleSetFiles = files("$rootDir/config/quality/pmd.xml")
+
+    reportsDir = file("build/reports/pmd")
+
+    // Just analyze the main sources; do not analyze tests.
+    sourceSets = [sourceSets.main]
 }
-task testJar(type: Jar) {
-    classifier "test"
-    from sourceSets.test.output
-}
-artifacts {
-    testArtifacts testJar
-}
+
+// Workaround for https://github.com/pmd/pmd/issues/1705.
+pmdMain.classpath += sourceSets.main.runtimeClasspath
