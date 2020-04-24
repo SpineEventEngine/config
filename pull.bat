@@ -55,12 +55,6 @@ IF NOT EXIST "..\.gitignore" (
 	xcopy /F/Y .gitignore ..\
 )
 
-rem Copy `version.gradle` only if it is not yet created in the project.
-IF NOT EXIST "..\version.gradle" (
-	echo "Creating version.gradle"
-	xcopy /F/Y version.gradle ..\
-)
-
 cd ..
 
 echo "Done."
