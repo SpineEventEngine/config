@@ -49,7 +49,7 @@ object publishingRepos {
 extra["publishToRepository"] = publishingRepos.cloudRepo
 
 // Specific repositories.
-object Repos {
+object repos {
     val oldSpine: Stirng = publishingRepos.mavenTeamDev.releases
     val oldSpineSnapshots: Stirng = publishingRepos.mavenTeamDev.snapshots
     
@@ -59,6 +59,8 @@ object Repos {
     val sonatypeSnapshots: Stirng = "https://oss.sonatype.org/content/repositories/snapshots"
     val gradlePlugins = "https://plugins.gradle.org/m2/"
 }
+
+fun ScriptHandler.repos(): repos = repos
 
 object Versions {
     val slf4j            = "1.7.29" // deprecated, remove after full migration
@@ -273,12 +275,9 @@ fun ScriptHandler.defaultRepositories() {
         maven {
             url = repos.spine
             content {
-                includeGroup "io.spine"
-                includeGroup "io.spine.tools"
-                includeGroup "io.spine.gcloud"
-            }
-            mavenContent {
-                releasesOnly()
+                includeGroup("io.spine")
+                includeGroup("io.spine.tools")
+                includeGroup("io.spine.gcloud")
             }
         }
         jcenter()
