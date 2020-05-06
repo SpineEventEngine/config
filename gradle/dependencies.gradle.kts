@@ -33,12 +33,12 @@ data class Repository(val releases: String,
                       val credentials: String)
 
 object publishingRepos {
-    val mavenTeamDev: Repository = Repository(
+    val mavenTeamDev = Repository(
             releases = "http://maven.teamdev.com/repository/spine",
             snapshots = "http://maven.teamdev.com/repository/spine-snapshots",
             credentials = "credentials.properties"
     )
-    val cloudRepo: Repository = Repository(
+    val cloudRepo = Repository(
             releases = "https://spine.mycloudrepo.io/public/repositories/releases",
             snapshots = "https://spine.mycloudrepo.io/public/repositories/snapshots",
             credentials = "cloudrepo.properties"
@@ -59,8 +59,6 @@ object repos {
     val sonatypeSnapshots: String = "https://oss.sonatype.org/content/repositories/snapshots"
     val gradlePlugins = "https://plugins.gradle.org/m2/"
 }
-
-fun ScriptHandler.repos(): repos = repos
 
 object Versions {
     val slf4j            = "1.7.29" // deprecated, remove after full migration
@@ -222,8 +220,6 @@ object deps {
     val versions = Versions
     val scripts = Scripts
 }
-
-fun ScriptHandler.deps(): deps = Dependencies_gradle.deps
 
 /**
  * Forces dependency versions.
