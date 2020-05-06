@@ -50,13 +50,13 @@ extra["publishToRepository"] = publishingRepos.cloudRepo
 
 // Specific repositories.
 object repos {
-    val oldSpine: Stirng = publishingRepos.mavenTeamDev.releases
-    val oldSpineSnapshots: Stirng = publishingRepos.mavenTeamDev.snapshots
+    val oldSpine: String = publishingRepos.mavenTeamDev.releases
+    val oldSpineSnapshots: String = publishingRepos.mavenTeamDev.snapshots
     
-    val spine: Stirng = publishingRepos.cloudRepo.releases
-    val spineSnapshots: Stirng = publishingRepos.cloudRepo.snapshots
+    val spine: String = publishingRepos.cloudRepo.releases
+    val spineSnapshots: String = publishingRepos.cloudRepo.snapshots
 
-    val sonatypeSnapshots: Stirng = "https://oss.sonatype.org/content/repositories/snapshots"
+    val sonatypeSnapshots: String = "https://oss.sonatype.org/content/repositories/snapshots"
     val gradlePlugins = "https://plugins.gradle.org/m2/"
 }
 
