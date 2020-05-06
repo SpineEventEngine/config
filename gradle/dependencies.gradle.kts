@@ -221,11 +221,13 @@ object deps {
     val scripts = Scripts
 }
 
+fun ScriptHandler.deps(): deps = Dependencies_gradle.deps
+
 /**
  * Forces dependency versions.
  */
-fun forceConfiguration(configurationContainer: ScriptHandler) {
-    configurationContainer.configurations.all {
+fun ScriptHandler.forceConfiguration() {
+    this.configurations.all {
         resolutionStrategy {
             failOnVersionConflict()
             cacheChangingModulesFor(0, "seconds")
@@ -265,8 +267,8 @@ fun forceConfiguration(configurationContainer: ScriptHandler) {
 /**
  * Adds default repositories to the passed [ScriptHandler].
  */
-fun defaultRepositories(repositoryContainer: ScriptHandler) {
-    repositoryContainer.repositories {
+fun ScriptHandler.defaultRepositories() {
+    this.repositories {
         mavenLocal()
         maven {
             url = repos.spine
