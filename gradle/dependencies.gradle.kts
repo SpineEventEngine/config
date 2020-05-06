@@ -220,63 +220,63 @@ object deps {
     val versions = Versions
     val scripts = Scripts
 }
-
-/**
- * Forces dependency versions.
- */
-fun ScriptHandler.forceConfiguration() {
-    this.configurations.all {
-        resolutionStrategy {
-            failOnVersionConflict()
-            cacheChangingModulesFor(0, "seconds")
-            force(
-                    deps.build.slf4j,
-                    deps.build.errorProneAnnotations,
-                    deps.build.jsr305Annotations,
-                    deps.build.checkerAnnotations,
-                    deps.build.autoCommon,
-                    deps.build.guava,
-                    deps.build.animalSniffer,
-                    deps.build.protobuf,
-                    deps.test.guavaTestlib,
-                    deps.test.truth,
-                    deps.test.junit5Api,
-                    deps.test.junit4,
-
-                    // Transitive dependencies of 3rd party components that we don"t use directly.
-                    "com.google.code.gson:gson:2.8.6",
-                    "com.google.j2objc:j2objc-annotations:1.3",
-                    "org.codehaus.plexus:plexus-utils:3.3.0",
-                    "com.squareup.okio:okio:1.17.5", // Last version before next major.
-                    "commons-cli:commons-cli:1.4",
-
-                    // Force discontinued transitive dependency until everybody migrates off it.
-                    "org.checkerframework:checker-compat-qual:2.5.5",
-
-                    "commons-logging:commons-logging:1.2",
-
-                    // Force the Gradle Protobuf plugin version.
-                    deps.build.gradlePlugins.protobuf
-            )
-        }
-    }
-}
-
-/**
- * Adds default repositories to the passed [ScriptHandler].
- */
-fun ScriptHandler.defaultRepositories() {
-    this.repositories {
-        mavenLocal()
-        maven {
-            url = uri(repos.spine)
-            content {
-                includeGroup("io.spine")
-                includeGroup("io.spine.tools")
-                includeGroup("io.spine.gcloud")
-            }
-        }
-        jcenter()
-        maven { url = uri(repos.gradlePlugins) }
-    }
-}
+//
+///**
+// * Forces dependency versions.
+// */
+//fun ScriptHandler.forceConfiguration() {
+//    this.configurations.all {
+//        resolutionStrategy {
+//            failOnVersionConflict()
+//            cacheChangingModulesFor(0, "seconds")
+//            force(
+//                    deps.build.slf4j,
+//                    deps.build.errorProneAnnotations,
+//                    deps.build.jsr305Annotations,
+//                    deps.build.checkerAnnotations,
+//                    deps.build.autoCommon,
+//                    deps.build.guava,
+//                    deps.build.animalSniffer,
+//                    deps.build.protobuf,
+//                    deps.test.guavaTestlib,
+//                    deps.test.truth,
+//                    deps.test.junit5Api,
+//                    deps.test.junit4,
+//
+//                    // Transitive dependencies of 3rd party components that we don"t use directly.
+//                    "com.google.code.gson:gson:2.8.6",
+//                    "com.google.j2objc:j2objc-annotations:1.3",
+//                    "org.codehaus.plexus:plexus-utils:3.3.0",
+//                    "com.squareup.okio:okio:1.17.5", // Last version before next major.
+//                    "commons-cli:commons-cli:1.4",
+//
+//                    // Force discontinued transitive dependency until everybody migrates off it.
+//                    "org.checkerframework:checker-compat-qual:2.5.5",
+//
+//                    "commons-logging:commons-logging:1.2",
+//
+//                    // Force the Gradle Protobuf plugin version.
+//                    deps.build.gradlePlugins.protobuf
+//            )
+//        }
+//    }
+//}
+//
+///**
+// * Adds default repositories to the passed [ScriptHandler].
+// */
+//fun ScriptHandler.defaultRepositories() {
+//    this.repositories {
+//        mavenLocal()
+//        maven {
+//            url = uri(repos.spine)
+//            content {
+//                includeGroup("io.spine")
+//                includeGroup("io.spine.tools")
+//                includeGroup("io.spine.gcloud")
+//            }
+//        }
+//        jcenter()
+//        maven { url = uri(repos.gradlePlugins) }
+//    }
+//}
