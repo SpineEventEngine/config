@@ -222,10 +222,7 @@ object deps {
 }
 
 /**
- * Forces default dependencies for the passed object which has {@code configurations} property.
- *
- * <p>Typically this should be applied to {@link ScriptHandler} (if in {@code buildscript} section),
- * or to {@link Project} (if in project definition section).
+ * Forces dependency versions.
  */
 fun forceConfiguration(configurationContainer: ScriptHandler) {
     configurationContainer.configurations.all {
@@ -266,10 +263,7 @@ fun forceConfiguration(configurationContainer: ScriptHandler) {
 }
 
 /**
- * Adds default repositories to the passed object which has {@code repositories} property.
- *
- * <p>Typically this should be applied to {@link ScriptHandler} (if in {@code buildscript} section),
- * or to {@link Project} (if in project definition section).
+ * Adds default repositories to the passed [ScriptHandler].
  */
 fun defaultRepositories(repositoryContainer: ScriptHandler) {
     repositoryContainer.repositories {
