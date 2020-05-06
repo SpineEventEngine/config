@@ -171,7 +171,7 @@ object Test {
             "org.junit.jupiter:junit-jupiter-api:${Versions.junit5}",
             "org.junit.jupiter:junit-jupiter-params:${Versions.junit5}",
             "org.apiguardian:apiguardian-api:${Versions.apiguardian}"
-    ),
+    )
     val junit5Runner  = "org.junit.jupiter:junit-jupiter-engine:${Versions.junit5}"
     val junitPioneer  = "org.junit-pioneer:junit-pioneer:${Versions.junitPioneer}"
     val slf4j         = "org.slf4j:slf4j-jdk14:${Versions.slf4j}"
