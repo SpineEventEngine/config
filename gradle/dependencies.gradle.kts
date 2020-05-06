@@ -273,7 +273,7 @@ fun ScriptHandler.defaultRepositories() {
     this.repositories {
         mavenLocal()
         maven {
-            url = repos.spine
+            url = uri(repos.spine)
             content {
                 includeGroup("io.spine")
                 includeGroup("io.spine.tools")
@@ -281,6 +281,6 @@ fun ScriptHandler.defaultRepositories() {
             }
         }
         jcenter()
-        maven { url = repos.gradlePlugins }
+        maven { url = uri(repos.gradlePlugins) }
     }
 }
