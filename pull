@@ -57,6 +57,9 @@ if [ ! -f ../.gitignore ]; then
     cp .gitignore ..
 fi
 
+echo "Updating Gradle `buildSrc` scripts"
+cp -R gradle/buildSrc ..
+
 cd ..
 
 echo "Done."
