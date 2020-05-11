@@ -18,6 +18,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package io.spine.gradle.internal
+
+import org.gradle.api.Project
+import org.gradle.api.artifacts.ConfigurationContainer
+import org.gradle.api.artifacts.dsl.RepositoryHandler
+import java.net.URI
+
+/*
+ * Copyright 2020, TeamDev. All rights reserved.
+ *
+ * Redistribution and use in source and/or binary forms, with or without
+ * modification, must retain the above copyright notice and the following
+ * disclaimer.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 /*
  * This file describes shared dependencies of Spine sub-projects.
  *
@@ -32,7 +59,7 @@ data class Repository(val releases: String,
                       val snapshots: String,
                       val credentials: String)
 
-object publishingRepos {
+object PublishingRepos {
     val mavenTeamDev = Repository(
             releases = "http://maven.teamdev.com/repository/spine",
             snapshots = "http://maven.teamdev.com/repository/spine-snapshots",
@@ -45,16 +72,13 @@ object publishingRepos {
     )
 }
 
-// Repository to publish artifacts into.
-extra["publishToRepository"] = publishingRepos.cloudRepo
-
 // Specific repositories.
-object repos {
-    val oldSpine: String = publishingRepos.mavenTeamDev.releases
-    val oldSpineSnapshots: String = publishingRepos.mavenTeamDev.snapshots
-    
-    val spine: String = publishingRepos.cloudRepo.releases
-    val spineSnapshots: String = publishingRepos.cloudRepo.snapshots
+object Repos {
+    val oldSpine: String = PublishingRepos.mavenTeamDev.releases
+    val oldSpineSnapshots: String = PublishingRepos.mavenTeamDev.snapshots
+
+    val spine: String = PublishingRepos.cloudRepo.releases
+    val spineSnapshots: String = PublishingRepos.cloudRepo.snapshots
 
     val sonatypeSnapshots: String = "https://oss.sonatype.org/content/repositories/snapshots"
     val gradlePlugins = "https://plugins.gradle.org/m2/"
@@ -156,7 +180,7 @@ object Grpc {
     val grpcNettyShaded        = "io.grpc:grpc-netty-shaded:${Versions.grpc}"
     val grpcContext            = "io.grpc:grpc-context:${Versions.grpc}"
 }
-
+ 
 object Runtime {
     val floggerSystemBackend = "com.google.flogger:flogger-system-backend:${Versions.flogger}"
     val floggerLog4J         = "com.google.flogger:flogger-log4j:${Versions.flogger}"
@@ -184,34 +208,34 @@ object Test {
 }
 
 object Scripts {
-    val testArtifacts          = "$rootDir/config/gradle/test-artifacts.gradle"
-    val testOutput             = "$rootDir/config/gradle/test-output.gradle"
-    val slowTests              = "$rootDir/config/gradle/slow-tests.gradle"
-    val javadocOptions         = "$rootDir/config/gradle/javadoc-options.gradle"
-    val filterInternalJavadocs = "$rootDir/config/gradle/filter-internal-javadoc.gradle"
-    val jacoco                 = "$rootDir/config/gradle/jacoco.gradle"
-    val publish                = "$rootDir/config/gradle/publish.gradle"
-    val publishProto           = "$rootDir/config/gradle/publish-proto.gradle"
-    val javacArgs              = "$rootDir/config/gradle/javac-args.gradle"
-    val jsBuildTasks           = "$rootDir/config/gradle/js/build-tasks.gradle"
-    val jsConfigureProto       = "$rootDir/config/gradle/js/configure-proto.gradle"
-    val npmPublishTasks        = "$rootDir/config/gradle/js/npm-publish-tasks.gradle"
-    val npmCli                 = "$rootDir/config/gradle/js/npm-cli.gradle"
-    val updatePackageVersion   = "$rootDir/config/gradle/js/update-package-version.gradle"
-    val dartBuildTasks         = "$rootDir/config/gradle/dart/build-tasks.gradle"
-    val pubPublishTasks        = "$rootDir/config/gradle/dart/pub-publish-tasks.gradle"
-    val pmd                    = "$rootDir/config/gradle/pmd.gradle"
-    val checkstyle             = "$rootDir/config/gradle/checkstyle.gradle"
-    val runBuild               = "$rootDir/config/gradle/run-build.gradle"
-    val modelCompiler          = "$rootDir/config/gradle/model-compiler.gradle"
-    val licenseReportCommon    = "$rootDir/config/gradle/license-report-common.gradle"
-    val projectLicenseReport   = "$rootDir/config/gradle/license-report-project.gradle"
-    val repoLicenseReport      = "$rootDir/config/gradle/license-report-repo.gradle"
-    val generatePom            = "$rootDir/config/gradle/generate-pom.gradle"
-    val updateGitHubPages      = "$rootDir/config/gradle/update-gh-pages.gradle"
+    fun testArtifacts(p: Project)          = "${p.rootDir}/config/gradle/test-artifacts.gradle"
+    fun testOutput(p: Project)             = "${p.rootDir}/config/gradle/test-output.gradle"
+    fun slowTests(p: Project)              = "${p.rootDir}/config/gradle/slow-tests.gradle"
+    fun javadocOptions(p: Project)         = "${p.rootDir}/config/gradle/javadoc-options.gradle"
+    fun filterInternalJavadocs(p: Project) = "${p.rootDir}/config/gradle/filter-internal-javadoc.gradle"
+    fun jacoco(p: Project)                 = "${p.rootDir}/config/gradle/jacoco.gradle"
+    fun publish(p: Project)                = "${p.rootDir}/config/gradle/publish.gradle"
+    fun publishProto(p: Project)           = "${p.rootDir}/config/gradle/publish-proto.gradle"
+    fun javacArgs(p: Project)              = "${p.rootDir}/config/gradle/javac-args.gradle"
+    fun jsBuildTasks(p: Project)           = "${p.rootDir}/config/gradle/js/build-tasks.gradle"
+    fun jsConfigureProto(p: Project)       = "${p.rootDir}/config/gradle/js/configure-proto.gradle"
+    fun npmPublishTasks(p: Project)        = "${p.rootDir}/config/gradle/js/npm-publish-tasks.gradle"
+    fun npmCli(p: Project)                 = "${p.rootDir}/config/gradle/js/npm-cli.gradle"
+    fun updatePackageVersion(p: Project)   = "${p.rootDir}/config/gradle/js/update-package-version.gradle"
+    fun dartBuildTasks(p: Project)         = "${p.rootDir}/config/gradle/dart/build-tasks.gradle"
+    fun pubPublishTasks(p: Project)        = "${p.rootDir}/config/gradle/dart/pub-publish-tasks.gradle"
+    fun pmd(p: Project)                    = "${p.rootDir}/config/gradle/pmd.gradle"
+    fun checkstyle(p: Project)             = "${p.rootDir}/config/gradle/checkstyle.gradle"
+    fun runBuild(p: Project)               = "${p.rootDir}/config/gradle/run-build.gradle"
+    fun modelCompiler(p: Project)          = "${p.rootDir}/config/gradle/model-compiler.gradle"
+    fun licenseReportCommon(p: Project)    = "${p.rootDir}/config/gradle/license-report-common.gradle"
+    fun projectLicenseReport(p: Project)   = "${p.rootDir}/config/gradle/license-report-project.gradle"
+    fun repoLicenseReport(p: Project)      = "${p.rootDir}/config/gradle/license-report-repo.gradle"
+    fun generatePom(p: Project)            = "${p.rootDir}/config/gradle/generate-pom.gradle"
+    fun updateGitHubPages(p: Project)      = "${p.rootDir}/config/gradle/update-gh-pages.gradle"
 }
 
-object deps {
+object Deps {
     val build = Build
     val grpc = Grpc
     val gen = Gen
@@ -220,63 +244,63 @@ object deps {
     val versions = Versions
     val scripts = Scripts
 }
-//
-///**
-// * Forces dependency versions.
-// */
-//fun ScriptHandler.forceConfiguration() {
-//    this.configurations.all {
-//        resolutionStrategy {
-//            failOnVersionConflict()
-//            cacheChangingModulesFor(0, "seconds")
-//            force(
-//                    deps.build.slf4j,
-//                    deps.build.errorProneAnnotations,
-//                    deps.build.jsr305Annotations,
-//                    deps.build.checkerAnnotations,
-//                    deps.build.autoCommon,
-//                    deps.build.guava,
-//                    deps.build.animalSniffer,
-//                    deps.build.protobuf,
-//                    deps.test.guavaTestlib,
-//                    deps.test.truth,
-//                    deps.test.junit5Api,
-//                    deps.test.junit4,
-//
-//                    // Transitive dependencies of 3rd party components that we don"t use directly.
-//                    "com.google.code.gson:gson:2.8.6",
-//                    "com.google.j2objc:j2objc-annotations:1.3",
-//                    "org.codehaus.plexus:plexus-utils:3.3.0",
-//                    "com.squareup.okio:okio:1.17.5", // Last version before next major.
-//                    "commons-cli:commons-cli:1.4",
-//
-//                    // Force discontinued transitive dependency until everybody migrates off it.
-//                    "org.checkerframework:checker-compat-qual:2.5.5",
-//
-//                    "commons-logging:commons-logging:1.2",
-//
-//                    // Force the Gradle Protobuf plugin version.
-//                    deps.build.gradlePlugins.protobuf
-//            )
-//        }
-//    }
-//}
-//
-///**
-// * Adds default repositories to the passed [ScriptHandler].
-// */
-//fun ScriptHandler.defaultRepositories() {
-//    this.repositories {
-//        mavenLocal()
-//        maven {
-//            url = uri(repos.spine)
-//            content {
-//                includeGroup("io.spine")
-//                includeGroup("io.spine.tools")
-//                includeGroup("io.spine.gcloud")
-//            }
-//        }
-//        jcenter()
-//        maven { url = uri(repos.gradlePlugins) }
-//    }
-//}
+
+object DependencyResolution {
+
+    fun forceConfiguration(configurations: ConfigurationContainer) {
+        configurations.all { config ->
+            config.resolutionStrategy { strategy ->
+                strategy.failOnVersionConflict()
+                strategy.cacheChangingModulesFor(0, "seconds")
+                strategy.force(
+                        Deps.build.slf4j,
+                        Deps.build.errorProneAnnotations,
+                        Deps.build.jsr305Annotations,
+                        Deps.build.checkerAnnotations,
+                        Deps.build.autoCommon,
+                        Deps.build.guava,
+                        Deps.build.animalSniffer,
+                        Deps.build.protobuf,
+                        Deps.test.guavaTestlib,
+                        Deps.test.truth,
+                        Deps.test.junit5Api,
+                        Deps.test.junit4,
+
+                        // Transitive dependencies of 3rd party components that we don"t use directly.
+                        "com.google.code.gson:gson:2.8.6",
+                        "com.google.j2objc:j2objc-annotations:1.3",
+                        "org.codehaus.plexus:plexus-utils:3.3.0",
+                        "com.squareup.okio:okio:1.17.5", // Last version before next major.
+                        "commons-cli:commons-cli:1.4",
+
+                        // Force discontinued transitive dependency until everybody migrates off it.
+                        "org.checkerframework:checker-compat-qual:2.5.5",
+
+                        "commons-logging:commons-logging:1.2",
+
+                        // Force the Gradle Protobuf plugin version.
+                        Deps.build.gradlePlugins.protobuf
+                )
+            }
+        }
+    }
+
+    fun defaultRepositories(repositories: RepositoryHandler) {
+        repositories.mavenLocal()
+        repositories.maven { repository ->
+            repository.url = URI(Repos.spine)
+            repository.content { descriptor ->
+                descriptor.includeGroup("io.spine")
+                descriptor.includeGroup("io.spine.tools")
+                descriptor.includeGroup("io.spine.gcloud")
+            }
+        }
+        repositories.jcenter()
+        repositories.maven { repository ->
+            repository.url = URI(Repos.gradlePlugins)
+        }
+    }
+}
+
+
+
