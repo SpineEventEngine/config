@@ -108,11 +108,6 @@ object GradlePlugins {
     val licenseReport   = "com.github.jk1:gradle-license-report:${Versions.licensePlugin}"
 }
 
-object AutoService {
-    val annotations = "com.google.auto.service:auto-service-annotations:${Versions.autoService}"
-    val processor = "com.google.auto.service:auto-service:${Versions.autoService}"
-}
-
 object Build {
     val errorProneJavac        = "com.google.errorprone:javac:${Versions.errorProneJavac}"
     val errorProneAnnotations = listOf(
@@ -128,7 +123,6 @@ object Build {
             "org.checkerframework:javacutil:${Versions.checkerFramework}"
     )
     val autoCommon             = "com.google.auto:auto-common:${Versions.autoCommon}"
-    val autoService = AutoService
     val jsr305Annotations      = "com.google.code.findbugs:jsr305:${Versions.findBugs}"
     val guava                  = "com.google.guava:guava:${Versions.guava}"
     val flogger                = "com.google.flogger:flogger:${Versions.flogger}"
@@ -149,6 +143,11 @@ object Build {
     val gradlePlugins = GradlePlugins
     @Deprecated("Use Flogger over SLF4J.", replaceWith = ReplaceWith("flogger"))
     val slf4j                  = "org.slf4j:slf4j-api:${Versions.slf4j}"
+
+    object autoService {
+        val annotations = "com.google.auto.service:auto-service-annotations:${Versions.autoService}"
+        val processor = "com.google.auto.service:auto-service:${Versions.autoService}"
+    }
 }
 
 object Gen {
@@ -156,19 +155,44 @@ object Gen {
 }
 
 object Grpc {
-    val grpcCore               = "io.grpc:grpc-core:${Versions.grpc}"
-    val grpcStub               = "io.grpc:grpc-stub:${Versions.grpc}"
-    val grpcOkHttp             = "io.grpc:grpc-okhttp:${Versions.grpc}"
-    val grpcProtobuf           = "io.grpc:grpc-protobuf:${Versions.grpc}"
-    val grpcNetty              = "io.grpc:grpc-netty:${Versions.grpc}"
-    val grpcNettyShaded        = "io.grpc:grpc-netty-shaded:${Versions.grpc}"
-    val grpcContext            = "io.grpc:grpc-context:${Versions.grpc}"
+    val core        = "io.grpc:grpc-core:${Versions.grpc}"
+    val stub        = "io.grpc:grpc-stub:${Versions.grpc}"
+    val okHttp      = "io.grpc:grpc-okhttp:${Versions.grpc}"
+    val protobuf    = "io.grpc:grpc-protobuf:${Versions.grpc}"
+    val netty       = "io.grpc:grpc-netty:${Versions.grpc}"
+    val nettyShaded = "io.grpc:grpc-netty-shaded:${Versions.grpc}"
+    val context     = "io.grpc:grpc-context:${Versions.grpc}"
+    
+    @Deprecated("Use the shorter form.", replaceWith = ReplaceWith("core"))
+    val grpcCore = core
+    @Deprecated("Use the shorter form.", replaceWith = ReplaceWith("stub"))
+    val grpcStub = stub
+    @Deprecated("Use the shorter form.", replaceWith = ReplaceWith("okHttp"))
+    val grpcOkHttp = okHttp
+    @Deprecated("Use the shorter form.", replaceWith = ReplaceWith("protobuf"))
+    val grpcProtobuf = protobuf
+    @Deprecated("Use the shorter form.", replaceWith = ReplaceWith("netty"))
+    val grpcNetty = netty
+    @Deprecated("Use the shorter form.", replaceWith = ReplaceWith("nettyShaded"))
+    val grpcNettyShaded = nettyShaded
+    @Deprecated("Use the shorter form.", replaceWith = ReplaceWith("context"))
+    val grpcContext = context
 }
- 
+
 object Runtime {
-    val floggerSystemBackend = "com.google.flogger:flogger-system-backend:${Versions.flogger}"
-    val floggerLog4J         = "com.google.flogger:flogger-log4j:${Versions.flogger}"
-    val floggerSlf4J         = "com.google.flogger:slf4j-backend-factory:${Versions.flogger}"
+
+    object flogger {
+        val systemBackend = "com.google.flogger:flogger-system-backend:${Versions.flogger}"
+        val log4J         = "com.google.flogger:flogger-log4j:${Versions.flogger}"
+        val slf4J         = "com.google.flogger:slf4j-backend-factory:${Versions.flogger}"
+    }
+
+    @Deprecated("Use the `flogger` object.", replaceWith = ReplaceWith("flogger.systemBackend"))
+    val floggerSystemBackend = flogger.systemBackend
+    @Deprecated("Use the `flogger` object.", replaceWith = ReplaceWith("flogger.log4J"))
+    val floggerLog4J = flogger.log4J
+    @Deprecated("Use the `flogger` object.", replaceWith = ReplaceWith("flogger.slf4J"))
+    val floggerSlf4J = flogger.slf4J
 }
 
 object Test {
