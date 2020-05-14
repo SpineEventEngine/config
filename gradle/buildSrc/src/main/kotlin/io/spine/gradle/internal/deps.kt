@@ -67,7 +67,7 @@ object Repos {
 }
 
 object Versions {
-    @Deprecated("Use Flogger over SLF4J.", replaceWith = "flogger")
+    @Deprecated("Use Flogger over SLF4J.", replaceWith = ReplaceWith("flogger"))
     val slf4j            = "1.7.29"
     val checkerFramework = "3.3.0"
     val errorProne       = "2.3.4"
@@ -147,7 +147,7 @@ object Build {
     val animalSniffer          = "org.codehaus.mojo:animal-sniffer-annotations:${Versions.animalSniffer}"
     val ci = "true".equals(System.getenv("CI"))
     val gradlePlugins = GradlePlugins
-    @Deprecated("Use Flogger over SLF4J.", replaceWith = "flogger")
+    @Deprecated("Use Flogger over SLF4J.", replaceWith = ReplaceWith("flogger"))
     val slf4j                  = "org.slf4j:slf4j-api:${Versions.slf4j}"
 }
 
@@ -188,7 +188,8 @@ object Test {
             "com.google.truth.extensions:truth-java8-extension:${Versions.truth}",
             "com.google.truth.extensions:truth-proto-extension:${Versions.truth}"
     )
-    @Deprecated("Use Flogger over SLF4J.", replaceWith = "Deps.runtime.floggerSystemBackend")
+    @Deprecated("Use Flogger over SLF4J.",
+                replaceWith = ReplaceWith("Deps.runtime.floggerSystemBackend"))
     val slf4j         = "org.slf4j:slf4j-jdk14:${Versions.slf4j}"
 }
 
