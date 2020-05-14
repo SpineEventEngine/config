@@ -257,7 +257,7 @@ object DependencyResolution {
                         Deps.test.junit5Api,
                         Deps.test.junit4,
 
-                        // Transitive dependencies of 3rd party components that we don"t use directly.
+                        // Transitive dependencies of 3rd party components that we don't use directly.
                         "com.google.code.gson:gson:2.8.6",
                         "com.google.j2objc:j2objc-annotations:1.3",
                         "org.codehaus.plexus:plexus-utils:3.3.0",
