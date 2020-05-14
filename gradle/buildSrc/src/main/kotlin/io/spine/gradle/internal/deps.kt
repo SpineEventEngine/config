@@ -24,26 +24,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import java.net.URI
-
-/*
- * Copyright 2020, TeamDev. All rights reserved.
- *
- * Redistribution and use in source and/or binary forms, with or without
- * modification, must retain the above copyright notice and the following
- * disclaimer.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+import kotlin.DeprecationLevel.WARNING
 
 /*
  * This file describes shared dependencies of Spine sub-projects.
@@ -52,13 +33,15 @@ import java.net.URI
  *  https://github.com/uber/NullAway/blob/master/gradle/dependencies.gradle
  */
 
-// Repositories to which we may publish. Normally, only one repository will be used.
-// See `publish.gradle.kts` for details of the publishing process.
-
 data class Repository(val releases: String,
                       val snapshots: String,
                       val credentials: String)
 
+/**
+ * Repositories to which we may publish. Normally, only one repository will be used.
+ *
+ * See `publish.gradle` for details of the publishing process.
+ */
 object PublishingRepos {
     val mavenTeamDev = Repository(
             releases = "http://maven.teamdev.com/repository/spine",
@@ -85,7 +68,8 @@ object Repos {
 }
 
 object Versions {
-    val slf4j            = "1.7.29" // deprecated, remove after full migration
+    @Deprecated("Use Flogger over SLF4J.", replaceWith = "flogger", level = WARNING)
+    val slf4j            = "1.7.29"
     val checkerFramework = "3.3.0"
     val errorProne       = "2.3.4"
     val errorProneJavac  = "9+181-r4173-1" // taken from here: https://github.com/tbroyer/gradle-errorprone-plugin/blob/v0.8/build.gradle.kts
@@ -149,7 +133,6 @@ object Build {
     val jsr305Annotations      = "com.google.code.findbugs:jsr305:${Versions.findBugs}"
     val guava                  = "com.google.guava:guava:${Versions.guava}"
     val flogger                = "com.google.flogger:flogger:${Versions.flogger}"
-    val slf4j                  = "org.slf4j:slf4j-api:${Versions.slf4j}"
     val protobuf = listOf(
             "com.google.protobuf:protobuf-java:${Versions.protobuf}",
             "com.google.protobuf:protobuf-java-util:${Versions.protobuf}"
@@ -165,6 +148,8 @@ object Build {
     val animalSniffer          = "org.codehaus.mojo:animal-sniffer-annotations:${Versions.animalSniffer}"
     val ci = "true".equals(System.getenv("CI"))
     val gradlePlugins = GradlePlugins
+    @Deprecated("Use Flogger over SLF4J.", replaceWith = "flogger", level = WARNING)
+    val slf4j                  = "org.slf4j:slf4j-api:${Versions.slf4j}"
 }
 
 object Gen {
@@ -196,7 +181,6 @@ object Test {
     )
     val junit5Runner  = "org.junit.jupiter:junit-jupiter-engine:${Versions.junit5}"
     val junitPioneer  = "org.junit-pioneer:junit-pioneer:${Versions.junitPioneer}"
-    val slf4j         = "org.slf4j:slf4j-jdk14:${Versions.slf4j}"
     val guavaTestlib  = "com.google.guava:guava-testlib:${Versions.guava}"
     val mockito       = "org.mockito:mockito-core:2.12.0"
     val hamcrest      = "org.hamcrest:hamcrest-all:1.3"
@@ -205,34 +189,43 @@ object Test {
             "com.google.truth.extensions:truth-java8-extension:${Versions.truth}",
             "com.google.truth.extensions:truth-proto-extension:${Versions.truth}"
     )
+    @Deprecated(message = "Use Flogger over SLF4J.",
+                replaceWith = "Deps.runtime.floggerSystemBackend",
+                level = WARNING)
+    val slf4j         = "org.slf4j:slf4j-jdk14:${Versions.slf4j}"
 }
 
 object Scripts {
-    fun testArtifacts(p: Project)          = "${p.rootDir}/config/gradle/test-artifacts.gradle"
-    fun testOutput(p: Project)             = "${p.rootDir}/config/gradle/test-output.gradle"
-    fun slowTests(p: Project)              = "${p.rootDir}/config/gradle/slow-tests.gradle"
-    fun javadocOptions(p: Project)         = "${p.rootDir}/config/gradle/javadoc-options.gradle"
-    fun filterInternalJavadocs(p: Project) = "${p.rootDir}/config/gradle/filter-internal-javadoc.gradle"
-    fun jacoco(p: Project)                 = "${p.rootDir}/config/gradle/jacoco.gradle"
-    fun publish(p: Project)                = "${p.rootDir}/config/gradle/publish.gradle"
-    fun publishProto(p: Project)           = "${p.rootDir}/config/gradle/publish-proto.gradle"
-    fun javacArgs(p: Project)              = "${p.rootDir}/config/gradle/javac-args.gradle"
-    fun jsBuildTasks(p: Project)           = "${p.rootDir}/config/gradle/js/build-tasks.gradle"
-    fun jsConfigureProto(p: Project)       = "${p.rootDir}/config/gradle/js/configure-proto.gradle"
-    fun npmPublishTasks(p: Project)        = "${p.rootDir}/config/gradle/js/npm-publish-tasks.gradle"
-    fun npmCli(p: Project)                 = "${p.rootDir}/config/gradle/js/npm-cli.gradle"
-    fun updatePackageVersion(p: Project)   = "${p.rootDir}/config/gradle/js/update-package-version.gradle"
-    fun dartBuildTasks(p: Project)         = "${p.rootDir}/config/gradle/dart/build-tasks.gradle"
-    fun pubPublishTasks(p: Project)        = "${p.rootDir}/config/gradle/dart/pub-publish-tasks.gradle"
-    fun pmd(p: Project)                    = "${p.rootDir}/config/gradle/pmd.gradle"
-    fun checkstyle(p: Project)             = "${p.rootDir}/config/gradle/checkstyle.gradle"
-    fun runBuild(p: Project)               = "${p.rootDir}/config/gradle/run-build.gradle"
-    fun modelCompiler(p: Project)          = "${p.rootDir}/config/gradle/model-compiler.gradle"
-    fun licenseReportCommon(p: Project)    = "${p.rootDir}/config/gradle/license-report-common.gradle"
-    fun projectLicenseReport(p: Project)   = "${p.rootDir}/config/gradle/license-report-project.gradle"
-    fun repoLicenseReport(p: Project)      = "${p.rootDir}/config/gradle/license-report-repo.gradle"
-    fun generatePom(p: Project)            = "${p.rootDir}/config/gradle/generate-pom.gradle"
-    fun updateGitHubPages(p: Project)      = "${p.rootDir}/config/gradle/update-gh-pages.gradle"
+
+    private const val COMMON_PATH = "/config/gradle/"
+
+    fun testArtifacts(p: Project)          = p.script("test-artifacts.gradle")
+    fun testOutput(p: Project)             = p.script("test-output.gradle")
+    fun slowTests(p: Project)              = p.script("slow-tests.gradle")
+    fun javadocOptions(p: Project)         = p.script("javadoc-options.gradle")
+    fun filterInternalJavadocs(p: Project) = p.script("filter-internal-javadoc.gradle")
+    fun jacoco(p: Project)                 = p.script("jacoco.gradle")
+    fun publish(p: Project)                = p.script("publish.gradle")
+    fun publishProto(p: Project)           = p.script("publish-proto.gradle")
+    fun javacArgs(p: Project)              = p.script("javac-args.gradle")
+    fun jsBuildTasks(p: Project)           = p.script("js/build-tasks.gradle")
+    fun jsConfigureProto(p: Project)       = p.script("js/configure-proto.gradle")
+    fun npmPublishTasks(p: Project)        = p.script("js/npm-publish-tasks.gradle")
+    fun npmCli(p: Project)                 = p.script("js/npm-cli.gradle")
+    fun updatePackageVersion(p: Project)   = p.script("js/update-package-version.gradle")
+    fun dartBuildTasks(p: Project)         = p.script("dart/build-tasks.gradle")
+    fun pubPublishTasks(p: Project)        = p.script("dart/pub-publish-tasks.gradle")
+    fun pmd(p: Project)                    = p.script("pmd.gradle")
+    fun checkstyle(p: Project)             = p.script("checkstyle.gradle")
+    fun runBuild(p: Project)               = p.script("run-build.gradle")
+    fun modelCompiler(p: Project)          = p.script("model-compiler.gradle")
+    fun licenseReportCommon(p: Project)    = p.script("license-report-common.gradle")
+    fun projectLicenseReport(p: Project)   = p.script("license-report-project.gradle")
+    fun repoLicenseReport(p: Project)      = p.script("license-report-repo.gradle")
+    fun generatePom(p: Project)            = p.script("generate-pom.gradle")
+    fun updateGitHubPages(p: Project)      = p.script("update-gh-pages.gradle")
+
+    private fun Project.script(name: String) = "${rootDir}$COMMON_PATH$name"
 }
 
 object Deps {
