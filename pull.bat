@@ -55,7 +55,7 @@ IF NOT EXIST "..\.gitignore" (
 	xcopy /F/Y .gitignore ..\
 )
 
-echo "Updating Gradle `buildSrc` scripts"
+echo "Updating Gradle buildSrc scripts"
 xcopy /S/E/I/F/Y gradle\buildSrc ..\buildSrc
 
 cd ..
