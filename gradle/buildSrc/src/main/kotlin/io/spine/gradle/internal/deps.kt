@@ -143,7 +143,7 @@ object Build {
     val ci = "true".equals(System.getenv("CI"))
     val gradlePlugins = GradlePlugins
     @Deprecated("Use Flogger over SLF4J.", replaceWith = ReplaceWith("flogger"))
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION") // Version of SLF4J.
     val slf4j                  = "org.slf4j:slf4j-api:${Versions.slf4j}"
 
     object AutoService {
@@ -218,7 +218,7 @@ object Test {
     )
     @Deprecated("Use Flogger over SLF4J.",
                 replaceWith = ReplaceWith("Deps.runtime.floggerSystemBackend"))
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION") // Version of SLF4J.
     val slf4j         = "org.slf4j:slf4j-jdk14:${Versions.slf4j}"
 }
 
@@ -272,7 +272,7 @@ object DependencyResolution {
             config.resolutionStrategy { strategy ->
                 strategy.failOnVersionConflict()
                 strategy.cacheChangingModulesFor(0, "seconds")
-                @Suppress("DEPRECATION")
+                @Suppress("DEPRECATION") // Force SLF4J version.
                 strategy.force(
                         Deps.build.slf4j,
                         Deps.build.errorProneAnnotations,
