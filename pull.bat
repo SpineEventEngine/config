@@ -34,7 +34,7 @@ rem In this state there is no current branch.
 git submodule update
 
 rem Make the `config` dir current.
-cd config
+cd config || (echo "Error: `config` directory is missing." & exit 1)
 
 rem Set the current branch to master.
 git checkout master
