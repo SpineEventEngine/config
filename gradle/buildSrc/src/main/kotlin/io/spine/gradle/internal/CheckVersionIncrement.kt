@@ -31,8 +31,18 @@ import java.net.URL
 
 private const val FILE_NAME = "maven-metadata.xml"
 
+/**
+ * A task which verifies that the current version of the library has not been published to the given
+ * Maven repository yet.
+ */
 open class CheckVersionIncrement : AbstractTask() {
 
+    /**
+     * The Maven repository in which to look for published artifacts.
+     *
+     * We only check the `releases` repository. Artifacts in `snapshots` repository still may be
+     * overridden.
+     */
     @Input
     lateinit var repository: Repository
 
