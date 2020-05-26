@@ -29,8 +29,6 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import java.net.URL
 
-private const val FILE_NAME = "maven-metadata.xml"
-
 /**
  * A task which verifies that the current version of the library has not been published to the given
  * Maven repository yet.
@@ -51,7 +49,7 @@ open class CheckVersionIncrement : AbstractTask() {
 
     @TaskAction
     private fun fetchAndCheck() {
-        val artifact = "${project.artifactPath()}/$FILE_NAME"
+        val artifact = "${project.artifactPath()}/${MavenMetadata.FILE_NAME}"
         val repoUrl = repository.releases
         val metadata = fetch(repoUrl, artifact)
         val versions = metadata.versioning.versions
@@ -87,6 +85,8 @@ open class CheckVersionIncrement : AbstractTask() {
 private data class MavenMetadata(var versioning: Versioning = Versioning()) {
 
     companion object {
+
+        const val FILE_NAME = "maven-metadata.xml"
 
         private val mapper = XmlMapper()
 
