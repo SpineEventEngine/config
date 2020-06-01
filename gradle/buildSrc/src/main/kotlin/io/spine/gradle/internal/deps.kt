@@ -100,6 +100,10 @@ object Versions {
     val servletApi       = "3.1.0"
     val gCloudDatastore  = "1.102.4"
     val gCloudTrace      = "1.0.3"
+    val hsqldb           = "2.5.0"
+    val h2database       = "1.4.200"
+    val hikari           = "3.4.5"
+    val querydsl         = "4.3.1"
 
     /**
      * Version of the SLF4J library.
@@ -153,10 +157,15 @@ object Build {
     val roasterApi             = "org.jboss.forge.roaster:roaster-api:${Versions.roaster}"
     val roasterJdt             = "org.jboss.forge.roaster:roaster-jdt:${Versions.roaster}"
     val animalSniffer          = "org.codehaus.mojo:animal-sniffer-annotations:${Versions.animalSniffer}"
-    @Deprecated("Use Env instead.", replaceWith = ReplaceWith("Deps.env.ci"))
-    val ci                     = "true".equals(System.getenv("CI"))
     val gradlePlugins          = GradlePlugins
     val servletApi             = "javax.servlet:javax.servlet-api:${Versions.servletApi}"
+    val hsqldb                 = "org.hsqldb:hsqldb:${Versions.hsqldb}"
+    val h2database             = "com.h2database:h2:${Versions.h2database}"
+    val hikari                 = "com.zaxxer:HikariCP:${Versions.hikari}"
+    val querydsl               = "com.querydsl:querydsl-sql:${Versions.querydsl}"
+
+    @Deprecated("Use Env instead.", replaceWith = ReplaceWith("Deps.env.ci"))
+    val ci                     = "true".equals(System.getenv("CI"))
     @Deprecated("Use Flogger over SLF4J.", replaceWith = ReplaceWith("flogger"))
     @Suppress("DEPRECATION") // Version of SLF4J.
     val slf4j                  = "org.slf4j:slf4j-api:${Versions.slf4j}"
