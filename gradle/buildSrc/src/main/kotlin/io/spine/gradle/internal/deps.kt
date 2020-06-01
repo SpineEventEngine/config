@@ -98,6 +98,8 @@ object Versions {
     val animalSniffer    = "1.18"
     val apiguardian      = "1.1.0"
     val servletApi       = "3.1.0"
+    val gCloudDatastore  = "1.102.4"
+    val gCloudTrace      = "1.0.3"
 
     /**
      * Version of the SLF4J library.
@@ -192,6 +194,12 @@ object Grpc {
     val grpcNettyShaded = nettyShaded
     @Deprecated("Use the shorter form.", replaceWith = ReplaceWith("context"))
     val grpcContext = context
+}
+
+object GoogleCloud {
+
+    val datastore = "com.google.cloud:google-cloud-datastore:${Versions.gCloudDatastore}"
+    val trace     = "com.google.cloud:google-cloud-trace:${Versions.gCloudTrace}"
 }
 
 object Runtime {
