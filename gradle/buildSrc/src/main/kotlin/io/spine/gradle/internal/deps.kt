@@ -197,11 +197,24 @@ object Grpc {
 object Runtime {
 
     val flogger = Flogger
+    val slf4J = Slf4J
 
     object Flogger {
         val systemBackend = "com.google.flogger:flogger-system-backend:${Versions.flogger}"
         val log4J         = "com.google.flogger:flogger-log4j:${Versions.flogger}"
         val slf4J         = "com.google.flogger:slf4j-backend-factory:${Versions.flogger}"
+    }
+
+    object Slf4J {
+
+        /**
+         * A runtime SLF4J binding for `java.util.logging`.
+         *
+         * Use only if a binding is required. Prefer Flogger if the choice of a logging platform is
+         * on us.
+         */
+        @Suppress("DEPRECATION") // OK to use SLF4J for runtime bindings.
+        val slf4j = "org.slf4j:slf4j-jdk14:${Versions.slf4j}"
     }
 
     @Deprecated("Use the `flogger` object.", replaceWith = ReplaceWith("flogger.systemBackend"))
@@ -230,7 +243,7 @@ object Test {
             "com.google.truth.extensions:truth-proto-extension:${Versions.truth}"
     )
     @Deprecated("Use Flogger over SLF4J.",
-                replaceWith = ReplaceWith("Deps.runtime.floggerSystemBackend"))
+                replaceWith = ReplaceWith("Deps.runtime.flogger.systemBackend"))
     @Suppress("DEPRECATION") // Version of SLF4J.
     val slf4j         = "org.slf4j:slf4j-jdk14:${Versions.slf4j}"
 }
