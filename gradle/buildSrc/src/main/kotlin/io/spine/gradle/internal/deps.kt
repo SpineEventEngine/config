@@ -97,6 +97,7 @@ object Versions {
     val jackson          = "2.9.10.4"
     val animalSniffer    = "1.18"
     val apiguardian      = "1.1.0"
+    val servletApi       = "3.1.0"
 
     /**
      * Version of the SLF4J library.
@@ -150,8 +151,10 @@ object Build {
     val roasterApi             = "org.jboss.forge.roaster:roaster-api:${Versions.roaster}"
     val roasterJdt             = "org.jboss.forge.roaster:roaster-jdt:${Versions.roaster}"
     val animalSniffer          = "org.codehaus.mojo:animal-sniffer-annotations:${Versions.animalSniffer}"
-    val ci = "true".equals(System.getenv("CI"))
-    val gradlePlugins = GradlePlugins
+    @Deprecated("Use Env instead.", replaceWith = ReplaceWith("Deps.env.ci"))
+    val ci                     = "true".equals(System.getenv("CI"))
+    val gradlePlugins          = GradlePlugins
+    val servletApi             = "javax.servlet:javax.servlet-api:${Versions.servletApi}"
     @Deprecated("Use Flogger over SLF4J.", replaceWith = ReplaceWith("flogger"))
     @Suppress("DEPRECATION") // Version of SLF4J.
     val slf4j                  = "org.slf4j:slf4j-api:${Versions.slf4j}"
@@ -265,6 +268,17 @@ object Scripts {
     private fun Project.script(name: String) = "${rootDir}$COMMON_PATH$name"
 }
 
+object Env {
+
+    /**
+     * Flag which shows if the current runtime is on a CI server or not.
+     *
+     * If the `CI` environment variable is set to `"true"`, the value is `true`. Otherwise,
+     * the value is `false`.
+     */
+    val ci = "true".equals(System.getenv("CI"))
+}
+
 object Deps {
     val build = Build
     val grpc = Grpc
@@ -273,6 +287,7 @@ object Deps {
     val test = Test
     val versions = Versions
     val scripts = Scripts
+    val env = Env
 }
 
 object DependencyResolution {
