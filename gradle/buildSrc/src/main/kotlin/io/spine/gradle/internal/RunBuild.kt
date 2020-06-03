@@ -20,8 +20,8 @@
 
 package io.spine.gradle.internal
 
+import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
-import org.gradle.api.internal.AbstractTask
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.os.OperatingSystem
@@ -36,7 +36,7 @@ import java.io.File
  * The build writes verbose log into `$directory/build/debug-out.txt`. The error output is written
  * into `$directory/build/error-out.txt`.
  */
-open class RunBuild : AbstractTask() {
+open class RunBuild : DefaultTask() {
 
     /**
      * Path to the directory which contains a Gradle wrapper script.
