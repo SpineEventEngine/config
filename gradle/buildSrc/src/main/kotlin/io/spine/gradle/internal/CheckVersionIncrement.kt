@@ -45,7 +45,7 @@ open class CheckVersionIncrement : AbstractTask() {
     lateinit var repository: Repository
 
     @Input
-    private val version: String = project.version as String
+    val version: String = project.version as String
 
     @TaskAction
     private fun fetchAndCheck() {

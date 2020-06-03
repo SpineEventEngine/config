@@ -22,6 +22,7 @@ package io.spine.gradle.internal
 
 import org.gradle.api.GradleException
 import org.gradle.api.internal.AbstractTask
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.os.OperatingSystem
 import java.io.File
@@ -40,6 +41,7 @@ open class RunBuild : AbstractTask() {
     /**
      * Path to the directory which contains a Gradle wrapper script.
      */
+    @Internal
     lateinit var directory: String
 
     @TaskAction
