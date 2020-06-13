@@ -101,7 +101,7 @@ object Versions {
     /**
      * Version of the SLF4J library.
      *
-     * Spine used to log with SLF4J. Now we use Flogger. Whenever a coice comes up, we recommend to
+     * Spine used to log with SLF4J. Now we use Flogger. Whenever a choice comes up, we recommend to
      * use the latter.
      *
      * Some third-party libraries may clash with different versions of the library. Thus, we specify
