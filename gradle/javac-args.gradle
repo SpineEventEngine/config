@@ -24,7 +24,7 @@
 
 tasks.withType(JavaCompile) {
 
-    if(JavaVersion.current() != JavaVersion.VERSION_1_8) {
+    if (JavaVersion.current() != JavaVersion.VERSION_1_8) {
         throw new GradleException("Spine Event Engine can be built with JDK 8 only." +
                 " Supporting JDK 11 and above at build-time is planned in 2.0 release." +
                 " Please use the pre-built binaries available in the Spine Maven repository." +
@@ -33,8 +33,11 @@ tasks.withType(JavaCompile) {
 
     // Explicitly states the encoding of the source and test source files, ensuring
     // correct execution of the `javac` task.
+    //
+    // Also promote compiler warnings to errors, so that build fails on warnings.
+    // This includes Error Prone warnings
     options.encoding = 'UTF-8'
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation" << "-Werror"
 
     // Configure Error Prone:
     // 1. Exclude generated sources from being analyzed by Error Prone.
