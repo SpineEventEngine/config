@@ -53,6 +53,5 @@ tasks.withType(JavaCompile) {
                                              '-Xep:ClassCanBeStatic:OFF',
                                              '-Xep:UnusedMethod:OFF',
                                              '-Xep:UnusedVariable:OFF',
-                                             '-Xep:CheckReturnValue:OFF',
-                                             '-Xep:BadImport:OFF')
+                                             '-Xep:CheckReturnValue:OFF')
 }
