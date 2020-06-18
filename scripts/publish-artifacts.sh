@@ -11,8 +11,12 @@ echo " -- PUBLISHING: current branch is $TRAVIS_BRANCH."
 if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
     if [ "$TRAVIS_TEST_RESULT" == 0 ]; then
         echo " ------ Publishing the artifacts to the repository..."
-        ./gradlew publish -x test
-        echo " ------ Artifacts published."
+        if ./gradlew publish -x test --stacktrace; then
+          echo " ------ Artifacts published."
+        else
+          echo " ------ Artifacts publishing FAILED."
+          exit 1
+        fi
     else
         echo " ------ The build is broken. Publishing will not be performed."
     fi
@@ -21,3 +25,5 @@ else
 fi
 
 echo " -- PUBLISHING: completed."
+
+exit 0
