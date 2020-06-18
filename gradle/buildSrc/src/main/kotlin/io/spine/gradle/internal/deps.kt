@@ -99,7 +99,6 @@ object Versions {
     val apiguardian      = "1.1.0"
     val javaxAnnotation  = "1.3.2"
 
-
     /**
      * Version of the SLF4J library.
      *
