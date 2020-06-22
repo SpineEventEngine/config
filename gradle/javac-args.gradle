@@ -34,7 +34,7 @@ tasks.withType(JavaCompile) {
     // Explicitly states the encoding of the source and test source files, ensuring
     // correct execution of the `javac` task.
     //
-    // Also promote compiler warnings to errors, so that build fails on warnings.
+    // Also promotes compiler warnings to errors, so that the build fails on warnings.
     // This includes Error Prone warnings
     options.encoding = 'UTF-8'
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation" << "-Werror"
