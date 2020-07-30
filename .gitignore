@@ -29,12 +29,16 @@
 *.iml
 .idea/*.xml
 .idea/.name
-.idea/libraries/**
-.idea/modules/**
-.idea/shelf/**
+.idea/artifacts
+.idea/libraries
+.idea/modules
+.idea/shelf
 
 # Do not ignore the following IDEA settings
 !.idea/misc.xml
+!.idea/codeStyleSettings.xml
+!.idea/codeStyles/
+!.idea/copyright/
 
 # Gradle interim configs
 **/.gradle/**
