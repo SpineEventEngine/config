@@ -21,7 +21,7 @@ Code contributions should:
 Contributor License Agreement
 -----------------------------
 Contributions to the code of Spine Event Engine framework and its libraries must be accompanied by
-Contributor License Agreement.  
+Contributor License Agreement (CLA).
 
  * If you are an individual writing original source code and you're sure you own
    the intellectual property, then you'll need to sign an individual CLA.
