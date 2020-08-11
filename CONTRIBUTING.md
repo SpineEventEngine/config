@@ -9,9 +9,8 @@ Thank you for wanting to contribute to Spine. The following links will help you 
    
 Pull requests
 -------------
-A work on an improvement starts from creating an issue which describes a bug or a feature you
-intend to fix. The issue will be used for communications on the proposed improvements. If code
-changes are going to be introduced, the issue would also have a link to corresponding Pull Request.
+The work on an improvement starts with creating an issue that describes a bug or a feature. The issue will be used for communications on the proposed improvements. 
+If code changes are going to be introduced, the issue should also have a link to the corresponding Pull Request.
 
 Code contributions should:
   * Be accompanied by tests.
