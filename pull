@@ -47,6 +47,9 @@ git pull
 echo "Updating IDEA configuration"
 cp -R .idea ..
 
+echo "Updating Contributor's Guide"
+cp -R CONTRIBUTING.md ..
+
 echo "Updating CI config files"
 cp .codecov.yml ..
 cp .gitattributes ..
