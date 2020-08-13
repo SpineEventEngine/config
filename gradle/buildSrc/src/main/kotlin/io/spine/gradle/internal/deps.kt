@@ -160,19 +160,23 @@ object Build {
     @Deprecated("Use Flogger over SLF4J.", replaceWith = ReplaceWith("flogger"))
     @Suppress("DEPRECATION") // Version of SLF4J.
     val slf4j                  = "org.slf4j:slf4j-api:${Versions.slf4j}"
-    val klaxon                 = "com.beust:klaxon:${Versions.klaxon}"
-    val oauthJwt               = "com.auth0:java-jwt:${Versions.ouathJwt}"
-    val bouncyCastlePkcs       = "org.bouncycastle:bcpkix-jdk15on:${Versions.bouncyCastlePkcs}"
 
     object AutoService {
         val annotations = "com.google.auto.service:auto-service-annotations:${Versions.autoService}"
-        val processor = "com.google.auto.service:auto-service:${Versions.autoService}"
+        val processor   = "com.google.auto.service:auto-service:${Versions.autoService}"
     }
 }
 
 object Gen {
     val javaPoet        = "com.squareup:javapoet:${Versions.javaPoet}"
     val javaxAnnotation = "javax.annotation:javax.annotation-api:${Versions.javaxAnnotation}"
+}
+
+object Publishing {
+    val klaxon           = "com.beust:klaxon:${Versions.klaxon}"
+    val oauthJwt         = "com.auth0:java-jwt:${Versions.ouathJwt}"
+    val bouncyCastlePkcs = "org.bouncycastle:bcpkix-jdk15on:${Versions.bouncyCastlePkcs}"
+    val assertK          = "com.willowtreeapps.assertk:assertk-jvm:${Versions.assertK}"
 }
 
 object Grpc {
@@ -239,7 +243,6 @@ object Test {
             replaceWith = ReplaceWith("Deps.runtime.floggerSystemBackend"))
     @Suppress("DEPRECATION") // Version of SLF4J.
     val slf4j         = "org.slf4j:slf4j-jdk14:${Versions.slf4j}"
-    val assertK       = "com.willowtreeapps.assertk:assertk-jvm:${Versions.assertK}"
 }
 
 object Scripts {
@@ -283,6 +286,7 @@ object Deps {
     val test = Test
     val versions = Versions
     val scripts = Scripts
+    val publishing = Publishing
 }
 
 object DependencyResolution {
