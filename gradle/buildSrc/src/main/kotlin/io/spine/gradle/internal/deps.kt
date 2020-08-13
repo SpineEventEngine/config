@@ -98,6 +98,10 @@ object Versions {
     val animalSniffer    = "1.18"
     val apiguardian      = "1.1.0"
     val javaxAnnotation  = "1.3.2"
+    val klaxon           = "5.4"
+    val ouathJwt         = "3.10.3"
+    val bouncyCastlePkcs = "1.66"
+    val assertK          = "0.22"
 
     /**
      * Version of the SLF4J library.
@@ -156,6 +160,9 @@ object Build {
     @Deprecated("Use Flogger over SLF4J.", replaceWith = ReplaceWith("flogger"))
     @Suppress("DEPRECATION") // Version of SLF4J.
     val slf4j                  = "org.slf4j:slf4j-api:${Versions.slf4j}"
+    val klaxon                 = "com.beust:klaxon:${Versions.klaxon}"
+    val oauthJwt               = "com.auth0:java-jwt:${Versions.ouathJwt}"
+    val bouncyCastlePkcs       = "org.bouncycastle:bcpkix-jdk15on:${Versions.bouncyCastlePkcs}"
 
     object AutoService {
         val annotations = "com.google.auto.service:auto-service-annotations:${Versions.autoService}"
@@ -232,6 +239,7 @@ object Test {
             replaceWith = ReplaceWith("Deps.runtime.floggerSystemBackend"))
     @Suppress("DEPRECATION") // Version of SLF4J.
     val slf4j         = "org.slf4j:slf4j-jdk14:${Versions.slf4j}"
+    val assertK       = "com.willowtreeapps.assertk:assertk-jvm:${Versions.assertK}"
 }
 
 object Scripts {
