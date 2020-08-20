@@ -8,10 +8,10 @@
 # Execute this script after a successful `master` branch build, e.g.
 # ```
 # after_success:
-#           if [[ $TRAVIS_BRANCH == master ]] && [[ $TRAVIS_PULL_REQUEST == false ]]; then
-#               chmod +x ./scripts/trigger-librarian.sh
-#               sh ./scripts/trigger-librarian.sh
-#           fi
+# if [[ $TRAVIS_BRANCH == master ]] && [[ $TRAVIS_PULL_REQUEST == false ]]; then
+#     chmod +x ./scripts/trigger-librarian.sh
+#     sh ./scripts/trigger-librarian.sh
+# fi
 # ```
 #
 # This script relies on the "TRAVIS_TOKEN" env variable being set.
