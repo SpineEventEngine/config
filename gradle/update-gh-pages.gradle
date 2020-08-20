@@ -25,13 +25,14 @@
  * To configure docs publishing, apply this script to the repositories which should generate
  * the doc:
  * ```
- * apply deps.scripts.updateGhPages
+ * apply(from: deps.scripts.updateGitHubPages)
  * ```
  * After that, the `updateGitHubPages` task will be available for that project.
  *
- * By default, the non-internal Javadoc is included into the publication. If needed, the publication
- * may be extended to include other files. To do so, append more files/file collections to
- * the `generatedDocs` extension property of the respective project.
+ * By default, the non-internal Javadoc is included into the publication. It is possible to publish
+ * all the Javadoc regardless of API status by setting the value of the `allowInternalJavadoc`
+ * extension property to `true`. If needed, the publication may be extended to include other files.
+ * To do so, append more files/file collections to the `generatedDocs` extension property.
  *
  * In order to work, the script needs a `deploy_key_rsa` private RSA key file in the repository
  * root. It is recommended to decrypt it in the repository an then decrypt it on CI upon
@@ -55,19 +56,31 @@ buildscript {
     }
 }
 
-apply from: deps.scripts.filterInternalJavadocs
-
 ext {
     javadocDir = Files.createTempDir()
     generatedDocs = files(javadocDir)
     repositoryTempDir = Files.createTempDir()
 }
 
+final String propertyName = 'allowInternalJavadoc'
+
+final boolean allowInternalJavadoc = ext.has(propertyName) && ext.get(propertyName)
+
+if (allowInternalJavadoc) {
+    apply from: deps.scripts.filterInternalJavadocs
+}
+
 /**
- * Copies the Javadoc produced by {@code :noInternalJavadoc} task into a temporary folder.
+ * Copies the Javadoc produced by a Javadoc task into a temporary folder.
+ *
+ * If `@Internal` Javadoc is allowed, uses the `:javadoc` task. Otherwise, uses
+ * the `:noInternalJavadoc` task.
+ *
+ * To allow `@Internal` Javadoc, set `ext.allowInternalJavadoc` property to `true` before applying
+ * this script to the project.
  */
 task copyJavadoc(type: Copy) {
-    from noInternalJavadoc
+    from allowInternalJavadoc ? tasks['javadoc'] : tasks['noInternalJavadoc']
     into javadocDir
 }
 
