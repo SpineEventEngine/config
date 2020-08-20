@@ -13,14 +13,13 @@ The configuration in this branch is **not production-ready**.
 This branch must be treated as `master` for the configuration required during 
 the Spine 2.0.0 development. Any the changes to it must go through the PR review process.
  
-## Adding a sub-module to your project
+## `config` submodule in 2.x branch
 
-To add a sub-module:
-```bash
-git submodule add https://github.com/SpineEventEngine/config config
-``` 
-This will only add a sub-module with the reference to the repository. 
-In order to get the code, run the following command:
+The common configuration files are located in the [SpineEventEngine/config](https://github.com/SpineEventEngine/config)
+repository. In scope of 2.x development a special `2.x-jdk8-master` branch has been created 
+in the `config` repository as well. It has been connected to the current repository as a submodule.
+
+In order to get the actual code for the `config` submodule, run the following command:
 ```bash
 git submodule update --init --recursive
 ```
