@@ -9,8 +9,8 @@
 # ```
 # after_success:
 # if [[ $TRAVIS_BRANCH == master ]] && [[ $TRAVIS_PULL_REQUEST == false ]]; then
-#     chmod +x ./scripts/trigger-librarian.sh
-#     sh ./scripts/trigger-librarian.sh
+#     chmod +x ./scripts/trigger-publishing.sh
+#     sh ./scripts/trigger-publishing.sh
 # fi
 # ```
 #
