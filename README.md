@@ -38,12 +38,8 @@ project. The following files will be copied:
  * `.codecov.yml`
  * `.gitattributes`
  * `.gitignore`
- * `buildSrc` — a folder containing the common build-time code, in Kotlin
+ * `buildSrc` — a folder containing the common build-time code, in Kotlin.
  
-    This file will be copied only if it does not exist in your project. It defines the following:
-    1. the version of Spine Base which is used by the project (which uses `config`)
-    2. the version under which artifacts of the project will be published.
-
 ## Adding credentials to a new repository
 
 For details, see [this page](https://github.com/SpineEventEngine/config/wiki/Encrypting-Credential-Files-for-Travis).
