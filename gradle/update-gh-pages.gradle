@@ -55,19 +55,31 @@ buildscript {
     }
 }
 
-apply from: deps.scripts.filterInternalJavadocs
-
 ext {
     javadocDir = Files.createTempDir()
     generatedDocs = files(javadocDir)
     repositoryTempDir = Files.createTempDir()
 }
 
+final String propertyName = 'allowInternalJavadoc'
+
+final boolean allowInternalJavadoc = ext.has(propertyName) && ext.get(propertyName)
+
+if (allowInternalJavadoc) {
+    apply from: deps.scripts.filterInternalJavadocs
+}
+
 /**
- * Copies the Javadoc produced by {@code :noInternalJavadoc} task into a temporary folder.
+ * Copies the Javadoc produced by a Javadoc task into a temporary folder.
+ *
+ * If `@Internal` Javadoc is allowed, uses the `:javadoc` task. Otherwise, uses
+ * the `:noInternalJavadoc` task.
+ *
+ * To allow `@Internal` Javadoc, set `ext.allowInternalJavadoc` property to `true` before applying
+ * this script to the project.
  */
 task copyJavadoc(type: Copy) {
-    from noInternalJavadoc
+    from allowInternalJavadoc ? tasks['javadoc'] : tasks['noInternalJavadoc']
     into javadocDir
 }
 
