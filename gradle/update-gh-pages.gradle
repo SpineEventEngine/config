@@ -25,13 +25,14 @@
  * To configure docs publishing, apply this script to the repositories which should generate
  * the doc:
  * ```
- * apply deps.scripts.updateGhPages
+ * apply(from: deps.scripts.updateGitHubPages)
  * ```
  * After that, the `updateGitHubPages` task will be available for that project.
  *
- * By default, the non-internal Javadoc is included into the publication. If needed, the publication
- * may be extended to include other files. To do so, append more files/file collections to
- * the `generatedDocs` extension property of the respective project.
+ * By default, the non-internal Javadoc is included into the publication. It is possible to publish
+ * all the Javadoc regardless of API status by setting the value of the `allowInternalJavadoc`
+ * extension property to `true`. If needed, the publication may be extended to include other files.
+ * To do so, append more files/file collections to the `generatedDocs` extension property.
  *
  * In order to work, the script needs a `deploy_key_rsa` private RSA key file in the repository
  * root. It is recommended to decrypt it in the repository an then decrypt it on CI upon
