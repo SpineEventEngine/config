@@ -2,6 +2,17 @@ In Spine, dependencies and CI configurations are shared among the sub-projects.
 
 The code of this repository should be added to a target project as a Git sub-module.
 
+# This is 2.x `master` branch!
+
+This branch contains the configuration for the development-only 2.x branches of the Spine libraries.
+
+It must **NOT** be merged to the `master`, at least until the release of Spine 2.0.0.
+
+The configuration in this branch is **not production-ready**. 
+
+This branch must be treated as `master` for the configuration required during 
+the Spine 2.0.0 development. Any the changes to it must go through the PR review process.
+ 
 ## Adding a sub-module to your project
 
 To add a sub-module:
