@@ -38,7 +38,7 @@ project. The following files will be copied:
  * `.codecov.yml`
  * `.gitattributes`
  * `.gitignore`
- * `ext.gradle`
+ * `buildSrc` — a folder containing the common build-time code, in Kotlin
  
     This file will be copied only if it does not exist in your project. It defines the following:
     1. the version of Spine Base which is used by the project (which uses `config`)
