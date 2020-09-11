@@ -22,6 +22,8 @@
  * This script configures Gradle Checkstyle plugin.
  */
 
+apply plugin: 'checkstyle'
+
 checkstyle {
     toolVersion = "${deps.versions.checkstyle}"
     configFile = file("$rootDir/config/quality/checkstyle.xml")
