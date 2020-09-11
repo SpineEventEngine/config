@@ -25,12 +25,15 @@
 
 <module name="Checker">
 
+    <module name="SuppressWarningsFilter"/>
+
     <module name="SuppressionFilter">
         <property name="file" value="config/quality/checkstyle-suppressions.xml"/>
         <property name="optional" value="false"/>
     </module>
 
     <module name="TreeWalker">
+        <module name="SuppressWarningsHolder"/>
         <module name="AvoidStarImport"/>
         <module name="EmptyCatchBlock"/>
         <module name="EmptyStatement"/>
