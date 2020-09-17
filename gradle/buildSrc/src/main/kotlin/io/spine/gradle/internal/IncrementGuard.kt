@@ -44,7 +44,9 @@ class IncrementGuard : Plugin<Project> {
      * tags, and in other cases that go outside of the "usual" development cycle.
      */
     override fun apply(target: Project) {
-        if (!isTravisPullRequest()) return
+        if (!isTravisPullRequest()) {
+            return
+        }
         val tasks = target.tasks
         tasks.register(taskName, CheckVersionIncrement::class.java) {
             repository = PublishingRepos.cloudRepo
