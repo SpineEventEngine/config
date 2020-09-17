@@ -34,7 +34,17 @@ class IncrementGuard : Plugin<Project> {
         const val taskName = "checkVersionIncrement"
     }
 
+    /**
+     * Adds the [CheckVersionIncrement] task to the project.
+     *
+     * Only adds the check if the project is built on Travis CI and the job is a pull request.
+     *
+     * The task will never run outside of Travis CI or when building individual branches. This is
+     * done to prevent unexpected CI fails when re-building `master` multiple times, creating git
+     * tags, and in other cases that go outside of the "usual" development cycle.
+     */
     override fun apply(target: Project) {
+        if (!isTravisPullRequest()) return
         val tasks = target.tasks
         tasks.register(taskName, CheckVersionIncrement::class.java) {
             repository = PublishingRepos.cloudRepo
@@ -42,5 +52,16 @@ class IncrementGuard : Plugin<Project> {
 
             shouldRunAfter("test")
         }
+    }
+
+    /**
+     * Returns `true` if the current build is a Travis job which represents a GitHub pull request.
+     *
+     * Implementation note: the `TRAVIS_PULL_REQUEST` environment variable contains the pull
+     * request number rather than `"true"` in positive case, hence the check.
+     */
+    private fun isTravisPullRequest(): Boolean {
+        val isPullRequest = System.getenv("TRAVIS_PULL_REQUEST")
+        return isPullRequest != null && isPullRequest != "false"
     }
 }
