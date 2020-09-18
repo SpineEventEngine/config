@@ -30,4 +30,4 @@ curl -s -X POST \
  -H "Travis-API-Version: 3"\
  -H "Authorization: token $TRAVIS_TOKEN"\
  -d "$body"\
- "https://api.travis-ci.org/repo/SpineEventEngine%2Fpublishing/requests"
+ "https://api.travis-ci.com/repo/SpineEventEngine%2Fpublishing/requests"
