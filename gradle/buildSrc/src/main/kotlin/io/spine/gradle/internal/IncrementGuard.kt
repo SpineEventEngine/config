@@ -61,6 +61,9 @@ class IncrementGuard : Plugin<Project> {
      *
      * Implementation note: the `TRAVIS_PULL_REQUEST` environment variable contains the pull
      * request number rather than `"true"` in positive case, hence the check.
+     *
+     * @see <a href="https://docs.travis-ci.com/user/environment-variables/#default-environment-variables">
+     *     List of default environment variables provided for Travis builds</a>
      */
     private fun isTravisPullRequest(): Boolean {
         val isPullRequest = System.getenv("TRAVIS_PULL_REQUEST")
