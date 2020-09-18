@@ -20,6 +20,7 @@
 
 package io.spine.gradle.internal
 
+import com.google.common.flogger.FluentLogger
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -34,6 +35,8 @@ class IncrementGuard : Plugin<Project> {
         const val taskName = "checkVersionIncrement"
     }
 
+    private val logger: FluentLogger = FluentLogger.forEnclosingClass()
+
     /**
      * Adds the [CheckVersionIncrement] task to the project.
      *
@@ -45,6 +48,8 @@ class IncrementGuard : Plugin<Project> {
      */
     override fun apply(target: Project) {
         if (!isTravisPullRequest()) {
+            logger.atInfo().log("The build does not represent a Travis pull request job, " +
+                    "ignoring the `checkVersionIncrement` task.")
             return
         }
         val tasks = target.tasks
