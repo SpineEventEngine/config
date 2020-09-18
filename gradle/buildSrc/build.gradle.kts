@@ -28,10 +28,7 @@ repositories {
 }
 
 val jacksonVersion = "2.11.0"
-val floggerVersion = "0.5.1"
 
 dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    implementation("com.google.flogger:flogger:$floggerVersion")
-    implementation("com.google.flogger:flogger-system-backend:$floggerVersion")
 }
