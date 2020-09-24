@@ -50,6 +50,9 @@ cp -R .idea ..
 echo "Updating Contributor's Guide"
 cp -R CONTRIBUTING.md ..
 
+echo "Updating Contributor Covenant"
+cp -R CODE_OF_CONDUCT.md ..
+
 echo "Updating CI config files"
 cp .codecov.yml ..
 cp .gitattributes ..
