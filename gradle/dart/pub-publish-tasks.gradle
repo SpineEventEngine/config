@@ -47,9 +47,11 @@ task stagePubPublication(type: Copy) {
 task publishToPub(type: Exec) {
     description = 'Publishes this package to Pub.'
 
-    commandLine PUB_EXECUTABLE, 'publish', '--trace'
-
     workingDir publicationDir
+    commandLine PUB_EXECUTABLE, 'publish', '--trace'
+    final sayYes = new ByteArrayInputStream('y'.getBytes())
+    standardInput(sayYes)
+
     dependsOn 'stagePubPublication'
 }
 
