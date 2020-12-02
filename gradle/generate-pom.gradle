@@ -343,6 +343,8 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
     private static Map<String, DependencyScope> CONFIG_TO_SCOPE
 
     static {
+        DependencyScope compile = DependencyScope.compile
+        DependencyScope runtime = DependencyScope.runtime
         CONFIG_TO_SCOPE = new HashMap<>()
 
         /*
@@ -353,9 +355,9 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
          *
          * More at https://docs.gradle.org/current/userguide/java_plugin.html#tab:configurations
          */
-        CONFIG_TO_SCOPE.put("compile", DependencyScope.COMPILE)
-        CONFIG_TO_SCOPE.put("implementation", DependencyScope.COMPILE)
-        CONFIG_TO_SCOPE.put("api", DependencyScope.COMPILE)
+        CONFIG_TO_SCOPE.put("compile", compile)
+        CONFIG_TO_SCOPE.put("implementation", compile)
+        CONFIG_TO_SCOPE.put("api", compile)
 
         /*
          * Configurations from the Gradle Java plugin that are known to be mapped to the `runtime`
@@ -363,8 +365,8 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
          *
          * Dependencies with the `runtime` Maven scopes are required for execution only.
          */
-        CONFIG_TO_SCOPE.put("runtime", DependencyScope.RUNTIME)
-        CONFIG_TO_SCOPE.put("runtimeOnly", DependencyScope.RUNTIME)
+        CONFIG_TO_SCOPE.put("runtime", runtime)
+        CONFIG_TO_SCOPE.put("runtimeOnly", runtime)
     }
 
     private DependencyWithScope(Dependency dependency, DependencyScope scope) {
@@ -383,9 +385,9 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
             return new DependencyWithScope(dependency, CONFIG_TO_SCOPE.get(configurationName))
         }
         if (configurationName.toLowerCase().startsWith("test")) {
-            return new DependencyWithScope(dependency, DependencyScope.TEST)
+            return new DependencyWithScope(dependency, DependencyScope.test)
         }
-        return new DependencyWithScope(dependency, DependencyScope.UNDEFINED)
+        return new DependencyWithScope(dependency, DependencyScope.undefined)
     }
 
     /**
@@ -395,13 +397,13 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
      * Dependencies with a lower priority number go on top.
      */
     int dependencyPriority() {
-        if (scope.equals(DependencyScope.COMPILE)) {
+        if (scope.equals(DependencyScope.compile)) {
             return 0
         }
-        if (scope.equals(DependencyScope.RUNTIME)) {
+        if (scope.equals(DependencyScope.runtime)) {
             return 1
         }
-        if (scope.equals(DependencyScope.TEST)) {
+        if (scope.equals(DependencyScope.test)) {
             return 2
         }
         return 3
@@ -409,7 +411,7 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
 
     /** Obtains the scope name of this dependency .*/
     String scopeName() {
-        return scope.scopeName()
+        return scope.name()
     }
 
     /** Obtains the Gradle dependency. */
@@ -425,7 +427,7 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
     /**
      * Returns {@code true} if this dependency has a defined scope, returns {@code false} otherwise.
      */
-    boolean hasDefinedScope() { return scope != DependencyScope.UNDEFINED }
+    boolean hasDefinedScope() { return scope != DependencyScope.undefined }
 
     @Override
     boolean equals(o) {
@@ -466,27 +468,16 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
      * A Maven dependency scope.
      */
     static enum DependencyScope {
-        UNDEFINED(""),
-        COMPILE("compile"),
-        PROVIDED("provided"),
-        RUNTIME("runtime"),
-        TEST("test"),
-        SYSTEM("system")
+        undefined,
+        compile,
+        provided,
+        runtime,
+        test,
+        system
         /*
         `import` is also a scope, however, it can't be used outside the `<dependencyManagement>`
         section, which is outside of the scope of this script
        */
-
-        private final String name
-
-        DependencyScope(String name) {
-            this.name = name
-        }
-
-        /** Obtains the name of this scope. */
-        String scopeName() {
-            return name
-        }
     }
 }
 
