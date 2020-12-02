@@ -345,6 +345,7 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
     static {
         DependencyScope compile = DependencyScope.compile
         DependencyScope runtime = DependencyScope.runtime
+        DependencyScope provided = DependencyScope.provided
         CONFIG_TO_SCOPE = new HashMap<>()
 
         /*
@@ -367,6 +368,20 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
          */
         CONFIG_TO_SCOPE.put("runtime", runtime)
         CONFIG_TO_SCOPE.put("runtimeOnly", runtime)
+        CONFIG_TO_SCOPE.put("runtimeClasspath", runtime)
+        CONFIG_TO_SCOPE.put("default", runtime)
+
+
+        /*
+         * Configurations from the Gradle Java plugin that are known to be mapped to the `provided`
+         * scope.
+         *
+         * Dependencies with the `provided` Maven scope are not propagated to dependent projects
+         * but are required during the compilation.
+         */
+        CONFIG_TO_SCOPE.put("compileOnly", provided)
+        CONFIG_TO_SCOPE.put("compileOnlyApi", provided)
+        CONFIG_TO_SCOPE.put("annotationProcessor", provided)
     }
 
     private DependencyWithScope(Dependency dependency, DependencyScope scope) {
