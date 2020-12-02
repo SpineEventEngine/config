@@ -412,16 +412,16 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
      * Dependencies with a lower priority number go on top.
      */
     int dependencyPriority() {
-        if (scope.equals(DependencyScope.compile)) {
-            return 0
+        switch(scope) {
+            case DependencyScope.compile:
+                return 0
+            case DependencyScope.runtime:
+                return 1
+            case DependencyScope.test:
+                return 2
+            default:
+                return 3
         }
-        if (scope.equals(DependencyScope.runtime)) {
-            return 1
-        }
-        if (scope.equals(DependencyScope.test)) {
-            return 2
-        }
-        return 3
     }
 
     /** Obtains the scope name of this dependency .*/
