@@ -56,8 +56,7 @@ open class CheckVersionIncrement : DefaultTask() {
         val versions = metadata?.versioning?.versions
         val versionExists = versions?.contains(version) ?: false
         if (versionExists) {
-            throw GradleException(
-                """
+            throw GradleException("""
                     Version `$version` is already published to maven repository `$repoUrl`.
                     Try incrementing the library version.
                     All available versions are: ${versions?.joinToString(separator = ", ")}. 
