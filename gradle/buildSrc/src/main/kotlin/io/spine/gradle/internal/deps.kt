@@ -226,7 +226,7 @@ object Runtime {
 
 object Test {
     val junit4        = "junit:junit:${Versions.junit4}"
-    val junit5Api = listOf(
+    val junit5Api     = listOf(
         "org.junit.jupiter:junit-jupiter-api:${Versions.junit5}",
         "org.junit.jupiter:junit-jupiter-params:${Versions.junit5}",
         "org.apiguardian:apiguardian-api:${Versions.apiguardian}"
@@ -236,7 +236,7 @@ object Test {
     val guavaTestlib  = "com.google.guava:guava-testlib:${Versions.guava}"
     val mockito       = "org.mockito:mockito-core:2.12.0"
     val hamcrest      = "org.hamcrest:hamcrest-all:1.3"
-    val truth = listOf(
+    val truth         = listOf(
         "com.google.truth:truth:${Versions.truth}",
         "com.google.truth.extensions:truth-java8-extension:${Versions.truth}",
         "com.google.truth.extensions:truth-proto-extension:${Versions.truth}"
