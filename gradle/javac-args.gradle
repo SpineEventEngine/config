@@ -43,7 +43,10 @@ tasks.withType(JavaCompile) {
     // Also promotes compiler warnings to errors, so that the build fails on warnings.
     // This includes Error Prone warnings
     options.encoding = 'UTF-8'
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation" << "-Werror"
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    // TODO:alexander.yevsyukov: Restore this flag when the mystery with the warning on
+    //  deprecated `PARSER` in `FileDescriptorProto` which is used in `PluginProtos` is solved
+            // << "-Werror"
 
     // Configure Error Prone:
     // 1. Exclude generated sources from being analyzed by Error Prone.
