@@ -32,11 +32,20 @@
  * — all messages in Protobuf files ending with "events.proto" are marked as `EventMessage`;
  * — all messages in Protobuf files ending with "rejections.proto" are marked as `RejectionMessage`;
  * — all messages that qualify to be UUID messages are marked as `UuidValue`;
- * — all messages that represent the entity state are marked as `EntityState`.
+ * — all messages that represent an entity state are marked as `EntityState`.
  *
  * And the following method generations are applied:
  * — all messages that qualify to be UUID messages have helper `generate` and `of` methods
  *   generated using `UuidMethodFactory`;
+ *
+ * The generation of messages representing an entity state are appended with
+ * - entity columns for the fields marked as `column`;
+ * - entity query and entity query builder DSL.
+ *
+ * The fields of the messages are marked with certain interfaces:
+ * - `io.spine.base.EventMessageField` set to those in `*events.proto` and `*rejections.proto`;
+ * - `io.spine.query.EntityStateField` set to the fields of messages representing an entity state.
+ *
  *
  * Be aware that the root project `buildscript` should already have a classpath
  * `io.spine.tools:spine-model-compiler:<version>` classpath dependency.
@@ -56,13 +65,13 @@ modelCompiler {
         applyFactory "io.spine.code.gen.java.UuidMethodFactory", messages().uuid()
     }
 
-    columns {
+    entityQueries {
         generate = true
     }
 
     fields {
         generateFor messages().inFiles(suffix: "events.proto"), markAs("io.spine.base.EventMessageField")
         generateFor messages().inFiles(suffix: "rejections.proto"), markAs("io.spine.base.EventMessageField")
-        generateFor messages().entityState(), markAs("io.spine.base.EntityStateField")
+        generateFor messages().entityState(), markAs("io.spine.query.EntityStateField")
     }
 }

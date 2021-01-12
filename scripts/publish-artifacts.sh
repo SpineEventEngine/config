@@ -37,7 +37,7 @@
 
 echo " -- PUBLISHING: current branch is $TRAVIS_BRANCH."
 
-if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+if { [ "$TRAVIS_BRANCH" == "master" ] || [ "$TRAVIS_BRANCH" == "2.x-jdk8-master" ]; } && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
     if [ "$TRAVIS_TEST_RESULT" == 0 ]; then
         echo " ------ Publishing the artifacts to the repository..."
         if ./gradlew publish -x test --stacktrace -Dorg.gradle.jvmargs="-Xmx4g -XX:+HeapDumpOnOutOfMemoryError"; then
