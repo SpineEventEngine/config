@@ -44,8 +44,8 @@ git submodule update
 # Make the `config` dir current.
 cd ./config || { echo "Error: 'config' directory is missing."; exit 1; }
 
-# Set the current branch to `2.x-jdk8-master`.
-git checkout 2.x-jdk8-master
+# Set the current branch to `master`.
+git checkout master
 
 echo "Pulling changes from remote repo"
 git pull
