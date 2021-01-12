@@ -2,22 +2,13 @@ In Spine, dependencies and CI configurations are shared among the sub-projects.
 
 The code of this repository should be added to a target project as a Git sub-module.
 
-# This is 2.x `master` branch!
+## Adding a sub-module to your project
 
-This branch contains the configuration for the development-only 2.x branches of the Spine libraries.
-
-It must **NOT** be merged to the `master`, at least until the release of Spine 2.0.0.
-
-The configuration in this branch is **not production-ready**. 
-
-This branch must be treated as `master` for the configuration required during 
-the Spine 2.0.0 development. Any the changes to it must go through the PR review process.
- 
-## `config` submodule in 2.x branch
-
-The common configuration files are located in the [SpineEventEngine/config](https://github.com/SpineEventEngine/config)
-repository. In scope of 2.x development a special `2.x-jdk8-master` branch has been created 
-in the `config` repository as well. It has been connected to the current repository as a submodule.
+To add a sub-module:
+```bash
+git submodule add https://github.com/SpineEventEngine/config config
+``` 
+This will only add a sub-module with the reference to the repository.
 
 In order to get the actual code for the `config` submodule, run the following command:
 ```bash
