@@ -82,8 +82,6 @@ object Repos {
 object Versions {
     val animalSniffer    = "1.19"
     val apacheHttpClient = "2.1.2"
-    val appengineApi     =  "???"
-    val appenginePlugin  =  "???"
     val assertK          = "0.23"
     val bouncyCastlePkcs = "1.66"
     val checkstyle       = "8.29"
@@ -332,7 +330,7 @@ object Test {
 }
 
 object Scripts {
-    private const val COMMON_PATH = "/config/gradle/"
+    private const val commonPath = "/config/gradle/"
 
     fun testArtifacts(p: Project)          = p.script("test-artifacts.gradle")
     fun testOutput(p: Project)             = p.script("test-output.gradle")
@@ -360,7 +358,7 @@ object Scripts {
     fun generatePom(p: Project)            = p.script("generate-pom.gradle")
     fun updateGitHubPages(p: Project)      = p.script("update-gh-pages.gradle")
 
-    private fun Project.script(name: String) = "${rootDir}$COMMON_PATH$name"
+    private fun Project.script(name: String) = "${rootDir}${commonPath}${name}"
 }
 
 object Deps {
