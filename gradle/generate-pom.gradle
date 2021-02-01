@@ -475,8 +475,8 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
         if (this.scope().equals(o.scope())) {
             Dependency thatDependency = o.dependency()
             if (this.dependency().group.equals(thatDependency.group)) {
-                if (this.dependency().name.equals(thatDependency)) {
-                    return this.dependency().version.compareTo(thatDependency.name)
+                if (this.dependency().name.equals(thatDependency.name)) {
+                    return this.dependency().version.compareTo(thatDependency.version)
                 }
                 return this.dependency().name.compareTo(thatDependency.name)
             }
