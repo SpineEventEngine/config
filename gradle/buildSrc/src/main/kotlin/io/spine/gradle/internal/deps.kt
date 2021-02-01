@@ -78,6 +78,8 @@ object Repos {
  * Versions of one-line dependencies.
  *
  * For versions of other dependencies please see `version` properties of objects declared below.
+ *
+ * See also: https://github.com/SpineEventEngine/config/issues/171
  */
 object Versions {
     val animalSniffer    = "1.19"
