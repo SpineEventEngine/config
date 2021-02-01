@@ -27,6 +27,8 @@
 import groovy.xml.MarkupBuilder
 import org.gradle.api.internal.artifacts.dependencies.AbstractExternalModuleDependency
 
+import java.util.function.Function
+
 import static java.util.stream.Collectors.toSet
 
 /**
@@ -472,17 +474,12 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
 
     @Override
     int compareTo(DependencyWithScope o) {
-        if (this.scope().equals(o.scope())) {
-            Dependency thatDependency = o.dependency()
-            if (this.dependency().group.equals(thatDependency.group)) {
-                if (this.dependency().name.equals(thatDependency.name)) {
-                    return this.dependency().version.compareTo(thatDependency.version)
-                }
-                return this.dependency().name.compareTo(thatDependency.name)
-            }
-            return this.dependency().group.compareTo(thatDependency.group)
-        }
-        return dependencyPriority() - o.dependencyPriority()
+        return Comparator
+                .comparingInt { it.dependencyPriority() }
+                .thenComparing((Function<DependencyWithScope, String>) { it.dependency().group })
+                .thenComparing((Function<DependencyWithScope, String>) { it.dependency().name })
+                .thenComparing((Function<DependencyWithScope, String>) { it.dependency().version })
+                .compare(this, o)
     }
 
     /**
