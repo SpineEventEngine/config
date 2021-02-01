@@ -279,7 +279,7 @@ object Build {
     val errorProne = ErrorProne
     val firebaseAdmin = "com.google.firebase:firebase-admin:${Versions.firebaseAdmin}"
     val flogger = Flogger
-    const val guava = Guava.lib
+    val guava = Guava
     val googleHttpClient = "com.google.http-client:google-http-client:${Versions.httpClient}"
     val googleHttpClientApache =
         "com.google.http-client:google-http-client-apache:${Versions.apacheHttpClient}"
@@ -390,7 +390,7 @@ object DependencyResolution {
                         autoService.annotations,
                         checker.annotations,
                         errorProne.annotations,
-                        guava,
+                        guava.lib,
                         jsr305Annotations,
                         kotlin.reflect,
                         kotlin.stdLib,
