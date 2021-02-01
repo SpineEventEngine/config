@@ -350,6 +350,26 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
      */
     private static Map<String, DependencyScope> CONFIG_TO_SCOPE
 
+
+    /**
+     * Performs comparison of {@code DependencyWithScope} instances based on the following rules:
+     *
+     * <ul>
+     *     <li>Compares the scope of the dependency first. Dependencies with lower scope
+     *     {@linkplain #dependencyPriority priority} number goes first.
+     *     <li>For dependencies with same scope does the lexicographical group name comparison.
+     *     <li>For dependencies within the same group does the lexicographical artifact
+     *     name comparison.
+     *     <li>For dependencies with the same artifact name does the lexicographical artifact
+     *     version comparison.
+     * </ul>
+     */
+    private static final Comparator<DependencyWithScope> COMPARATOR = Comparator
+            .comparingInt { it.dependencyPriority() }
+            .thenComparing((Function<DependencyWithScope, String>) { it.dependency().group })
+            .thenComparing((Function<DependencyWithScope, String>) { it.dependency().name })
+            .thenComparing((Function<DependencyWithScope, String>) { it.dependency().version })
+
     static {
         DependencyScope compile = DependencyScope.compile
         DependencyScope runtime = DependencyScope.runtime
@@ -474,12 +494,7 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
 
     @Override
     int compareTo(DependencyWithScope o) {
-        return Comparator
-                .comparingInt { it.dependencyPriority() }
-                .thenComparing((Function<DependencyWithScope, String>) { it.dependency().group })
-                .thenComparing((Function<DependencyWithScope, String>) { it.dependency().name })
-                .thenComparing((Function<DependencyWithScope, String>) { it.dependency().version })
-                .compare(this, o)
+        return COMPARATOR.compare(this, o)
     }
 
     /**
