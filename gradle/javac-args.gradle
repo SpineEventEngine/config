@@ -63,5 +63,6 @@ tasks.withType(JavaCompile) {
                                              '-Xep:ClassCanBeStatic:OFF',
                                              '-Xep:UnusedMethod:OFF',
                                              '-Xep:UnusedVariable:OFF',
-                                             '-Xep:CheckReturnValue:OFF')
+                                             '-Xep:CheckReturnValue:OFF',
+                                             '-Xep:FloggerSplitLogStatement:OFF')
 }
