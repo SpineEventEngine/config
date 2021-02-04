@@ -43,7 +43,11 @@ tasks.withType(JavaCompile) {
     // Also promotes compiler warnings to errors, so that the build fails on warnings.
     // This includes Error Prone warnings
     options.encoding = 'UTF-8'
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation" << "-Werror"
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        // The last command line argument is temporarily commented out because of
+        // this issue: https://github.com/SpineEventEngine/config/issues/173
+        // Please restore when the issue is resolved.
+        //   << "-Werror"
 
     // Configure Error Prone:
     // 1. Exclude generated sources from being analyzed by Error Prone.
