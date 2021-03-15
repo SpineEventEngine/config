@@ -53,8 +53,8 @@ import com.google.common.collect.Lists
 
 buildscript {
     repositories {
-        jcenter()
         mavenLocal()
+        mavenCentral()
     }
 
     dependencies {
