@@ -35,36 +35,6 @@
   ```
  */
 
-// See `dependencies.gradle` for the selection of the target repository.
-final String credentialsPropertyFile = publishToRepository.credentials
-
-String repositoryUserName = null
-String repositoryUserPassword = null
-
-final Properties properties = new Properties()
-final File credentialsFile = project.file(credentialsPropertyFile)
-if (credentialsFile.exists()) {
-    logger.info("Using credentials from $credentialsFile.")
-    properties.load(credentialsFile.newDataInputStream())
-    repositoryUserName = properties.getProperty("user.name")
-    repositoryUserPassword = properties.getProperty("user.password")
-}
-
-task checkPublishingCredentials {
-    doLast {
-        if (repositoryUserName == null || repositoryUserPassword == null) {
-            logger.error("Credentials file `$credentialsFile` does not exist.")
-
-            throw new InvalidUserDataException(
-                    "Please set up valid credentials." +
-                            " Credentials must be set in `${credentialsPropertyFile}` file in" +
-                            " the project root."
-            )
-        }
-        println "Publishing build as ${repositoryUserName}"
-    }
-}
-
 task publish {
     doLast {
         // Keep the task for dynamic generation while publishing.
@@ -91,13 +61,18 @@ projectsToPublish.each {
             archives javadocJar
         }
 
+        final boolean spinePrefix = rootProject.ext["spinePrefix"] ?: true
+
         // Artifact IDs are composed as "spine-<project.name>". Example:
         //
         //      "spine-model-compiler"
         //
         // That helps to distinguish resulting JARs in the final assembly, such as WAR package.
         //
-        final String artifactIdForPublishing = "spine-${currentProject.name}"
+        final String artifactIdForPublishing =
+                spinePrefix ?
+                "spine-${currentProject.name}" :
+                currentProject.name
 
         final def publishingAction = {
             currentProject.publishing {
@@ -138,9 +113,11 @@ projectsToPublish.each {
                     // Assign URL to the plugin property.
                     url = urlToPublish
 
+                    final credentials = rootProject.publishToRepository.credentials(project)
+
                     credentials {
-                        username = "${repositoryUserName}"
-                        password = "${repositoryUserPassword}"
+                        username = credentials.username
+                        password = credentials.password
                     }
                 }
             }
