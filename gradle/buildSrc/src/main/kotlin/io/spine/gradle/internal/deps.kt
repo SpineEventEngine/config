@@ -90,6 +90,7 @@ data class Credentials(
  * See `publish.gradle` for details of the publishing process.
  */
 object PublishingRepos {
+
     val mavenTeamDev = Repository(
         releases = "http://maven.teamdev.com/repository/spine",
         snapshots = "http://maven.teamdev.com/repository/spine-snapshots",
@@ -100,6 +101,7 @@ object PublishingRepos {
         snapshots = "https://spine.mycloudrepo.io/public/repositories/snapshots",
         credentialsFile = "cloudrepo.properties"
     )
+
     fun gitHub(repoName: String) {
         return Repository(
             releases = "https://maven.pkg.github.com/SpineEventEngine/$repoName",
