@@ -47,10 +47,10 @@ data class Repository(
     val releases: String,
     val snapshots: String,
     val credentialsFile: String? = null,
-    val credentials: Credentals? = null
+    val credentials: Credentials? = null
 ) {
 
-    fun credentials(project: Project): Credentals {
+    fun credentials(project: Project): Credentials {
         if (credentials != null) {
             return credentials
         } else {
@@ -64,7 +64,7 @@ data class Repository(
                 val username = properties.getProperty("user.name")
                 val password = properties.getProperty("user.password")
                 log.info("Publishing build as `${username}`.")
-                return Credentals(username, password)
+                return Credentials(username, password)
             } else {
                 throw InvalidUserDataException(
                     "Please set up valid credentials." +
@@ -79,7 +79,7 @@ data class Repository(
 /**
  * Password credentials for a Maven repository.
  */
-data class Credentals(
+data class Credentials(
     val username: String,
     val password: String
 )
@@ -104,7 +104,7 @@ object PublishingRepos {
         return Repository(
             releases = "https://maven.pkg.github.com/SpineEventEngine/$repoName",
             snapshots = "https://maven.pkg.github.com/SpineEventEngine/$repoName",
-            credentials = Credentals(
+            credentials = Credentials(
                 username = System.getenv("GITHUB_ACTOR"),
                 // This is a trick. Gradle only supports password or AWS credentials. Thus,
                 // we pass the GitHub token as a "password".
