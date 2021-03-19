@@ -46,10 +46,17 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler
 data class Repository(
     val releases: String,
     val snapshots: String,
-    val credentialsFile: String? = null,
-    val credentials: Credentials? = null
+    private val credentialsFile: String? = null,
+    private val credentials: Credentials? = null
 ) {
 
+    /**
+     * Obtains the publishing password credentials to this repository.
+     *
+     * If the credentials are represented by a `.properties` file, reads the file and parses
+     * the credentials. The file must have properties `user.name` and `user.password`, which store
+     * the username and the password for the Maven repository auth.
+     */
     fun credentials(project: Project): Credentials {
         if (credentials != null) {
             return credentials
