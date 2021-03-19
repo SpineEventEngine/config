@@ -61,7 +61,9 @@ projectsToPublish.each {
             archives javadocJar
         }
 
-        final boolean spinePrefix = rootProject.ext["spinePrefix"] ?: true
+        final propertyName = "spinePrefix"
+        final ext = rootProject.ext
+        final boolean spinePrefix =  ext.has(propertyName) ? ext.get(propertyName) : true
 
         // Artifact IDs are composed as "spine-<project.name>". Example:
         //
@@ -71,8 +73,8 @@ projectsToPublish.each {
         //
         final String artifactIdForPublishing =
                 spinePrefix ?
-                "spine-${currentProject.name}" :
-                currentProject.name
+                        "spine-${currentProject.name}" :
+                        currentProject.name
 
         final def publishingAction = {
             currentProject.publishing {
@@ -113,11 +115,11 @@ projectsToPublish.each {
                     // Assign URL to the plugin property.
                     url = urlToPublish
 
-                    final credentials = rootProject.publishToRepository.credentials(project)
+                    final creds = rootProject.publishToRepository.credentials(project)
 
                     credentials {
-                        username = credentials.username
-                        password = credentials.password
+                        username = creds.username
+                        password = creds.password
                     }
                 }
             }
