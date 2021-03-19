@@ -61,7 +61,9 @@ projectsToPublish.each {
             archives javadocJar
         }
 
-        final boolean spinePrefix = rootProject.ext["spinePrefix"] ?: true
+        final propertyName = "spinePrefix"
+        final ext = rootProject.ext
+        final boolean spinePrefix =  ext.has(propertyName) ? ext.get(propertyName) : true
 
         // Artifact IDs are composed as "spine-<project.name>". Example:
         //
