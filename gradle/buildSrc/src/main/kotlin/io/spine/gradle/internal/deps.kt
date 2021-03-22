@@ -27,6 +27,7 @@
 package io.spine.gradle.internal
 
 import java.net.URI
+import java.io.File
 import java.util.*
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
@@ -79,7 +80,7 @@ data class Repository(
 
     private fun File.readCredentials(): Credentials {
         val properties = Properties()
-        properties.load(file.inputStream())
+        properties.load(inputStream())
         val username = properties.getProperty("user.name")
         val password = properties.getProperty("user.password")
         return Credentials(username, password)
