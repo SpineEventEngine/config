@@ -278,6 +278,12 @@ private constructor(
     }
 }
 
+/**
+ * Default artifact task names.
+ *
+ * These tasks, if not present on a project already, are created by the `Publish` plugin. Their
+ * output is published as project's artifacts.
+ */
 private enum class DefaultArtifact {
 
     sourceJar,
