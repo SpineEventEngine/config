@@ -138,7 +138,7 @@ class Publish : Plugin<Project> {
                 .forEach {
                     it.credentials(this@createCheckTask)
                         ?: throw InvalidUserDataException(
-                            "No valid credentials for repository `${it.name}`. Please make sure " +
+                            "No valid credentials for repository `${it}`. Please make sure " +
                                     "to pass username/password or a valid `.properties` file."
                         )
                 }
