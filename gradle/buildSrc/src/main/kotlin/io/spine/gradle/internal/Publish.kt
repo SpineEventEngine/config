@@ -252,7 +252,11 @@ class Publish : Plugin<Project> {
     }
 }
 
-class PublishExtension(
+/**
+ * The extension for configuring the `Publish` plugin.
+ */
+class PublishExtension
+private constructor(
     val projectsToPublish: SetProperty<String>,
     val targetRepositories: SetProperty<Repository>,
     val spinePrefix: Property<Boolean>
