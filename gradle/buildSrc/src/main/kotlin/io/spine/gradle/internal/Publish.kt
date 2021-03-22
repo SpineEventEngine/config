@@ -26,18 +26,17 @@
 
 package io.spine.gradle.internal
 
-import org.gradle.api.GradleException
+import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.apply
-import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.getByName
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
@@ -56,7 +55,7 @@ class Publish : Plugin<Project> {
         val extension = PublishExtension.create(project)
         project.extensions.add(PublishExtension::class.java, "publishing", extension)
 
-        val publish = project.tasks.create(taskName)
+        val checkCredentials = project.createCheckTask(extension)
 
         project.afterEvaluate {
             extension.projectsToPublish
@@ -67,7 +66,7 @@ class Publish : Plugin<Project> {
 
                     logger.debug("Applying `maven-publish` plugin to ${name}.")
 
-                    p.setUpdefaultArtifacts()
+                    p.setUpDefaultArtifacts()
 
                     val publishingExtension = extensions.getByType(PublishingExtension::class)
                     val action = {
@@ -80,12 +79,35 @@ class Publish : Plugin<Project> {
                     }
 
                     publishingExtension.setUpRepositories(p, extension)
-                    publish.dependsOn(getTasksByName(taskName, false))
+                    p.prepareTasks(checkCredentials)
                 }
         }
     }
 
-    private fun Project.setUpdefaultArtifacts() {
+    private fun Project.createCheckTask(extension: PublishExtension): Task {
+        val checkCredentials = tasks.create("checkCredentials")
+        checkCredentials.doLast {
+            extension.targetRepositories
+                .get()
+                .forEach {
+                    it.credentials(this@createCheckTask)
+                        ?: throw InvalidUserDataException(
+                            "No valid credentials for repository `${it.name}`. Please make sure " +
+                                    "to pass username/password or a valid `.properties` file."
+                        )
+                }
+        }
+        return checkCredentials
+    }
+
+    private fun Project.prepareTasks(checkCredentials: Task) {
+        val publish = rootProject.tasks.create(taskName)
+        val publishTasks = getTasksByName(taskName, false)
+        publish.dependsOn(publishTasks)
+        publishTasks.forEach { it.dependsOn(checkCredentials) }
+    }
+
+    private fun Project.setUpDefaultArtifacts() {
         val sourceJar = tasks.getByName("sourceJar", Jar::class)
         val testOutputJar = tasks.getByName("testOutputJar", Jar::class)
         val javadocJar = tasks.getByName("javadocJar", Jar::class)
@@ -147,8 +169,8 @@ class Publish : Plugin<Project> {
         url = project.uri(publicRepo.replace("/public", ""))
         val creds = repo.credentials(project.rootProject)
         credentials {
-            username = creds.username
-            password = creds.password
+            username = creds?.username
+            password = creds?.password
         }
     }
 }

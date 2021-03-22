@@ -48,7 +48,8 @@ data class Repository(
     val releases: String,
     val snapshots: String,
     private val credentialsFile: String? = null,
-    private val credentials: Credentials? = null
+    private val credentials: Credentials? = null,
+    val name: String = "Maven repository `$releases`"
 ) {
 
     /**
@@ -58,7 +59,7 @@ data class Repository(
      * the credentials. The file must have properties `user.name` and `user.password`, which store
      * the username and the password for the Maven repository auth.
      */
-    fun credentials(project: Project): Credentials {
+    fun credentials(project: Project): Credentials? {
         if (credentials != null) {
             return credentials
         }
@@ -67,11 +68,7 @@ data class Repository(
         log.info("Using credentials from `$credentialsFile`.")
         val file = project.rootProject.file(credentialsFile)
         if (!file.exists()) {
-            throw InvalidUserDataException(
-                "Please set up valid credentials." +
-                        " Credentials must be set in `${credentialsFile}` file in" +
-                        " the project root."
-            )
+            return null
         }
         val creds = file.readCredentials()
         log.info("Publishing build as `${creds.username}`.")
@@ -84,6 +81,10 @@ data class Repository(
         val username = properties.getProperty("user.name")
         val password = properties.getProperty("user.password")
         return Credentials(username, password)
+    }
+
+    override fun toString(): String {
+        return name
     }
 }
 
@@ -103,11 +104,13 @@ data class Credentials(
 object PublishingRepos {
 
     val mavenTeamDev = Repository(
+        name = "maven.teamdev.com",
         releases = "http://maven.teamdev.com/repository/spine",
         snapshots = "http://maven.teamdev.com/repository/spine-snapshots",
         credentialsFile = "credentials.properties"
     )
     val cloudRepo = Repository(
+        name = "CloudRepo",
         releases = "https://spine.mycloudrepo.io/public/repositories/releases",
         snapshots = "https://spine.mycloudrepo.io/public/repositories/snapshots",
         credentialsFile = "cloudrepo.properties"
@@ -115,6 +118,7 @@ object PublishingRepos {
 
     fun gitHub(repoName: String): Repository {
         return Repository(
+            name = "GitHub Packages",
             releases = "https://maven.pkg.github.com/SpineEventEngine/$repoName",
             snapshots = "https://maven.pkg.github.com/SpineEventEngine/$repoName",
             credentials = Credentials(
