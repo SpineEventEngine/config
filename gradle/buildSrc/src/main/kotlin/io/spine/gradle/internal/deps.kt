@@ -60,26 +60,29 @@ data class Repository(
     fun credentials(project: Project): Credentials {
         if (credentials != null) {
             return credentials
-        } else {
-            credentialsFile!!
-            val log = project.logger
-            log.info("Using credentials from `$credentialsFile`.")
-            val file = project.rootProject.file(credentialsFile)
-            if (file.exists()) {
-                val properties = Properties()
-                properties.load(file.inputStream())
-                val username = properties.getProperty("user.name")
-                val password = properties.getProperty("user.password")
-                log.info("Publishing build as `${username}`.")
-                return Credentials(username, password)
-            } else {
-                throw InvalidUserDataException(
-                    "Please set up valid credentials." +
-                            " Credentials must be set in `${credentialsFile}` file in" +
-                            " the project root."
-                )
-            }
         }
+        credentialsFile!!
+        val log = project.logger
+        log.info("Using credentials from `$credentialsFile`.")
+        val file = project.rootProject.file(credentialsFile)
+        if (!file.exists()) {
+            throw InvalidUserDataException(
+                "Please set up valid credentials." +
+                        " Credentials must be set in `${credentialsFile}` file in" +
+                        " the project root."
+            )
+        }
+        val creds = file.readCredentials()
+        log.info("Publishing build as `${creds.username}`.")
+        return creds
+    }
+
+    private fun File.readCredentials(): Credentials {
+        val properties = Properties()
+        properties.load(file.inputStream())
+        val username = properties.getProperty("user.name")
+        val password = properties.getProperty("user.password")
+        return Credentials(username, password)
     }
 }
 
