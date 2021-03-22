@@ -279,6 +279,18 @@ private constructor(
 }
 
 /**
+ * Configures the `publish` extension.
+ *
+ * As `Publish` is a class-plugin in `buildSrc`, we don't get strongly typed generated helper
+ * methods for the `publish` configuration. Thus, we proviude this helper function for use in Kotlin
+ * build scripts.
+ */
+fun Project.publish(action: PublishExtension.() -> Unit) {
+    val extension = extensions.getByType(PublishExtension::class)
+    extension.action()
+}
+
+/**
  * Default artifact task names.
  *
  * These tasks, if not present on a project already, are created by the `Publish` plugin. Their
