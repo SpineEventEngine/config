@@ -61,7 +61,7 @@ import org.gradle.kotlin.dsl.setProperty
  *
  * apply<Publish>()
  *
- * publishing {
+ * spinePublishing {
  *     projectsToPublish.addAll(
  *         "submodule1",
  *         "submodule2",
@@ -93,13 +93,14 @@ class Publish : Plugin<Project> {
     companion object {
 
         const val taskName = "publish"
+        const val extensionName = "spinePublishing"
 
         private const val ARCHIVES = "archives"
     }
 
     override fun apply(project: Project) {
         val extension = PublishExtension.create(project)
-        project.extensions.add(PublishExtension::class.java, "publishing", extension)
+        project.extensions.add(PublishExtension::class.java, extensionName, extension)
 
         val checkCredentials = project.createCheckTask(extension)
 
@@ -279,13 +280,13 @@ private constructor(
 }
 
 /**
- * Configures the `publish` extension.
+ * Configures the `spinePublishing` extension.
  *
  * As `Publish` is a class-plugin in `buildSrc`, we don't get strongly typed generated helper
- * methods for the `publish` configuration. Thus, we proviude this helper function for use in Kotlin
- * build scripts.
+ * methods for the `spinePublishing` configuration. Thus, we proviude this helper function for use
+ * in Kotlin build scripts.
  */
-fun Project.publish(action: PublishExtension.() -> Unit) {
+fun Project.spinePublishing(action: PublishExtension.() -> Unit) {
     val extension = extensions.getByType(PublishExtension::class)
     extension.action()
 }
