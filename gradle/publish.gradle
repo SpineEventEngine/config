@@ -35,6 +35,8 @@
   ```
  */
 
+println("`publish.gradle` script is deprecated. Please use the `Publish` plugin instead.")
+
 task publish {
     doLast {
         // Keep the task for dynamic generation while publishing.
