@@ -276,5 +276,7 @@ class PublishExtension(
 
 private enum class DefaultArtifact {
 
-    sourceJar, testOutputJar, javadocJar;
+    sourceJar,
+    testOutputJar,
+    javadocJar;
 }
