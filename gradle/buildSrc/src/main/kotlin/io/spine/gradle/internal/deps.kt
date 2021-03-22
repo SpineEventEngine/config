@@ -64,7 +64,7 @@ data class Repository(
             credentialsFile!!
             val log = project.logger
             log.info("Using credentials from `$credentialsFile`.")
-            val file = project.file(credentialsFile)
+            val file = project.rootProject.file(credentialsFile)
             if (file.exists()) {
                 val properties = Properties()
                 properties.load(file.inputStream())
