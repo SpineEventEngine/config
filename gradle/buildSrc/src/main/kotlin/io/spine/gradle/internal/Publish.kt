@@ -26,22 +26,68 @@
 
 package io.spine.gradle.internal
 
+import io.spine.gradle.internal.DefaultArtifact.javadocJar
+import io.spine.gradle.internal.DefaultArtifact.sourceJar
+import io.spine.gradle.internal.DefaultArtifact.testOutputJar
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+import org.gradle.api.file.FileCollection
+import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.apply
-import org.gradle.kotlin.dsl.getByName
+import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.getPlugin
 import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.setProperty
 
+/**
+ * This plugin allows to publish artifacts to remote Maven repositories.
+ *
+ * Apply this plugin to the root project. Specify the projects which produce publishable artifacts
+ * and the target Maven repositories via the `publishing` DSL:
+ * ```
+ * import io.spine.gradle.internal.Publish
+ * import io.spine.gradle.internal.PublishingRepos
+ *
+ * apply<Publish>()
+ *
+ * publishing {
+ *     projectsToPublish.addAll(
+ *         "submodule1",
+ *         "submodule2",
+ *         "nested:submodule3"
+ *     )
+ *     targetRepositories.addAll(
+ *         PublishingRepos.cloudRepo,
+ *         PublishingRepos.gitHub("LibraryName")
+ *     )
+ * }
+ * ```
+ *
+ * By default, we publish artifacts produced by tasks `sourceJar`, `testOutputJar`,
+ * and `javadocJar`, along with the default project compilation output. If any of these tasks is not
+ * declared, it's created with sensible default settings by the plugin.
+ *
+ * To publish more artifacts for a certain project, add them to the archives configuration:
+ * ```
+ * artifacts {
+ *     archives(myCustomJarTask)
+ * }
+ * ```
+ *
+ * If any plugins applied to the published project declare any other artifacts, those artifacts
+ * are published as well.
+ */
 class Publish : Plugin<Project> {
 
     companion object {
@@ -108,14 +154,45 @@ class Publish : Plugin<Project> {
     }
 
     private fun Project.setUpDefaultArtifacts() {
-        val sourceJar = tasks.getByName("sourceJar", Jar::class)
-        val testOutputJar = tasks.getByName("testOutputJar", Jar::class)
-        val javadocJar = tasks.getByName("javadocJar", Jar::class)
+        val javaConvention = project.convention.getPlugin(JavaPluginConvention::class)
+        val sourceSets = javaConvention.sourceSets
+
+        val sourceJar = tasks.createIfAbsent(
+            artifactTask = sourceJar,
+            from = sourceSets["main"].allJava,
+            classifier = "sources"
+        )
+        val testOutputJar = tasks.createIfAbsent(
+            artifactTask = testOutputJar,
+            from = sourceSets["test"].output,
+            classifier = "test"
+        )
+        val javadocJar = tasks.createIfAbsent(
+            artifactTask = javadocJar,
+            from = files("$buildDir/docs/javadoc"),
+            classifier = "javadoc",
+            dependencies = setOf("javadoc")
+        )
 
         artifacts {
             add(ARCHIVES, sourceJar)
             add(ARCHIVES, testOutputJar)
             add(ARCHIVES, javadocJar)
+        }
+    }
+
+    private fun TaskContainer.createIfAbsent(artifactTask: DefaultArtifact,
+                                             from: FileCollection,
+                                             classifier: String,
+                                             dependencies: Set<Any> = setOf()): Task {
+        val existing = findByName(artifactTask.name)
+        if (existing != null) {
+            return existing
+        }
+        return create(artifactTask.name, Jar::class) {
+            this.from(from)
+            archiveClassifier.set(classifier)
+            dependencies.forEach { dependsOn(it) }
         }
     }
 
@@ -195,4 +272,9 @@ class PublishExtension(
     init {
         spinePrefix.convention(true)
     }
+}
+
+private enum class DefaultArtifact {
+
+    sourceJar, testOutputJar, javadocJar;
 }
