@@ -39,5 +39,4 @@ if [ "$#" -ne 3 ]; then
     exit 1
 fi
 
-
 gpg --quiet --batch --yes --decrypt --passphrase="$1" --output "$3" "$2"
