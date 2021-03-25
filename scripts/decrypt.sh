@@ -29,7 +29,7 @@
 # Decrypts a file via `gpg`.
 #
 # Params:
-#   1. The secret passphrase used for encrypting the file.
+#   1. The secret passphrase used when encrypting the file.
 #   2. The encrypted file.
 #   3. The path where the decrypted file should go.
 #
