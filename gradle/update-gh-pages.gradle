@@ -168,12 +168,9 @@ updateGitHubPages.doLast {
 
     final def GH_PAGES_BRANCH = "gh-pages"
 
-    final String repoSlug = System.getenv('TRAVIS_REPO_SLUG')
+    final String repoSlug = System.getenv('REPO_SLUG')
     if (repoSlug == null || repoSlug.isEmpty()) {
-        throw new GradleException(
-                '`TRAVIS_REPO_SLUG` environmental variable is not set.' +
-                        ' Publishing must be performed from the CI environment.'
-        )
+        throw new GradleException('`REPO_SLUG` environmental variable is not set.')
     }
 
     /**
