@@ -168,18 +168,15 @@ updateGitHubPages.doLast {
 
     final def GH_PAGES_BRANCH = "gh-pages"
 
-    final String repoSlug = System.getenv('TRAVIS_REPO_SLUG')
+    final String repoSlug = System.getenv('REPO_SLUG')
     if (repoSlug == null || repoSlug.isEmpty()) {
-        throw new GradleException(
-                '`TRAVIS_REPO_SLUG` environmental variable is not set.' +
-                        ' Publishing must be performed from the CI environment.'
-        )
+        throw new GradleException('`REPO_SLUG` environmental variable is not set.')
     }
 
     /**
      * The GitHub URL to the project repository.
      *
-     * <p>A Travis SI instance comes with an RSA key. However, of course, the default key has no
+     * <p>A CI instance comes with an RSA key. However, of course, the default key has no
      * privileges in Spine repositories. Thus, we add our own RSA key — `deploy_rsa_key`. It must
      * have write rights in the associated repository. Also, we don't want that key to be used for
      * anything else but GitHub Pages publishing. Thus, we configure the SSH agent to use
@@ -230,7 +227,8 @@ Host github.com-publish
      * "FORMAL_GIT_HUB_PAGES_AUTHOR" env variable.
      *
      * <p>When changing the value of "FORMAL_GIT_HUB_PAGES_AUTHOR", also change the SSH private
-     * (deploy_key_rsa.enc) and public ("GitHub Pages publisher (Travis CI)" on GitHub) keys.
+     * (encrypted `deploy_key_rsa`) and public ("GitHub Pages publisher (Travis CI)" on GitHub)
+     * keys.
      */
     execute repoBaseDir, "git", "config", "user.name", "\"UpdateGitHubPages Plugin\""
     execute repoBaseDir, "git", "config", "user.email", System.env.FORMAL_GIT_HUB_PAGES_AUTHOR
