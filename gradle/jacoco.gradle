@@ -194,7 +194,7 @@ class CodebaseFilter {
                 .stream()
                 .flatMap { it.getClassesDirs().files.stream() }
                 .map { final srcFile ->
-                    log("Filtering out the generated classes for ${srcFile)}")
+                    log("Filtering out the generated classes for ${srcFile}")
 
                     // Return the filtered `fileTree`s as a collected result.
                     return project.fileTree(dir: srcFile, exclude: { final details ->
