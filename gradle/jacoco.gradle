@@ -31,12 +31,14 @@
 //
 // This task runs after `:check` task.
 
+import groovy.io.FileType
+
+import java.util.stream.Collectors
+
 // Required to grab dependencies for `jacocoRootReport` task.
 repositories {
     mavenCentral()
 }
-
-import groovy.io.FileType
 
 // Adds the `:check` task.
 apply plugin: 'base'
@@ -188,23 +190,25 @@ class CodebaseFilter {
 
         final def generatedClassNames = getGeneratedClassNames()
         log(generatedClassNames.join('\n'))
-        final def nonGeneratedClassTree = outputDirs.collect {
-            final def srcFile = new File(it.getClassesDirs().getAsPath())
-            log("Filtering out the generated classes for ${srcFile}")
+        final def nonGeneratedClassTree = outputDirs
+                .stream()
+                .flatMap { it.getClassesDirs().files.stream() }
+                .map { final srcFile ->
+                    log("Filtering out the generated classes for ${srcFile)}")
 
-            // Return the filtered `fileTree`s as a collected result.
-            return project.fileTree(dir: srcFile, exclude: { final details ->
-                def className = parseClassName(details.file, JAVA_OUTPUT_FOLDER_MARKER, COMPILED_CLASS_FILE_EXTENSION)
+                    // Return the filtered `fileTree`s as a collected result.
+                    return project.fileTree(dir: srcFile, exclude: { final details ->
+                        def className = parseClassName(details.file, JAVA_OUTPUT_FOLDER_MARKER, COMPILED_CLASS_FILE_EXTENSION)
 
-                // Handling anonymous classes as well.
-                // They should be associated with the same `.java` file as their parent class.
-                if (className != null && className.contains(ANONYMOUS_CLASS_MARKER)) {
-                    // Assuming there cannot be more that a single `$`.
-                    className = className.split(ANONYMOUS_CLASS_PATTERN)[0]
-                }
-                return generatedClassNames.contains(className)
-            })
-        }
+                        // Handling anonymous classes as well.
+                        // They should be associated with the same `.java` file as their parent class.
+                        if (className != null && className.contains(ANONYMOUS_CLASS_MARKER)) {
+                            // Assuming there cannot be more than a single `$`.
+                            className = className.split(ANONYMOUS_CLASS_PATTERN)[0]
+                        }
+                        return generatedClassNames.contains(className)
+                    })
+                }.collect(Collectors.toList())
         return nonGeneratedClassTree
     }
 
