@@ -203,7 +203,7 @@ class CodebaseFilter {
                         // Handling anonymous classes as well.
                         // They should be associated with the same `.java` file as their parent class.
                         if (className != null && className.contains(ANONYMOUS_CLASS_MARKER)) {
-                            // Assuming there cannot be more that a single `$`.
+                            // Assuming there cannot be more than a single `$`.
                             className = className.split(ANONYMOUS_CLASS_PATTERN)[0]
                         }
                         return generatedClassNames.contains(className)
