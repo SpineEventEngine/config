@@ -184,19 +184,19 @@ object Versions {
 
 // https://github.com/google/auto
 object AutoCommon {
-    private const val version = "0.11"
+    private const val version = "1.0"
     const val lib = "com.google.auto:auto-common:${version}"
 }
 
 // https://github.com/google/auto
 object AutoValue {
-    private const val version = "1.7.4"
+    private const val version = "1.8"
     const val annotations = "com.google.auto.value:auto-value-annotations:${version}"
 }
 
 // https://github.com/google/auto
 object AutoService {
-    private const val version = "1.0-rc7"
+    private const val version = "1.0"
     const val annotations = "com.google.auto.service:auto-service-annotations:${version}"
     const val processor   = "com.google.auto.service:auto-service:${version}"
 }
@@ -211,7 +211,7 @@ object AppEngine {
 
 // https://checkerframework.org/
 object CheckerFramework {
-    private const val version = "3.7.1"
+    private const val version = "3.12.0"
     const val annotations = "org.checkerframework:checker-qual:${version}"
     val dataflow = listOf(
         "org.checkerframework:dataflow:${version}",
@@ -221,7 +221,7 @@ object CheckerFramework {
 
 // https://errorprone.info/
 object ErrorProne {
-    private const val version = "2.5.1"
+    private const val version = "2.6.0"
     const val gradlePluginVersion = "1.3.0"
     // Taken from here: https://github.com/tbroyer/gradle-errorprone-plugin/blob/v0.8/build.gradle.kts
     const val javacPluginVersion = "9+181-r4173-1"
@@ -240,7 +240,7 @@ object ErrorProne {
 
 // https://github.com/google/flogger
 object Flogger {
-    internal const val version = "0.5.1"
+    internal const val version = "0.6"
     const val lib     = "com.google.flogger:flogger:${version}"
     object Runtime {
         const val systemBackend = "com.google.flogger:flogger-system-backend:${version}"
@@ -251,7 +251,7 @@ object Flogger {
 
 // https://github.com/google/guava
 object Guava {
-    private const val version = "30.1-jre"
+    private const val version = "30.1.1-jre"
     const val lib     = "com.google.guava:guava:${version}"
     const val testLib = "com.google.guava:guava-testlib:${version}"
 }
@@ -259,7 +259,7 @@ object Guava {
 // https://github.com/grpc/grpc-java
 object Grpc {
     @Suppress("MemberVisibilityCanBePrivate")
-    const val version     = "1.35.0"
+    const val version     = "1.35.1"
     const val core        = "io.grpc:grpc-core:${version}"
     const val stub        = "io.grpc:grpc-stub:${version}"
     const val okHttp      = "io.grpc:grpc-okhttp:${version}"
@@ -271,11 +271,14 @@ object Grpc {
 
 // https://junit.org/junit5/
 object JUnit {
-    private const val version            = "5.7.0"
+    private const val version            = "5.7.1"
+    private const val platformVersion    = "1.7.1"
     private const val legacyVersion      = "4.13.1"
-    private const val apiGuardianVersion = "1.1.0"
-    private const val pioneerVersion     = "1.0.0"
-    private const val platformVersion    = "1.7.0"
+
+    // https://github.com/apiguardian-team/apiguardian
+    private const val apiGuardianVersion = "1.1.1"
+    // https://github.com/junit-pioneer/junit-pioneer
+    private const val pioneerVersion     = "1.3.8"
 
     const val legacy = "junit:junit:${legacyVersion}"
     val api = listOf(
@@ -286,13 +289,14 @@ object JUnit {
     const val runner  = "org.junit.jupiter:junit-jupiter-engine:${version}"
     const val pioneer = "org.junit-pioneer:junit-pioneer:${pioneerVersion}"
     const val platformCommons = "org.junit.platform:junit-platform-commons:${platformVersion}"
+    const val platformLauncher = "org.junit.platform:junit-platform-launcher:${platformVersion}"
 }
 
 // https://github.com/JetBrains/kotlin
 // https://github.com/Kotlin
 object Kotlin {
     @Suppress("MemberVisibilityCanBePrivate") // used directly from outside
-    const val version      = "1.4.21"
+    const val version      = "1.5.0-M2"
     const val reflect      = "org.jetbrains.kotlin:kotlin-reflect:${version}"
     const val stdLib       = "org.jetbrains.kotlin:kotlin-stdlib:${version}"
     const val stdLibCommon = "org.jetbrains.kotlin:kotlin-stdlib-common:${version}"
@@ -302,7 +306,7 @@ object Kotlin {
 // https://github.com/protocolbuffers/protobuf
 object Protobuf {
     @Suppress("MemberVisibilityCanBePrivate") // used directly from outside
-    const val version    = "3.13.0"
+    const val version    = "3.15.7"
     const val gradlePluginVersion = "0.8.13"
     val libs = listOf(
         "com.google.protobuf:protobuf-java:${version}",
@@ -314,7 +318,7 @@ object Protobuf {
 
 // https://github.com/forge/roaster
 object Roaster {
-    private const val version = "2.21.2.Final"
+    private const val version = "2.22.2.Final"
     const val api     = "org.jboss.forge.roaster:roaster-api:${version}"
     const val jdt     = "org.jboss.forge.roaster:roaster-jdt:${version}"
 }
@@ -477,6 +481,7 @@ object DependencyResolution {
                         guavaTestlib,
                         junit.api,
                         junit.platformCommons,
+                        junit.platformLauncher,
                         junit4,
                         truth.libs
                     )
