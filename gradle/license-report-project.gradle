@@ -41,12 +41,14 @@ buildscript {
     }
 
     dependencies {
-        classpath deps.build.gradlePlugins.licenseReport
+        classpath 'com.github.jk1:gradle-license-report:1.16'
     }
 }
 
-apply plugin: com.github.jk1.license.LicenseReportPlugin
-apply from: deps.scripts.licenseReportCommon
+//apply plugin: com.github.jk1.license.LicenseReportPlugin
+apply plugin: 'com.github.jk1.dependency-license-report'
+
+apply from: "${rootDir}/config/gradle/license-report-common.gradle"
 
 final reportOutputDir = "${project.buildDir}" + licenseReportConfig.relativePath
 licenseReport {

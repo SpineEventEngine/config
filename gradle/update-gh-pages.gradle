@@ -31,7 +31,7 @@
  * To configure docs publishing, apply this script to the repositories which should generate
  * the doc:
  * ```
- * apply(from: deps.scripts.updateGitHubPages)
+ * apply(from: io.spine.gradle.internal.Scripts..updateGitHubPages)
  * ```
  * After that, the `updateGitHubPages` task will be available for that project.
  *
@@ -47,25 +47,12 @@
  * is run.
  */
 
-import com.google.common.io.Files
-
-buildscript {
-
-    apply from: "$rootDir/config/gradle/dependencies.gradle"
-
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath deps.build.guava
-    }
-}
+import java.nio.file.Files
 
 ext {
-    javadocDir = Files.createTempDir()
+    javadocDir = Files.createTempDirectory("javadoc")
     generatedDocs = files(javadocDir)
-    repositoryTempDir = Files.createTempDir()
+    repositoryTempDir = Files.createTempDirectory("repoTemp")
 }
 
 final String propertyName = 'allowInternalJavadoc'
@@ -73,7 +60,7 @@ final String propertyName = 'allowInternalJavadoc'
 final boolean allowInternalJavadoc = ext.has(propertyName) && ext.get(propertyName)
 
 if (!allowInternalJavadoc) {
-    apply from: deps.scripts.filterInternalJavadocs
+    apply from: "${rootDir}/config/gradle/filter-internal-javadoc.gradle"
 }
 
 /**
