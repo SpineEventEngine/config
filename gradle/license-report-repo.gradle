@@ -33,7 +33,7 @@
  * See `license-report-project.gradle` for a per-project license report generation.
  */
 
-apply from: deps.scripts.licenseReportCommon
+apply from: "$rootDir/config/gradle/license-report-common.gradle"
 
 task reportLicensesInRepo { final Task task ->
     subprojects.each {

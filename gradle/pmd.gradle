@@ -29,7 +29,7 @@
  * This script configures Gradle PMD plugin.
  */
 pmd {
-    toolVersion = "${deps.versions.pmd}"
+    toolVersion = "${io.spine.gradle.internal.Pmd.version}"
     consoleOutput = true
     incrementalAnalysis = true
 

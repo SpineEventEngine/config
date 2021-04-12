@@ -42,6 +42,7 @@
 
 # Do not ignore the following IDEA settings
 !.idea/misc.xml
+!.idea/kotlinc.xml
 !.idea/codeStyleSettings.xml
 !.idea/codeStyles/
 !.idea/copyright/

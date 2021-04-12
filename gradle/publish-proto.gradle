@@ -24,9 +24,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.google.common.collect.Lists
-
-
 /**
  * This plugin enables a project to publish a JAR containing all the {@code .proto} definitions
  * found in the project classpath, which is the definitions from {@code sourceSets.main.proto} and
@@ -58,7 +55,7 @@ buildscript {
     }
 
     dependencies {
-        classpath deps.build.guava
+        classpath io.spine.gradle.internal.Guava.lib
     }
 }
 
@@ -128,7 +125,7 @@ Collection<File> collectProto() {
  * @param member the member File of the Proto package
  * @param jarNames the full listing of the project JAR dependencies
  */
-File getProtoRoot(final File member, final Collection<JarFileName> jarNames) {
+static File getProtoRoot(final File member, final Collection<JarFileName> jarNames) {
     File pkg = member
     while (!jarNames.contains(jarName(pkg.parentFile))) {
         pkg = pkg.parentFile
@@ -148,7 +145,7 @@ File getProtoRoot(final File member, final Collection<JarFileName> jarNames) {
  *
  * @param jar the folder to get the JAR name for
  */
-JarFileName jarName(final File jar) {
+static JarFileName jarName(final File jar) {
     final String unpackedJarInfix = ".jar"
     final String name = jar.name
     final int index = name.lastIndexOf(unpackedJarInfix)
@@ -169,8 +166,8 @@ JarFileName jarName(final File jar) {
  * @return {@code true} if the {@code candidate} {@linkplain #isProtoFile is a Protobuf file} or
  *         a directory containing at least one Protobuf file
  */
-boolean isProtoFileOrDir(final File candidate) {
-    final Deque<File> filesToCheck = Lists.newLinkedList()
+static boolean isProtoFileOrDir(final File candidate) {
+    final Deque<File> filesToCheck = new LinkedList<>()
     filesToCheck.push(candidate)
     if (candidate.isDirectory() && candidate.list().length == 0) {
         return false
@@ -193,7 +190,7 @@ boolean isProtoFileOrDir(final File candidate) {
  * @param file the file to check
  * @return {@code true} if the {@code file} is a Protobuf file, {@code false} otherwise
  */
-boolean isProtoFile(final File file) {
+static boolean isProtoFile(final File file) {
     return file.isFile() && file.name.endsWith(".proto")
 }
 
@@ -216,11 +213,11 @@ final class JarFileName {
         return new JarFileName(value)
     }
 
-    boolean equals(o) {
+    boolean equals(final o) {
         if (this.is(o)) return true
         if (getClass() != o.class) return false
 
-        JarFileName that = (JarFileName) o
+        final JarFileName that = (JarFileName) o
 
         if (value != that.value) return false
 
