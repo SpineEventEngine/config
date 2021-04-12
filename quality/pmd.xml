@@ -48,12 +48,6 @@
     <rule ref="category/java/bestpractices.xml/UnusedImports"/>
     <rule ref="category/java/bestpractices.xml/UnusedLocalVariable"/>
     <rule ref="category/java/bestpractices.xml/UnusedPrivateField"/>
-    <rule ref="category/java/bestpractices.xml/UnusedPrivateMethod">
-        <properties>
-            <property name="ignoredAnnotations"
-                      value="io.spine.server.aggregate.Apply|java.lang.Deprecated"/>
-        </properties>
-    </rule>
 
     <!-- Code Style -->
     <rule ref="category/java/codestyle.xml/CallSuperInConstructor"/>
