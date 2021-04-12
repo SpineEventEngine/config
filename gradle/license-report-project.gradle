@@ -45,7 +45,6 @@ buildscript {
     }
 }
 
-//apply plugin: com.github.jk1.license.LicenseReportPlugin
 apply plugin: 'com.github.jk1.dependency-license-report'
 
 apply from: "${rootDir}/config/gradle/license-report-common.gradle"
