@@ -26,12 +26,12 @@
 
 package io.spine.gradle.internal
 
+import java.io.File
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.os.OperatingSystem
-import java.io.File
 
 /**
  * A Gradle task which runs another Gradle build.
@@ -42,6 +42,7 @@ import java.io.File
  * The build writes verbose log into `$directory/build/debug-out.txt`. The error output is written
  * into `$directory/build/error-out.txt`.
  */
+@Suppress("unused")
 open class RunBuild : DefaultTask() {
 
     /**
