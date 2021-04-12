@@ -134,4 +134,3 @@ object Repos {
     const val sonatypeSnapshots: String = "https://oss.sonatype.org/content/repositories/snapshots"
     const val gradlePlugins = "https://plugins.gradle.org/m2/"
 }
-
