@@ -31,7 +31,7 @@
  * To configure docs publishing, apply this script to the repositories which should generate
  * the doc:
  * ```
- * apply(from: io.spine.gradle.internal.Scripts..updateGitHubPages)
+ * apply(from: io.spine.gradle.internal.Scripts.updateGitHubPages)
  * ```
  * After that, the `updateGitHubPages` task will be available for that project.
  *
