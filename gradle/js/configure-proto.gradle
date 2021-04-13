@@ -24,6 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import io.spine.internal.dependency.Protobuf
+import io.spine.internal.gradle.Scripts
+
 /**
  * Configures how the Proto definitions of the project are compiled into JavaScript and their
  * publishing.
@@ -46,7 +49,7 @@ ext {
     genProtoTest = "$genProtoBaseDir/test/js"
 }
 
-apply from: deps.scripts.npmPublishTasks
+apply from: Scripts.npmPublishTasks
 
 /**
  * Configures the JS code generation.
@@ -54,7 +57,7 @@ apply from: deps.scripts.npmPublishTasks
 protobuf {
     generatedFilesBaseDir = genProtoBaseDir
     protoc {
-        artifact = deps.build.protoc
+        artifact = Protobuf.protoc
     }
     generateProtoTasks {
         all().each { final task ->
@@ -86,7 +89,7 @@ protoJs {
     testGenProtoDir = genProtoTest
 
     generateParsersTask().dependsOn compileProtoToJs
-    buildJs.dependsOn generateParsersTask() 
+    buildJs.dependsOn generateParsersTask()
 }
 
 /**
