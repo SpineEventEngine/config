@@ -55,6 +55,7 @@ buildscript {
     }
 
     dependencies {
+        //noinspection UnnecessaryQualifiedReference
         classpath io.spine.internal.dependency.Guava.lib
     }
 }
