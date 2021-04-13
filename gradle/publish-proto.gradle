@@ -55,7 +55,7 @@ buildscript {
     }
 
     dependencies {
-        classpath io.spine.gradle.internal.Guava.lib
+        classpath io.spine.internal.dependency.Guava.lib
     }
 }
 
