@@ -24,29 +24,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package io.spine.internal.dependency
 
-/*
- * This script configures Gradle PMD plugin.
- */
-pmd {
-    toolVersion = "${io.spine.internal.dependency.Pmd.version}"
-    consoleOutput = true
-    incrementalAnalysis = true
-
-    // The build is going to fail in case of violations.
-    ignoreFailures = false
-
-    // Disable the default rule set to use the custom rules (see below).
-    ruleSets = []
-
-    // A set of custom rules.
-    ruleSetFiles = files("$rootDir/config/quality/pmd.xml")
-
-    reportsDir = file("build/reports/pmd")
-
-    // Just analyze the main sources; do not analyze tests.
-    sourceSets = [sourceSets.main]
+// https://checkerframework.org/
+object CheckerFramework {
+    private const val version = "3.12.0"
+    const val annotations = "org.checkerframework:checker-qual:${version}"
+    @Suppress("unused")
+    val dataflow = listOf(
+        "org.checkerframework:dataflow:${version}",
+        "org.checkerframework:javacutil:${version}"
+    )
+    /**
+     * This is discontinued artifact, which we do not use directly.
+     * This is a transitive dependency for us, which we force in
+     * [DependencyResolution.forceConfiguration]
+     */
+    const val compatQual = "org.checkerframework:checker-compat-qual:2.5.5"
 }
-
-// Workaround for https://github.com/pmd/pmd/issues/1705.
-pmdMain.classpath += sourceSets.main.runtimeClasspath

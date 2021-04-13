@@ -24,29 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package io.spine.internal.dependency
 
-/*
- * This script configures Gradle PMD plugin.
+/**
+ * Plexus Utils is a transitive dependency which we don't use directly.
+ * We `force` it in [DependencyResolution.forceConfiguration].
+ *
+ * [Plexus Utils](https://codehaus-plexus.github.io/plexus-utils/)
  */
-pmd {
-    toolVersion = "${io.spine.internal.dependency.Pmd.version}"
-    consoleOutput = true
-    incrementalAnalysis = true
-
-    // The build is going to fail in case of violations.
-    ignoreFailures = false
-
-    // Disable the default rule set to use the custom rules (see below).
-    ruleSets = []
-
-    // A set of custom rules.
-    ruleSetFiles = files("$rootDir/config/quality/pmd.xml")
-
-    reportsDir = file("build/reports/pmd")
-
-    // Just analyze the main sources; do not analyze tests.
-    sourceSets = [sourceSets.main]
+object Plexus {
+    private const val version = "3.3.0"
+    const val utils = "org.codehaus.plexus:plexus-utils:${version}"
 }
-
-// Workaround for https://github.com/pmd/pmd/issues/1705.
-pmdMain.classpath += sourceSets.main.runtimeClasspath

@@ -24,29 +24,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package io.spine.internal.dependency
 
-/*
- * This script configures Gradle PMD plugin.
- */
-pmd {
-    toolVersion = "${io.spine.internal.dependency.Pmd.version}"
-    consoleOutput = true
-    incrementalAnalysis = true
-
-    // The build is going to fail in case of violations.
-    ignoreFailures = false
-
-    // Disable the default rule set to use the custom rules (see below).
-    ruleSets = []
-
-    // A set of custom rules.
-    ruleSetFiles = files("$rootDir/config/quality/pmd.xml")
-
-    reportsDir = file("build/reports/pmd")
-
-    // Just analyze the main sources; do not analyze tests.
-    sourceSets = [sourceSets.main]
+// https://github.com/grpc/grpc-java
+@Suppress("unused")
+object Grpc {
+    @Suppress("MemberVisibilityCanBePrivate")
+    const val version     = "1.35.1"
+    const val core        = "io.grpc:grpc-core:${version}"
+    const val stub        = "io.grpc:grpc-stub:${version}"
+    const val okHttp      = "io.grpc:grpc-okhttp:${version}"
+    const val protobuf    = "io.grpc:grpc-protobuf:${version}"
+    const val netty       = "io.grpc:grpc-netty:${version}"
+    const val nettyShaded = "io.grpc:grpc-netty-shaded:${version}"
+    const val context     = "io.grpc:grpc-context:${version}"
 }
-
-// Workaround for https://github.com/pmd/pmd/issues/1705.
-pmdMain.classpath += sourceSets.main.runtimeClasspath

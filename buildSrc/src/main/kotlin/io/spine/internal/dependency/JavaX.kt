@@ -24,29 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package io.spine.internal.dependency
 
-/*
- * This script configures Gradle PMD plugin.
- */
-pmd {
-    toolVersion = "${io.spine.internal.dependency.Pmd.version}"
-    consoleOutput = true
-    incrementalAnalysis = true
-
-    // The build is going to fail in case of violations.
-    ignoreFailures = false
-
-    // Disable the default rule set to use the custom rules (see below).
-    ruleSets = []
-
-    // A set of custom rules.
-    ruleSetFiles = files("$rootDir/config/quality/pmd.xml")
-
-    reportsDir = file("build/reports/pmd")
-
-    // Just analyze the main sources; do not analyze tests.
-    sourceSets = [sourceSets.main]
+// This artifact which used to be a part of J2EE moved under Eclipse EE4J project.
+// https://github.com/eclipse-ee4j/common-annotations-api
+object JavaX {
+    const val annotations = "javax.annotation:javax.annotation-api:1.3.2"
 }
-
-// Workaround for https://github.com/pmd/pmd/issues/1705.
-pmdMain.classpath += sourceSets.main.runtimeClasspath

@@ -24,29 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package io.spine.internal.dependency
 
-/*
- * This script configures Gradle PMD plugin.
- */
-pmd {
-    toolVersion = "${io.spine.internal.dependency.Pmd.version}"
-    consoleOutput = true
-    incrementalAnalysis = true
-
-    // The build is going to fail in case of violations.
-    ignoreFailures = false
-
-    // Disable the default rule set to use the custom rules (see below).
-    ruleSets = []
-
-    // A set of custom rules.
-    ruleSetFiles = files("$rootDir/config/quality/pmd.xml")
-
-    reportsDir = file("build/reports/pmd")
-
-    // Just analyze the main sources; do not analyze tests.
-    sourceSets = [sourceSets.main]
+// https://github.com/google/truth
+object Truth {
+    private const val version = "1.1.2"
+    val libs = listOf(
+        "com.google.truth:truth:${version}",
+        "com.google.truth.extensions:truth-java8-extension:${version}",
+        "com.google.truth.extensions:truth-proto-extension:${version}"
+    )
 }
-
-// Workaround for https://github.com/pmd/pmd/issues/1705.
-pmdMain.classpath += sourceSets.main.runtimeClasspath

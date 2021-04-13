@@ -24,29 +24,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package io.spine.internal.dependency
 
-/*
- * This script configures Gradle PMD plugin.
- */
-pmd {
-    toolVersion = "${io.spine.internal.dependency.Pmd.version}"
-    consoleOutput = true
-    incrementalAnalysis = true
+// https://errorprone.info/
+@Suppress("unused")
+object ErrorProne {
+    private const val version = "2.6.0"
+    // https://github.com/tbroyer/gradle-errorprone-plugin/blob/v0.8/build.gradle.kts
+    private const val javacPluginVersion = "9+181-r4173-1"
 
-    // The build is going to fail in case of violations.
-    ignoreFailures = false
+    val annotations = listOf(
+        "com.google.errorprone:error_prone_annotations:${version}",
+        "com.google.errorprone:error_prone_type_annotations:${version}"
+    )
+    const val core = "com.google.errorprone:error_prone_core:${version}"
+    const val checkApi = "com.google.errorprone:error_prone_check_api:${version}"
+    const val testHelpers = "com.google.errorprone:error_prone_test_helpers:${version}"
+    const val javacPlugin  = "com.google.errorprone:javac:${javacPluginVersion}"
 
-    // Disable the default rule set to use the custom rules (see below).
-    ruleSets = []
-
-    // A set of custom rules.
-    ruleSetFiles = files("$rootDir/config/quality/pmd.xml")
-
-    reportsDir = file("build/reports/pmd")
-
-    // Just analyze the main sources; do not analyze tests.
-    sourceSets = [sourceSets.main]
+    object GradlePlugin {
+        const val id = "net.ltgt.errorprone"
+        const val version = "1.3.0"
+        const val lib = "net.ltgt.gradle:gradle-errorprone-plugin:${version}"
+    }
 }
-
-// Workaround for https://github.com/pmd/pmd/issues/1705.
-pmdMain.classpath += sourceSets.main.runtimeClasspath

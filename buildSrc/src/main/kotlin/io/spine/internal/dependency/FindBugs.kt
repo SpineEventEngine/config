@@ -24,29 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package io.spine.internal.dependency
 
-/*
- * This script configures Gradle PMD plugin.
+/**
+ * The FindBugs project is dead since 2017. It has a successor called SpotBugs, but we don't use it.
+ * We use ErrorProne for static analysis instead. The only reason for having this dependency is
+ * the annotations for null-checking introduced by JSR-305. These annotations are troublesome,
+ * but no alternatives are known for some of them so far.  Please see
+ * [this issue](https://github.com/SpineEventEngine/base/issues/108) for more details.
  */
-pmd {
-    toolVersion = "${io.spine.internal.dependency.Pmd.version}"
-    consoleOutput = true
-    incrementalAnalysis = true
-
-    // The build is going to fail in case of violations.
-    ignoreFailures = false
-
-    // Disable the default rule set to use the custom rules (see below).
-    ruleSets = []
-
-    // A set of custom rules.
-    ruleSetFiles = files("$rootDir/config/quality/pmd.xml")
-
-    reportsDir = file("build/reports/pmd")
-
-    // Just analyze the main sources; do not analyze tests.
-    sourceSets = [sourceSets.main]
+object FindBugs {
+    private const val version = "3.0.2"
+    const val annotations = "com.google.code.findbugs:jsr305:${version}"
 }
-
-// Workaround for https://github.com/pmd/pmd/issues/1705.
-pmdMain.classpath += sourceSets.main.runtimeClasspath

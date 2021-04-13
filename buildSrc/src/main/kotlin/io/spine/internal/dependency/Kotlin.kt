@@ -24,29 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package io.spine.internal.dependency
 
-/*
- * This script configures Gradle PMD plugin.
- */
-pmd {
-    toolVersion = "${io.spine.internal.dependency.Pmd.version}"
-    consoleOutput = true
-    incrementalAnalysis = true
-
-    // The build is going to fail in case of violations.
-    ignoreFailures = false
-
-    // Disable the default rule set to use the custom rules (see below).
-    ruleSets = []
-
-    // A set of custom rules.
-    ruleSetFiles = files("$rootDir/config/quality/pmd.xml")
-
-    reportsDir = file("build/reports/pmd")
-
-    // Just analyze the main sources; do not analyze tests.
-    sourceSets = [sourceSets.main]
+// https://github.com/JetBrains/kotlin
+// https://github.com/Kotlin
+object Kotlin {
+    @Suppress("MemberVisibilityCanBePrivate") // used directly from outside
+    const val version      = "1.5.0-M2"
+    const val reflect      = "org.jetbrains.kotlin:kotlin-reflect:${version}"
+    const val stdLib       = "org.jetbrains.kotlin:kotlin-stdlib:${version}"
+    const val stdLibCommon = "org.jetbrains.kotlin:kotlin-stdlib-common:${version}"
+    const val stdLibJdk8   = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${version}"
 }
-
-// Workaround for https://github.com/pmd/pmd/issues/1705.
-pmdMain.classpath += sourceSets.main.runtimeClasspath

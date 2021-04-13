@@ -24,29 +24,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package io.spine.internal.dependency
 
-/*
- * This script configures Gradle PMD plugin.
+/**
+ * Spine used to log with SLF4J. Now we use Flogger. Whenever a choice comes up, we recommend to
+ * use the latter.
+ *
+ * Some third-party libraries may clash with different versions of the library. Thus, we specify
+ * this version and force it via [forceConfiguration(..)][DependencyResolution.forceConfiguration].
  */
-pmd {
-    toolVersion = "${io.spine.internal.dependency.Pmd.version}"
-    consoleOutput = true
-    incrementalAnalysis = true
-
-    // The build is going to fail in case of violations.
-    ignoreFailures = false
-
-    // Disable the default rule set to use the custom rules (see below).
-    ruleSets = []
-
-    // A set of custom rules.
-    ruleSetFiles = files("$rootDir/config/quality/pmd.xml")
-
-    reportsDir = file("build/reports/pmd")
-
-    // Just analyze the main sources; do not analyze tests.
-    sourceSets = [sourceSets.main]
+@Deprecated("Use Flogger over SLF4J.", replaceWith = ReplaceWith("flogger"))
+object Slf4J {
+    private const val version = "1.7.30"
+    const val lib = "org.slf4j:slf4j-api:${version}"
+    const val jdk14 = "org.slf4j:slf4j-jdk14:${version}"
 }
-
-// Workaround for https://github.com/pmd/pmd/issues/1705.
-pmdMain.classpath += sourceSets.main.runtimeClasspath

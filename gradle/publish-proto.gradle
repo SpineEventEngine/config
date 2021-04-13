@@ -55,7 +55,8 @@ buildscript {
     }
 
     dependencies {
-        classpath io.spine.gradle.internal.Guava.lib
+        //noinspection UnnecessaryQualifiedReference
+        classpath io.spine.internal.dependency.Guava.lib
     }
 }
 
