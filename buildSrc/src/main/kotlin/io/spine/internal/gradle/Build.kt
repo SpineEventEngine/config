@@ -35,7 +35,6 @@ import io.spine.internal.dependency.ErrorProne
 import io.spine.internal.dependency.FindBugs
 import io.spine.internal.dependency.Firebase
 import io.spine.internal.dependency.Flogger
-import io.spine.internal.dependency.GradlePlugins
 import io.spine.internal.dependency.Guava
 import io.spine.internal.dependency.HttpClient
 import io.spine.internal.dependency.Jackson
@@ -57,7 +56,6 @@ object Build {
     val guava = Guava
     const val googleHttpClient = HttpClient.google
     const val googleHttpClientApache = HttpClient.apache
-    val gradlePlugins = GradlePlugins
     const val jacksonDatabind = Jackson.databind
     const val jsr305Annotations = FindBugs.annotations
     val kotlin = Kotlin
