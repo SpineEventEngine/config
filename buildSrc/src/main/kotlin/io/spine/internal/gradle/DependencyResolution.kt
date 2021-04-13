@@ -102,7 +102,9 @@ private fun ResolutionStrategy.forceTestDependencies() {
     )
 }
 
-/** Forces transitive dependencies of 3rd party components that we don't use directly. */
+/**
+ * Forces transitive dependencies of 3rd party components that we don't use directly.
+ */
 private fun ResolutionStrategy.forceTransitiveDependencies() {
     force(
         AutoValue.annotations,
