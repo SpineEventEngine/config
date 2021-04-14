@@ -23,6 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+//file:noinspection UnnecessaryQualifiedReference
 
 import com.github.jk1.license.*
 import com.github.jk1.license.render.ReportRenderer
@@ -37,15 +38,15 @@ import com.github.jk1.license.render.ReportRenderer
 
 buildscript {
     repositories {
-        maven { url = 'https://plugins.gradle.org/m2/'}
+        gradlePluginPortal()
     }
 
     dependencies {
-        classpath 'com.github.jk1:gradle-license-report:1.16'
+        classpath io.spine.internal.dependency.LicenseReport.lib
     }
 }
 
-apply plugin: 'com.github.jk1.dependency-license-report'
+apply plugin: io.spine.internal.dependency.LicenseReport.GradlePlugin.id
 
 apply from: "${rootDir}/config/gradle/license-report-common.gradle"
 
@@ -92,8 +93,8 @@ class MarkdownReportRenderer implements ReportRenderer {
 
     private void printDependencies(final ProjectData data) {
 
-        final runtimeDependencies = new HashSet();
-        final compileToolingDependencies = new HashSet();
+        final runtimeDependencies = new HashSet()
+        final compileToolingDependencies = new HashSet()
 
         data.configurations.each { final ConfigurationData config ->
 
@@ -107,12 +108,12 @@ class MarkdownReportRenderer implements ReportRenderer {
 
         output << "\n## Runtime"
         runtimeDependencies.toArray().sort().each {
-            printModuleDependency(it);
+            printModuleDependency(it)
         }
 
         output << "\n## Compile, tests and tooling"
         compileToolingDependencies.toArray().sort().each {
-            printModuleDependency(it);
+            printModuleDependency(it)
         }
     }
 

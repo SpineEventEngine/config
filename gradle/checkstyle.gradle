@@ -28,10 +28,12 @@
  * This script configures Gradle Checkstyle plugin.
  */
 
+import io.spine.internal.dependency.CheckStyle
+
 apply plugin: 'checkstyle'
 
 checkstyle {
-    toolVersion = "${deps.versions.checkstyle}"
+    toolVersion = "${CheckStyle.version}"
     configFile = file("$rootDir/config/quality/checkstyle.xml")
 
     // Disable checking the test sources.
