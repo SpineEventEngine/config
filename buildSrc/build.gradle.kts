@@ -24,26 +24,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import io.spine.internal.dependency.LicenseReport
-import io.spine.internal.dependency.Jackson
-
+/**
+ * This script uses three declarations of the constant [licenseReportVersion] because
+ * currently there is no way to define a constant _before_ a build script of `buildSrc`.
+ * We cannot use imports or do something else before the `buildscript` or `plugin` clauses.
+ *
+ * Therefore, when a version of [io.spine.internal.dependency.LicenseReport] changes, it should be
+ * changed in the Kotlin object _and_ in this file below thrice. 
+ */
 buildscript {
     repositories {
         gradlePluginPortal()
     }
-
+    val licenseReportVersion = "1.16"
     dependencies {
-        classpath(io.spine.internal.dependency.LicenseReport.lib)
+        classpath("com.github.jk1:gradle-license-report:${licenseReportVersion}")
     }
 }
 
 plugins {
     java
     `kotlin-dsl`
-    @Suppress("RemoveRedundantQualifierName")
-    io.spine.internal.dependency.LicenseReport.GradlePlugin.apply {
-        id(id).version(version)
-    }
+    val licenseReportVersion = "1.16"
+    id("com.github.jk1.dependency-license-report").version(licenseReportVersion)
 }
 
 kotlinDslPluginOptions {
@@ -56,7 +59,10 @@ repositories {
     mavenCentral()
 }
 
+val jacksonVersion = "2.11.0"
+val licenseReportVersion = "1.16"
+
 dependencies {
-    implementation(Jackson.dataformatXml)
-    api(LicenseReport.lib)
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
+    api("com.github.jk1:gradle-license-report:${licenseReportVersion}")
 }
