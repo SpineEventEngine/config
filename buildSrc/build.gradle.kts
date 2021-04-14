@@ -24,6 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * This script uses three declarations of the constant [licenseReportVersion] because
+ * currently there is no way to define a constant _before_ a build script of `buildSrc`.
+ * We cannot use imports or do something else before the `buildscript` or `plugin` clauses.
+ *
+ * Therefore, when a version of [io.spine.internal.dependency.LicenseReport] changes, it should be
+ * changed in the Kotlin object _and_ in this file below thrice. 
+ */
 buildscript {
     repositories {
         gradlePluginPortal()
