@@ -51,8 +51,8 @@ repositories {
     mavenCentral()
 }
 
-val licenseReportVersion = "1.16"
 val jacksonVersion = "2.11.0"
+val licenseReportVersion = "1.16"
 
 dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
