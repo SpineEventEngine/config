@@ -23,54 +23,44 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package dart
 
 import org.apache.tools.ant.taskdefs.condition.Os
 
-final def publicationDir = "$buildDir/pub/publication/$project.name"
+final def GROUP = 'Dart'
+final def packageIndex = "$projectDir/.packages" as File
 final def extension = Os.isFamily(Os.FAMILY_WINDOWS) ? '.bat' : ''
 final def PUB_EXECUTABLE = 'pub' + extension
 
-task stagePubPublication(type: Copy) {
-    description = 'Prepares the Dart package for Pub publication.'
+task resolveDependencies(type: Exec) {
+    group = GROUP
+    description = 'Fetches the dependencies declared via `pubspec.yaml`.'
 
-    from fileTree(projectDir) {
-        include '**/*.dart', 'pubspec.yaml', '**/*.md'
-        exclude 'proto/', 'generated/', 'build/', '**/.*'
-    }
-    from "$rootDir/LICENSE"
-    into publicationDir
+    inputs.file "$projectDir/pubspec.yaml"
+    outputs.file packageIndex
 
-    doLast {
-        logger.debug("Prepared Pub publication in directory `$publicationDir`.")
-    }
+    commandLine PUB_EXECUTABLE, 'get'
 
-    dependsOn 'assemble'
+    mustRunAfter 'cleanPackageIndex'
 }
 
-/**
- *  A Dart analog of {@code publish}.
- */
-task publishToPub(type: Exec) {
-    description = 'Publishes this package to Pub.'
+tasks['assemble'].dependsOn 'resolveDependencies'
 
-    workingDir publicationDir
-    commandLine PUB_EXECUTABLE, 'publish', '--trace'
-    final sayYes = new ByteArrayInputStream('y'.getBytes())
-    standardInput(sayYes)
-
-    dependsOn 'stagePubPublication'
+task cleanPackageIndex(type: Delete) {
+    group = GROUP
+    description = 'Deletes the `.packages` file on this Dart module.'
+    delete = [packageIndex]
 }
 
-/**
- *  A Dart analog of {@code publishToMavenLocal}.
- */
-task activateLocally(type: Exec) {
-    description = 'Activates this package locally.'
+tasks['clean'].dependsOn 'cleanPackageIndex'
 
-    commandLine PUB_EXECUTABLE, 'global', 'activate', '--source', 'path', publicationDir, '--trace'
+task testDart(type: Exec) {
+    group = GROUP
+    description = 'Runs Dart tests declared in the `./test` directory. See `https://pub.dev/packages/test#running-tests`.'
 
-    workingDir publicationDir
-    dependsOn 'stagePubPublication'
+    commandLine PUB_EXECUTABLE, 'run', 'test'
+
+    dependsOn 'resolveDependencies'
 }
 
-tasks['publish'].dependsOn 'publishToPub'
+tasks['check'].dependsOn 'testDart'

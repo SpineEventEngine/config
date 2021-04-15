@@ -23,6 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+//file:noinspection GroovyVariableCanBeFinal
 
 import groovy.xml.MarkupBuilder
 import org.gradle.api.internal.artifacts.dependencies.AbstractExternalModuleDependency
@@ -74,9 +75,9 @@ task generatePom {
 
     doLast {
         delete pomFile
-        ExtraPropertiesExtension extension = rootProject.ext
-        RootProjectData projectData = RootProjectData.fromEither(project, extension)
-        ProjectPomXml result = ProjectPomXml.from(projectData)
+        final ExtraPropertiesExtension extension = rootProject.ext
+        final RootProjectData projectData = RootProjectData.fromEither(project, extension)
+        final ProjectPomXml result = ProjectPomXml.from(projectData)
         result.writeTo(pomFile)
     }
 }
@@ -105,7 +106,10 @@ class ProjectPomXml {
     private final String artifactId
     private final String version
 
-    private ProjectPomXml(Project project, String groupId, String artifactId, String version) {
+    private ProjectPomXml(final Project project,
+                          final String groupId,
+                          final String artifactId,
+                          final String version) {
         this.project = project
         this.groupId = groupId
         this.artifactId = artifactId
@@ -113,7 +117,7 @@ class ProjectPomXml {
     }
 
     /** Creates a new instance based on the specified project data. */
-    static ProjectPomXml from(RootProjectData projectData) {
+    static ProjectPomXml from(final RootProjectData projectData) {
         return new ProjectPomXml(projectData.project(),
                 projectData.groupId(),
                 projectData.artifactId(),
@@ -129,9 +133,9 @@ class ProjectPomXml {
      *
      * @param filePath path to write {@code pom.xml} file to
      */
-    void writeTo(String filePath) {
-        FileWriter fileWriter = new FileWriter(filePath)
-        StringWriter stringWriter = new StringWriter()
+    void writeTo(final String filePath) {
+        final FileWriter fileWriter = new FileWriter(filePath)
+        final StringWriter stringWriter = new StringWriter()
         writeHeader(stringWriter)
 
         writeBlocks(stringWriter,
@@ -151,9 +155,9 @@ class ProjectPomXml {
      *
      * The written lines are also padded with platforms line separator from both sides
      */
-    static void writeBlocks(StringWriter writer, String... lines) {
+    static void writeBlocks(final StringWriter writer, final String... lines) {
         writer.write(NEW_LINE)
-        for (String line : lines) {
+        for (final String line : lines) {
             writer.write(line)
             writer.write(NEW_LINE)
             writer.write(NEW_LINE)
@@ -165,8 +169,8 @@ class ProjectPomXml {
      * Obtains a String that represents a tag with the inception year of Spine.
      */
     private static String inceptionYear() {
-        Writer writer = new StringWriter()
-        MarkupBuilder xmlBuilder = new MarkupBuilder(writer)
+        final Writer writer = new StringWriter()
+        final MarkupBuilder xmlBuilder = new MarkupBuilder(writer)
         xmlBuilder.inceptionYear(SPINE_INCEPTION_YEAR)
         return writer.toString()
     }
@@ -177,7 +181,7 @@ class ProjectPomXml {
      * <p>More on licences <a href="https://maven.apache.org/pom.html#Licenses">here</a>.
      */
     private static String licence() {
-        Writer writer = new StringWriter()
+        final Writer writer = new StringWriter()
         SpineLicenceAsXml.writeUsing(writer)
         return writer.toString()
     }
@@ -371,9 +375,10 @@ class DependencyWithScope implements Comparable<DependencyWithScope> {
             .thenComparing((Function<DependencyWithScope, String>) { it.dependency().version })
 
     static {
-        DependencyScope compile = DependencyScope.compile
-        DependencyScope runtime = DependencyScope.runtime
-        DependencyScope provided = DependencyScope.provided
+        final DependencyScope compile = DependencyScope.compile
+        final DependencyScope runtime = DependencyScope.runtime
+        final DependencyScope provided = DependencyScope.provided
+
         CONFIG_TO_SCOPE = new HashMap<>()
 
         /*

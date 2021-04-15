@@ -33,7 +33,8 @@
  * See `license-report-project.gradle` for a per-project license report generation.
  */
 
-apply from: "$rootDir/config/gradle/license-report-common.gradle"
+final def commonPath = io.spine.internal.gradle.Scripts.commonPath
+apply from: "${rootDir}/${commonPath}/license-report-common.gradle"
 
 task reportLicensesInRepo { final Task task ->
     subprojects.each {
