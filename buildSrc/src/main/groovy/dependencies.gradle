@@ -25,6 +25,7 @@
  */
 
 //file:noinspection GrDeprecatedAPIUsage
+//file:noinspection UnnecessaryQualifiedReference
 
 /*
  * This file describes shared dependencies of Spine sub-projects.
