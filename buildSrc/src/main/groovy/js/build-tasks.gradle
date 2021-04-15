@@ -101,7 +101,7 @@ task auditNodePackages {
         npm 'set', 'audit-level', 'critical'
         try {
             npm 'audit'
-        } catch (Exception e) {
+        } catch (final Exception ignored) {
             npm 'audit', '--registry' 'http://registry.npmjs.eu'
         }
     }
