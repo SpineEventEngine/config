@@ -48,7 +48,8 @@ buildscript {
 
 apply plugin: io.spine.internal.dependency.LicenseReport.GradlePlugin.id
 
-apply from: "${rootDir}/config/gradle/license-report-common.gradle"
+final def commonPath = io.spine.internal.gradle.Scripts.commonPath
+apply from: "${rootDir}/${commonPath}/license-report-common.gradle"
 
 final reportOutputDir = "${project.buildDir}" + licenseReportConfig.relativePath
 licenseReport {
