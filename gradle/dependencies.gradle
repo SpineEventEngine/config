@@ -292,7 +292,7 @@ ext.defaultRepositories = { final repositoryContainer ->
                 releasesOnly()
             }
         }
-        jcenter()
+        mavenCentral()
         maven { url = repos.gradlePlugins }
     }
 }

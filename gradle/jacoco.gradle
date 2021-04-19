@@ -33,7 +33,7 @@
 
 // Required to grab dependencies for `jacocoRootReport` task.
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 import groovy.io.FileType
