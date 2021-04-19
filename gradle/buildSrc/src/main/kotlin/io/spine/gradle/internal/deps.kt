@@ -351,8 +351,8 @@ object DependencyResolution {
         configurationName: String
     ) {
         configurations
-            .named(configurationName).get()
-            .exclude(mapOf("group" to "com.google.protobuf", "module" to "protobuf-lite"))
+            .findByName(configurationName)
+            ?.exclude(mapOf("group" to "com.google.protobuf", "module" to "protobuf-lite"))
     }
 
     fun defaultRepositories(repositories: RepositoryHandler) {
