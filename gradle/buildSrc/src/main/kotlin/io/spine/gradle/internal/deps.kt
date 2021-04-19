@@ -343,7 +343,9 @@ object DependencyResolution {
 
     fun excludeProtobufLite(configurations: ConfigurationContainer) {
         excludeProtoLite(configurations, "runtime")
+        excludeProtoLite(configurations, "runtimeOnly")
         excludeProtoLite(configurations, "testRuntime")
+        excludeProtoLite(configurations, "testRuntimeOnly")
     }
 
     private fun excludeProtoLite(
