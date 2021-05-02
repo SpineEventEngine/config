@@ -23,6 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package js
 
 import io.spine.internal.dependency.Protobuf
 import io.spine.internal.gradle.Scripts
@@ -37,7 +38,7 @@ import io.spine.internal.gradle.Scripts
  * The prerequisites for using the script are:
  *
  * 1. The Spine Proto JS plugin applied to the project
- * (see https://github.com/SpineEventEngine/base/tree/master/tools/proto-js-plugin).
+ * (see https://github.com/SpineEventEngine/base/tree/master/tools/mc-js).
  *
  * 2. The extension variable `versionToPublishJs` configured to represent the version under which
  * the NPM packages should be published.

@@ -60,7 +60,8 @@ final String propertyName = 'allowInternalJavadoc'
 final boolean allowInternalJavadoc = ext.has(propertyName) && ext.get(propertyName)
 
 if (!allowInternalJavadoc) {
-    apply from: "${rootDir}/config/gradle/filter-internal-javadoc.gradle"
+    final def commonPath = io.spine.internal.gradle.Scripts.commonPath
+    apply from: "${rootDir}/${commonPath}/filter-internal-javadoc.gradle"
 }
 
 /**
@@ -118,7 +119,7 @@ static def executeForResult(final Process process) {
  * @return the command line output
  * @throws IllegalStateException upon an execution error
  */
-String execute(final File baseDir, final String... command) {
+static String execute(final File baseDir, final String... command) {
     final Runtime runtime = Runtime.getRuntime()
     final Process proc = runtime.exec(command, /*env=*/ (String[]) null, baseDir)
     final def result = executeForResult(proc)
@@ -179,7 +180,8 @@ updateGitHubPages.doLast {
     // Create SSH config file to allow pushing commits to the repository.
     final File sshConfigFile = file("${System.getProperty("user.home")}/.ssh/config")
     if (!sshConfigFile.exists()) {
-        Files.createParentDirs(sshConfigFile)
+        final File parentDir = sshConfigFile.getCanonicalFile().getParentFile()
+        parentDir.mkdirs()
         sshConfigFile.createNewFile()
     }
     sshConfigFile << """
