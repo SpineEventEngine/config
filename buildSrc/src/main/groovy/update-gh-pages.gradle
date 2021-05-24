@@ -65,7 +65,6 @@ if(isSnapshot()) {
 
 /**
  * Tells whether this project is a snapshot.
- * @return
  */
 def isSnapshot() {
     return project.version.toLowerCase().contains("snapshot")
