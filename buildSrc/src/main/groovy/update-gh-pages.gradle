@@ -58,7 +58,7 @@ ext {
 /**
  * Prints a message telling those who read build logs about what happened.
  */
-if(isSnapshot()) {
+if (isSnapshot()) {
     println("GitHub Pages update will be skipped since this project" +
             " is a snapshot: `$project.name-$project.version`.")
 }
