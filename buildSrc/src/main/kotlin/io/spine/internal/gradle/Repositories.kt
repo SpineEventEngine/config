@@ -109,16 +109,31 @@ object PublishingRepos {
     )
 
     fun gitHub(repoName: String): Repository {
+        var githubActor: String? = System.getenv("GITHUB_ACTOR")
+        githubActor = if (githubActor.isNullOrEmpty()) {
+            "developers@spine.io"
+        } else {
+            githubActor
+        }
+        var githubToken: String? = System.getenv("GITHUB_TOKEN")
+        githubToken = if (githubToken.isNullOrEmpty()) {
+            // The personal access token for the `developers@spine.io`.
+            // Only has the permission to read public GitHub packages.
+            "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"
+        } else {
+            githubToken
+        }
+
         return Repository(
             name = "GitHub Packages",
             releases = "https://maven.pkg.github.com/SpineEventEngine/$repoName",
             snapshots = "https://maven.pkg.github.com/SpineEventEngine/$repoName",
             credentials = Credentials(
-                username = System.getenv("GITHUB_ACTOR"),
+                username = githubActor,
                 // This is a trick. Gradle only supports password or AWS credentials. Thus,
                 // we pass the GitHub token as a "password".
                 // https://docs.github.com/en/actions/guides/publishing-java-packages-with-gradle#publishing-packages-to-github-packages
-                password = System.getenv("GITHUB_TOKEN")
+                password = githubToken
             )
         )
     }
