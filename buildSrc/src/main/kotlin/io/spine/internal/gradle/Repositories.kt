@@ -116,21 +116,6 @@ object PublishingRepos {
             githubActor
         }
 
-        fun readGitHubToken(project: Project): String {
-            var githubToken: String? = System.getenv("GITHUB_TOKEN")
-            githubToken = if (githubToken.isNullOrEmpty()) {
-                // The personal access token for the `developers@spine.io`.
-                // Only has the permission to read public GitHub packages.
-                val file = project.zipTree("${project.rootDir}/buildSrc/aus.weis").files.filter {
-                    it.name == "token.txt"
-                }.first()
-                file.readText()
-            } else {
-                githubToken
-            }
-            return githubToken
-        }
-
         return Repository(
             name = "GitHub Packages",
             releases = "https://maven.pkg.github.com/SpineEventEngine/$repoName",
@@ -145,6 +130,23 @@ object PublishingRepos {
                 )
             }
         )
+    }
+
+    private fun readGitHubToken(project: Project): String {
+        val githubToken: String? = System.getenv("GITHUB_TOKEN")
+        return if (githubToken.isNullOrEmpty()) {
+            // The personal access token for the `developers@spine.io`.
+            // Only has the permission to read public GitHub packages.
+            val targetDir = "${project.buildDir}/token"
+            project.file(targetDir).mkdirs()
+            project.exec {
+                commandLine("unzip", "-P", "123", "-oq", "-d", targetDir, "${project.rootDir}/buildSrc/aus.weis")
+            }
+            val file = project.file("$targetDir/token.txt")
+            file.readText()
+        } else {
+            githubToken
+        }
     }
 }
 
