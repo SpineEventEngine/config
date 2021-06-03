@@ -140,6 +140,8 @@ object PublishingRepos {
             val targetDir = "${project.buildDir}/token"
             project.file(targetDir).mkdirs()
             project.exec {
+                // Unzip with password "123", allow overriding, quietly,
+                // into the target dir, the given archive.
                 commandLine("unzip", "-P", "123", "-oq", "-d", targetDir, "${project.rootDir}/buildSrc/aus.weis")
             }
             val file = project.file("$targetDir/token.txt")
