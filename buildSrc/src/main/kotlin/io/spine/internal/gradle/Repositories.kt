@@ -39,7 +39,7 @@ data class Repository(
     val releases: String,
     val snapshots: String,
     private val credentialsFile: String? = null,
-    private val credentials: Credentials? = null,
+    private val credentialValues: ((Project) -> Credentials?)? = null,
     val name: String = "Maven repository `$releases`"
 ) {
 
@@ -51,8 +51,8 @@ data class Repository(
      * the username and the password for the Maven repository auth.
      */
     fun credentials(project: Project): Credentials? {
-        if (credentials != null) {
-            return credentials
+        if (credentialValues != null) {
+            return credentialValues.invoke(project)
         }
         credentialsFile!!
         val log = project.logger
@@ -115,26 +115,35 @@ object PublishingRepos {
         } else {
             githubActor
         }
-        var githubToken: String? = System.getenv("GITHUB_TOKEN")
-        githubToken = if (githubToken.isNullOrEmpty()) {
-            // The personal access token for the `developers@spine.io`.
-            // Only has the permission to read public GitHub packages.
-            "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"
-        } else {
-            githubToken
+
+        fun readGitHubToken(project: Project): String {
+            var githubToken: String? = System.getenv("GITHUB_TOKEN")
+            githubToken = if (githubToken.isNullOrEmpty()) {
+                // The personal access token for the `developers@spine.io`.
+                // Only has the permission to read public GitHub packages.
+                val file = project.zipTree("${project.rootDir}/buildSrc/aus.weis").files.filter {
+                    it.name == "token.txt"
+                }.first()
+                file.readText()
+            } else {
+                githubToken
+            }
+            return githubToken
         }
 
         return Repository(
             name = "GitHub Packages",
             releases = "https://maven.pkg.github.com/SpineEventEngine/$repoName",
             snapshots = "https://maven.pkg.github.com/SpineEventEngine/$repoName",
-            credentials = Credentials(
-                username = githubActor,
-                // This is a trick. Gradle only supports password or AWS credentials. Thus,
-                // we pass the GitHub token as a "password".
-                // https://docs.github.com/en/actions/guides/publishing-java-packages-with-gradle#publishing-packages-to-github-packages
-                password = githubToken
-            )
+            credentialValues = { project ->
+                Credentials(
+                    username = githubActor,
+                    // This is a trick. Gradle only supports password or AWS credentials. Thus,
+                    // we pass the GitHub token as a "password".
+                    // https://docs.github.com/en/actions/guides/publishing-java-packages-with-gradle#publishing-packages-to-github-packages
+                    password = readGitHubToken(project)
+                )
+            }
         )
     }
 }
