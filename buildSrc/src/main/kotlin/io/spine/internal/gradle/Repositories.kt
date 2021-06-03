@@ -135,7 +135,7 @@ object PublishingRepos {
     private fun readGitHubToken(project: Project): String {
         val githubToken: String? = System.getenv("GITHUB_TOKEN")
         return if (githubToken.isNullOrEmpty()) {
-            // The personal access token for the `developers@spine.io`.
+            // Use the personal access token for the `developers@spine.io` account.
             // Only has the permission to read public GitHub packages.
             val targetDir = "${project.buildDir}/token"
             project.file(targetDir).mkdirs()
