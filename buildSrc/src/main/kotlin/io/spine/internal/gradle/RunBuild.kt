@@ -51,6 +51,14 @@ open class RunBuild : DefaultTask() {
     @Internal
     lateinit var directory: String
 
+    /**
+     * Names of Gradle properties to copy into the launched build.
+     *
+     * The properties are looked up in the root project. If a property is not found, it is ignored.
+     *
+     * See [Gradle doc](https://docs.gradle.org/current/userguide/build_environment.html#sec:gradle_configuration_properties)
+     * for more info about Gradle properties.
+     */
     @Internal
     var includeGradleProperties: MutableSet<String> = mutableSetOf()
 
