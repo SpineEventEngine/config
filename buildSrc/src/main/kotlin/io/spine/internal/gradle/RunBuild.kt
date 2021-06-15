@@ -51,6 +51,9 @@ open class RunBuild : DefaultTask() {
     @Internal
     lateinit var directory: String
 
+    @Internal
+    var includeGradleProperties: MutableSet<String> = mutableSetOf()
+
     @TaskAction
     private fun execute() {
         val runsOnWindows = OperatingSystem.current().isWindows()
@@ -86,6 +89,11 @@ open class RunBuild : DefaultTask() {
         command.add("--console=plain")
         command.add("--debug")
         command.add("--stacktrace")
+        val rootProject = project.rootProject
+        includeGradleProperties
+            .filter { rootProject.hasProperty(it) }
+            .map { name -> name to rootProject.property(name).toString() }
+            .forEach { (name, value) -> command.add("-P$name=$value") }
         return command
     }
 
