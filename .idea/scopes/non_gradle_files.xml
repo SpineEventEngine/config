@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="non-gradle-files" pattern="!file:*.gradle.kts||!file:*.gradle" />
+</component>
