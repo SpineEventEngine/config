@@ -8,8 +8,9 @@ To add a sub-module:
 ```bash
 git submodule add https://github.com/SpineEventEngine/config config
 ``` 
-This will only add a sub-module with the reference to the repository. 
-In order to get the code, run the following command:
+This will only add a sub-module with the reference to the repository.
+
+In order to get the actual code for the `config` submodule, run the following command:
 ```bash
 git submodule update --init --recursive
 ```
@@ -28,12 +29,8 @@ project. The following files will be copied:
  * `.codecov.yml`
  * `.gitattributes`
  * `.gitignore`
- * `ext.gradle`
+ * `buildSrc` — a folder containing the common build-time code, in Kotlin.
  
-    This file will be copied only if it does not exist in your project. It defines the following:
-    1. the version of Spine Base which is used by the project (which uses `config`)
-    2. the version under which artifacts of the project will be published.
-
 ## Adding credentials to a new repository
 
 For details, see [this page](https://github.com/SpineEventEngine/config/wiki/Encrypting-Credential-Files-for-Travis).
