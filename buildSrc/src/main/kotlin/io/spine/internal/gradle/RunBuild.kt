@@ -65,10 +65,6 @@ open class RunBuild : DefaultTask() {
 
     @TaskAction
     private fun execute() {
-        val runsOnWindows = OperatingSystem.current().isWindows()
-        val script = if (runsOnWindows) "gradlew.bat" else "gradlew"
-        val command = buildCommand(script)
-
         // Ensure build error output log.
         // Since we're executing this task in another process, we redirect error output to
         // the file under the `build` directory.
@@ -79,6 +75,7 @@ open class RunBuild : DefaultTask() {
         val errorOut = File(buildDir, "error-out.txt")
         val debugOut = File(buildDir, "debug-out.txt")
 
+        val command = buildCommand()
         val process = startProcess(command, errorOut, debugOut)
 
         if (!process.waitFor(10, TimeUnit.MINUTES)) {
@@ -95,12 +92,13 @@ open class RunBuild : DefaultTask() {
         }
     }
 
-    private fun buildCommand(script: String): List<String> {
+    private fun buildCommand(): List<String> {
+        val script = buildScript()
         val command = mutableListOf<String>()
         command.add("${project.rootDir}/$script")
         val shouldClean = project.gradle
-                                 .taskGraph
-                                 .hasTask(":clean")
+            .taskGraph
+            .hasTask(":clean")
         if (shouldClean) {
             command.add("clean")
         }
@@ -108,12 +106,18 @@ open class RunBuild : DefaultTask() {
         command.add("--console=plain")
         command.add("--debug")
         command.add("--stacktrace")
+        command.add("--no-daemon")
         val rootProject = project.rootProject
         includeGradleProperties
             .filter { rootProject.hasProperty(it) }
             .map { name -> name to rootProject.property(name).toString() }
             .forEach { (name, value) -> command.add("-P$name=$value") }
         return command
+    }
+
+    private fun buildScript(): String {
+        val runsOnWindows = OperatingSystem.current().isWindows()
+        return if (runsOnWindows) "gradlew.bat" else "gradlew"
     }
 
     private fun startProcess(command: List<String>, errorOut: File, debugOut: File) =
