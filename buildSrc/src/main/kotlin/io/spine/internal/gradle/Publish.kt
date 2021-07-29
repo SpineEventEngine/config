@@ -340,7 +340,7 @@ private constructor(
  * Configures the `spinePublishing` extension.
  *
  * As `Publish` is a class-plugin in `buildSrc`, we don't get strongly typed generated helper
- * methods for the `spinePublishing` configuration. Thus, we proviude this helper function for use
+ * methods for the `spinePublishing` configuration. Thus, we provide this helper function for use
  * in Kotlin build scripts.
  */
 @Suppress("unused")
