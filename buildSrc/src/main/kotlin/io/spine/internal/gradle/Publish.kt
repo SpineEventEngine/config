@@ -111,13 +111,13 @@ class Publish : Plugin<Project> {
         val extension = PublishExtension.create(project)
         project.extensions.add(PublishExtension::class.java, extensionName, extension)
 
-        project.afterEvaluate {
-            val soloMode = extension.soloProject != null
-            val rootPublish: Task? =
-                if (soloMode) null
-                else project.createPublishTask()
-            val checkCredentials = project.createCheckTask(extension)
+        val soloMode = extension.singleProject()
+        val rootPublish: Task? =
+            if (soloMode) null
+            else project.createPublishTask()
+        val checkCredentials: Task = project.createCheckTask(extension)
 
+        project.afterEvaluate {
             if (soloMode) {
                 project.applyMavenPublish(extension, null, checkCredentials)
             } else {
@@ -322,7 +322,7 @@ private constructor(
      *
      * If set, [projectsToPublish] will be ignored.
      */
-    var soloProject: Project? = null
+    private var soloProject: Project? = null
 
     init {
         spinePrefix.convention(true)
@@ -334,6 +334,8 @@ private constructor(
     fun publish(project: Project) {
         soloProject = project
     }
+
+    fun singleProject(): Boolean = soloProject != null
 }
 
 /**
