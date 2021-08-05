@@ -174,7 +174,7 @@ object Repos {
 /**
  * Registers the standard set of Maven repositories.
  *
- * To be used in `buildscript` clauses when fully-qualified call must be made.
+ * To be used in `buildscript` clauses when a fully-qualified call must be made.
  */
 @Suppress("unused")
 fun doApplyStandard(repositories: RepositoryHandler) {
@@ -184,7 +184,7 @@ fun doApplyStandard(repositories: RepositoryHandler) {
 /**
  * Registers the selected GitHub Packages repos as Maven repositories.
  *
- * To be used in `buildscript` clauses when fully-qualified call must be made.
+ * To be used in `buildscript` clauses when a fully-qualified call must be made.
  *
  * @see applyGitHubPackages
  */
