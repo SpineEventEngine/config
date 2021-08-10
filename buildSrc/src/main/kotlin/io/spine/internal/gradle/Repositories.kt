@@ -207,6 +207,11 @@ object Repos {
     val cloudArchive = PublishingRepos.cloudArtifactRegistry.releases
     val cloudArchiveSnapshots = PublishingRepos.cloudArtifactRegistry.snapshots
 
+    @Deprecated(
+        message = "Sonatype release repository redirects to the Maven Central",
+        replaceWith = ReplaceWith("sonatypeSnapshots"),
+        level = DeprecationLevel.ERROR
+    )
     const val sonatypeReleases = "https://oss.sonatype.org/content/repositories/snapshots"
     const val sonatypeSnapshots = "https://oss.sonatype.org/content/repositories/snapshots"
 }
@@ -259,25 +264,28 @@ fun RepositoryHandler.applyGitHubPackages(project: Project) {
 @Suppress("unused")
 fun RepositoryHandler.applyStandard() {
 
-    apply {
-        gradlePluginPortal()
-        mavenLocal()
+    gradlePluginPortal()
+    mavenLocal()
 
-        maven {
-            url = URI(Repos.spine)
-            includeSpineOnly()
+    val spineRepos = listOf(
+        Repos.spine,
+        Repos.spineSnapshots,
+        Repos.cloudArchive,
+        Repos.cloudArchiveSnapshots
+    )
+
+    spineRepos
+        .map { URI(it) }
+        .forEach {
+            maven {
+                url = it
+                includeSpineOnly()
+            }
         }
-        maven {
-            url = URI(Repos.spineSnapshots)
-            includeSpineOnly()
-        }
-        mavenCentral()
-        maven {
-            url = URI(Repos.sonatypeReleases)
-        }
-        maven {
-            url = URI(Repos.sonatypeSnapshots)
-        }
+
+    mavenCentral()
+    maven {
+        url = URI(Repos.sonatypeSnapshots)
     }
 }
 
