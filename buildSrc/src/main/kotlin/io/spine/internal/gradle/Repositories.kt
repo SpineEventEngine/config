@@ -312,13 +312,7 @@ private fun RepositoryHandler.spineMavenRepo(
  * Narrows down the search for this repository to Spine-related artifact groups.
  */
 private fun MavenArtifactRepository.includeSpineOnly() {
-    val libraryGroup = "io.spine"
-    val toolsGroup = "io.spine.tools"
-    val gcloudGroup = "io.spine.gcloud"
-
     content {
-        includeGroup(libraryGroup)
-        includeGroup(toolsGroup)
-        includeGroup(gcloudGroup)
+        includeGroupByRegex("io\\.spine.*")
     }
 }
