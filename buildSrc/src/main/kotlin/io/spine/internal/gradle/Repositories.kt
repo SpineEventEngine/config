@@ -26,6 +26,8 @@
 
 package io.spine.internal.gradle
 
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.artifactregistry.auth.DefaultCredentialProvider
 import io.spine.internal.gradle.PublishingRepos.gitHub
 import java.io.File
 import java.net.URI
@@ -96,6 +98,8 @@ data class Credentials(
  */
 object PublishingRepos {
 
+    private const val CLOUD_ARTIFACT_REGISTRY = "https://europe-central2-maven.pkg.dev/spine-dev"
+
     @Suppress("HttpUrlsUsage") // HTTPS is not supported by this repository.
     val mavenTeamDev = Repository(
         name = "maven.teamdev.com",
@@ -108,6 +112,16 @@ object PublishingRepos {
         releases = "https://spine.mycloudrepo.io/public/repositories/releases",
         snapshots = "https://spine.mycloudrepo.io/public/repositories/snapshots",
         credentialsFile = "cloudrepo.properties"
+    )
+    val cloudArtifactRegistry = Repository(
+        releases = "$CLOUD_ARTIFACT_REGISTRY/releases",
+        snapshots = "$CLOUD_ARTIFACT_REGISTRY/snapshots",
+        credentialValues = {
+            val googleCreds = DefaultCredentialProvider()
+            val creds = googleCreds.credential as GoogleCredentials
+            creds.refreshIfExpired()
+            return@Repository Credentials("oauth2accesstoken", creds.accessToken.tokenValue)
+        }
     )
 
     fun gitHub(repoName: String): Repository {
@@ -165,14 +179,17 @@ object PublishingRepos {
  */
 @Suppress("unused")
 object Repos {
-    val oldSpine: String = PublishingRepos.mavenTeamDev.releases
-    val oldSpineSnapshots: String = PublishingRepos.mavenTeamDev.snapshots
+    val oldSpine = PublishingRepos.mavenTeamDev.releases
+    val oldSpineSnapshots = PublishingRepos.mavenTeamDev.snapshots
 
-    val spine: String = PublishingRepos.cloudRepo.releases
-    val spineSnapshots: String = PublishingRepos.cloudRepo.snapshots
+    val spine = PublishingRepos.cloudRepo.releases
+    val spineSnapshots = PublishingRepos.cloudRepo.snapshots
 
-    const val sonatypeReleases: String = "https://oss.sonatype.org/content/repositories/snapshots"
-    const val sonatypeSnapshots: String = "https://oss.sonatype.org/content/repositories/snapshots"
+    val cloudArchive = PublishingRepos.cloudArtifactRegistry.releases
+    val cloudArchiveSnapshots = PublishingRepos.cloudArtifactRegistry.snapshots
+
+    const val sonatypeReleases = "https://oss.sonatype.org/content/repositories/snapshots"
+    const val sonatypeSnapshots = "https://oss.sonatype.org/content/repositories/snapshots"
 }
 
 /**
