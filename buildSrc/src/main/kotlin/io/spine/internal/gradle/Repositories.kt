@@ -98,7 +98,7 @@ data class Credentials(
  */
 object PublishingRepos {
 
-    private const val CLOUD_ARTIFACT_REGISTRY = "https://europe-central2-maven.pkg.dev/spine-dev"
+    private const val CLOUD_ARTIFACT_REGISTRY = "https://europe-maven.pkg.dev/spine-event-engine"
 
     @Suppress("HttpUrlsUsage") // HTTPS is not supported by this repository.
     val mavenTeamDev = Repository(
