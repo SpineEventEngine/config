@@ -81,7 +81,7 @@ class MarkdownReportRenderer implements ReportRenderer {
         project = data.project
         config = project.licenseReport
         output = new File(config.outputDir, fileName)
-        final publishExtension = project.extensions.findByType(PublishExtension.class)
+        final publishExtension = project.rootProject.extensions.findByType(PublishExtension.class)
         final prefix = (publishExtension?.spinePrefix?.getOrElse(false) ?: false) ? "spine-" : ""
         output.text = """
     \n# Dependencies of `${project.group}:$prefix${project.name}:${project.version}`
