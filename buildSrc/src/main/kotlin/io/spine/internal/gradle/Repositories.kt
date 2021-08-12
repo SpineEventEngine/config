@@ -120,16 +120,16 @@ object PublishingRepos {
      * In order to successfully publish into this repository, a service account key is needed.
      * The published must create a service account, grant it the permission to write into
      * Artifact Registry, and generate a JSON key.
-     * Then, the key must be placed somewhere on the file system.
-     * Env variable `GOOGLE_APPLICATION_CREDENTIALS` must point at the key file.
-     * Once, these preconditions are met, publishing becomes possible.
+     * Then, the key must be placed somewhere on the file system and the environment variable
+     * `GOOGLE_APPLICATION_CREDENTIALS` must be set to point at the key file.
+     * Once these preconditions are met, publishing becomes possible.
      *
-     * Implementation note. Google provides [tools](https://github.com/GoogleCloudPlatform/artifact-registry-maven-tools)
+     * ## Implementation note
+     * Google provides [tools](https://github.com/GoogleCloudPlatform/artifact-registry-maven-tools)
      * for configuring authentication for the Maven repositories, including a Gradle plugin.
-     * However, the plugin is incompatible with Gradle 7.x at the moment. For now, we reproduce what
-     * plugin does manually. This makes the whole `buildSrc` depend on
-     * the `artifactregistry-auth-common` artifact.
-     * Track [this issue](https://github.com/GoogleCloudPlatform/artifact-registry-maven-tools/issues/52)
+     * However, the plugin is incompatible with Gradle 7.x at the moment.
+     * For now, we reproduce what the plugin does manually. This makes the whole `buildSrc`
+     * depend on the `artifactregistry-auth-common` artifact. Track [this issue](https://github.com/GoogleCloudPlatform/artifact-registry-maven-tools/issues/52)
      * for the progress on Gradle 7.x support.
      */
     val cloudArtifactRegistry = Repository(
