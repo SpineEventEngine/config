@@ -60,6 +60,13 @@ repositories {
 val jacksonVersion = "2.11.0"
 val googleAuthToolVersion = "2.1.1"
 val licenseReportVersion = "1.16"
+
+/**
+ * The version of Guava used in `buildSrc`.
+ *
+ * Always use the same version as the one specified in `io.spine.internal.dependency.Guava`.
+ * Otherwise, when testing Gradle plugins, clashes may occur.
+ */
 val guavaVersion = "30.1.1-jre"
 
 dependencies {
