@@ -30,7 +30,7 @@
  * We cannot use imports or do something else before the `buildscript` or `plugin` clauses.
  *
  * Therefore, when a version of [io.spine.internal.dependency.LicenseReport] changes, it should be
- * changed in the Kotlin object _and_ in this file below thrice. 
+ * changed in the Kotlin object _and_ in this file below thrice.
  */
 buildscript {
     repositories {
@@ -60,9 +60,13 @@ repositories {
 val jacksonVersion = "2.11.0"
 val googleAuthToolVersion = "2.1.1"
 val licenseReportVersion = "1.16"
+val guavaVersion = "30.1.1-jre"
 
 dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    implementation("com.google.cloud.artifactregistry:artifactregistry-auth-common:$googleAuthToolVersion")
-    api("com.github.jk1:gradle-license-report:${licenseReportVersion}")
+    implementation("com.google.cloud.artifactregistry:artifactregistry-auth-common:$googleAuthToolVersion") {
+        exclude(group = "com.google.guava")
+    }
+    implementation("com.google.guava:guava:$guavaVersion")
+    api("com.github.jk1:gradle-license-report:$licenseReportVersion")
 }
