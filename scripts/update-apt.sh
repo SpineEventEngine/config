@@ -26,7 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-# Standard update precedure.
+# Standard update procedure.
 sudo apt-get install -y libxml2-dev
 sudo apt-get update
 
