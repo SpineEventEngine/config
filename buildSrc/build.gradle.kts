@@ -55,12 +55,17 @@ repositories {
     mavenLocal()
     gradlePluginPortal()
     mavenCentral()
+    maven {
+        url = uri("https://repo.spring.io/libs-release")
+    }
 }
 
 val jacksonVersion = "2.11.0"
 val licenseReportVersion = "1.16"
+val grGitVersion = "3.1.1"
 
 dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     api("com.github.jk1:gradle-license-report:${licenseReportVersion}")
+    implementation("org.ajoberstar.grgit:grgit-core:${grGitVersion}")
 }

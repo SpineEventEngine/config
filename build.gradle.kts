@@ -1,3 +1,9 @@
+import io.spine.internal.gradle.SpineRepos
+import io.spine.internal.gradle.cleanFolder
+import io.spine.internal.gradle.BuildSrcTester
+import io.spine.internal.gradle.Branch
+import java.nio.file.Paths
+
 /*
  * Copyright 2021, TeamDev. All rights reserved.
  *
@@ -24,4 +30,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This empty file is needed to make `buildSrc` buildable.
+// A reference to `buildSrc` to use along with the `BuildSrcTester`.
+// See `BuildSrcTester` below.
+val buildSrc = Paths.get("./buildSrc")
+
+// A temp folder to use to checkout the sources of other repositories.
+// See `BuildSrcTester` down below.
+val tempFolder = File("./tmp")
+
+// Creates a Gradle task which checks out and builds the selected Spine repositories
+// with the local version of `config/buildSrc`.
+BuildSrcTester(buildSrc, tasks, tempFolder)
+    .addRepo(SpineRepos.baseTypes)  // Builds `base-types` at `master`.
+    .addRepo(SpineRepos.base)       // Builds `base` at `master`.
+    .addRepo(SpineRepos.coreJava)   // Builds `base` at `master`.
+
+    // This is how one builds a specific branch of some repository:
+    // .addRepo(SpineRepos.coreJava, Branch("grpc-concurrency-fixes"))
+
+    // Register the produced task under the selected name to invoke manually upon need.
+    .registerUnder("buildDependants")
+
+// Cleans the temp folder used to checkout the sources from Git.
+tasks.register("clean") {
+    doLast {
+        cleanFolder(tempFolder)
+    }
+}
