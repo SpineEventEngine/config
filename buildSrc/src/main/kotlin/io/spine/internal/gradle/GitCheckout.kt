@@ -264,6 +264,7 @@ class ClonedRepo(
         return this
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun copyFolder(sourceFolder: Path, destinationFolder: Path) {
         try {
             Files.walk(sourceFolder).forEach { file: Path ->
