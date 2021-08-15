@@ -82,7 +82,7 @@ class BuildSrcTester(
     }
 
     fun registerUnder(taskName: String) {
-        val tasksPerRepo = repos.map { testWithBuildSrc(it, buildSrc, tasks, tempFolder) }
+        val tasksPerRepo = repos.map { testWithBuildSrc(it) }
 
         tasks.register(taskName) {
             for (repoTaskName in tasksPerRepo) {
@@ -90,41 +90,54 @@ class BuildSrcTester(
             }
         }
     }
-}
 
-private fun testWithBuildSrc(gitRepo: GitRepository,
-                             buildSrc: Path,
-                             tasks: TaskContainer,
-                             tempFolder: File): String {
-    val runGradleName = runGradleTask(gitRepo)
-    tasks.register(runGradleName, RunBuild::class.java) {
-        doFirst {
-            println("`${gitRepo.name}`: starting Gradle build...")
-        }
-        doLast {
-            println("*** `${gitRepo.name}`: Gradle build completed. ***")
-        }
-        directory = gitRepo.prepareCheckout(tempFolder).absolutePath
+    private fun testWithBuildSrc(gitRepo: GitRepository): String {
+        val runGradleName = runGradleTask(gitRepo)
+        doRegisterRunBuild(runGradleName, gitRepo)
+
+        val executeBuildName = executeBuildTask(gitRepo)
+        doRegisterExecuteBuild(executeBuildName, gitRepo, runGradleName)
+        return executeBuildName
     }
 
-    val executeBuildName = executeBuildTask(gitRepo)
-    tasks.register(executeBuildName) {
-        doLast {
-            println(" *** Testing `config/buildSrc` with `${gitRepo.name}`. ***")
-            val localRepo = gitRepo.checkout(tempFolder)
-            localRepo.replaceBuildSrc(buildSrc)
+    private fun doRegisterExecuteBuild(
+        executeBuildName: String,
+        gitRepo: GitRepository,
+        runGradleName: String
+    ) {
+        tasks.register(executeBuildName) {
+            doLast {
+                println(" *** Testing `config/buildSrc` with `${gitRepo.name}`. ***")
+                val localRepo = gitRepo.checkout(tempFolder)
+                localRepo.replaceBuildSrc(buildSrc)
+            }
+            finalizedBy(runGradleName)
         }
-        finalizedBy(runGradleName)
     }
-    return executeBuildName
-}
 
-private fun runGradleTask(repo: GitRepository): String {
-    return "run-gradle-${repo.name}"
-}
+    private fun doRegisterRunBuild(
+        runGradleName: String,
+        gitRepo: GitRepository,
+    ) {
+        tasks.register(runGradleName, RunBuild::class.java) {
+            doFirst {
+                println("`${gitRepo.name}`: starting Gradle build...")
+            }
+            doLast {
+                println("*** `${gitRepo.name}`: Gradle build completed. ***")
+            }
+            directory = gitRepo.prepareCheckout(tempFolder).absolutePath
+            maxDurationMins = 30
+        }
+    }
 
-private fun executeBuildTask(repo: GitRepository): String {
-    return "execute-build-${repo.name}"
+    private fun runGradleTask(repo: GitRepository): String {
+        return "run-gradle-${repo.name}"
+    }
+
+    private fun executeBuildTask(repo: GitRepository): String {
+        return "execute-build-${repo.name}"
+    }
 }
 
 /**
@@ -155,7 +168,7 @@ class GitRepository(
 
     fun prepareCheckout(destinationFolder: File): File {
         if (!destinationFolder.exists()) {
-            destinationFolder.mkdirs();
+            destinationFolder.mkdirs()
         }
 
         val result = destinationFolder.toPath().resolve(name)
