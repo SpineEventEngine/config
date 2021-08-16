@@ -36,7 +36,7 @@ import org.ajoberstar.grgit.Grgit
 import org.gradle.api.tasks.TaskContainer
 
 /**
- * A tool to execute the Gradle `build` task in selected Git repositories,
+ * A tool to execute the Gradle `build` task in selected Git repositories
  * with the local version of [config] contents.
  *
  * Checks out the content of selected repositories into the specified [tempFolder]. The folder
@@ -86,7 +86,7 @@ class ConfigTester(
     }
 
     fun registerUnder(taskName: String) {
-        val tasksPerRepo = repos.map { testWithBuildSrc(it) }
+        val tasksPerRepo = repos.map { testWithConfig(it) }
 
         tasks.register(taskName) {
             for (repoTaskName in tasksPerRepo) {
@@ -95,7 +95,7 @@ class ConfigTester(
         }
     }
 
-    private fun testWithBuildSrc(gitRepo: GitRepository): String {
+    private fun testWithConfig(gitRepo: GitRepository): String {
         val runGradleName = runGradleTask(gitRepo)
         doRegisterRunBuild(runGradleName, gitRepo)
 
@@ -285,18 +285,18 @@ class ClonedRepo(
     }
 
     private fun replaceFolder(folderName: String, source: Path, ignoredFolder: Path?) {
-        val buildSrc = location.resolve(folderName)
-        val buildSrcFolder = buildSrc.toFile()
-        if (buildSrcFolder.exists() && buildSrcFolder.isDirectory) {
+        val folder = location.resolve(folderName)
+        val rawFolder = folder.toFile()
+        if (rawFolder.exists() && rawFolder.isDirectory) {
             val toRenameInto = location.resolve(folderName + "-original")
-            println("Renaming ${buildSrc.toAbsolutePath()} into ${toRenameInto.toAbsolutePath()}.")
-            buildSrcFolder.renameTo(toRenameInto.toFile())
+            println("Renaming ${folder.toAbsolutePath()} into ${toRenameInto.toAbsolutePath()}.")
+            rawFolder.renameTo(toRenameInto.toFile())
         }
         println(
             "Copying the files from ${source.toAbsolutePath()} " +
-                    "into ${buildSrc.toAbsolutePath()}."
+                    "into ${folder.toAbsolutePath()}."
         )
-        copyFolder(source, ignoredFolder, buildSrc)
+        copyFolder(source, ignoredFolder, folder)
     }
 
     @Suppress("TooGenericExceptionCaught")
@@ -325,7 +325,6 @@ class ClonedRepo(
             throw IllegalStateException(
                 "Error copying folder `$sourceFolder` to `$destinationFolder`.", e
             )
-
         }
     }
 }
