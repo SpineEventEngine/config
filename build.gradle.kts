@@ -1,7 +1,6 @@
 import io.spine.internal.gradle.SpineRepos
 import io.spine.internal.gradle.cleanFolder
-import io.spine.internal.gradle.BuildSrcTester
-import io.spine.internal.gradle.Branch
+import io.spine.internal.gradle.ConfigTester
 import java.nio.file.Paths
 
 /*
@@ -30,17 +29,15 @@ import java.nio.file.Paths
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// A reference to `buildSrc` to use along with the `BuildSrcTester`.
-// See `BuildSrcTester` below.
-val buildSrc = Paths.get("./buildSrc")
+// A reference to `buildSrc` to use along with the `ConfigTester`.
+val config = Paths.get("./")
 
-// A temp folder to use to checkout the sources of other repositories.
-// See `BuildSrcTester` down below.
+// A temp folder to use to checkout the sources of other repositories with the `ConfigTester`.
 val tempFolder = File("./tmp")
 
 // Creates a Gradle task which checks out and builds the selected Spine repositories
-// with the local version of `config/buildSrc`.
-BuildSrcTester(buildSrc, tasks, tempFolder)
+// with the local version of `config` and `config/buildSrc`.
+ConfigTester(config, tasks, tempFolder)
     .addRepo(SpineRepos.baseTypes)  // Builds `base-types` at `master`.
     .addRepo(SpineRepos.base)       // Builds `base` at `master`.
     .addRepo(SpineRepos.coreJava)   // Builds `base` at `master`.

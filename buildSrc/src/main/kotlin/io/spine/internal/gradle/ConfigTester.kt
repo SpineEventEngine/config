@@ -37,27 +37,31 @@ import org.gradle.api.tasks.TaskContainer
 
 /**
  * A tool to execute the Gradle `build` task in selected Git repositories,
- * with the specific version of [buildSrc] contents.
- *
- * Uses Gradle's [tasks] container to register itself as a Gradle task.
+ * with the local version of [config] contents.
  *
  * Checks out the content of selected repositories into the specified [tempFolder]. The folder
  * is created if it does not exist. By default, uses `./tmp` as a temp folder.
+ *
+ * Replaces the `config` and `buildSrc` folders in the checked out repository by the local versions
+ * of code. If the repository-under-test already contains its own `buildSrc` or `config` folders,
+ * they are NOT overwritten, but rather renamed into `buildSrc-original` and `config-original`
+ * accordingly. This allows further tracing if the build fails.
+ *
+ * Uses Gradle's [tasks] container to register itself as a Gradle task.
  *
  * This tool uses `println`s to print out its state. This is done to simplify the configuration
  * and dependencies.
  *
  * When running the Gradle build for each repository, a [RunBuild] task is used. Error and debug
  * logs of each Gradle test build are written according to this task's implementation.
- *
- * If the selected repository already contains its own `buildSrc` folder, it is NOT overwritten,
- * but rather renamed into `buildSrc-original`. This allows further tracing if the build fails.
  */
-class BuildSrcTester(
-    private val buildSrc: Path,
+class ConfigTester(
+    private val config: Path,
     private val tasks: TaskContainer,
     private val tempFolder: File = File("./tmp")
 ) {
+    private val buildSrc: Path = config.resolve("buildSrc")
+
     /**
      * Git repositories to test.
      */
@@ -68,7 +72,7 @@ class BuildSrcTester(
      *
      * The `master` branch is used as the one to checkout.
      */
-    fun addRepo(repo: URI): BuildSrcTester {
+    fun addRepo(repo: URI): ConfigTester {
         repos.add(GitRepository(repo))
         return this
     }
@@ -76,7 +80,7 @@ class BuildSrcTester(
     /**
      * Adds a test
      */
-    fun addRepo(repo: URI, branch: Branch): BuildSrcTester {
+    fun addRepo(repo: URI, branch: Branch): ConfigTester {
         repos.add(GitRepository(repo, branch))
         return this
     }
@@ -107,9 +111,10 @@ class BuildSrcTester(
     ) {
         tasks.register(executeBuildName) {
             doLast {
-                println(" *** Testing `config/buildSrc` with `${gitRepo.name}`. ***")
-                val localRepo = gitRepo.checkout(tempFolder)
-                localRepo.replaceBuildSrc(buildSrc)
+                println(" *** Testing `config` and `config/buildSrc` with `${gitRepo.name}`. ***")
+                val ignoredFolder = tempFolder.toPath()
+                gitRepo.checkout(tempFolder)
+                    .replaceBuildSrc(buildSrc, ignoredFolder).replaceConfig(config, ignoredFolder)
             }
             finalizedBy(runGradleName)
         }
@@ -249,25 +254,60 @@ class ClonedRepo(
      * The original `buildSrc` folder, if it exists in this cloned repo, is renamed
      * to `buildSrc-original`.
      *
+     * Optionally, takes an [ignoredFolder] which will be excluded from the [source] paths
+     * when copying.
+     *
+     *
      * Returns this instance of `ClonedRepo`, for call chaining.
      */
-    fun replaceBuildSrc(source: Path): ClonedRepo {
-        val buildSrc = location.resolve("buildSrc")
-        val buildSrcFolder = buildSrc.toFile()
-        if (buildSrcFolder.exists() && buildSrcFolder.isDirectory) {
-            val toRenameInto = location.resolve("buildSrc-original")
-            println("Renaming ${buildSrc.toAbsolutePath()} into ${toRenameInto.toAbsolutePath()}.")
-            buildSrcFolder.renameTo(toRenameInto.toFile())
-        }
-        println("Copying the files from ${source.toAbsolutePath()} into ${buildSrc.toAbsolutePath()}.")
-        copyFolder(source, buildSrc)
+    fun replaceBuildSrc(source: Path, ignoredFolder: Path?): ClonedRepo {
+        replaceFolder("buildSrc", source, ignoredFolder)
         return this
     }
 
+    /**
+     * Replaces the `config` folder in this cloned repository by the contents
+     * of the folder defined by the [source].
+     *
+     * [source] is expected to be another `config` folder.
+     *
+     * The original `config` folder, if it exists in this cloned repo, is renamed
+     * to `config-original`.
+     *
+     * Optionally, takes an [ignoredFolder] which will be excluded from the [source] paths
+     * when copying.
+     *
+     * Returns this instance of `ClonedRepo`, for call chaining.
+     */
+    fun replaceConfig(source: Path, ignoredFolder: Path?): ClonedRepo {
+        replaceFolder("config", source, ignoredFolder)
+        return this
+    }
+
+    private fun replaceFolder(folderName: String, source: Path, ignoredFolder: Path?) {
+        val buildSrc = location.resolve(folderName)
+        val buildSrcFolder = buildSrc.toFile()
+        if (buildSrcFolder.exists() && buildSrcFolder.isDirectory) {
+            val toRenameInto = location.resolve(folderName + "-original")
+            println("Renaming ${buildSrc.toAbsolutePath()} into ${toRenameInto.toAbsolutePath()}.")
+            buildSrcFolder.renameTo(toRenameInto.toFile())
+        }
+        println(
+            "Copying the files from ${source.toAbsolutePath()} " +
+                    "into ${buildSrc.toAbsolutePath()}."
+        )
+        copyFolder(source, ignoredFolder, buildSrc)
+    }
+
     @Suppress("TooGenericExceptionCaught")
-    private fun copyFolder(sourceFolder: Path, destinationFolder: Path) {
+    private fun copyFolder(sourceFolder: Path, ignoredFolder: Path?, destinationFolder: Path) {
         try {
             Files.walk(sourceFolder).forEach { file: Path ->
+                if (ignoredFolder != null) {
+                    if (file.toAbsolutePath().startsWith(ignoredFolder.toAbsolutePath())) {
+                        return@forEach
+                    }
+                }
                 try {
                     val destination = destinationFolder.resolve(sourceFolder.relativize(file))
                     if (Files.isDirectory(file)) {
@@ -306,6 +346,7 @@ object SpineRepos {
     val web: URI = library("web")
 
     private fun library(repo: String) = URI(libsOrg + repo)
+    private fun example(repo: String) = URI(examplesOrg + repo)
 }
 
 /**
