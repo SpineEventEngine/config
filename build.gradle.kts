@@ -40,7 +40,7 @@ val tempFolder = File("./tmp")
 ConfigTester(config, tasks, tempFolder)
     .addRepo(SpineRepos.baseTypes)  // Builds `base-types` at `master`.
     .addRepo(SpineRepos.base)       // Builds `base` at `master`.
-    .addRepo(SpineRepos.coreJava)   // Builds `base` at `master`.
+    .addRepo(SpineRepos.coreJava)   // Builds `core-java` at `master`.
 
     // This is how one builds a specific branch of some repository:
     // .addRepo(SpineRepos.coreJava, Branch("grpc-concurrency-fixes"))
