@@ -1,8 +1,3 @@
-import io.spine.internal.gradle.SpineRepos
-import io.spine.internal.gradle.cleanFolder
-import io.spine.internal.gradle.ConfigTester
-import java.nio.file.Paths
-
 /*
  * Copyright 2021, TeamDev. All rights reserved.
  *
@@ -29,28 +24,26 @@ import java.nio.file.Paths
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// A reference to `buildSrc` to use along with the `ConfigTester`.
-val config = Paths.get("./")
+package io.spine.internal.gradle
 
-// A temp folder to use to checkout the sources of other repositories with the `ConfigTester`.
-val tempFolder = File("./tmp")
+import java.io.File
+import java.lang.IllegalArgumentException
+import java.nio.file.Files
+import java.nio.file.Path
 
-// Creates a Gradle task which checks out and builds the selected Spine repositories
-// with the local version of `config` and `config/buildSrc`.
-ConfigTester(config, tasks, tempFolder)
-    .addRepo(SpineRepos.baseTypes)  // Builds `base-types` at `master`.
-    .addRepo(SpineRepos.base)       // Builds `base` at `master`.
-    .addRepo(SpineRepos.coreJava)   // Builds `core-java` at `master`.
-
-    // This is how one builds a specific branch of some repository:
-    // .addRepo(SpineRepos.coreJava, Branch("grpc-concurrency-fixes"))
-
-    // Register the produced task under the selected name to invoke manually upon need.
-    .registerUnder("buildDependants")
-
-// Cleans the temp folder used to checkout the sources from Git.
-tasks.register("clean") {
-    doLast {
-        cleanFolder(tempFolder)
+/**
+ * Cleans the folder and all of its content.
+ */
+fun cleanFolder(folder: File) {
+    if(!folder.exists()) {
+        return
     }
+    if(!folder.isDirectory) {
+        throw IllegalArgumentException("A folder to clean " +
+                "must be supplied: `${folder.absolutePath}`.")
+    }
+    Files.walk(folder.toPath())
+        .sorted(Comparator.reverseOrder())
+        .map(Path::toFile)
+        .forEach(File::delete);
 }
