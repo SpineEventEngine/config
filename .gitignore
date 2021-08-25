@@ -100,3 +100,6 @@ hs_err_pid*
 
 .packages
 pubspec.lock
+
+# Ignore the `tmp` directory used for building dependant repositories.
+/tmp
