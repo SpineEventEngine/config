@@ -1,6 +1,7 @@
 import io.spine.internal.gradle.SpineRepos
 import io.spine.internal.gradle.cleanFolder
 import io.spine.internal.gradle.ConfigTester
+import java.nio.file.Path
 import java.nio.file.Paths
 
 /*
@@ -29,10 +30,10 @@ import java.nio.file.Paths
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// A reference to `buildSrc` to use along with the `ConfigTester`.
-val config = Paths.get("./")
+// A reference to `config` to use along with the `ConfigTester`.
+val config: Path = Paths.get("./")
 
-// A temp folder to use to checkout the sources of other repositories with the `ConfigTester`.
+// A temp folder to use to check out the sources of other repositories with the `ConfigTester`.
 val tempFolder = File("./tmp")
 
 // Creates a Gradle task which checks out and builds the selected Spine repositories
@@ -48,7 +49,7 @@ ConfigTester(config, tasks, tempFolder)
     // Register the produced task under the selected name to invoke manually upon need.
     .registerUnder("buildDependants")
 
-// Cleans the temp folder used to checkout the sources from Git.
+// Cleans the temp folder used to check out the sources from Git.
 tasks.register("clean") {
     doLast {
         cleanFolder(tempFolder)
