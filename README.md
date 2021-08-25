@@ -63,7 +63,7 @@ ConfigTester(config, tasks, tempFolder)
     .registerUnder("buildDependants")
 ```
 
-The [`build.gradle.kts`][build.gradle.kts] is already tuned to test changes against [`base`][base],
+The [`build.gradle.kts`](./build.gradle.kts) is already tuned to test changes against [`base`][base],
 [`base-types`][base-types], and [`core-java`][core-java]. This takes slightly over half an hour,
 depending on the local configuration. If you need to change the list of repositories, please
 update `addRepo()` calls to `ConifigTester`.
@@ -77,8 +77,7 @@ The command to start the build process is:
 
   * [GitHub: Working with submodules](https://blog.github.com/2016-02-01-working-with-submodules/)
   * [Pro Git: Git Tools - Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
-
-[build.gradle.kts]: https://github.com/SpineEventEngine/config/blob/master/build.gradle.kts 
+  
 [base]: https://github.com/SpineEventEngine/base
 [base-types]: https://github.com/SpineEventEngine/base-types
 [core-java]: https://github.com/SpineEventEngine/core-java 
