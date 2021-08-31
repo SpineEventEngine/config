@@ -45,8 +45,8 @@ open class CheckVersionIncrement : DefaultTask() {
     /**
      * The Maven repository in which to look for published artifacts.
      *
-     * We only check the `releases` repository. Artifacts in `snapshots` repository still may be
-     * overridden.
+     * We check both the `releases` and `snapshots` repository. Artifacts in either of these repos
+     * may not be overwritten.
      */
     @Input
     lateinit var repository: Repository
