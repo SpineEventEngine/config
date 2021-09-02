@@ -28,6 +28,7 @@
 import com.github.jk1.license.*
 import com.github.jk1.license.render.ReportRenderer
 import io.spine.internal.gradle.PublishExtension
+import org.gradle.api.Project
 
 /**
  * This script plugin generates the license report for all dependencies used in a project.
@@ -81,8 +82,7 @@ class MarkdownReportRenderer implements ReportRenderer {
         project = data.project
         config = project.licenseReport
         output = new File(config.outputDir, fileName)
-        final publishExtension = project.rootProject.extensions.findByType(PublishExtension.class)
-        final prefix = (publishExtension?.spinePrefix?.getOrElse(false) ?: false) ? "spine-" : ""
+        final prefix = artifactPrefix(project)
         output.text = """
     \n# Dependencies of `${project.group}:$prefix${project.name}:${project.version}`
 """
@@ -93,6 +93,14 @@ class MarkdownReportRenderer implements ReportRenderer {
 """
         output << "\n\nThis report was generated on **${new Date()}**"
         output << " using [Gradle-License-Report plugin](https://github.com/jk1/Gradle-License-Report) by Evgeny Naumenko, licensed under [Apache 2.0 License](https://github.com/jk1/Gradle-License-Report/blob/master/LICENSE)."
+    }
+
+    private static String artifactPrefix(final Project project) {
+        final publishExtension = project.rootProject.extensions.findByType(PublishExtension.class)
+        if (publishExtension?.spinePrefix?.getOrElse(false) == true) {
+            return "spine-"
+        }
+        return ""
     }
 
     private void printDependencies(final ProjectData data) {
