@@ -10,8 +10,6 @@ coverage:
   - generated/*
   - examples/*
   - test/*
-  status:
-    patch: false
 
 comment:
   layout: "header, diff, changes, uncovered"

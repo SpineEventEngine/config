@@ -59,15 +59,18 @@ cp -R CONTRIBUTING.md ..
 echo "Updating Contributor Covenant"
 cp -R CODE_OF_CONDUCT.md ..
 
-echo "Updating CI config files"
-cp .codecov.yml ..
-cp .gitattributes ..
+# Copies the file passes as the first parameter to the upper directory,
+# only if such a file does not exist there.
+function initialize() {
+  if [ ! -f ../"$1" ]; then
+      echo "Creating $1"
+      cp "$1" ..
+  fi
+}
 
-# Copy `.gitignore` only if it's not yet created.
-if [ ! -f ../.gitignore ]; then
-    echo "Creating .gitignore"
-    cp .gitignore ..
-fi
+initialize .gitattributes
+initialize .gitignore
+initialize .codecov.yml
 
 echo "Updating Gradle buildSrc scripts"
 cp -R buildSrc ..
