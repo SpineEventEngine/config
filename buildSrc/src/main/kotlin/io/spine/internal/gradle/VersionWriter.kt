@@ -46,7 +46,7 @@ abstract class WriteVersions : DefaultTask() {
     /**
      * Versions to add to the file.
      *
-     * The map key is a string of the general form `<group ID>_<artifact name>`, and the value
+     * The map key is a string in the format of `<group ID>_<artifact name>`, and the value
      * is the version corresponding to those group ID and artifact name.
      *
      * @see WriteVersions.version
