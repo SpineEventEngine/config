@@ -114,7 +114,12 @@ abstract class WriteVersions : DefaultTask() {
  *
  * The plugin adds one task — `writeVersions`, which generates a `.properties` file with some
  * dependency versions.
+ *
+ * The generated file will be available in classpath of the target project under the name:
+ * `versions-<project name>.properties`, where `<project name>` is the name of the target
+ * Gradle project.
  */
+@Suppress("unused")
 class VersionWriter : Plugin<Project> {
 
     override fun apply(target: Project): Unit = with (target.tasks) {
