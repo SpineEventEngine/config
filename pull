@@ -59,7 +59,7 @@ cp -R CONTRIBUTING.md ..
 echo "Updating Contributor Covenant"
 cp -R CODE_OF_CONDUCT.md ..
 
-# Copies the file passes as the first parameter to the upper directory,
+# Copies the file passed as the first parameter to the upper directory,
 # only if such a file does not exist there.
 function initialize() {
   if [ ! -f ../"$1" ]; then
