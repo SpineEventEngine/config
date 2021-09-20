@@ -73,3 +73,10 @@ tasks.register("build") {
         println("The stub `build` task was called.")
     }
 }
+
+// Same as `build` task above.
+tasks.register("checkVersionIncrement") {
+    doLast {
+        println("The stub `checkVersionIncrement` task was called.")
+    }
+}
