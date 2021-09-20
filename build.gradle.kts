@@ -55,28 +55,3 @@ tasks.register("clean") {
         cleanFolder(tempFolder)
     }
 }
-
-/**
- * This is a stub task to be called by Workflows from the `.github` directory.
- *
- * Not having a task in the root project causes the following error:*
- * ```
- * org.gradle.execution.TaskSelectionException: Task 'build' is ambiguous in root project 'config'. Candidates are: 'buildDependants', 'buildEnvironment'.
- * ```
- * We want to have the `.github` directory the way it is, so that it is used for initialising
- * a repository where `config` is added.
- * This task is a trick to allow workflows to run without applying `java` or another Gradle plugin
- * where a `build` task exists.
- */
-tasks.register("build") {
-    doLast {
-        println("The stub `build` task was called.")
-    }
-}
-
-// Same as `build` task above.
-tasks.register("checkVersionIncrement") {
-    doLast {
-        println("The stub `checkVersionIncrement` task was called.")
-    }
-}
