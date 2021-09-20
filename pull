@@ -59,18 +59,19 @@ cp -R CONTRIBUTING.md ..
 echo "Updating Contributor Covenant"
 cp -R CODE_OF_CONDUCT.md ..
 
-# Copies the file passed as the first parameter to the upper directory,
-# only if such a file does not exist there.
+# Copies the file or directory passed as the first parameter to the upper directory,
+# only if such a file or directory does not exist there.
 function initialize() {
   if [ ! -f ../"$1" ]; then
       echo "Creating $1"
-      cp "$1" ..
+      cp -R "$1" ..
   fi
 }
 
 initialize .gitattributes
 initialize .gitignore
 initialize .codecov.yml
+initialize .github
 
 echo "Updating Gradle buildSrc scripts"
 cp -R buildSrc ..
