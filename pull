@@ -73,6 +73,11 @@ initialize .gitignore
 initialize .codecov.yml
 initialize .github
 
+# Update existing workflows with more recent versions
+echo "Updating GitHub workflows"
+cp -a .github/workflows/. ../.github/workflows
+cp -a .github-workflows/. ../.github/workflows
+
 echo "Updating Gradle buildSrc scripts"
 cp -R buildSrc ..
 
