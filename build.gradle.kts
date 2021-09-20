@@ -1,9 +1,3 @@
-import io.spine.internal.gradle.SpineRepos
-import io.spine.internal.gradle.cleanFolder
-import io.spine.internal.gradle.ConfigTester
-import java.nio.file.Path
-import java.nio.file.Paths
-
 /*
  * Copyright 2021, TeamDev. All rights reserved.
  *
@@ -30,6 +24,12 @@ import java.nio.file.Paths
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import io.spine.internal.gradle.ConfigTester
+import io.spine.internal.gradle.SpineRepos
+import io.spine.internal.gradle.cleanFolder
+import java.nio.file.Path
+import java.nio.file.Paths
+
 // A reference to `config` to use along with the `ConfigTester`.
 val config: Path = Paths.get("./")
 
@@ -53,5 +53,23 @@ ConfigTester(config, tasks, tempFolder)
 tasks.register("clean") {
     doLast {
         cleanFolder(tempFolder)
+    }
+}
+
+/**
+ * This is a stub task to be called by Workflows from the `.github` directory.
+ *
+ * Not having a task in the root project causes the following error:*
+ * ```
+ * org.gradle.execution.TaskSelectionException: Task 'build' is ambiguous in root project 'config'. Candidates are: 'buildDependants', 'buildEnvironment'.
+ * ```
+ * We want to have the `.github` directory the way it is, so that it is used for initialising
+ * a repository where `config` is added.
+ * This task is a trick to allow workflows to run without applying `java` or another Gradle plugin
+ * where a `build` task exists.
+ */
+tasks.register("build") {
+    doLast {
+        println("The stub `build` task was called.")
     }
 }
