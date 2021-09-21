@@ -73,6 +73,13 @@ The command to start the build process is:
 ./gradlew clean buildDependants 
 ```
 
+## `.github-workflows` directory
+
+This directory contains GitHub Workflow scripts that do not apply to the `config` repository, and
+as such cannot be placed under `.github/workflows`.
+
+These scripts are copied by the `pull` script when `config` is applied to a new repository.
+
 ## Further reading
 
   * [GitHub: Working with submodules](https://blog.github.com/2016-02-01-working-with-submodules/)

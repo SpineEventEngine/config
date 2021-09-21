@@ -1,9 +1,3 @@
-import io.spine.internal.gradle.SpineRepos
-import io.spine.internal.gradle.cleanFolder
-import io.spine.internal.gradle.ConfigTester
-import java.nio.file.Path
-import java.nio.file.Paths
-
 /*
  * Copyright 2021, TeamDev. All rights reserved.
  *
@@ -29,6 +23,12 @@ import java.nio.file.Paths
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import io.spine.internal.gradle.ConfigTester
+import io.spine.internal.gradle.SpineRepos
+import io.spine.internal.gradle.cleanFolder
+import java.nio.file.Path
+import java.nio.file.Paths
 
 // A reference to `config` to use along with the `ConfigTester`.
 val config: Path = Paths.get("./")
