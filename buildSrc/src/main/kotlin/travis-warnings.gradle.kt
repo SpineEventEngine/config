@@ -33,8 +33,10 @@ import org.gradle.kotlin.dsl.named
 object TravisLogs {
 
     /**
-     * Specific setup for a Travis build, which prevents appearing of warning messages
-     * in build logs. It is expected that warnings are viewed and analyzed in the local build logs.
+     * Specific setup for a Travis build, which prevents warning messages related to
+     * `javadoc` tasks in build logs.
+     *
+     * It is expected that warnings are viewed and analyzed during local builds.
      */
     fun configure(p: Project) {
         //
