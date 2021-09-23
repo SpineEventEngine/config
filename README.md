@@ -33,7 +33,7 @@ project. The following files will be copied:
  
 ## Adding credentials to a new repository
 
-For details, see [this page](https://github.com/SpineEventEngine/config/wiki/Encrypting-Credential-Files-for-Travis).
+For details, please see [this page][travis-creds].
 
 ## Checking updated configuration
 
@@ -87,4 +87,5 @@ These scripts are copied by the `pull` script when `config` is applied to a new 
   
 [base]: https://github.com/SpineEventEngine/base
 [base-types]: https://github.com/SpineEventEngine/base-types
-[core-java]: https://github.com/SpineEventEngine/core-java 
+[core-java]: https://github.com/SpineEventEngine/core-java
+[travis-creds]: https://github.com/SpineEventEngine/config/wiki/Encrypting-Credential-Files-for-Travis 
