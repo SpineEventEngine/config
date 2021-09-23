@@ -62,7 +62,7 @@ import org.gradle.kotlin.dsl.property
  *
  * Users may supply [allowInternalJavadoc][UpdateGitHubPagesExtension.allowInternalJavadoc] option,
  * which if `true`, includes the documentation for types marked `@Internal`.
- * By default, this option is `false.
+ * By default, this option is `false`.
  *
  * Usage:
  * ```
