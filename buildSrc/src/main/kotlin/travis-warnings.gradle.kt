@@ -41,7 +41,6 @@ object TravisLogs {
         val isTravis = System.getenv("TRAVIS") == "true"
         if (isTravis) {
             // Set the maximum number of Javadoc warnings to print.
-            //
             // If the parameter value is zero, all warnings will be printed.
             p.tasks.named<Javadoc>("javadoc") {
                 val opt = options
