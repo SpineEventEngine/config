@@ -38,7 +38,7 @@ object TravisLogs {
      *
      * It is expected that warnings are viewed and analyzed during local builds.
      */
-    fun configure(p: Project) {
+    fun hideJavadocWarnings(p: Project) {
         //
         val isTravis = System.getenv("TRAVIS") == "true"
         if (isTravis) {
