@@ -39,14 +39,10 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.add
-import org.gradle.kotlin.dsl.apply
-import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.property
 
 /**
  * Registers the `updateGitHubPages` task which performs the update of the GitHub Pages
@@ -346,58 +342,4 @@ class UpdateGitHubPages : Plugin<Project> {
     private fun isSnapshot(version: String): Boolean {
         return version.contains("snapshot", true)
     }
-}
-
-/**
- * The extension for configuring the `UpdateGitHubPages` plugin.
- */
-class UpdateGitHubPagesExtension
-private constructor(
-
-    /**
-     * Tells whether the types marked `@Internal` should be included into the doc generation.
-     */
-    val allowInternalJavadoc: Property<Boolean>,
-
-    /**
-     * The root folder of the repository to which the updated `Project` belongs.
-     */
-    var rootFolder: Property<File>
-) {
-
-    internal companion object {
-        fun create(project: Project): UpdateGitHubPagesExtension {
-            val factory = project.objects
-            return UpdateGitHubPagesExtension(
-                allowInternalJavadoc = factory.property(Boolean::class),
-                rootFolder = factory.property(File::class)
-            )
-        }
-    }
-
-    /**
-     * Returns `true` if the `@Internal`-annotated types should be included into the generated
-     * documentation, `false` otherwise.
-     */
-    fun allowInternalJavadoc(): Boolean {
-        return allowInternalJavadoc.get()
-    }
-
-    /**
-     * Returns the local root folder of the repository, to which the handled Gradle Project belongs.
-     */
-    fun rootFolder(): File {
-        return rootFolder.get()
-    }
-}
-
-/**
- * Configures the `updateGitHubPages` extension.
- */
-@Suppress("unused")
-fun Project.updateGitHubPages(action: UpdateGitHubPagesExtension.() -> Unit) {
-    apply<UpdateGitHubPages>()
-
-    val extension = extensions.getByType(UpdateGitHubPagesExtension::class)
-    extension.action()
 }
