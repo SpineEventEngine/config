@@ -187,10 +187,8 @@ class UpdateGitHubPages : Plugin<Project> {
     }
 
     private fun cleanup() {
-        println("Deleting the temp folders.")
         val folders = listOf(checkoutTempFolder, javadocOutputPath)
         folders.forEach {
-            println("Deleting `${it.toAbsolutePath()}`.")
             it.toFile().deleteRecursively()
         }
     }
