@@ -31,8 +31,14 @@ import java.io.File
 import java.io.InputStream
 import java.io.StringWriter
 import java.lang.System.lineSeparator
+import java.net.URI
+import java.nio.file.FileSystem
 import java.nio.file.Files.createTempDirectory
+import java.nio.file.LinkOption
 import java.nio.file.Path
+import java.nio.file.WatchEvent
+import java.nio.file.WatchKey
+import java.nio.file.WatchService
 import java.util.*
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -103,7 +109,20 @@ class UpdateGitHubPages : Plugin<Project> {
      */
     private lateinit var rootFolder: File
 
-    private val tempFolders: MutableList<Path> = mutableListOf()
+    /**
+     * Path to the temp folder used to gather the Javadoc output
+     * before submitting it to the GitHub Pages update.
+     *
+     * Initialized in [copyJavadoc] task to prevent the premature creation of folders.
+     */
+    private val javadocOutputPath = LazyTempPath("javadoc")
+
+    /**
+     * Path to the temp folder used checkout the original GitHub Pages branch.
+     *
+     * Initialized in [updateGitHubPages][taskName] task to avoid the premature creation of folders.
+     */
+    private val checkoutTempFolder = LazyTempPath("repoTemp")
 
     companion object {
         /**
@@ -151,11 +170,8 @@ class UpdateGitHubPages : Plugin<Project> {
      * If the project version says it is a snapshot, the plugin is not applied.
      */
     override fun apply(project: Project) {
-
         val extension = UpdateGitHubPagesExtension.create(project)
         project.extensions.add(UpdateGitHubPagesExtension::class, "configureGitHubPages", extension)
-
-
         project.afterEvaluate {
             val projectVersion = project.version.toString()
             val isSnapshot = isSnapshot(projectVersion)
@@ -170,50 +186,35 @@ class UpdateGitHubPages : Plugin<Project> {
         }
     }
 
-    private fun registerTasks(
-        extension: UpdateGitHubPagesExtension,
-        project: Project
-    ) {
+    private fun registerTasks(extension: UpdateGitHubPagesExtension, project: Project) {
         val includeInternal = extension.allowInternalJavadoc()
         rootFolder = extension.rootFolder()
         val tasks = project.tasks
         if (!includeInternal) {
             InternalJavadocFilter.registerTask(noInternalJavadoc, project)
         }
-        val javadocOutputPath = newTempFolder("javadoc")
-        tempFolders.add(javadocOutputPath);
-        registerCopyJavadoc(includeInternal, copyJavadoc, tasks, javadocOutputPath);
-
-        val checkoutTempFolder = newTempFolder("repoTemp")
-        tempFolders.add(checkoutTempFolder);
-        val updatePagesTask =
-            registerUpdateTask(
-                project,
-                javadocOutputPath,
-                checkoutTempFolder
-            )
-
+        registerCopyJavadoc(includeInternal, copyJavadoc, tasks);
+        val updatePagesTask = registerUpdateTask(project)
         updatePagesTask.configure {
             dependsOn(copyJavadoc)
         }
     }
 
-    private fun registerUpdateTask(
-        project: Project,
-        javadocOutputPath: Path,
-        checkoutTempFolder: Path
-    ): TaskProvider<Task> {
+    private fun registerUpdateTask(project: Project): TaskProvider<Task> {
         return project.tasks.register(taskName) {
-            try {
-                updateGhPages(checkoutTempFolder, project, javadocOutputPath)
-            } finally {
-                cleanup(tempFolders)
+            doLast {
+                try {
+                    updateGhPages(checkoutTempFolder, project, javadocOutputPath)
+                } finally {
+                    cleanup()
+                }
             }
         }
     }
 
-    private fun cleanup(folders: List<Path>) {
+    private fun cleanup() {
         println("Deleting the temp folders.")
+        val folders = listOf(checkoutTempFolder, javadocOutputPath)
         folders.forEach {
             println("Deleting `${it.toAbsolutePath()}`.")
             it.toFile().deleteRecursively()
@@ -253,17 +254,17 @@ class UpdateGitHubPages : Plugin<Project> {
     private fun registerCopyJavadoc(
         allowInternalJavadoc: Boolean,
         taskName: String,
-        tasks: TaskContainer,
-        javadocDir: Path
+        tasks: TaskContainer
     ) {
         tasks.register(taskName, Copy::class.java) {
-            if (allowInternalJavadoc) {
-                from(tasks.javadocTask(noInternalJavadoc))
-            } else {
-                from(tasks.javadocTask(defaultJavadoc))
+            doLast {
+                if (allowInternalJavadoc) {
+                    from(tasks.javadocTask(noInternalJavadoc))
+                } else {
+                    from(tasks.javadocTask(defaultJavadoc))
+                }
+                into(javadocOutputPath)
             }
-
-            into(javadocDir)
         }
     }
 
@@ -544,7 +545,7 @@ private constructor(
             val factory = project.objects
             return UpdateGitHubPagesExtension(
                 allowInternalJavadoc = factory.property(Boolean::class),
-                rootFolder = factory.property(File::class),
+                rootFolder = factory.property(File::class)
             )
         }
     }
@@ -574,5 +575,128 @@ fun Project.configureGitHubPages(action: UpdateGitHubPagesExtension.() -> Unit) 
 
     val extension = extensions.getByType(UpdateGitHubPagesExtension::class)
     extension.action()
+}
+
+/**
+ * A path to a temporary folder, which is not created until it is really used.
+ */
+class LazyTempPath(private val prefix: String) : Path {
+
+    private lateinit var tempPath: Path
+
+    private fun delegate() : Path {
+        if(!::tempPath.isInitialized) {
+            tempPath = newTempFolder(prefix)
+        }
+        return tempPath
+    }
+
+    override fun compareTo(other: Path?): Int {
+        return delegate().compareTo(other)
+    }
+
+    override fun iterator(): MutableIterator<Path> {
+        return delegate().iterator()
+    }
+
+    override fun register(
+        watcher: WatchService?,
+        events: Array<out WatchEvent.Kind<*>>?,
+        vararg modifiers: WatchEvent.Modifier?
+    ): WatchKey {
+        return delegate().register(watcher,events, *modifiers)
+    }
+
+    override fun register(watcher: WatchService?, vararg events: WatchEvent.Kind<*>?): WatchKey {
+        return delegate().register(watcher, *events)
+    }
+
+    override fun getFileSystem(): FileSystem {
+        return delegate().fileSystem
+    }
+
+    override fun isAbsolute(): Boolean {
+        return delegate().isAbsolute
+    }
+
+    override fun getRoot(): Path {
+        return delegate().root
+    }
+
+    override fun getFileName(): Path {
+        return delegate().fileName
+    }
+
+    override fun getParent(): Path {
+        return delegate().parent
+    }
+
+    override fun getNameCount(): Int {
+        return delegate().nameCount
+    }
+
+    override fun getName(index: Int): Path {
+        return delegate().getName(index)
+    }
+
+    override fun subpath(beginIndex: Int, endIndex: Int): Path {
+        return delegate().subpath(beginIndex, endIndex)
+    }
+
+    override fun startsWith(other: Path): Boolean {
+        return delegate().startsWith(other)
+    }
+
+    override fun startsWith(other: String): Boolean {
+        return delegate().startsWith(other)
+    }
+
+    override fun endsWith(other: Path): Boolean {
+        return delegate().endsWith(other)
+    }
+
+    override fun endsWith(other: String): Boolean {
+        return delegate().endsWith(other)
+    }
+
+    override fun normalize(): Path {
+        return delegate().normalize()
+    }
+
+    override fun resolve(other: Path): Path {
+        return delegate().resolve(other)
+    }
+
+    override fun resolve(other: String): Path {
+        return delegate().resolve(other)
+    }
+
+    override fun resolveSibling(other: Path): Path {
+        return delegate().resolveSibling(other)
+    }
+
+    override fun resolveSibling(other: String): Path {
+        return delegate().resolveSibling(other)
+    }
+
+    override fun relativize(other: Path): Path {
+        return delegate().relativize(other)
+    }
+
+    override fun toUri(): URI {
+        return delegate().toUri()
+    }
+
+    override fun toAbsolutePath(): Path {
+        return delegate().toAbsolutePath()
+    }
+
+    override fun toRealPath(vararg options: LinkOption?): Path {
+        return delegate().toRealPath(*options)
+    }
+
+    override fun toFile(): File {
+        return delegate().toFile()
+    }
 }
 
