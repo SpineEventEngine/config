@@ -26,34 +26,19 @@
 
 package io.spine.internal.gradle
 
-import com.google.common.base.Joiner
+import io.spine.internal.gradle.fs.LazyTempPath
 import java.io.File
-import java.io.InputStream
-import java.io.StringWriter
 import java.lang.System.lineSeparator
-import java.net.URI
-import java.nio.file.FileSystem
-import java.nio.file.Files.createTempDirectory
-import java.nio.file.LinkOption
 import java.nio.file.Path
-import java.nio.file.WatchEvent
-import java.nio.file.WatchKey
-import java.nio.file.WatchService
-import java.util.*
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
-import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.api.tasks.javadoc.Javadoc
-import org.gradle.external.javadoc.StandardJavadocDocletOptions
 import org.gradle.kotlin.dsl.add
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.getByType
@@ -112,15 +97,11 @@ class UpdateGitHubPages : Plugin<Project> {
     /**
      * Path to the temp folder used to gather the Javadoc output
      * before submitting it to the GitHub Pages update.
-     *
-     * Initialized in [copyJavadoc] task to prevent the premature creation of folders.
      */
     private val javadocOutputPath = LazyTempPath("javadoc")
 
     /**
      * Path to the temp folder used checkout the original GitHub Pages branch.
-     *
-     * Initialized in [updateGitHubPages][taskName] task to avoid the premature creation of folders.
      */
     private val checkoutTempFolder = LazyTempPath("repoTemp")
 
@@ -134,17 +115,6 @@ class UpdateGitHubPages : Plugin<Project> {
          * The name of the helper task to gather the generated Javadoc before updating GitHub Pages.
          */
         const val copyJavadoc = "copyJavadoc"
-
-        /**
-         * The name of the helper task which configures the Javadoc processing
-         * to exclude `@Internal` types.
-         */
-        const val noInternalJavadoc = "noInternalJavadoc"
-
-        /**
-         * The name of the default Gradle Javadoc task.
-         */
-        const val defaultJavadoc = "javadoc"
 
         /**
          * The name of the environment variable that contains the email to use for authoring
@@ -191,7 +161,7 @@ class UpdateGitHubPages : Plugin<Project> {
         rootFolder = extension.rootFolder()
         val tasks = project.tasks
         if (!includeInternal) {
-            InternalJavadocFilter.registerTask(noInternalJavadoc, project)
+            InternalJavadocFilter.registerTask(project)
         }
         registerCopyJavadoc(includeInternal, copyJavadoc, tasks);
         val updatePagesTask = registerUpdateTask(project)
@@ -259,9 +229,9 @@ class UpdateGitHubPages : Plugin<Project> {
         tasks.register(taskName, Copy::class.java) {
             doLast {
                 if (allowInternalJavadoc) {
-                    from(tasks.javadocTask(noInternalJavadoc))
+                    from(tasks.javadocTask(InternalJavadocFilter.taskName))
                 } else {
-                    from(tasks.javadocTask(defaultJavadoc))
+                    from(tasks.javadocTask(JavadocTask.name))
                 }
                 into(javadocOutputPath)
             }
@@ -377,153 +347,6 @@ class UpdateGitHubPages : Plugin<Project> {
 }
 
 /**
- * Executor of CLI commands.
- *
- * Uses the passed [workingFolder] as the directory in which the commands are executed.
- */
-class Cli(private val workingFolder: File) {
-
-    /**
-     * Executes the given terminal command and retrieves the command output.
-     *
-     * <p>{@link Runtime#exec(String[], String[], File) Executes} the given {@code String} array as
-     * a CLI command. If the execution is successful, returns the command output. Throws
-     * an {@link IllegalStateException} otherwise.
-     *
-     * @param command the command to execute
-     * @return the command line output
-     * @throws IllegalStateException upon an execution error
-     */
-    fun execute(vararg command: String): String {
-        val outWriter = StringWriter()
-        val errWriter = StringWriter()
-
-        val process = ProcessBuilder(*command)
-            .directory(workingFolder)
-            .redirectOutput(ProcessBuilder.Redirect.PIPE)
-            .redirectError(ProcessBuilder.Redirect.PIPE)
-            .start()
-
-        process.inputStream!!.pourTo(outWriter)
-        process.errorStream!!.pourTo(errWriter)
-        val exitCode = process.waitFor()
-
-        if (exitCode == 0) {
-            return outWriter.toString()
-        } else {
-            val cmdAsString = Joiner.on(" ").join(command.iterator())
-            val errorMsg = "Command `$cmdAsString` finished with exit code $exitCode:" +
-                    " ${lineSeparator()}$errWriter" +
-                    " ${lineSeparator()}$outWriter."
-            throw IllegalStateException(errorMsg)
-        }
-    }
-}
-
-/**
- * A helper routine which configures the GitHub Pages updater to exclude `@Internal` types.
- */
-object InternalJavadocFilter {
-
-    /**
-     * The name of the custom configuration in scope of which the exclusion of `@Internal` types
-     * is performed.
-     */
-    private const val excludeDocletConfig = "excludeInternalDoclet"
-
-    /**
-     * Creates a custom Javadoc task for the [project] which excludes the the types
-     * annotated as `@Internal`.
-     *
-     * The task is registered under the specified [taskName].
-     */
-    fun registerTask(taskName: String, project: Project) {
-        val excludeInternalDoclet = registerConfiguration(project)
-        appendCustomJavadocTask(taskName, project, excludeInternalDoclet)
-    }
-
-    private fun registerConfiguration(project: Project): Configuration {
-        val configurations = project.configurations
-        val excludeInternalDoclet = configurations.create(excludeDocletConfig)
-        val projectVersion = project.version.toString()
-        project.dependencies.add(
-            excludeInternalDoclet.name,
-            "io.spine.tools:spine-javadoc-filter:$projectVersion"
-        )
-        return excludeInternalDoclet
-    }
-
-    private fun appendCustomJavadocTask(
-        taskName: String,
-        project: Project,
-        excludeInternalDoclet: Configuration
-    ) {
-        val tasks = project.tasks
-        val javadocTask = tasks.javadocTask(UpdateGitHubPages.defaultJavadoc)
-        tasks.register(taskName, Javadoc::class.java) {
-
-            source = project.sourceSets().getByName("main").allJava.filter {
-                !it.absolutePath.contains("generated")
-            }.asFileTree
-
-            classpath = javadocTask.classpath
-
-            options {
-                encoding = JavadocConfig.encoding.name
-
-                // Doclet fully qualified name.
-                doclet = "io.spine.tools.javadoc.ExcludeInternalDoclet"
-
-                // Path to the JAR containing the doclet.
-                docletpath = excludeInternalDoclet.files.toList()
-            }
-
-            val docletOptions = options as StandardJavadocDocletOptions
-            docletOptions.tags = JavadocConfig.tags.map { it.toString() }
-        }
-    }
-}
-
-/**
- * Obtains the Java plugin extension of the project.
- */
-fun Project.javaPluginExtension(): JavaPluginExtension =
-    extensions.getByType(JavaPluginExtension::class.java)
-
-/**
- * Obtains source set container of the Java project.
- */
-fun Project.sourceSets(): SourceSetContainer = javaPluginExtension().sourceSets
-
-/**
- * Finds a [Javadoc] Gradle task by the passed name.
- */
-fun TaskContainer.javadocTask(named: String) = this.getByName(named) as Javadoc
-
-/**
- * Creates a temp folder with the passed [prefix] and configures it to be deleted on JVM exit.
- */
-private fun newTempFolder(prefix: String): Path {
-    val javadocDir = createTempDirectory(prefix)
-    println("Creating the temp directory at `${javadocDir.toAbsolutePath()}`")
-    javadocDir.toFile().deleteOnExit()
-    return javadocDir
-}
-
-/**
- * Asynchronously reads all lines from this [InputStream] and appends them
- * to the passed [StringWriter].
- */
-fun InputStream.pourTo(dest: StringWriter) {
-    Thread {
-        val sc = Scanner(this)
-        while (sc.hasNextLine()) {
-            dest.append(sc.nextLine())
-        }
-    }.start()
-}
-
-/**
  * The extension for configuring the `UpdateGitHubPages` plugin.
  */
 class UpdateGitHubPagesExtension
@@ -576,127 +399,3 @@ fun Project.configureGitHubPages(action: UpdateGitHubPagesExtension.() -> Unit) 
     val extension = extensions.getByType(UpdateGitHubPagesExtension::class)
     extension.action()
 }
-
-/**
- * A path to a temporary folder, which is not created until it is really used.
- */
-class LazyTempPath(private val prefix: String) : Path {
-
-    private lateinit var tempPath: Path
-
-    private fun delegate() : Path {
-        if(!::tempPath.isInitialized) {
-            tempPath = newTempFolder(prefix)
-        }
-        return tempPath
-    }
-
-    override fun compareTo(other: Path?): Int {
-        return delegate().compareTo(other)
-    }
-
-    override fun iterator(): MutableIterator<Path> {
-        return delegate().iterator()
-    }
-
-    override fun register(
-        watcher: WatchService?,
-        events: Array<out WatchEvent.Kind<*>>?,
-        vararg modifiers: WatchEvent.Modifier?
-    ): WatchKey {
-        return delegate().register(watcher,events, *modifiers)
-    }
-
-    override fun register(watcher: WatchService?, vararg events: WatchEvent.Kind<*>?): WatchKey {
-        return delegate().register(watcher, *events)
-    }
-
-    override fun getFileSystem(): FileSystem {
-        return delegate().fileSystem
-    }
-
-    override fun isAbsolute(): Boolean {
-        return delegate().isAbsolute
-    }
-
-    override fun getRoot(): Path {
-        return delegate().root
-    }
-
-    override fun getFileName(): Path {
-        return delegate().fileName
-    }
-
-    override fun getParent(): Path {
-        return delegate().parent
-    }
-
-    override fun getNameCount(): Int {
-        return delegate().nameCount
-    }
-
-    override fun getName(index: Int): Path {
-        return delegate().getName(index)
-    }
-
-    override fun subpath(beginIndex: Int, endIndex: Int): Path {
-        return delegate().subpath(beginIndex, endIndex)
-    }
-
-    override fun startsWith(other: Path): Boolean {
-        return delegate().startsWith(other)
-    }
-
-    override fun startsWith(other: String): Boolean {
-        return delegate().startsWith(other)
-    }
-
-    override fun endsWith(other: Path): Boolean {
-        return delegate().endsWith(other)
-    }
-
-    override fun endsWith(other: String): Boolean {
-        return delegate().endsWith(other)
-    }
-
-    override fun normalize(): Path {
-        return delegate().normalize()
-    }
-
-    override fun resolve(other: Path): Path {
-        return delegate().resolve(other)
-    }
-
-    override fun resolve(other: String): Path {
-        return delegate().resolve(other)
-    }
-
-    override fun resolveSibling(other: Path): Path {
-        return delegate().resolveSibling(other)
-    }
-
-    override fun resolveSibling(other: String): Path {
-        return delegate().resolveSibling(other)
-    }
-
-    override fun relativize(other: Path): Path {
-        return delegate().relativize(other)
-    }
-
-    override fun toUri(): URI {
-        return delegate().toUri()
-    }
-
-    override fun toAbsolutePath(): Path {
-        return delegate().toAbsolutePath()
-    }
-
-    override fun toRealPath(vararg options: LinkOption?): Path {
-        return delegate().toRealPath(*options)
-    }
-
-    override fun toFile(): File {
-        return delegate().toFile()
-    }
-}
-
