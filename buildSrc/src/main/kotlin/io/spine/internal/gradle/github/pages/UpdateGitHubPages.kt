@@ -167,7 +167,7 @@ class UpdateGitHubPages : Plugin<Project> {
         if (!includeInternal) {
             InternalJavadocFilter.registerTask(project)
         }
-        registerCopyJavadoc(includeInternal, copyJavadoc, tasks);
+        registerCopyJavadoc(includeInternal, copyJavadoc, tasks)
         val updatePagesTask = registerUpdateTask(project)
         updatePagesTask.configure {
             dependsOn(copyJavadoc)
