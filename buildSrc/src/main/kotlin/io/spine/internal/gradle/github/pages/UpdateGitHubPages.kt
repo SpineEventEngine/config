@@ -24,9 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.gradle
+package io.spine.internal.gradle.github.pages
 
+import io.spine.internal.gradle.Cli
+import io.spine.internal.gradle.InternalJavadocFilter
+import io.spine.internal.gradle.JavadocTask
 import io.spine.internal.gradle.fs.LazyTempPath
+import io.spine.internal.gradle.javadocTask
 import java.io.File
 import java.lang.System.lineSeparator
 import java.nio.file.Path
