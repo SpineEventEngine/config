@@ -61,7 +61,7 @@ import org.gradle.kotlin.dsl.property
  *
  * Usage:
  * ```
- *      configureGitHubPages {
+ *      updateGitHubPages {
  *
  *          // Include `@Internal`-annotated types.
  *          allowInternalJavadoc.set(true)
@@ -145,7 +145,7 @@ class UpdateGitHubPages : Plugin<Project> {
      */
     override fun apply(project: Project) {
         val extension = UpdateGitHubPagesExtension.create(project)
-        project.extensions.add(UpdateGitHubPagesExtension::class, "configureGitHubPages", extension)
+        project.extensions.add(UpdateGitHubPagesExtension::class, "updateGitHubPages", extension)
         project.afterEvaluate {
             val projectVersion = project.version.toString()
             val isSnapshot = isSnapshot(projectVersion)
@@ -392,10 +392,10 @@ private constructor(
 }
 
 /**
- * Configures the `configureGitHubPages` extension.
+ * Configures the `updateGitHubPages` extension.
  */
 @Suppress("unused")
-fun Project.configureGitHubPages(action: UpdateGitHubPagesExtension.() -> Unit) {
+fun Project.updateGitHubPages(action: UpdateGitHubPagesExtension.() -> Unit) {
     apply<UpdateGitHubPages>()
 
     val extension = extensions.getByType(UpdateGitHubPagesExtension::class)
