@@ -126,11 +126,8 @@ class VersionWriter : Plugin<Project> {
         val task = register("writeVersions", WriteVersions::class.java) {
             versionsFileLocation.convention(project.layout.buildDirectory.dir(name))
             includeOwnVersion()
-            @Suppress("SimpleRedundantLet")
-                // Decrease the number of null-safe calls (`?.`).
-            extensions.findByType<JavaPluginExtension>()?.let {
-                it.sourceSets
-                    .getByName("main")
+            project.extensions.findByType<JavaPluginExtension>()!!.apply {
+                sourceSets.getByName("main")
                     .resources
                     .srcDir(versionsFileLocation)
             }
