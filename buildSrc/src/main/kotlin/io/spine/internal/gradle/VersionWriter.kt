@@ -126,11 +126,10 @@ class VersionWriter : Plugin<Project> {
         val task = register("writeVersions", WriteVersions::class.java) {
             versionsFileLocation.convention(project.layout.buildDirectory.dir(name))
             includeOwnVersion()
-            project.extensions.findByType<JavaPluginExtension>()!!.apply {
-                sourceSets.getByName("main")
-                    .resources
-                    .srcDir(versionsFileLocation)
-            }
+            project.sourceSets
+                .getByName("main")
+                .resources
+                .srcDir(versionsFileLocation)
         }
         getByName("processResources").dependsOn(task)
     }
