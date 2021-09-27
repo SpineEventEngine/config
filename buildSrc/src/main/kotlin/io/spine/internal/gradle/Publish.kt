@@ -192,10 +192,7 @@ private fun Project.prepareTasks(publish: Task, checkCredentials: Task) {
 }
 
 private fun Project.setUpDefaultArtifacts() {
-    val javaExtension: JavaPluginExtension =
-        project.extensions.getByType(JavaPluginExtension::class.java)
-    val sourceSets = javaExtension.sourceSets
-
+    val sourceSets = this.sourceSets
     val sourceJar = tasks.createIfAbsent(
         artifactTask = sourceJar,
         from = sourceSets["main"].allSource,
