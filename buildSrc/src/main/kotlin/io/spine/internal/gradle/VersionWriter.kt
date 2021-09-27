@@ -132,6 +132,6 @@ class VersionWriter : Plugin<Project> {
                     .srcDir(versionsFileLocation)
             }
         }
-        findByName("processResources")?.dependsOn(task)
+        getByName("processResources").dependsOn(task)
     }
 }
