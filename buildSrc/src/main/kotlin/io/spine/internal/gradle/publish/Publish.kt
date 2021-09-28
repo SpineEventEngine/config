@@ -114,27 +114,3 @@ class Publish : Plugin<Project> {
     }
 }
 
-/**
- * Obtains an [Iterable] containing artifacts that to do have the same `extension` and `classifier`.
- *
- * Such a situation may occur when applying both `com.gradle.plugin-publish` plugin AND
- * `spinePublishing` in the same project. `com.gradle.plugin-publish` adds `sources` and `javadoc`
- * artifacts, and we do it too in [Project.setUpDefaultArtifacts].
- *
- * At the time when we add artifacts in [Project.setUpDefaultArtifacts], those added by
- * `com.gradle.plugin-publish` are not yet visible to our code. Hence, we have to perform
- * the deduplication before we set the artifacts in [PublishingExtension.createMavenPublication].
- */
-internal fun PublishArtifactSet.deduplicate(): Iterable<PublishArtifact> {
-    val deduplicated = mutableSetOf<PublishArtifact>()
-    for (artifact in this) {
-        deduplicated.stream()
-            .filter {
-                artifact.extension == it.extension && artifact.classifier == it.classifier
-            }.findFirst()
-            .ifPresent(deduplicated::remove)
-        deduplicated.add(artifact)
-    }
-    return deduplicated
-}
-
