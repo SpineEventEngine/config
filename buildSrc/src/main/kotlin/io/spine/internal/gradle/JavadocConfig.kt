@@ -28,8 +28,6 @@ package io.spine.internal.gradle
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
@@ -117,7 +115,7 @@ object InternalJavadocFilter {
         val javadocTask = tasks.javadocTask(JavadocTask.name)
         tasks.register(taskName, Javadoc::class.java) {
 
-            source = project.sourceSets().getByName("main").allJava.filter {
+            source = project.sourceSets.getByName("main").allJava.filter {
                 !it.absolutePath.contains("generated")
             }.asFileTree
 
@@ -143,15 +141,3 @@ object InternalJavadocFilter {
  * Finds a [Javadoc] Gradle task by the passed name.
  */
 fun TaskContainer.javadocTask(named: String) = this.getByName(named) as Javadoc
-
-/**
- * Obtains the Java plugin extension of the project.
- */
-fun Project.javaPluginExtension(): JavaPluginExtension =
-    extensions.getByType(JavaPluginExtension::class.java)
-
-/**
- * Obtains source set container of the Java project.
- */
-fun Project.sourceSets(): SourceSetContainer = javaPluginExtension().sourceSets
-
