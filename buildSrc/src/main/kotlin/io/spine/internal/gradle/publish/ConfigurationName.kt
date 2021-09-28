@@ -24,17 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.gradle
+package io.spine.internal.gradle.publish
 
-import io.spine.internal.dependency.AssertK
-import io.spine.internal.dependency.BouncyCastle
-import io.spine.internal.dependency.JavaJwt
-import io.spine.internal.dependency.Klaxon
-
-@Suppress("unused")
-object Publishing {
-    const val klaxon = Klaxon.lib
-    const val oauthJwt = JavaJwt.lib
-    const val bouncyCastlePkcs = BouncyCastle.libPkcsJdk15
-    const val assertK = AssertK.libJvm
+/**
+ * Popular names of Gradle configurations.
+ */
+internal object ConfigurationName {
+    const val archives = "archives"
 }
