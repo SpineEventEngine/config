@@ -80,9 +80,12 @@ echo "Updating GitHub workflows"
 cp -a .github/workflows/. ../.github/workflows
 cp -a .github-workflows/. ../.github/workflows
 
-echo "Updating Gradle buildSrc scripts"
+echo "Updating Gradle 'buildSrc' scripts"
 cp -R buildSrc ..
 
 cd ..
+
+echo "Adding 'buildSrc' sources to Git..."
+git add ./buildSrc/src
 
 echo "Done."
