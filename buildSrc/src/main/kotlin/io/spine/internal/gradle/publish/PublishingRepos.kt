@@ -94,57 +94,9 @@ object PublishingRepos {
         }
     }
 
-    fun gitHub(repoName: String): Repository {
-        val githubActor: String = gitHubActor()
-        return Repository(
-            name = "GitHub Packages",
-            releases = "https://maven.pkg.github.com/SpineEventEngine/$repoName",
-            snapshots = "https://maven.pkg.github.com/SpineEventEngine/$repoName",
-            credentialValues = { project -> project.credentialsWithToken(githubActor) }
-        )
-    }
-
-    private fun gitHubActor(): String {
-        var githubActor: String? = System.getenv("GITHUB_ACTOR")
-        githubActor = if (githubActor.isNullOrEmpty()) {
-            "developers@spine.io"
-        } else {
-            githubActor
-        }
-        return githubActor
-    }
-
     /**
-     * This is a trick. Gradle only supports password or AWS credentials.
-     * Thus, we pass the GitHub token as a "password".
-     *
-     * See https://docs.github.com/en/actions/guides/publishing-java-packages-with-gradle#publishing-packages-to-github-packages
+     * Obtains a GitHub repository by the given name.
      */
-    private fun Project.credentialsWithToken(githubActor: String) = Credentials(
-        username = githubActor,
-        password = readGitHubToken()
-    )
-
-    private fun Project.readGitHubToken(): String {
-        val githubToken: String? = System.getenv("GITHUB_TOKEN")
-        return if (githubToken.isNullOrEmpty()) {
-            // Use the personal access token for the `developers@spine.io` account.
-            // Only has the permission to read public GitHub packages.
-            val targetDir = "${buildDir}/token"
-            file(targetDir).mkdirs()
-            val fileToUnzip = "${rootDir}/buildSrc/aus.weis"
-
-            logger.info("GitHub Packages: reading token " +
-                    "by unzipping `$fileToUnzip` into `$targetDir`.")
-            exec {
-                // Unzip with password "123", allow overriding, quietly,
-                // into the target dir, the given archive.
-                commandLine("unzip", "-P", "123", "-oq", "-d", targetDir, fileToUnzip)
-            }
-            val file = file("$targetDir/token.txt")
-            file.readText()
-        } else {
-            githubToken
-        }
-    }
+    fun gitHub(repoName: String): Repository = GitHubPackages.repository(repoName)
 }
+
