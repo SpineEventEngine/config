@@ -26,12 +26,7 @@
 
 package io.spine.internal.gradle.publish
 
-import com.google.auth.oauth2.GoogleCredentials
-import com.google.cloud.artifactregistry.auth.DefaultCredentialProvider
-import io.spine.internal.gradle.Credentials
 import io.spine.internal.gradle.Repository
-import java.io.IOException
-import org.gradle.api.Project
 
 /**
  * Repositories to which we may publish. Normally, only one repository will be used.
@@ -40,8 +35,6 @@ import org.gradle.api.Project
  */
 object PublishingRepos {
 
-    private const val CLOUD_ARTIFACT_REGISTRY = "https://europe-maven.pkg.dev/spine-event-engine"
-
     @Suppress("HttpUrlsUsage") // HTTPS is not supported by this repository.
     val mavenTeamDev = Repository(
         name = "maven.teamdev.com",
@@ -49,6 +42,7 @@ object PublishingRepos {
         snapshots = "http://maven.teamdev.com/repository/spine-snapshots",
         credentialsFile = "credentials.properties"
     )
+
     val cloudRepo = Repository(
         name = "CloudRepo",
         releases = "https://spine.mycloudrepo.io/public/repositories/releases",
@@ -56,43 +50,7 @@ object PublishingRepos {
         credentialsFile = "cloudrepo.properties"
     )
 
-    /**
-     * The experimental Google Cloud Artifact Registry repository.
-     *
-     * In order to successfully publish into this repository, a service account key is needed.
-     * The published must create a service account, grant it the permission to write into
-     * Artifact Registry, and generate a JSON key.
-     * Then, the key must be placed somewhere on the file system and the environment variable
-     * `GOOGLE_APPLICATION_CREDENTIALS` must be set to point at the key file.
-     * Once these preconditions are met, publishing becomes possible.
-     *
-     * Google provides a Gradle plugin for configuring the publishing repository credentials
-     * automatically. We achieve the same goal by assembling the credentials manually. We do so
-     * in order to fit the Google Cloud Artifact Registry repository into the standard frame of
-     * the Maven [Repository]-s. Applying the plugin would take a substantial effort due to the fact
-     * that both our publishing scripts and the Google's plugin use `afterEvaluate { }` hooks.
-     * Ordering said hooks is a non-trivial operation and the result is usually quite fragile.
-     * Thus, we choose to do this small piece of configuration manually.
-     */
-    val cloudArtifactRegistry = Repository(
-        releases = "$CLOUD_ARTIFACT_REGISTRY/releases",
-        snapshots = "$CLOUD_ARTIFACT_REGISTRY/snapshots",
-        credentialValues = this::fetchGoogleCredentials
-    )
-
-    private fun fetchGoogleCredentials(p: Project): Credentials? {
-        return try {
-            val googleCreds = DefaultCredentialProvider()
-            val creds = googleCreds.credential as GoogleCredentials
-            creds.refreshIfExpired()
-            Credentials("oauth2accesstoken", creds.accessToken.tokenValue)
-        } catch (e: IOException) {
-            p.logger.info("Unable to fetch credentials for Google Cloud Artifact Registry." +
-                    " Reason: '${e.message}'." +
-                    " The debug output may contain more details.")
-            null
-        }
-    }
+    val cloudArtifactRegistry = CloudArtifactRegistry.repository
 
     /**
      * Obtains a GitHub repository by the given name.
