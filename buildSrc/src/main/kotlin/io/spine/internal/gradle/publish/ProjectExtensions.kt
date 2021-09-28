@@ -65,7 +65,7 @@ internal fun Project.applyMavenPublish(
 
     setUpDefaultArtifacts()
 
-    val action = {
+    val applyAction = {
         val publishingExtension = extensions.getByType(PublishingExtension::class)
         with(publishingExtension) {
             val project = this@applyMavenPublish
@@ -80,9 +80,9 @@ internal fun Project.applyMavenPublish(
         }
     }
     if (state.executed) {
-        action()
+        applyAction()
     } else {
-        afterEvaluate { action() }
+        afterEvaluate { applyAction() }
     }
 }
 
