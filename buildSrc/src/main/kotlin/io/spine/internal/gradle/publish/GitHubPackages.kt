@@ -31,10 +31,13 @@ import io.spine.internal.gradle.Repository
 import org.gradle.api.Project
 
 /**
- * Creates a [Repository] instance for working with GitHub Packages.
+ * Maven repositories of Spine Event Engine projects hosted at GitHub Packages.
  */
 internal object GitHubPackages {
 
+    /**
+     * Obtains an instance of the GitHub Packages repository with the given name.
+     */
     fun repository(repoName: String): Repository {
         val githubActor: String = actor()
         return Repository(

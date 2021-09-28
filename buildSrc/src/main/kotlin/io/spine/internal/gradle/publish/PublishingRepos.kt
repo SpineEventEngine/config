@@ -29,9 +29,7 @@ package io.spine.internal.gradle.publish
 import io.spine.internal.gradle.Repository
 
 /**
- * Repositories to which we may publish. Normally, only one repository will be used.
- *
- * See `publish.gradle` for details of the publishing process.
+ * Repositories to which we may publish.
  */
 object PublishingRepos {
 
