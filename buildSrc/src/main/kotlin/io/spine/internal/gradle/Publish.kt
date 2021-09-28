@@ -26,16 +26,17 @@
 
 package io.spine.internal.gradle
 
-import io.spine.internal.gradle.DefaultArtifact.javadocJar
-import io.spine.internal.gradle.DefaultArtifact.sourceJar
-import io.spine.internal.gradle.DefaultArtifact.testOutputJar
+import io.spine.internal.gradle.ArtifactTaskName.javadocJar
+import io.spine.internal.gradle.ArtifactTaskName.sourceJar
+import io.spine.internal.gradle.ArtifactTaskName.testOutputJar
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.PublishArtifact
+import org.gradle.api.artifacts.PublishArtifactSet
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.file.FileCollection
-import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
 import org.gradle.api.publish.PublishingExtension
@@ -218,7 +219,7 @@ private fun Project.setUpDefaultArtifacts() {
 }
 
 private fun TaskContainer.createIfAbsent(
-    artifactTask: DefaultArtifact,
+    artifactTask: ArtifactTaskName,
     from: FileCollection,
     classifier: String,
     dependencies: Set<Any> = setOf()
@@ -251,9 +252,36 @@ private fun PublishingExtension.createMavenPublication(
 
             from(project.components.getAt("java"))
 
-            setArtifacts(project.configurations.getAt(ConfigurationName.archives).allArtifacts)
+            val archivesConfig = project.configurations.getAt(ConfigurationName.archives)
+            val allArtifacts = archivesConfig.allArtifacts
+            val deduplicated = allArtifacts.deduplicate()
+            setArtifacts(deduplicated)
         }
     }
+}
+
+/**
+ * Obtains an [Iterable] containing artifacts that to do have the same `extension` and `classifier`.
+ *
+ * Such a situation may occur when applying both `com.gradle.plugin-publish` plugin AND
+ * `spinePublishing` in the same project. `com.gradle.plugin-publish` adds `sources` and `javadoc`
+ * artifacts, and we do it too in [Project.setUpDefaultArtifacts].
+ *
+ * At the time when add artifacts in [Project.setUpDefaultArtifacts], those added by
+ * `com.gradle.plugin-publish` are not yet visible to our code. Hence, we have to perform
+ * the deduplication before we set the artifacts in [PublishingExtension.createMavenPublication].
+ */
+private fun PublishArtifactSet.deduplicate(): Iterable<PublishArtifact> {
+    val deduplicated = mutableSetOf<PublishArtifact>()
+    for (artifact in this) {
+        deduplicated.stream()
+            .filter {
+                artifact.extension == it.extension && artifact.classifier == it.classifier
+            }.findFirst()
+            .ifPresent(deduplicated::remove)
+        deduplicated.add(artifact)
+    }
+    return deduplicated
 }
 
 private fun PublishingExtension.setUpRepositories(
@@ -353,10 +381,10 @@ fun Project.spinePublishing(action: PublishExtension.() -> Unit) {
 /**
  * Default artifact task names.
  *
- * These tasks, if not present on a project already, are created by the `Publish` plugin. Their
- * output is published as project's artifacts.
+ * These tasks, if not present on a project already, are created by the [Publish] plugin.
+ * Their output is published as project's artifacts.
  */
-private enum class DefaultArtifact {
+private enum class ArtifactTaskName {
     sourceJar,
     testOutputJar,
     javadocJar;
