@@ -85,4 +85,7 @@ cp -R buildSrc ..
 
 cd ..
 
+echo "Adding buildSrc sources to Git..."
+git add ./buildSrc/src
+
 echo "Done."
