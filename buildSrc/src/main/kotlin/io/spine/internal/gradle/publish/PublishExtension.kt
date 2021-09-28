@@ -28,11 +28,8 @@ package io.spine.internal.gradle.publish
 
 import io.spine.internal.gradle.Repository
 import org.gradle.api.Project
-import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.setProperty
 
@@ -77,67 +74,3 @@ private constructor(
 
     fun singleProject(): Boolean = soloProject != null
 }
-
-internal fun PublishingExtension.createMavenPublication(
-    project: Project,
-    extension: PublishExtension
-) {
-    val artifactIdForPublishing = if (extension.spinePrefix.get()) {
-        "spine-${project.name}"
-    } else {
-        project.name
-    }
-    publications {
-        create("mavenJava", MavenPublication::class.java) {
-            groupId = project.group.toString()
-            artifactId = artifactIdForPublishing
-            version = project.version.toString()
-
-            from(project.components.getAt("java"))
-
-            val archivesConfig = project.configurations.getAt(ConfigurationName.archives)
-            val allArtifacts = archivesConfig.allArtifacts
-            val deduplicated = allArtifacts.deduplicate()
-            setArtifacts(deduplicated)
-        }
-    }
-}
-
-internal fun PublishingExtension.setUpRepositories(
-    project: Project,
-    extension: PublishExtension
-) {
-    val snapshots = project.version
-        .toString()
-        .matches(Regex(".+[-.]SNAPSHOT([+.]\\d+)?"))
-    repositories {
-        extension.targetRepositories.get().forEach { repo ->
-            maven {
-                initialize(repo, project, snapshots)
-            }
-        }
-    }
-}
-
-private fun MavenArtifactRepository.initialize(
-    repo: Repository,
-    project: Project,
-    snapshots: Boolean
-) {
-    val publicRepo = if (snapshots) {
-        repo.snapshots
-    } else {
-        repo.releases
-    }
-    // Special treatment for CloudRepo URL.
-    // Reading is performed via public repositories, and publishing via
-    // private ones that differ in the `/public` infix.
-    url = project.uri(publicRepo.replace("/public", ""))
-    val creds = repo.credentials(project.rootProject)
-    credentials {
-        username = creds?.username
-        password = creds?.password
-    }
-}
-
-
