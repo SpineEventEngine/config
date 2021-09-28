@@ -26,6 +26,9 @@
 
 package io.spine.internal.gradle.publish
 
+/**
+ * Popular name of Gradle configurations.
+ */
 internal object ConfigurationName {
     const val archives = "archives"
 }
