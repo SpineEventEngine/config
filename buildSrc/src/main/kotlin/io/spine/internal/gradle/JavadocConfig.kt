@@ -26,6 +26,7 @@
 
 package io.spine.internal.gradle
 
+import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.TaskContainer
@@ -46,6 +47,23 @@ object JavadocConfig {
     )
 
     val encoding = Encoding("UTF-8")
+
+    /**
+     * Configures the [Javadoc] task for the passed [project] to avoid numerous warnings
+     * for missing `@param` tags.
+     *
+     * As suggested by Stephen Colebourne:
+     *  [https://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html]
+     *
+     * See also:
+     *  [https://github.com/GPars/GPars/blob/master/build.gradle#L268]
+     */
+    fun reduceParamWarnings(project: Project) {
+        if (JavaVersion.current().isJava8Compatible) {
+            val options = project.tasks.javadocTask().options as StandardJavadocDocletOptions
+            options.addStringOption("Xdoclint:none", "-quiet")
+        }
+    }
 }
 
 /**
@@ -112,7 +130,7 @@ object InternalJavadocFilter {
         excludeInternalDoclet: Configuration
     ) {
         val tasks = project.tasks
-        val javadocTask = tasks.javadocTask(JavadocTask.name)
+        val javadocTask = tasks.javadocTask()
         tasks.register(taskName, Javadoc::class.java) {
 
             source = project.sourceSets.getByName("main").allJava.filter {
@@ -141,3 +159,8 @@ object InternalJavadocFilter {
  * Finds a [Javadoc] Gradle task by the passed name.
  */
 fun TaskContainer.javadocTask(named: String) = this.getByName(named) as Javadoc
+
+/**
+ * Finds a default [Javadoc] Gradle task.
+ */
+fun TaskContainer.javadocTask() = this.getByName(JavadocTask.name) as Javadoc
