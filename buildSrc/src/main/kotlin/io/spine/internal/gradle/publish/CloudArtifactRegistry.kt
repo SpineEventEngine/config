@@ -51,9 +51,9 @@ import org.gradle.api.Project
  * Ordering said hooks is a non-trivial operation and the result is usually quite fragile.
  * Thus, we choose to do this small piece of configuration manually.
  */
-internal class CloudArtifactRegistry {
+internal object CloudArtifactRegistry {
 
-    private val spineRepoLocation = "https://europe-maven.pkg.dev/spine-event-engine"
+    private const val spineRepoLocation = "https://europe-maven.pkg.dev/spine-event-engine"
 
     val repository = Repository(
         releases = "${spineRepoLocation}/releases",
