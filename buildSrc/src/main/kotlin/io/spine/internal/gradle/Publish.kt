@@ -267,7 +267,7 @@ private fun PublishingExtension.createMavenPublication(
  * `spinePublishing` in the same project. `com.gradle.plugin-publish` adds `sources` and `javadoc`
  * artifacts, and we do it too in [Project.setUpDefaultArtifacts].
  *
- * At the time when add artifacts in [Project.setUpDefaultArtifacts], those added by
+ * At the time when we add artifacts in [Project.setUpDefaultArtifacts], those added by
  * `com.gradle.plugin-publish` are not yet visible to our code. Hence, we have to perform
  * the deduplication before we set the artifacts in [PublishingExtension.createMavenPublication].
  */
