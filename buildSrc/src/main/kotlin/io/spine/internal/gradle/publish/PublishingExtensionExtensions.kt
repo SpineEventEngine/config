@@ -64,7 +64,7 @@ internal fun PublishingExtension.createMavenPublication(
 }
 
 /**
- * Obtains an [Iterable] containing artifacts that to do have the same `extension` and `classifier`.
+ * Obtains an [Iterable] containing artifacts that have the same `extension` and `classifier`.
  *
  * Such a situation may occur when applying both `com.gradle.plugin-publish` plugin AND
  * `spinePublishing` in the same project. `com.gradle.plugin-publish` adds `sources` and `javadoc`
