@@ -26,6 +26,7 @@
 
 package io.spine.internal.gradle
 
+import io.spine.internal.gradle.JavadocConfig.tags
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
@@ -48,8 +49,14 @@ object JavadocConfig {
 
     val encoding = Encoding("UTF-8")
 
+    fun applyTo(project: Project) {
+        val docletOptions = project.tasks.javadocTask().options as StandardJavadocDocletOptions
+        reduceParamWarnings(docletOptions)
+        registerCustomTags(docletOptions)
+    }
+
     /**
-     * Configures the [Javadoc] task for the passed [project] to avoid numerous warnings
+     * Configures the [Javadoc] task for the passed [docletOptions] to avoid numerous warnings
      * for missing `@param` tags.
      *
      * As suggested by Stephen Colebourne:
@@ -58,11 +65,18 @@ object JavadocConfig {
      * See also:
      *  [https://github.com/GPars/GPars/blob/master/build.gradle#L268]
      */
-    fun reduceParamWarnings(project: Project) {
+    private fun reduceParamWarnings(docletOptions: StandardJavadocDocletOptions) {
         if (JavaVersion.current().isJava8Compatible) {
-            val options = project.tasks.javadocTask().options as StandardJavadocDocletOptions
-            options.addStringOption("Xdoclint:none", "-quiet")
+            docletOptions.addStringOption("Xdoclint:none", "-quiet")
         }
+    }
+
+    /**
+     * Registers custom [tags] for the passed doclet options which in turn belong
+     * to some particular [Javadoc] task.
+     */
+    fun registerCustomTags(docletOptions: StandardJavadocDocletOptions) {
+        docletOptions.tags = tags.map { it.toString() }
     }
 }
 
@@ -130,7 +144,7 @@ object InternalJavadocFilter {
         excludeInternalDoclet: Configuration
     ) {
         val tasks = project.tasks
-        val javadocTask = tasks.javadocTask()
+        val javadocTask = tasks.javadocTask(JavadocTask.name)
         tasks.register(taskName, Javadoc::class.java) {
 
             source = project.sourceSets.getByName("main").allJava.filter {
@@ -150,7 +164,7 @@ object InternalJavadocFilter {
             }
 
             val docletOptions = options as StandardJavadocDocletOptions
-            docletOptions.tags = JavadocConfig.tags.map { it.toString() }
+            JavadocConfig.registerCustomTags(docletOptions)
         }
     }
 }
