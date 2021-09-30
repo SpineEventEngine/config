@@ -41,7 +41,7 @@ apply from: "${rootDir}/${commonPath}/license-report-common.gradle"
 
 task reportLicensesInRepo { final Task task ->
     def targetProjects;
-    if(subprojects.isEmpty()) {
+    if (subprojects.isEmpty()) {
         println "Configuring the license report for a single root project."
         targetProjects = [task.project]
     } else {
