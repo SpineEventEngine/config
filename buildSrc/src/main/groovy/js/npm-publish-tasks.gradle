@@ -32,7 +32,7 @@
  * the NPM execution process, which is sufficient for the local development.
  */
 
-apply from: deps.scripts.jsBuildTasks
+apply "$rootDir" + io.spine.internal.gradle.Scripts.commonPath + "js/build-tasks.gradle"
 
 ext {
     publicationDirectory = "$buildDir/npm-publication/"
