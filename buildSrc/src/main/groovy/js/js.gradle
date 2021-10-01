@@ -49,7 +49,7 @@ ext {
     nycOutputDir = "$projectDir/.nyc_output"
 }
 
-apply from: "$rootDir" + io.spine.internal.gradle.Scripts.commonPath + "/js/npm-publish-tasks.gradle"
+apply from: "$rootDir" + io.spine.internal.gradle.Scripts.commonPath + "js/npm-publish-tasks.gradle"
 
 /**
  * Cleans old module dependencies and build outputs.
