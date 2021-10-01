@@ -62,12 +62,14 @@ private constructor(
     var rootFolder: Property<File>,
 
     /**
-     * The names of other Gradle tasks, which output should be included
+     * The external inputs, which output should be included
      * into the GitHub Pages update.
+     *
+     * The values are interpreted according to [org.gradle.api.tasks.Copy.from] specification.
      *
      * This property is optional.
      */
-    var includeTaskOutput: SetProperty<String>
+    var includeInputs: SetProperty<Any>
 ) {
 
     internal companion object {
@@ -76,7 +78,7 @@ private constructor(
             return UpdateGitHubPagesExtension(
                 allowInternalJavadoc = factory.property(Boolean::class),
                 rootFolder = factory.property(File::class),
-                includeTaskOutput = factory.setProperty(String::class.java)
+                includeInputs = factory.setProperty(Any::class.java)
             )
         }
     }
@@ -97,10 +99,10 @@ private constructor(
     }
 
     /**
-     * Returns the name of Gradle tasks, which output should be included
+     * Returns the external inputs, which results should be included
      * into the GitHub Pages update.
      */
-    fun includeOutputOfTasks(): Set<String> {
-        return includeTaskOutput.get()
+    fun includedInputs(): Set<Any> {
+        return includeInputs.get()
     }
 }
