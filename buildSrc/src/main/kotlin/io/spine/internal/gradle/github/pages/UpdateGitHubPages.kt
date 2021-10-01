@@ -94,6 +94,8 @@ class UpdateGitHubPages : Plugin<Project> {
      */
     private lateinit var rootFolder: File
 
+    private lateinit var includeOutputOfTasks: Set<String>
+
     /**
      * Path to the temp folder used to gather the Javadoc output
      * before submitting it to the GitHub Pages update.
@@ -172,6 +174,7 @@ class UpdateGitHubPages : Plugin<Project> {
     private fun registerTasks(extension: UpdateGitHubPagesExtension, project: Project) {
         val includeInternal = extension.allowInternalJavadoc()
         rootFolder = extension.rootFolder()
+        includeOutputOfTasks = extension.includeOutputOfTasks()
         val tasks = project.tasks
         if (!includeInternal) {
             InternalJavadocFilter.registerTask(project)
@@ -237,16 +240,31 @@ class UpdateGitHubPages : Plugin<Project> {
         taskName: String,
         tasks: TaskContainer
     ) {
+        val inputs = composeInputs(tasks, allowInternalJavadoc)
         tasks.register(taskName, Copy::class.java) {
             doLast {
-                if (allowInternalJavadoc) {
-                    from(tasks.javadocTask(InternalJavadocFilter.taskName))
-                } else {
-                    from(tasks.javadocTask(JavadocTask.name))
-                }
+                from(*inputs.toTypedArray())
                 into(javadocOutputPath)
             }
         }
+    }
+
+    private fun composeInputs(
+        tasks: TaskContainer,
+        allowInternalJavadoc: Boolean
+    ): MutableList<Any> {
+        val inputs = mutableListOf<Any>()
+
+        includeOutputOfTasks.forEach {
+            val toInclude = tasks.findByName(it)!!
+            inputs.add(toInclude)
+        }
+        if (allowInternalJavadoc) {
+            inputs.add(tasks.javadocTask(InternalJavadocFilter.taskName))
+        } else {
+            inputs.add(tasks.javadocTask(JavadocTask.name))
+        }
+        return inputs
     }
 
     private fun commitAndPush(repoBaseDir: File, project: Project) {

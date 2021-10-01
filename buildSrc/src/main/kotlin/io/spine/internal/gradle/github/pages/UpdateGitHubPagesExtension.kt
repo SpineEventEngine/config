@@ -29,6 +29,7 @@ package io.spine.internal.gradle.github.pages
 import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.SetProperty
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
@@ -58,7 +59,15 @@ private constructor(
     /**
      * The root folder of the repository to which the updated `Project` belongs.
      */
-    var rootFolder: Property<File>
+    var rootFolder: Property<File>,
+
+    /**
+     * The names of other Gradle tasks, which output should be included
+     * into the GitHub Pages update.
+     *
+     * This property is optional.
+     */
+    var includeTaskOutput: SetProperty<String>
 ) {
 
     internal companion object {
@@ -66,7 +75,8 @@ private constructor(
             val factory = project.objects
             return UpdateGitHubPagesExtension(
                 allowInternalJavadoc = factory.property(Boolean::class),
-                rootFolder = factory.property(File::class)
+                rootFolder = factory.property(File::class),
+                includeTaskOutput = factory.setProperty(String::class.java)
             )
         }
     }
@@ -84,5 +94,13 @@ private constructor(
      */
     fun rootFolder(): File {
         return rootFolder.get()
+    }
+
+    /**
+     * Returns the name of Gradle tasks, which output should be included
+     * into the GitHub Pages update.
+     */
+    fun includeOutputOfTasks(): Set<String> {
+        return includeTaskOutput.get()
     }
 }
