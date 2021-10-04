@@ -32,11 +32,6 @@
  * Therefore, when a version of [io.spine.internal.dependency.LicenseReport] changes, it should be
  * changed in the Kotlin object _and_ in this file below twice.
  */
-buildscript {
-    repositories {
-        gradlePluginPortal()
-    }
-}
 
 plugins {
     java
