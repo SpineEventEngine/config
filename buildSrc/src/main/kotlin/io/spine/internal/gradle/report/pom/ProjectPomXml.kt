@@ -26,8 +26,13 @@
 
 package io.spine.internal.gradle.report.pom
 
+import SpineLicenceAsXml
+import groovy.xml.MarkupBuilder
+import java.io.FileWriter
+import java.io.StringWriter
 import java.lang.System.lineSeparator
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.withGroovyBuilder
 
 /**
  * A `pom.xml` file that contains dependencies of the project and its subprojects.
@@ -44,19 +49,149 @@ private constructor(
 ) {
 
     companion object {
-        const val XML_METADATA = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-        const val PROJECT_SCHEMA_LOCATION = "<project " +
+        private const val XML_METADATA = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        private const val PROJECT_SCHEMA_LOCATION = "<project " +
                 "xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 " +
                 "http://maven.apache.org/xsd/maven-4.0.0.xsd\" " +
                 "xmlns=\"http://maven.apache.org/POM/4.0.0\"" +
                 "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
-        const val MODEL_VERSION = "<modelVersion>4.0.0</modelVersion>"
-        const val CLOSING_PROJECT_TAG = "</project>"
-        const val SPINE_INCEPTION_YEAR = "2015"
-        val NEW_LINE = lineSeparator()
+        private const val MODEL_VERSION = "<modelVersion>4.0.0</modelVersion>"
+        private const val CLOSING_PROJECT_TAG = "</project>"
+        private const val SPINE_INCEPTION_YEAR = "2015"
+        private val NEW_LINE = lineSeparator()
 
         fun from(data: RootProjectData): ProjectPomXml {
             return ProjectPomXml(data.project, data.groupId, data.artifactId, data.version)
         }
+
+        /**
+         * Writes the specified lines using the specified writer, dividing them by platforms line
+         * separator.
+         *
+         * The written lines are also padded with platforms line separator from both sides
+         */
+        private fun writeBlocks(writer: StringWriter, vararg lines: String) {
+            writer.write(NEW_LINE)
+            lines.iterator().forEach {
+                writer.write(it)
+                writer.write(NEW_LINE)
+                writer.write(NEW_LINE)
+            }
+            writer.write(NEW_LINE)
+        }
+
+        /**
+         * Obtains a String that represents a tag with the inception year of Spine.
+         */
+        private fun inceptionYear(): String {
+            val writer = StringWriter()
+            val xmlBuilder = MarkupBuilder(writer)
+            xmlBuilder.withGroovyBuilder {
+                "inceptionYear" to SPINE_INCEPTION_YEAR
+            }
+            return writer.toString()
+        }
+
+        /**
+         * Obtains licence information about Spine.
+         *
+         * <p>More on licences <a href="https://maven.apache.org/pom.html#Licenses">here</a>.
+         */
+        private fun licence(): String {
+            val writer = StringWriter()
+            SpineLicenceAsXml.writeUsing(writer)
+            return writer.toString()
+        }
+
+        /**
+         * Obtains a description comment that describes the nature of the generated `pom.xml` file.
+         */
+        private fun describingComment(): String {
+            val description =
+                lineSeparator() +
+                        "This file was generated using the Gradle `generatePom` task. " +
+                        lineSeparator() +
+                        "This file is not suitable for `maven` build tasks. It only describes the " +
+                        "first-level dependencies of " +
+                        lineSeparator() +
+                        "all modules and does not describe the project " +
+                        "structure per-subproject." +
+                        lineSeparator()
+            val descriptionComment =
+                String.format(
+                    "<!-- %s %s %s -->",
+                    lineSeparator(),
+                    description,
+                    lineSeparator()
+                )
+            return descriptionComment
+        }
+
+
+        /**
+         * Writes the XML metadata using the specified writer.
+         */
+        private fun writeHeader(stringWriter: StringWriter) {
+            stringWriter.write(XML_METADATA)
+            stringWriter.write(lineSeparator())
+            stringWriter.write(PROJECT_SCHEMA_LOCATION)
+            stringWriter.write(lineSeparator())
+            stringWriter.write(MODEL_VERSION)
+            stringWriter.write(lineSeparator())
+        }
+    }
+
+    /**
+     * Writes the {@code pom.xml} file containing dependencies of this project and its subprojects to the specified
+     * location.
+     *
+     * <p>If a file with the specified location exists, its contents will be substituted with a new
+     * {@code pom.xml}.
+     *
+     * @param filePath path to write {@code pom.xml} file to
+     */
+    fun writeTo(filePath: String) {
+        val fileWriter = FileWriter(filePath)
+        val stringWriter = StringWriter()
+        writeHeader(stringWriter)
+
+        writeBlocks(
+            stringWriter,
+            describingComment(),
+            rootProjectData(),
+            inceptionYear(),
+            licence(),
+            projectDependencies()
+        )
+        fileWriter.write(stringWriter.toString())
+        fileWriter.close()
+    }
+
+    /**
+     * Obtains a string that contains project dependencies as XML.
+     *
+     * <p>Obtained string also contains a closing project tag.
+     */
+    private fun projectDependencies(): String {
+        val writer = StringWriter()
+        val projectDeps = ProjectDependenciesAsXml.of(project)
+        projectDeps.writeUsing(writer)
+        writer.write(NEW_LINE)
+        writer.write(CLOSING_PROJECT_TAG)
+        return writer.toString()
+    }
+
+    /**
+     * Obtains a string that contains the name and the version of the current project.
+     */
+    private fun rootProjectData(): String {
+        val writer = StringWriter()
+        val xmlBuilder = MarkupBuilder(writer)
+        xmlBuilder.withGroovyBuilder {
+            "groupId" to groupId
+            "artifactId" to artifactId
+            "version" to version
+        }
+        return writer.toString()
     }
 }
