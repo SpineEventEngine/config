@@ -95,7 +95,7 @@ class UpdateGitHubPages : Plugin<Project> {
      *
      * The inputs are evaluated according to [Copy.from] specification.
      */
-    internal lateinit var includedInputs: Set<Any>
+    private lateinit var includedInputs: Set<Any>
 
     /**
      * Path to the temp folder used to gather the Javadoc output
