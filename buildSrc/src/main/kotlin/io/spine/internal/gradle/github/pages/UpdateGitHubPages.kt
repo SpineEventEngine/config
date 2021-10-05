@@ -95,13 +95,13 @@ class UpdateGitHubPages : Plugin<Project> {
      *
      * The inputs are evaluated according to [Copy.from] specification.
      */
-    internal  lateinit var includedInputs: Set<Any>
+    internal lateinit var includedInputs: Set<Any>
 
     /**
      * Path to the temp folder used to gather the Javadoc output
      * before submitting it to the GitHub Pages update.
      */
-    internal  val javadocOutputPath = LazyTempPath("javadoc")
+    internal val javadocOutputPath = LazyTempPath("javadoc")
 
     /**
      * Path to the temp folder used checkout the original GitHub Pages branch.
