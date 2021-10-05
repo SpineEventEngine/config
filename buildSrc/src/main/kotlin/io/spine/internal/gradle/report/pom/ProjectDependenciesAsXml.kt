@@ -60,6 +60,9 @@ private constructor(
 
     companion object {
 
+        /**
+         * Creates the `ProjectDependenciesAsXml` for the passed [project].
+         */
         fun of(project: Project): ProjectDependenciesAsXml {
             val deps = projectDependencies(project)
             return ProjectDependenciesAsXml(deps)
