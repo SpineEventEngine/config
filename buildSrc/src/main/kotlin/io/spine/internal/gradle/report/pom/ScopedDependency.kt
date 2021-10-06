@@ -35,7 +35,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 
 /**
- * A project dependency with its scope.
+ * A project dependency with its [scope][DependencyScope].
  *
  * See [More on dependency scopes](https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope).
  */
@@ -88,6 +88,10 @@ private constructor(
             "annotationProcessor" to provided
         )
 
+        /**
+         * Creates a `ScopedDependency` for the given [dependency]
+         * judging on the passed [configuration].
+         */
         fun of(dependency: Dependency, configuration: Configuration): ScopedDependency {
             val configurationName = configuration.name
 
@@ -165,7 +169,6 @@ private constructor(
         if (dependency.group != other.dependency.group) return false
         if (dependency.name != other.dependency.name) return false
         if (dependency.version != other.dependency.version) return false
-
 
         return true
     }
