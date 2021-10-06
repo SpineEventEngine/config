@@ -66,12 +66,12 @@ private constructor(
     }
 
     /**
-     * Writes the dependencies in their `pom.xml` format using the specified writer.
+     * Writes the dependencies in their `pom.xml` format to the passed [out] writer.
      *
      * <p>Used writer will not be closed.
      */
-    fun writeXmlTo(writer: Writer) {
-        val xmlBuilder = MarkupBuilder(writer)
+    fun writeXmlTo(out: Writer) {
+        val xmlBuilder = MarkupBuilder(out)
         xmlBuilder.withGroovyBuilder {
             "dependencies" {
                 dependencies.forEach { projectDep ->
