@@ -59,7 +59,7 @@ private constructor(
              *
              * Dependencies with the `compile` Maven scope are propagated to dependent projects.
              *
-             * More at [https://docs.gradle.org/current/userguide/java_plugin.html#tab:configurations].
+             * More on that in the [Gradle docs](https://docs.gradle.org/current/userguide/java_plugin.html#tab:configurations).
              */
             "compile" to compile,
             "implementation" to compile,
