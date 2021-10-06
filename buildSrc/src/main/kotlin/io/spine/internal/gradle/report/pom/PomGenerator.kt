@@ -79,8 +79,8 @@ object PomGenerator {
 
             val extra = rootProject.extra
             val projectData = RootProjectData.fromEither(project, extra)
-            val result = ProjectPomXml.from(projectData)
-            result.writeTo(pomFile)
+            val writer = PomXmlWriter.from(projectData)
+            writer.writeTo(pomFile)
         }
 
         val buildTask = project.tasks.findByName("build")!!

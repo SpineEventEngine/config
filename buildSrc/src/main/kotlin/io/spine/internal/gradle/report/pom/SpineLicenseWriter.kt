@@ -31,19 +31,19 @@ import java.io.Writer
 import org.gradle.kotlin.dsl.withGroovyBuilder
 
 /**
- * Information about the licences used by Spine in XML form.
+ * Writes the licensing information of Spine in an XML format compatible with Maven's `pom.xml`.
  */
-internal object SpineLicenseAsXml {
+internal object SpineLicenseWriter {
 
     private const val NAME = "Apache License, Version 2.0"
     private const val URL = "https://www.apache.org/licenses/LICENSE-2.0.txt"
     private const val DISTRIBUTION = "repo"
 
     /**
-     * Writes information about the Spine licence using the specified writer.
+     * Writes the information about the Spine licence to the provided [destination].
      */
-    internal fun writeUsing(writer: Writer) {
-        val xmlBuilder = MarkupBuilder(writer)
+    internal fun writeTo(destination: Writer) {
+        val xmlBuilder = MarkupBuilder(destination)
         xmlBuilder.withGroovyBuilder {
             "licenses" {
                 "license" {

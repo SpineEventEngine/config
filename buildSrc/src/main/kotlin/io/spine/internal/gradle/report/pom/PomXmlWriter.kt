@@ -26,7 +26,6 @@
 
 package io.spine.internal.gradle.report.pom
 
-import SpineLicenceAsXml
 import groovy.xml.MarkupBuilder
 import java.io.File
 import java.io.FileWriter
@@ -36,12 +35,13 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.withGroovyBuilder
 
 /**
- * A `pom.xml` file that contains dependencies of the project and its subprojects.
+ * Writes the dependencies of a Gradle project and its subprojects as a `pom.xml` file.
  *
- * It is not usable for `maven` build tasks and serves as a description of project first-level
- * dependencies, i.e. transitive dependencies are not included
+ * The resulting file is not usable for `maven` build tasks, but serves rather as a description
+ * of the first-level dependencies for each project/subproject. Their transitive dependencies
+ * are not included into the result.
  */
-internal class ProjectPomXml
+internal class PomXmlWriter
 private constructor(
     private val project: Project,
     private val groupId: String,
@@ -61,28 +61,28 @@ private constructor(
         private const val SPINE_INCEPTION_YEAR = "2015"
         private val NEW_LINE = lineSeparator()
 
-        fun from(data: RootProjectData): ProjectPomXml {
-            return ProjectPomXml(data.project, data.groupId, data.artifactId, data.version)
+        fun from(data: RootProjectData): PomXmlWriter {
+            return PomXmlWriter(data.project, data.groupId, data.artifactId, data.version)
         }
 
         /**
-         * Writes the specified lines using the specified writer, dividing them by platforms line
-         * separator.
+         * Writes the specified lines using the specified [destination], dividing them
+         * by platform-specific line separator.
          *
-         * The written lines are also padded with platforms line separator from both sides
+         * The written lines are also padded with platform's line separator from both sides
          */
-        private fun writeBlocks(writer: StringWriter, vararg lines: String) {
-            writer.write(NEW_LINE)
+        private fun writeBlocks(destination: StringWriter, vararg lines: String) {
+            destination.write(NEW_LINE)
             lines.iterator().forEach {
-                writer.write(it)
-                writer.write(NEW_LINE)
-                writer.write(NEW_LINE)
+                destination.write(it)
+                destination.write(NEW_LINE)
+                destination.write(NEW_LINE)
             }
-            writer.write(NEW_LINE)
+            destination.write(NEW_LINE)
         }
 
         /**
-         * Obtains a String that represents a tag with the inception year of Spine.
+         * Returns a string containing the inception year of Spine in a `pom.xml` format.
          */
         private fun inceptionYear(): String {
             val writer = StringWriter()
@@ -94,13 +94,11 @@ private constructor(
         }
 
         /**
-         * Obtains licence information about Spine.
-         *
-         * <p>More on licences <a href="https://maven.apache.org/pom.html#Licenses">here</a>.
+         * Returns a string containing the licencing information of Spine, in a `pom.xml` format.
          */
         private fun licence(): String {
             val writer = StringWriter()
-            SpineLicenceAsXml.writeUsing(writer)
+            SpineLicenseWriter.writeTo(writer)
             return writer.toString()
         }
 
@@ -132,13 +130,13 @@ private constructor(
         /**
          * Writes the XML metadata using the specified writer.
          */
-        private fun writeHeader(stringWriter: StringWriter) {
-            stringWriter.write(XML_METADATA)
-            stringWriter.write(lineSeparator())
-            stringWriter.write(PROJECT_SCHEMA_LOCATION)
-            stringWriter.write(lineSeparator())
-            stringWriter.write(MODEL_VERSION)
-            stringWriter.write(lineSeparator())
+        private fun writeHeader(dest: StringWriter) {
+            dest.write(XML_METADATA)
+            dest.write(lineSeparator())
+            dest.write(PROJECT_SCHEMA_LOCATION)
+            dest.write(lineSeparator())
+            dest.write(MODEL_VERSION)
+            dest.write(lineSeparator())
         }
     }
 
