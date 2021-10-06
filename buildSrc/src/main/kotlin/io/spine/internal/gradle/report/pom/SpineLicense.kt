@@ -27,23 +27,24 @@
 package io.spine.internal.gradle.report.pom
 
 import groovy.xml.MarkupBuilder
-import java.io.Writer
+import java.io.StringWriter
 import org.gradle.kotlin.dsl.withGroovyBuilder
 
 /**
- * Writes the licensing information of Spine in an XML format compatible with Maven's `pom.xml`.
+ * The licensing information of Spine.
  */
-internal object SpineLicenseWriter {
+internal object SpineLicense {
 
     private const val NAME = "Apache License, Version 2.0"
     private const val URL = "https://www.apache.org/licenses/LICENSE-2.0.txt"
     private const val DISTRIBUTION = "repo"
 
     /**
-     * Writes the information about the Spine licence to the provided [destination].
+     * Returns the licensing information as an XML fragment compatible with `pom.xml` format.
      */
-    internal fun writeTo(destination: Writer) {
-        val xmlBuilder = MarkupBuilder(destination)
+    internal fun asXml(): String {
+        val result = StringWriter()
+        val xmlBuilder = MarkupBuilder(result)
         xmlBuilder.withGroovyBuilder {
             "licenses" {
                 "license" {
@@ -53,5 +54,6 @@ internal object SpineLicenseWriter {
                 }
             }
         }
+        return result.toString()
     }
 }

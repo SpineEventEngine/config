@@ -32,7 +32,6 @@ import io.spine.internal.gradle.report.pom.PomFormatting.writeStart
 import java.io.File
 import java.io.FileWriter
 import java.io.StringWriter
-import java.lang.System.lineSeparator
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.withGroovyBuilder
 
@@ -52,55 +51,8 @@ private constructor(
 ) {
 
     internal companion object {
-        private const val SPINE_INCEPTION_YEAR = "2015"
-
         fun from(data: RootProjectData): PomXmlWriter {
             return PomXmlWriter(data.project, data.groupId, data.artifactId, data.version)
-        }
-
-        /**
-         * Returns a string containing the inception year of Spine in a `pom.xml` format.
-         */
-        private fun inceptionYear(): String {
-            val writer = StringWriter()
-            val xmlBuilder = MarkupBuilder(writer)
-            xmlBuilder.withGroovyBuilder {
-                "inceptionYear" to SPINE_INCEPTION_YEAR
-            }
-            return writer.toString()
-        }
-
-        /**
-         * Returns a string containing the licencing information of Spine, in a `pom.xml` format.
-         */
-        private fun licence(): String {
-            val writer = StringWriter()
-            SpineLicenseWriter.writeTo(writer)
-            return writer.toString()
-        }
-
-        /**
-         * Obtains a description comment that describes the nature of the generated `pom.xml` file.
-         */
-        private fun describingComment(): String {
-            val description =
-                lineSeparator() +
-                        "This file was generated using the Gradle `generatePom` task. " +
-                        lineSeparator() +
-                        "This file is not suitable for `maven` build tasks. It only describes the " +
-                        "first-level dependencies of " +
-                        lineSeparator() +
-                        "all modules and does not describe the project " +
-                        "structure per-subproject." +
-                        lineSeparator()
-            val descriptionComment =
-                String.format(
-                    "<!-- %s %s %s -->",
-                    lineSeparator(),
-                    description,
-                    lineSeparator()
-                )
-            return descriptionComment
         }
     }
 
@@ -120,10 +72,9 @@ private constructor(
         writeStart(out)
         writeBlocks(
             out,
-            describingComment(),
             rootProjectData(),
-            inceptionYear(),
-            licence(),
+            InceptionYear.asXml(),
+            SpineLicense.asXml(),
             projectDependencies()
         )
         PomFormatting.writeEnd(out)

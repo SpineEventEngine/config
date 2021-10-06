@@ -54,6 +54,8 @@ internal object PomFormatting {
         dest.write(NL)
         dest.write(MODEL_VERSION)
         dest.write(NL)
+        dest.write(describingComment())
+        dest.write(NL)
     }
 
     /**
@@ -62,6 +64,28 @@ internal object PomFormatting {
     internal fun writeEnd(dest: StringWriter) {
         dest.write(NL)
         dest.write(CLOSING_PROJECT_TAG)
+    }
+
+    /**
+     * Obtains a description comment that describes the nature of the generated `pom.xml` file.
+     */
+    private fun describingComment(): String {
+        val description =
+            lineSeparator() +
+                    "This file was generated using the Gradle `generatePom` task. " +
+                    lineSeparator() +
+                    "This file is not suitable for `maven` build tasks. It only describes the " +
+                    "first-level dependencies of " +
+                    lineSeparator() +
+                    "all modules and does not describe the project " +
+                    "structure per-subproject." +
+                    lineSeparator()
+        return String.format(
+            "<!-- %s %s %s -->",
+            lineSeparator(),
+            description,
+            lineSeparator()
+        )
     }
 
     /**
