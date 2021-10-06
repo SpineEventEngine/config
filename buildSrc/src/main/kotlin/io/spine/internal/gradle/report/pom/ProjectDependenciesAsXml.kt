@@ -53,12 +53,12 @@ import org.gradle.kotlin.dsl.withGroovyBuilder
  *  </dependencies>
  * ```
  */
-class ProjectDependenciesAsXml
+internal class ProjectDependenciesAsXml
 private constructor(
-    private val firstLevelDependencies: SortedSet<DependencyWithScope>
+    private val firstLevelDependencies: SortedSet<ScopedDependency>
 ){
 
-    companion object {
+    internal companion object {
 
         /**
          * Creates the `ProjectDependenciesAsXml` for the passed [project].
@@ -68,8 +68,8 @@ private constructor(
             return ProjectDependenciesAsXml(deps)
         }
 
-        private fun projectDependencies(project: Project): SortedSet<DependencyWithScope> {
-            val firstLevelDependencies = mutableSetOf<DependencyWithScope>()
+        private fun projectDependencies(project: Project): SortedSet<ScopedDependency> {
+            val firstLevelDependencies = mutableSetOf<ScopedDependency>()
             firstLevelDependencies.addAll(dependenciesFromAllConfigurations(project))
 
             project.subprojects.forEach { subproject ->
@@ -79,8 +79,8 @@ private constructor(
             return firstLevelDependencies.toSortedSet()
         }
 
-        private fun dependenciesFromAllConfigurations(project: Project): Set<DependencyWithScope> {
-            val result = mutableSetOf<DependencyWithScope>()
+        private fun dependenciesFromAllConfigurations(project: Project): Set<ScopedDependency> {
+            val result = mutableSetOf<ScopedDependency>()
             project.configurations.forEach { configuration ->
                 if (configuration.isCanBeResolved) {
                     // Force configuration resolution.
@@ -88,7 +88,7 @@ private constructor(
                 }
                 configuration.dependencies.forEach {
                     if (isExternal(it)) {
-                        val dependency = DependencyWithScope.of(it, configuration)
+                        val dependency = ScopedDependency.of(it, configuration)
                         result.add(dependency)
                     }
                 }

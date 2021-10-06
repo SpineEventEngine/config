@@ -33,7 +33,7 @@ import org.gradle.kotlin.dsl.withGroovyBuilder
 /**
  * Information about the licences used by Spine in XML form.
  */
-object SpineLicenseAsXml {
+internal object SpineLicenseAsXml {
 
     private const val NAME = "Apache License, Version 2.0"
     private const val URL = "https://www.apache.org/licenses/LICENSE-2.0.txt"
@@ -42,7 +42,7 @@ object SpineLicenseAsXml {
     /**
      * Writes information about the Spine licence using the specified writer.
      */
-    fun writeUsing(writer: Writer) {
+    internal fun writeUsing(writer: Writer) {
         val xmlBuilder = MarkupBuilder(writer)
         xmlBuilder.withGroovyBuilder {
             "licenses" {

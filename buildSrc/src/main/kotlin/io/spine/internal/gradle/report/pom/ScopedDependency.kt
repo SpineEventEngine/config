@@ -39,13 +39,13 @@ import org.gradle.api.artifacts.Dependency
  *
  * See [More on dependency scopes](https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope).
  */
-class DependencyWithScope
+class ScopedDependency
 private constructor(
     private val dependency: Dependency,
     private val scope: DependencyScope
-) : Comparable<DependencyWithScope> {
+) : Comparable<ScopedDependency> {
 
-    companion object {
+    internal companion object {
 
         /**
          * A map that contains the relations of known Gradle configuration names
@@ -88,17 +88,17 @@ private constructor(
             "annotationProcessor" to provided
         )
 
-        fun of(dependency: Dependency, configuration: Configuration): DependencyWithScope {
+        fun of(dependency: Dependency, configuration: Configuration): ScopedDependency {
             val configurationName = configuration.name
 
             if (CONFIG_TO_SCOPE.containsKey(configurationName)) {
                 val scope = CONFIG_TO_SCOPE[configurationName]
-                return DependencyWithScope(dependency, scope!!)
+                return ScopedDependency(dependency, scope!!)
             }
             if (configurationName.toLowerCase().startsWith("test")) {
-                return DependencyWithScope(dependency, test)
+                return ScopedDependency(dependency, test)
             }
-            return DependencyWithScope(dependency, undefined)
+            return ScopedDependency(dependency, undefined)
         }
 
         /**
@@ -115,8 +115,8 @@ private constructor(
          *  * For dependencies with the same artifact name does the lexicographical artifact
          *  version comparison.
          */
-        private val COMPARATOR: Comparator<DependencyWithScope> =
-            compareBy<DependencyWithScope> { it.dependencyPriority() }
+        private val COMPARATOR: Comparator<ScopedDependency> =
+            compareBy<ScopedDependency> { it.dependencyPriority() }
                 .thenBy { it.dependency.group }
                 .thenBy { it.dependency.name }
                 .thenBy { it.dependency.version }
@@ -154,13 +154,13 @@ private constructor(
         }
     }
 
-    override fun compareTo(other: DependencyWithScope): Int {
+    override fun compareTo(other: ScopedDependency): Int {
         return COMPARATOR.compare(this, other)
     }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is DependencyWithScope) return false
+        if (other !is ScopedDependency) return false
 
         if (dependency.group != other.dependency.group) return false
         if (dependency.name != other.dependency.name) return false

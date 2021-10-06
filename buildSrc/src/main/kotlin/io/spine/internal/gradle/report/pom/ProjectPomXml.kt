@@ -28,6 +28,7 @@ package io.spine.internal.gradle.report.pom
 
 import SpineLicenceAsXml
 import groovy.xml.MarkupBuilder
+import java.io.File
 import java.io.FileWriter
 import java.io.StringWriter
 import java.lang.System.lineSeparator
@@ -40,7 +41,7 @@ import org.gradle.kotlin.dsl.withGroovyBuilder
  * It is not usable for `maven` build tasks and serves as a description of project first-level
  * dependencies, i.e. transitive dependencies are not included
  */
-class ProjectPomXml
+internal class ProjectPomXml
 private constructor(
     private val project: Project,
     private val groupId: String,
@@ -48,7 +49,7 @@ private constructor(
     private val version: String
 ) {
 
-    companion object {
+    internal companion object {
         private const val XML_METADATA = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
         private const val PROJECT_SCHEMA_LOCATION = "<project " +
                 "xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 " +
@@ -148,10 +149,10 @@ private constructor(
      * <p>If a file with the specified location exists, its contents will be substituted with a new
      * {@code pom.xml}.
      *
-     * @param filePath path to write {@code pom.xml} file to
+     * @param file a file to write {@code pom.xml} contents to
      */
-    fun writeTo(filePath: String) {
-        val fileWriter = FileWriter(filePath)
+    fun writeTo(file: File) {
+        val fileWriter = FileWriter(file)
         val stringWriter = StringWriter()
         writeHeader(stringWriter)
 

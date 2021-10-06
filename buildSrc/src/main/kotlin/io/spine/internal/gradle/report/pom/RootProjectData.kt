@@ -30,9 +30,14 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.ExtraPropertiesExtension
 
 /**
- * @author Alex Tymchenko
+ * Information about the root project.
+ *
+ * In this context, root project is the Gradle project for which the `pom.xml` generation
+ * is performed
+ *
+ * Includes group ID, artifact name, and the version.
  */
-class RootProjectData
+internal class RootProjectData
 private constructor(
     val project: Project,
     val groupId: String,
@@ -40,8 +45,14 @@ private constructor(
     val version: String
 ) {
 
-    companion object {
+    internal companion object {
 
+        /**
+         * Creates a new instance of `RootProjectData`.
+         *
+         * The required information is first retrieved from the passed [project]. And if
+         * a property is missing from the `project`, it is taken from the passed [extension].
+         */
         fun fromEither(
             project: Project, /* or */
             extension: ExtraPropertiesExtension
