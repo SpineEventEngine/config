@@ -174,12 +174,12 @@ private constructor(
      * <p>Obtained string also contains a closing project tag.
      */
     private fun projectDependencies(): String {
-        val writer = StringWriter()
-        val projectDeps = ProjectDependenciesAsXml.of(project)
-        projectDeps.writeUsing(writer)
-        writer.write(NEW_LINE)
-        writer.write(CLOSING_PROJECT_TAG)
-        return writer.toString()
+        val destination = StringWriter()
+        val dependencyWriter = DependencyWriter.of(project)
+        dependencyWriter.writeXmlTo(destination)
+        destination.write(NEW_LINE)
+        destination.write(CLOSING_PROJECT_TAG)
+        return destination.toString()
     }
 
     /**

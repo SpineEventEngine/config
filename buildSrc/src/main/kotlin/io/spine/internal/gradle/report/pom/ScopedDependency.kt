@@ -142,10 +142,10 @@ private constructor(
     /**
      * Obtains the layout priority of a scope.
      *
-     * Layout priority determines what scopes come first in the generated {@code pom.xml} file.
+     * Layout priority determines what scopes come first in the generated `pom.xml` file.
      * Dependencies with a lower priority number go on top.
      */
-    fun dependencyPriority(): Int {
+    internal fun dependencyPriority(): Int {
         return when (scope) {
             compile -> 0
             runtime -> 1

@@ -55,6 +55,7 @@ import org.gradle.kotlin.dsl.extra
  * them. If the project does not have these values, and they are not specified in the `ext`
  * block, the resulting `pom.xml` file is going to contain empty blocks, e.g. `<groupId></groupId>`.
  */
+@Suppress("unused")
 object PomGenerator {
 
     /**

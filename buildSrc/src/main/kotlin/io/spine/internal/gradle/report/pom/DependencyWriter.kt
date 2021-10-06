@@ -36,11 +36,9 @@ import org.gradle.api.internal.artifacts.dependencies.AbstractExternalModuleDepe
 import org.gradle.kotlin.dsl.withGroovyBuilder
 
 /**
- * Dependencies of the project expressed as XML.
+ * Writes the dependencies of a Gradle project in a `pom.xml` format.
  *
- * Subprojects dependencies are included, transitive dependencies are not included.
- *
- * Example:
+ * Includes the dependencies of the subprojects. Does not include the transitive dependencies.
  *
  * ```
  *  <dependencies>
@@ -53,70 +51,36 @@ import org.gradle.kotlin.dsl.withGroovyBuilder
  *  </dependencies>
  * ```
  */
-internal class ProjectDependenciesAsXml
+internal class DependencyWriter
 private constructor(
-    private val firstLevelDependencies: SortedSet<ScopedDependency>
-){
-
+    private val dependencies: SortedSet<ScopedDependency>
+) {
     internal companion object {
 
         /**
          * Creates the `ProjectDependenciesAsXml` for the passed [project].
          */
-        fun of(project: Project): ProjectDependenciesAsXml {
-            val deps = projectDependencies(project)
-            return ProjectDependenciesAsXml(deps)
-        }
-
-        private fun projectDependencies(project: Project): SortedSet<ScopedDependency> {
-            val firstLevelDependencies = mutableSetOf<ScopedDependency>()
-            firstLevelDependencies.addAll(dependenciesFromAllConfigurations(project))
-
-            project.subprojects.forEach { subproject ->
-                val subprojectDeps = dependenciesFromAllConfigurations(subproject)
-                firstLevelDependencies.addAll(subprojectDeps)
-            }
-            return firstLevelDependencies.toSortedSet()
-        }
-
-        private fun dependenciesFromAllConfigurations(project: Project): Set<ScopedDependency> {
-            val result = mutableSetOf<ScopedDependency>()
-            project.configurations.forEach { configuration ->
-                if (configuration.isCanBeResolved) {
-                    // Force configuration resolution.
-                    configuration.resolvedConfiguration
-                }
-                configuration.dependencies.forEach {
-                    if (isExternal(it)) {
-                        val dependency = ScopedDependency.of(it, configuration)
-                        result.add(dependency)
-                    }
-                }
-            }
-            return result
-        }
-
-        private fun isExternal(dependency: Dependency): Boolean {
-            return AbstractExternalModuleDependency::class.isSubclassOf(dependency.javaClass.kotlin)
+        fun of(project: Project): DependencyWriter {
+            return DependencyWriter(project.dependencies())
         }
     }
 
     /**
-     * Writes the dependencies using the specified writer.
+     * Writes the dependencies in their `pom.xml` format using the specified writer.
      *
      * <p>Used writer will not be closed.
      */
-    fun writeUsing(writer: Writer) {
+    fun writeXmlTo(writer: Writer) {
         val xmlBuilder = MarkupBuilder(writer)
         xmlBuilder.withGroovyBuilder {
             "dependencies" {
-                firstLevelDependencies.forEach { projectDep ->
+                dependencies.forEach { projectDep ->
                     val dependency = projectDep.dependency()
                     "dependency" {
                         "groupId" to dependency.group
                         "artifactId" to dependency.name
                         "version" to dependency.version
-                        if(projectDep.hasDefinedScope()) {
+                        if (projectDep.hasDefinedScope()) {
                             "scope" to projectDep.scopeName()
                         }
                     }
@@ -124,4 +88,45 @@ private constructor(
             }
         }
     }
+}
+
+/**
+ * Returns the [scoped dependencies][ScopedDependency] of a Gradle project.
+ */
+fun Project.dependencies(): SortedSet<ScopedDependency> {
+    val dependencies = mutableSetOf<ScopedDependency>()
+    dependencies.addAll(this.depsFromAllConfigurations())
+
+    this.subprojects.forEach { subproject ->
+        val subprojectDeps = subproject.depsFromAllConfigurations()
+        dependencies.addAll(subprojectDeps)
+    }
+    return dependencies.toSortedSet()
+}
+
+/**
+ * Returns the scoped dependencies of the project from all the project configurations.
+ */
+private fun Project.depsFromAllConfigurations(): Set<ScopedDependency> {
+    val result = mutableSetOf<ScopedDependency>()
+    this.configurations.forEach { configuration ->
+        if (configuration.isCanBeResolved) {
+            // Force resolution of the configuration.
+            configuration.resolvedConfiguration
+        }
+        configuration.dependencies.forEach {
+            if (it.isExternal()) {
+                val dependency = ScopedDependency.of(it, configuration)
+                result.add(dependency)
+            }
+        }
+    }
+    return result
+}
+
+/**
+ * Tells whether the dependency is an external module dependency.
+ */
+private fun Dependency.isExternal(): Boolean {
+    return AbstractExternalModuleDependency::class.isSubclassOf(this.javaClass.kotlin)
 }
