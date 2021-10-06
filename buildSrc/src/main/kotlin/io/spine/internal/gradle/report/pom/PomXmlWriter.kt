@@ -27,6 +27,8 @@
 package io.spine.internal.gradle.report.pom
 
 import groovy.xml.MarkupBuilder
+import io.spine.internal.gradle.report.pom.PomFormatting.writeBlocks
+import io.spine.internal.gradle.report.pom.PomFormatting.writeStart
 import java.io.File
 import java.io.FileWriter
 import java.io.StringWriter
@@ -50,35 +52,10 @@ private constructor(
 ) {
 
     internal companion object {
-        private const val XML_METADATA = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-        private const val PROJECT_SCHEMA_LOCATION = "<project " +
-                "xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 " +
-                "http://maven.apache.org/xsd/maven-4.0.0.xsd\" " +
-                "xmlns=\"http://maven.apache.org/POM/4.0.0\"" +
-                "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
-        private const val MODEL_VERSION = "<modelVersion>4.0.0</modelVersion>"
-        private const val CLOSING_PROJECT_TAG = "</project>"
         private const val SPINE_INCEPTION_YEAR = "2015"
-        private val NEW_LINE = lineSeparator()
 
         fun from(data: RootProjectData): PomXmlWriter {
             return PomXmlWriter(data.project, data.groupId, data.artifactId, data.version)
-        }
-
-        /**
-         * Writes the specified lines using the specified [destination], dividing them
-         * by platform-specific line separator.
-         *
-         * The written lines are also padded with platform's line separator from both sides
-         */
-        private fun writeBlocks(destination: StringWriter, vararg lines: String) {
-            destination.write(NEW_LINE)
-            lines.iterator().forEach {
-                destination.write(it)
-                destination.write(NEW_LINE)
-                destination.write(NEW_LINE)
-            }
-            destination.write(NEW_LINE)
         }
 
         /**
@@ -125,19 +102,6 @@ private constructor(
                 )
             return descriptionComment
         }
-
-
-        /**
-         * Writes the XML metadata using the specified writer.
-         */
-        private fun writeHeader(dest: StringWriter) {
-            dest.write(XML_METADATA)
-            dest.write(lineSeparator())
-            dest.write(PROJECT_SCHEMA_LOCATION)
-            dest.write(lineSeparator())
-            dest.write(MODEL_VERSION)
-            dest.write(lineSeparator())
-        }
     }
 
     /**
@@ -151,18 +115,20 @@ private constructor(
      */
     fun writeTo(file: File) {
         val fileWriter = FileWriter(file)
-        val stringWriter = StringWriter()
-        writeHeader(stringWriter)
+        val out = StringWriter()
 
+        writeStart(out)
         writeBlocks(
-            stringWriter,
+            out,
             describingComment(),
             rootProjectData(),
             inceptionYear(),
             licence(),
             projectDependencies()
         )
-        fileWriter.write(stringWriter.toString())
+        PomFormatting.writeEnd(out)
+
+        fileWriter.write(out.toString())
         fileWriter.close()
     }
 
@@ -175,8 +141,6 @@ private constructor(
         val destination = StringWriter()
         val dependencyWriter = DependencyWriter.of(project)
         dependencyWriter.writeXmlTo(destination)
-        destination.write(NEW_LINE)
-        destination.write(CLOSING_PROJECT_TAG)
         return destination.toString()
     }
 
