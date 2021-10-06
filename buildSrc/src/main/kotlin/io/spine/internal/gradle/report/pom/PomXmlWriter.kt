@@ -26,14 +26,11 @@
 
 package io.spine.internal.gradle.report.pom
 
-import groovy.xml.MarkupBuilder
 import io.spine.internal.gradle.report.pom.PomFormatting.writeBlocks
 import io.spine.internal.gradle.report.pom.PomFormatting.writeStart
 import java.io.File
 import java.io.FileWriter
 import java.io.StringWriter
-import org.gradle.api.Project
-import org.gradle.kotlin.dsl.withGroovyBuilder
 
 /**
  * Writes the dependencies of a Gradle project and its subprojects as a `pom.xml` file.
@@ -43,27 +40,18 @@ import org.gradle.kotlin.dsl.withGroovyBuilder
  * are not included into the result.
  */
 internal class PomXmlWriter
-private constructor(
-    private val project: Project,
-    private val groupId: String,
-    private val artifactId: String,
-    private val version: String
+internal constructor(
+    private val projectMetadata: ProjectMetadata
 ) {
 
-    internal companion object {
-        fun from(data: RootProjectData): PomXmlWriter {
-            return PomXmlWriter(data.project, data.groupId, data.artifactId, data.version)
-        }
-    }
-
     /**
-     * Writes the {@code pom.xml} file containing dependencies of this project and its subprojects to the specified
-     * location.
+     * Writes the `pom.xml` file containing dependencies of this project
+     * and its subprojects to the specified location.
      *
-     * <p>If a file with the specified location exists, its contents will be substituted with a new
-     * {@code pom.xml}.
+     * <p>If a file with the specified location exists, its contents will be substituted
+     * with a new `pom.xml`.
      *
-     * @param file a file to write {@code pom.xml} contents to
+     * @param file a file to write `pom.xml` contents to
      */
     fun writeTo(file: File) {
         val fileWriter = FileWriter(file)
@@ -72,9 +60,9 @@ private constructor(
         writeStart(out)
         writeBlocks(
             out,
-            rootProjectData(),
-            InceptionYear.asXml(),
-            SpineLicense.asXml(),
+            projectMetadata.toString(),
+            InceptionYear.toString(),
+            SpineLicense.toString(),
             projectDependencies()
         )
         PomFormatting.writeEnd(out)
@@ -90,22 +78,9 @@ private constructor(
      */
     private fun projectDependencies(): String {
         val destination = StringWriter()
-        val dependencyWriter = DependencyWriter.of(project)
+        val dependencyWriter = DependencyWriter.of(projectMetadata.project)
         dependencyWriter.writeXmlTo(destination)
         return destination.toString()
     }
-
-    /**
-     * Obtains a string that contains the name and the version of the current project.
-     */
-    private fun rootProjectData(): String {
-        val writer = StringWriter()
-        val xmlBuilder = MarkupBuilder(writer)
-        xmlBuilder.withGroovyBuilder {
-            "groupId" to groupId
-            "artifactId" to artifactId
-            "version" to version
-        }
-        return writer.toString()
-    }
 }
+

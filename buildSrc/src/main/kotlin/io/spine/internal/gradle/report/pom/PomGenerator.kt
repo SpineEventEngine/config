@@ -78,8 +78,8 @@ object PomGenerator {
             project.delete(pomFile)
 
             val extra = rootProject.extra
-            val projectData = RootProjectData.fromEither(project, extra)
-            val writer = PomXmlWriter.from(projectData)
+            val projectData = ProjectMetadata.fromEither(project, extra)
+            val writer = PomXmlWriter(projectData)
             writer.writeTo(pomFile)
         }
 

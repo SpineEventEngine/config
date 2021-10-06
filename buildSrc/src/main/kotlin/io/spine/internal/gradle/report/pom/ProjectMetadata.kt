@@ -26,23 +26,23 @@
 
 package io.spine.internal.gradle.report.pom
 
+import groovy.xml.MarkupBuilder
+import java.io.StringWriter
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtraPropertiesExtension
+import org.gradle.kotlin.dsl.withGroovyBuilder
 
 /**
- * Information about the root project.
- *
- * In this context, root project is the Gradle project for which the `pom.xml` generation
- * is performed
+ * Information about the Gradle project.
  *
  * Includes group ID, artifact name, and the version.
  */
-internal class RootProjectData
+internal class ProjectMetadata
 private constructor(
-    val project: Project,
-    val groupId: String,
-    val artifactId: String,
-    val version: String
+    internal val project: Project,
+    private val groupId: String,
+    private val artifactId: String,
+    internal val version: String
 ) {
 
     internal companion object {
@@ -56,11 +56,11 @@ private constructor(
         fun fromEither(
             project: Project, /* or */
             extension: ExtraPropertiesExtension
-        ): RootProjectData {
+        ): ProjectMetadata {
             val groupId: String = groupId(project, extension)
             val name: String = name(project, extension)
             val version: String = version(project, extension)
-            return RootProjectData(project, groupId, name, version)
+            return ProjectMetadata(project, groupId, name, version)
         }
 
         private fun version(project: Project, extension: ExtraPropertiesExtension): String {
@@ -95,5 +95,21 @@ private constructor(
             }
             return groupId
         }
+    }
+
+    /**
+     * Returns an XML string containing the project metadata.
+     *
+     * The XML format is compatible with the one defined for Maven's `pom.xml`.
+     */
+    override fun toString(): String {
+        val writer = StringWriter()
+        val xmlBuilder = MarkupBuilder(writer)
+        xmlBuilder.withGroovyBuilder {
+            "groupId" to groupId
+            "artifactId" to artifactId
+            "version" to version
+        }
+        return writer.toString()
     }
 }

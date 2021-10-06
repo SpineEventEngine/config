@@ -40,7 +40,7 @@ internal object InceptionYear {
     /**
      * Returns a string containing the inception year of Spine in a `pom.xml` format.
      */
-    internal fun asXml(): String {
+    override fun toString(): String {
         val writer = StringWriter()
         val xmlBuilder = MarkupBuilder(writer)
         xmlBuilder.withGroovyBuilder {

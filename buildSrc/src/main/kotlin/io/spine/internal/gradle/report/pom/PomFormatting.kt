@@ -34,7 +34,7 @@ import java.lang.System.lineSeparator
  */
 internal object PomFormatting {
 
-    internal val NL = lineSeparator()
+    private val NL = lineSeparator()
     private const val XML_METADATA = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     private const val PROJECT_SCHEMA_LOCATION = "<project " +
             "xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 " +
@@ -59,14 +59,6 @@ internal object PomFormatting {
     }
 
     /**
-     * Writes the closing segment of `pom.xml`.
-     */
-    internal fun writeEnd(dest: StringWriter) {
-        dest.write(NL)
-        dest.write(CLOSING_PROJECT_TAG)
-    }
-
-    /**
      * Obtains a description comment that describes the nature of the generated `pom.xml` file.
      */
     private fun describingComment(): String {
@@ -86,6 +78,14 @@ internal object PomFormatting {
             description,
             lineSeparator()
         )
+    }
+
+    /**
+     * Writes the closing segment of `pom.xml`.
+     */
+    internal fun writeEnd(dest: StringWriter) {
+        dest.write(NL)
+        dest.write(CLOSING_PROJECT_TAG)
     }
 
     /**

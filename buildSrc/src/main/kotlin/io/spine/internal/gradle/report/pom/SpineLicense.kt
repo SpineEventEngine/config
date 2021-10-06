@@ -42,7 +42,7 @@ internal object SpineLicense {
     /**
      * Returns the licensing information as an XML fragment compatible with `pom.xml` format.
      */
-    internal fun asXml(): String {
+    override fun toString(): String {
         val result = StringWriter()
         val xmlBuilder = MarkupBuilder(result)
         xmlBuilder.withGroovyBuilder {
