@@ -106,17 +106,17 @@ private constructor(
         }
 
         /**
-         * Performs comparison of {@code DependencyWithScope} instances based on the following rules:
+         * Performs comparison of {@code DependencyWithScope} instances according to these rules:
          *
-         * * Compares the scope of the dependency first. Dependencies with lower scope priority
+         * * Compares the scope of the dependency first. Dependency with lower scope priority
          * number goes first.
          *
-         *  * For dependencies with same scope does the lexicographical group name comparison.
+         *  * For dependencies with same scope, does the lexicographical group name comparison.
          *
-         *  * For dependencies within the same group does the lexicographical artifact
+         *  * For dependencies within the same group, does the lexicographical artifact
          *  name comparison.
          *
-         *  * For dependencies with the same artifact name does the lexicographical artifact
+         *  * For dependencies with the same artifact name, does the lexicographical artifact
          *  version comparison.
          */
         private val COMPARATOR: Comparator<ScopedDependency> =
