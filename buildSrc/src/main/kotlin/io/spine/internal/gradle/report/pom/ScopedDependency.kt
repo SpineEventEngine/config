@@ -45,7 +45,7 @@ private constructor(
     private val scope: DependencyScope
 ) : Comparable<ScopedDependency> {
 
-    private companion object {
+    internal companion object {
 
         /**
          * A map that contains the relations of known Gradle configuration names
