@@ -104,11 +104,11 @@ private constructor(
      */
     override fun toString(): String {
         val writer = StringWriter()
-        val xmlBuilder = MarkupBuilder(writer)
-        xmlBuilder.withGroovyBuilder {
-            "groupId" to groupId
-            "artifactId" to artifactId
-            "version" to version
+        val xml = MarkupBuilder(writer)
+        xml.withGroovyBuilder {
+            "groupId" { xml.text(groupId) }
+            "artifactId" { xml.text(artifactId) }
+            "version" { xml.text(version) }
         }
         return writer.toString()
     }
