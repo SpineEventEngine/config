@@ -50,6 +50,8 @@ import org.gradle.kotlin.dsl.withGroovyBuilder
  *      ...
  *  </dependencies>
  * ```
+ *
+ * @see PomGenerator
  */
 internal class DependencyWriter
 private constructor(

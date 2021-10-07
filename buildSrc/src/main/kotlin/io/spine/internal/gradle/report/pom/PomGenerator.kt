@@ -34,6 +34,11 @@ import org.gradle.kotlin.dsl.extra
  * Generates a `pom.xml` file that contains dependencies of the root project as
  * well as the dependencies of its subprojects.
  *
+ * Usage:
+ * ```
+ *      PomGenerator.applyTo(project)
+ * ```
+ *
  * The generated `pom.xml` is not usable for Maven build tasks and is merely a
  * description of project dependencies.
  *
