@@ -26,13 +26,15 @@
 
 package io.spine.internal.gradle.checkstyle
 
+import io.spine.internal.dependency.CheckStyle
 import org.gradle.api.Project
+import org.gradle.api.plugins.quality.Checkstyle
 import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.plugins.quality.CheckstylePlugin
 import org.gradle.kotlin.dsl.the
 
 /**
- * Configures the CheckStyle plugin.
+ * Configures the Checkstyle plugin.
  *
  * Usage:
  * ```
@@ -53,7 +55,7 @@ object CheckstyleConfig {
         }
 
         with(project.the<CheckstyleExtension>()) {
-            toolVersion = Checkstyle.version
+            toolVersion = CheckStyle.version
             configFile = project.rootDir.resolve("config/quality/checkstyle.xml")
         }
 
