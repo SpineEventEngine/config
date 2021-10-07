@@ -24,11 +24,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.dependency
+package io.spine.internal.gradle.report.pom
 
-// https://checkstyle.sourceforge.io/
-// See `io.spine.internal.gradle.checkstyle.CheckStyleConfig`.
-@Suppress("unused")
-object CheckStyle {
-    const val version = "8.29"
+import groovy.xml.MarkupBuilder
+import java.io.StringWriter
+import org.gradle.kotlin.dsl.withGroovyBuilder
+
+/**
+ * The licensing information of Spine.
+ */
+internal object SpineLicense {
+
+    private const val NAME = "Apache License, Version 2.0"
+    private const val URL = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    private const val DISTRIBUTION = "repo"
+
+    /**
+     * Returns the licensing information as an XML fragment compatible with `pom.xml` format.
+     */
+    override fun toString(): String {
+        val result = StringWriter()
+        val xml = MarkupBuilder(result)
+        xml.withGroovyBuilder {
+            "licenses" {
+                "license" {
+                    "name" { xml.text(NAME) }
+                    "url" { xml.text(URL) }
+                    "distribution" { xml.text(DISTRIBUTION) }
+                }
+            }
+        }
+        return result.toString()
+    }
 }

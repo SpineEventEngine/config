@@ -24,11 +24,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.dependency
+package io.spine.internal.gradle.report.pom
 
-// https://checkstyle.sourceforge.io/
-// See `io.spine.internal.gradle.checkstyle.CheckStyleConfig`.
-@Suppress("unused")
-object CheckStyle {
-    const val version = "8.29"
+/**
+ * A Maven dependency scope.
+ */
+@Suppress("EnumEntryName", "EnumNaming") /* Dubbing the actual values in Gradle. */
+enum class DependencyScope {
+    undefined,
+    compile,
+    provided,
+    runtime,
+    test,
+    system
+
+    /**
+    `import` is also a scope, however, it can't be used outside the `<dependencyManagement>`
+    section, which is outside of the scope of this script
+     **/
 }

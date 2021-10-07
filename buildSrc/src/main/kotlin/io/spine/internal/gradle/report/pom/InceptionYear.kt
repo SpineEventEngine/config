@@ -24,11 +24,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.dependency
+package io.spine.internal.gradle.report.pom
 
-// https://checkstyle.sourceforge.io/
-// See `io.spine.internal.gradle.checkstyle.CheckStyleConfig`.
-@Suppress("unused")
-object CheckStyle {
-    const val version = "8.29"
+import groovy.xml.MarkupBuilder
+import java.io.StringWriter
+import org.gradle.kotlin.dsl.withGroovyBuilder
+
+/**
+ * Information about the Spine's inception year.
+ */
+internal object InceptionYear {
+
+    private const val SPINE_INCEPTION_YEAR = "2015"
+
+    /**
+     * Returns a string containing the inception year of Spine in a `pom.xml` format.
+     */
+    override fun toString(): String {
+        val writer = StringWriter()
+        val xml = MarkupBuilder(writer)
+        xml.withGroovyBuilder {
+            "inceptionYear" { xml.text(SPINE_INCEPTION_YEAR) }
+        }
+        return writer.toString()
+    }
 }

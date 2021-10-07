@@ -24,11 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.dependency
+package io.spine.internal.gradle.report.pom
 
-// https://checkstyle.sourceforge.io/
-// See `io.spine.internal.gradle.checkstyle.CheckStyleConfig`.
-@Suppress("unused")
-object CheckStyle {
-    const val version = "8.29"
-}
+import groovy.xml.MarkupBuilder
+
+/**
+ * This file contains extension methods and properties for the Groovy's `MarkupBuilder`.
+ */
+
+/**
+ * Yields a [value] to the document by converting it to string.
+ */
+fun MarkupBuilder.text(value: Any?) = this.mkp.yield(value.toString())
