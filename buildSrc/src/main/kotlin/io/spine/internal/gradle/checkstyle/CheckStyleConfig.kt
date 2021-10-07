@@ -38,13 +38,16 @@ import org.gradle.kotlin.dsl.the
  *
  * Usage:
  * ```
- *      CheckstyleConfig.applyTo(project)
+ *      CheckStyleConfig.applyTo(project)
  * ```
  *
- * Note: the checks of the `test` sources are disabled.
+ * Please note, the checks of the `test` sources are disabled.
+ *
+ * Also, this type is named in double-camel-case to avoid re-declaration due to a clash
+ * with some Gradle-provided types.
  */
 @Suppress("unused")
-object CheckstyleConfig {
+object CheckStyleConfig {
 
     /**
      * Applies the configuration to the passed [project].
