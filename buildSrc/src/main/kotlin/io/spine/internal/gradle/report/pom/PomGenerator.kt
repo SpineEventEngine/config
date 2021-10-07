@@ -78,12 +78,10 @@ object PomGenerator {
 
         val task = project.tasks.create("generatePom")
         task.doLast {
-            val rootProject = project.rootProject
             val pomFile = project.projectDir.resolve("pom.xml")
             project.delete(pomFile)
 
-            val extra = rootProject.extra
-            val projectData = ProjectMetadata.fromEither(project, extra)
+            val projectData = project.metadata()
             val writer = PomXmlWriter(projectData)
             writer.writeTo(pomFile)
         }
