@@ -40,11 +40,12 @@ import org.gradle.kotlin.dsl.withGroovyBuilder
  *
  * Includes group ID, artifact name, and the version.
  */
+@Suppress("MemberVisibilityCanBePrivate") /* Property values accessed via `KProperty`. */
 internal class ProjectMetadata
 internal constructor(
     internal val project: Project,
-    private val groupId: String,
-    private val artifactId: String,
+    internal val groupId: String,
+    internal val artifactId: String,
     internal val version: String
 ) {
 
@@ -60,9 +61,9 @@ internal constructor(
     }
 
     private fun MarkupBuilder.tagsFor(vararg property: KProperty<*>) {
-        this.withGroovyBuilder {
-            property.forEach {
-                it.name { this@tagsFor.text(it.call(this@ProjectMetadata)) }
+        property.forEach {
+            this.withGroovyBuilder {
+                it.name { this@tagsFor.text(it.call()) }
             }
         }
     }
@@ -71,8 +72,9 @@ internal constructor(
 /**
  * Creates a new instance of [ProjectMetadata].
  *
- * The required information is first retrieved from the passed [project].
- * And if a property is missing from the `project`, it is taken from the Project `extra` extension.
+ * The required information is first retrieved from the project.
+ * And if a property is missing from the `project`, it is taken from the `extra` extension
+ * of project's root project.
  */
 internal fun Project.metadata(): ProjectMetadata {
     val groupId: String by nonEmptyValue(group)
@@ -95,7 +97,7 @@ private class NonEmptyValue(
         if (defaultValue.isNotEmpty()) {
             return defaultValue as T
         }
-        val result = project.extra[property.name]
+        val result = project.rootProject.extra[property.name]
         return result as T
     }
 }
