@@ -54,9 +54,10 @@ object CheckStyleConfig {
             configFile = project.rootDir.resolve("config/quality/checkstyle.xml")
         }
 
-
-        // Disables checking the test sources.
-        val checkstyleTest = project.tasks.findByName("checkstyleTest") as Checkstyle
-        checkstyleTest.enabled = false
+        project.afterEvaluate {
+            // Disables checking the test sources.
+            val checkstyleTest = project.tasks.findByName("checkstyleTest") as Checkstyle
+            checkstyleTest.enabled = false
+        }
     }
 }
