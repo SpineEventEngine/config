@@ -34,6 +34,7 @@ import io.spine.internal.gradle.report.coverage.TaskName.jacocoRootReport
 import io.spine.internal.gradle.report.coverage.TaskName.jacocoTestReport
 import io.spine.internal.gradle.sourceSets
 import java.io.File
+import java.lang.IllegalStateException
 import java.util.*
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -50,7 +51,16 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 
 /**
  * Configures JaCoCo plugin to produce `jacocoRootReport` task which accumulates
- * the test coverage results from all projects in a multi-project Gradle build.
+ * the test coverage results from all subprojects in a multi-project Gradle build.
+ *
+ * Users must apply `jacoco` plugin to all the subprojects, for which the report aggregation
+ * is required.
+ *
+ * In a single-module Gradle project, this utility is NOT needed. Just a plain `jacoco` plugin
+ * applied to the project is sufficient.
+ *
+ * Therefore, tn case this utility is applied to a single-module Gradle project,
+ * an `IllegalStateException` is thrown.
  */
 class JacocoConfig(
     private val rootProject: Project,
@@ -61,48 +71,51 @@ class JacocoConfig(
     companion object {
 
         /**
+         * A folder under the `buildDir` of the [rootProject] to which the reports will
+         * be copied when aggregating the coverage reports.
+         *
+         * If it does not exist, it will be created.
+         */
+        private const val reportsDirSuffix = "subreports/jacoco/"
+
+        /**
          * Applies the JaCoCo plugin to the Gradle project.
          *
-         * If the passed project has no subprojects, the plugin is only applied to it alone.
-         * Otherwise, the plugin is applied to each of the subprojects.
+         * If the passed project has no subprojects, an `IllegalStateException` is thrown,
+         * telling that this utility should NOT be used.
          *
          * Registers `jacocoRootReport` task which aggregates all coverage reports
-         * from the processed Gradle projects, be it a single project, or multiple subprojects.
+         * from the subprojects.
          */
         fun applyTo(project: Project) {
             project.applyPlugin(BasePlugin::class.java)
             project.afterEvaluate {
                 val javaProjects: Iterable<Project> = eligibleProjects(project)
-                val reportsDir = project.rootProject.buildDir.resolve("subreports/jacoco/")
+                val reportsDir = project.rootProject.buildDir.resolve(reportsDirSuffix)
                 JacocoConfig(project.rootProject, reportsDir, javaProjects)
                     .configure()
             }
         }
 
+        /**
+         * For a multi-module Gradle project, returns those subprojects of the passed [project]
+         * which have JaCoCo plugin applied.
+         *
+         * Throws an exception in case this project has no subprojects.
+         */
         private fun eligibleProjects(project: Project): Iterable<Project> {
-            val javaProjects: Iterable<Project> =
+            val projects: Iterable<Project> =
                 if (project.subprojects.isNotEmpty()) {
                     project.subprojects.filter {
                         it.pluginManager.hasPlugin(JacocoPlugin.PLUGIN_EXTENSION_NAME)
                     }
                 } else {
-                    checkHasJacoco(project)
-                    listOf(project)
+                    throw IllegalStateException(
+                        "In a single-module Gradle project, `JacocoConfig` is NOT needed." +
+                                "Please apply `jacoco` plugin instead."
+                    )
                 }
-            return javaProjects
-        }
-
-        private fun checkHasJacoco(project: Project) {
-            if (!project
-                    .pluginManager
-                    .hasPlugin(JacocoPlugin.PLUGIN_EXTENSION_NAME)
-            ) {
-                throw IllegalStateException(
-                    "In a single-module Gradle project, " +
-                            "`JacocoConfig` requires `jacoco` plugin to be applied " +
-                            "to the root project."
-                )
-            }
+            return projects
         }
     }
 
