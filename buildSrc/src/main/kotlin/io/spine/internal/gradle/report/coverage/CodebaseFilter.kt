@@ -41,7 +41,7 @@ import org.gradle.api.tasks.SourceSetOutput
  * from the human-created production code.
  *
  * Works on top of the passed [source][srcDirs] and [output][outputDirs] directories, by analyzing
- * the source file names and finding the corresponding compile output.
+ * the source file names and finding the corresponding compiler output.
  */
 internal class CodebaseFilter(
     private val project: Project,
