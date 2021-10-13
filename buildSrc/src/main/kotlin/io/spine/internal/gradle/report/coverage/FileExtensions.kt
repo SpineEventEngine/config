@@ -26,9 +26,9 @@
 
 package io.spine.internal.gradle.report.coverage
 
-import io.spine.internal.gradle.report.coverage.ClassMarker.ANONYMOUS
 import io.spine.internal.gradle.report.coverage.FileExtension.COMPILED_CLASS
 import io.spine.internal.gradle.report.coverage.FileExtension.JAVA_SOURCE
+import io.spine.internal.gradle.report.coverage.PathMarker.ANONYMOUS_CLASS
 import io.spine.internal.gradle.report.coverage.PathMarker.GENERATED
 import io.spine.internal.gradle.report.coverage.PathMarker.GRPC_SRC_FOLDER
 import io.spine.internal.gradle.report.coverage.PathMarker.JAVA_OUTPUT_FOLDER
@@ -102,8 +102,8 @@ internal fun File.asJavaClassName(): String? =
  */
 internal fun File.asJavaCompiledClassName(): String? {
     var className = this.parseClassName(JAVA_OUTPUT_FOLDER, COMPILED_CLASS)
-    if (className != null && className.contains(ANONYMOUS.infix)) {
-        className = className.split(ANONYMOUS.pattern())[0]
+    if (className != null && className.contains(ANONYMOUS_CLASS.infix)) {
+        className = className.split(ANONYMOUS_CLASS.infix)[0]
     }
     return className
 }
