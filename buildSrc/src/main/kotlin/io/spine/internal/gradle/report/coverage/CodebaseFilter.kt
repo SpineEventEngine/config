@@ -32,7 +32,6 @@ import java.io.File
 import kotlin.streams.toList
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileTree
-import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.SourceSetOutput
 
@@ -81,12 +80,13 @@ internal class CodebaseFilter(
                 folder.walk()
                     .filter { !it.isDirectory }
                     .forEach { file ->
-                        file.appendTo(
-                            generatedNames,
+                        file.parseName(
                             File::asJavaClassName,
                             File::asGrpcClassName,
                             File::asSpineClassName
-                        )
+                        )?.let { clsName ->
+                            generatedNames.add(clsName)
+                        }
                     }
             }
         return generatedNames

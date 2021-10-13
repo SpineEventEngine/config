@@ -69,20 +69,21 @@ internal fun File.parseClassName(
 }
 
 /**
- * If this file contains the name of a class — according to the passed [classNameParser]s —
- * appends the specified [destination] with it.
+ * Attempts to parse the file name with either of the specified [parsers],
+ * in their respective order.
+ *
+ * Returns the first non-`null` parsed value.
+ *
+ * If none of the parsers returns non-`null` value, returns `null`.
  */
-internal fun File.appendTo(
-    destination: MutableList<String>,
-    vararg classNameParser: (file: File) -> String?
-) {
-    for (parser in classNameParser) {
+internal fun File.parseName(vararg parsers: (file: File) -> String?): String? {
+    for (parser in parsers) {
         val className = parser.invoke(this)
         if (className != null) {
-            destination.add(className)
-            break
+            return className
         }
     }
+    return null
 }
 
 /**
