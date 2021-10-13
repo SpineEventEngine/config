@@ -67,5 +67,4 @@ internal enum class PathMarker(val infix: String) {
      */
     val length: Int
         get() = this.infix.length
-
 }
