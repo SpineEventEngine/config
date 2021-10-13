@@ -38,13 +38,13 @@ internal object FileFilter {
      * created by human beings.
      */
     fun producedByHuman(files: Iterable<File>): Iterable<File> {
-        return files.filter { ! it.isGenerated }
+        return files.filter { !it.isGenerated }
     }
 
     /**
      * Filters this file collection so that only generated files are present.
      */
-    fun generatedOnly(files: Iterable<File>) : Iterable<File> {
+    fun generatedOnly(files: Iterable<File>): Iterable<File> {
         return files.filter { it.isGenerated }
     }
 }
