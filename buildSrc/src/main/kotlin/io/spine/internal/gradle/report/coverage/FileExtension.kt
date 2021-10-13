@@ -24,48 +24,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.gradle
-
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.kotlin.dsl.getByType
+package io.spine.internal.gradle.report.coverage
 
 /**
- * This file contains extension methods and properties for the Gradle `Project`.
+ * File extensions.
  */
+internal enum class FileExtension(val value: String) {
 
-/**
- * Obtains the Java plugin extension of the project.
- */
-val Project.javaPluginExtension: JavaPluginExtension
-    get() = extensions.getByType()
+    /**
+     * Extension of a Java source file.
+     */
+    JAVA_SOURCE(".java"),
 
-/**
- * Obtains source set container of the Java project.
- */
-val Project.sourceSets: SourceSetContainer
-    get() = javaPluginExtension.sourceSets
+    /**
+     * Extension of a Java compiled file.
+     */
+    COMPILED_CLASS(".class");
 
-/**
- * Applies the specified Gradle plugin to this project by the plugin [class][cls].
- */
-fun Project.applyPlugin(cls: Class<out Plugin<*>>) {
-    this.apply {
-        plugin(cls)
-    }
-}
-
-/**
- * Finds the task of type `T` in this project by the task name.
- *
- * The task must be present. Also, a caller is responsible for using the proper value of
- * the generic parameter `T`.
- */
-@Suppress("UNCHECKED_CAST")     /* See the method docs. */
-fun <T : Task> Project.findTask(name: String): T {
-    val task = this.tasks.findByName(name)
-    return task!! as T
+    /**
+     * The number of symbols in the extension.
+     */
+    val length: Int
+        get() = this.value.length
 }
