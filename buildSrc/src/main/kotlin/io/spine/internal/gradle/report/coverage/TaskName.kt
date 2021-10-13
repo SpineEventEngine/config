@@ -24,48 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.gradle
-
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.kotlin.dsl.getByType
+package io.spine.internal.gradle.report.coverage
 
 /**
- * This file contains extension methods and properties for the Gradle `Project`.
+ * The names of Gradle tasks involved into the JaCoCo reporting.
  */
+@Suppress("EnumEntryName", "EnumNaming") /* Dubbing the actual values in Gradle. */
+internal enum class TaskName {
+    jacocoRootReport,
+    copyReports,
 
-/**
- * Obtains the Java plugin extension of the project.
- */
-val Project.javaPluginExtension: JavaPluginExtension
-    get() = extensions.getByType()
-
-/**
- * Obtains source set container of the Java project.
- */
-val Project.sourceSets: SourceSetContainer
-    get() = javaPluginExtension.sourceSets
-
-/**
- * Applies the specified Gradle plugin to this project by the plugin [class][cls].
- */
-fun Project.applyPlugin(cls: Class<out Plugin<*>>) {
-    this.apply {
-        plugin(cls)
-    }
-}
-
-/**
- * Finds the task of type `T` in this project by the task name.
- *
- * The task must be present. Also, a caller is responsible for using the proper value of
- * the generic parameter `T`.
- */
-@Suppress("UNCHECKED_CAST")     /* See the method docs. */
-fun <T : Task> Project.findTask(name: String): T {
-    val task = this.tasks.findByName(name)
-    return task!! as T
+    check,
+    jacocoTestReport
 }

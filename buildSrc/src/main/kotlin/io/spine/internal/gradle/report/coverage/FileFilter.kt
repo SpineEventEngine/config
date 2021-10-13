@@ -24,48 +24,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.gradle
+package io.spine.internal.gradle.report.coverage
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.kotlin.dsl.getByType
+import java.io.File
 
 /**
- * This file contains extension methods and properties for the Gradle `Project`.
+ * Utilities for filtering the groups of `File`s.
  */
+internal object FileFilter {
 
-/**
- * Obtains the Java plugin extension of the project.
- */
-val Project.javaPluginExtension: JavaPluginExtension
-    get() = extensions.getByType()
-
-/**
- * Obtains source set container of the Java project.
- */
-val Project.sourceSets: SourceSetContainer
-    get() = javaPluginExtension.sourceSets
-
-/**
- * Applies the specified Gradle plugin to this project by the plugin [class][cls].
- */
-fun Project.applyPlugin(cls: Class<out Plugin<*>>) {
-    this.apply {
-        plugin(cls)
+    /**
+     * Excludes the generated files from this file collection, leaving only those which were
+     * created by human beings.
+     */
+    fun producedByHuman(files: Iterable<File>): Iterable<File> {
+        return files.filter { !it.isGenerated }
     }
-}
 
-/**
- * Finds the task of type `T` in this project by the task name.
- *
- * The task must be present. Also, a caller is responsible for using the proper value of
- * the generic parameter `T`.
- */
-@Suppress("UNCHECKED_CAST")     /* See the method docs. */
-fun <T : Task> Project.findTask(name: String): T {
-    val task = this.tasks.findByName(name)
-    return task!! as T
+    /**
+     * Filters this file collection so that only generated files are present.
+     */
+    fun generatedOnly(files: Iterable<File>): Iterable<File> {
+        return files.filter { it.isGenerated }
+    }
 }
