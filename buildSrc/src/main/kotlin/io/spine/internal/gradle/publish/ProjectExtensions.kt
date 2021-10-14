@@ -54,6 +54,20 @@ fun Project.spinePublishing(action: PublishExtension.() -> Unit) {
     extension.action()
 }
 
+/**
+ * Obtains the artifact prefix for the passed project.
+ *
+ * If the `PublishExtension` has the property `spinePrefix` set to `true` returns `"spine-"`,
+ * otherwise an empty string.
+ */
+@Suppress("unused")
+fun Project.prefix(): String {
+    val extension = this.rootProject.extensions.findByType(PublishExtension::class.java)
+    return if (extension != null && extension.spinePrefix.get()) {
+        "spine-"
+    } else ""
+}
+
 internal fun Project.applyMavenPublish(
     extension: PublishExtension,
     rootPublish: Task?,
