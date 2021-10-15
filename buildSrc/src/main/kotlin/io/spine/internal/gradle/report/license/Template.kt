@@ -39,20 +39,23 @@ internal class Template(
     private val file: File
 ) {
 
+    private companion object {
+        private const val sectionBreak = "\n\n"
+    }
+
     internal fun writeHeader() {
         file.appendText(
-            """
-    # Dependencies of `${project.group}:${project.prefix()}${project.name}:${project.version}`
-"""
+            sectionBreak + "# Dependencies of " +
+                    "`${project.group}:${project.prefix()}${project.name}:${project.version}`\n"
         )
     }
 
     internal fun writeFooter() {
         file.appendText(
-            "\n\n" +
+            sectionBreak +
                     "The dependencies distributed under several licenses, " +
                     "are used according their commercial-use-friendly license." +
-                    "\n\n" +
+                    sectionBreak +
                     "This report was generated on **${Date()}** " +
                     "using [Gradle-License-Report plugin]" +
                     "(https://github.com/jk1/Gradle-License-Report) by Evgeny Naumenko, " +

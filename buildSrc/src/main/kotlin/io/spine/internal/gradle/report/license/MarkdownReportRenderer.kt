@@ -64,8 +64,8 @@ internal class MarkdownReportRenderer(
 }
 
 private class Dependencies(
-    private val runtime: List<ModuleData>,
-    private val compileTooling: List<ModuleData>
+    private val runtime: Iterable<ModuleData>,
+    private val compileTooling: Iterable<ModuleData>
 
 ) {
 
@@ -80,7 +80,7 @@ private class Dependencies(
                     compileToolingDeps.addAll(config.dependencies)
                 }
             }
-            return Dependencies(runtimeDeps.sorted(), compileToolingDeps.sorted())
+            return Dependencies(runtimeDeps.toSortedSet(), compileToolingDeps.toSortedSet())
         }
     }
 
@@ -121,25 +121,29 @@ private fun ModuleData.print(outputFile: File) {
 
     if (this.manifests.isNotEmpty()) {
         val manifest = this.manifests.first()
-        if (manifest.url != null && !projectUrlDone) {
+        if (!manifest.url.isNullOrEmpty() && !projectUrlDone) {
             outputFile.appendText("\n     * **Manifest Project URL:** [${manifest.url}](${manifest.url})")
         }
-        if (manifest.license != null) {
-            if (manifest.license.startsWith("http")) {
-                outputFile.appendText("\n     * **Manifest license URL:** [${manifest.license}](${manifest.license})")
+        if (!manifest.license.isNullOrEmpty()) {
+            when {
+                manifest.license.startsWith("http") -> {
+                    outputFile.appendText("\n     * **Manifest license URL:** [${manifest.license}](${manifest.license})")
 
-            } else if (manifest.hasPackagedLicense) {
-                outputFile.appendText("\n     * **Packaged License File:** [${manifest.license}](${manifest.url})")
-            } else {
-                outputFile.appendText("\n     * **Manifest License:** ${manifest.license} (Not packaged)")
+                }
+                manifest.hasPackagedLicense -> {
+                    outputFile.appendText("\n     * **Packaged License File:** [${manifest.license}](${manifest.url})")
+                }
+                else -> {
+                    outputFile.appendText("\n     * **Manifest License:** ${manifest.license} (Not packaged)")
 
+                }
             }
         }
     }
 
     if (this.poms.isNotEmpty()) {
         val pomData = this.poms.first()
-        if (pomData.projectUrl != null && !projectUrlDone) {
+        if (!pomData.projectUrl.isNullOrEmpty() && !projectUrlDone) {
             outputFile.appendText("\n     * **POM Project URL:** [${pomData.projectUrl}](${pomData.projectUrl})")
 
         }
@@ -147,11 +151,14 @@ private fun ModuleData.print(outputFile: File) {
             pomData.licenses.forEach { license ->
                 outputFile.appendText("\n     * **POM License: ${license.name}**")
 
-                if (license.url != null) {
-                    if (license.url.startsWith("http")) {
-                        outputFile.appendText(" - [${license.url}](${license.url})")
-                    } else {
-                        outputFile.appendText(" **License:** ${license.url}")
+                if (!license.url.isNullOrEmpty()) {
+                    when {
+                        license.url.startsWith("http") -> {
+                            outputFile.appendText(" - [${license.url}](${license.url})")
+                        }
+                        else -> {
+                            outputFile.appendText(" **License:** ${license.url}")
+                        }
                     }
                 }
             }
@@ -161,14 +168,14 @@ private fun ModuleData.print(outputFile: File) {
 }
 
 private fun ModuleData.print(getter: KCallable<*>, outputFile: File, title: String): ModuleData {
-    val value = getter.call()
+    val value = getter.call(this)
     if (value != null) {
         outputFile.appendText(" **${title}:** ${value}")
     }
     return this
 }
 
-private fun File.printSection(title: String, modules: List<ModuleData>) {
+private fun File.printSection(title: String, modules: Iterable<ModuleData>) {
     this.appendText("\n## $title")
     modules.forEach {
         it.print(this)

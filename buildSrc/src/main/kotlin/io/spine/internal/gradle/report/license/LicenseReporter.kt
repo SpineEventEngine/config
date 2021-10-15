@@ -60,8 +60,7 @@ object LicenseReporter {
 
     fun enableConsolidation(project: Project) {
         val rootProject = project.rootProject
-
-        rootProject.tasks.register("reportLicensesInRepo") {
+        val reportLicensesInRepo = rootProject.tasks.register("reportLicensesInRepo") {
             val task = this
             val targetProjects: Iterable<Project> = if (rootProject.subprojects.isEmpty()) {
                 println("Configuring the license report for a single root project.")
@@ -79,16 +78,20 @@ object LicenseReporter {
 
             doLast {
                 val paths = targetProjects.map {
-                    "${it.buildDir}${Config.relativePath}/${Config.outputFilename}"
+                    "${it.buildDir}/${Config.relativePath}/${Config.outputFilename}"
                 }
 
                 println("Aggregating the reports from the target projects.")
-                val aggregatedContent = paths.map { (File(it)).readText() }.joinToString("\n\n\n")
+                val aggregatedContent =
+                    paths.map { (File(it)).readText() }.joinToString("\n\n\n")
 
                 (File("${rootProject.rootDir}/${Config.outputFilename}")).writeText(
                     aggregatedContent
                 )
             }
+            dependsOn(project.findTask("assemble"))
         }
+        project.findTask<Task>("build")
+            .finalizedBy(reportLicensesInRepo)
     }
 }
