@@ -75,7 +75,8 @@ private constructor(
          * @see artifactId
          */
         fun artifactIdIn(project: Project): String {
-            val publishExtension = project.extensions.findByType(PublishExtension::class.java)
+            val rootProject = project.rootProject
+            val publishExtension = rootProject.extensions.findByType(PublishExtension::class.java)
             val result = publishExtension?.artifactId(project) ?: project.name
             return result
         }
