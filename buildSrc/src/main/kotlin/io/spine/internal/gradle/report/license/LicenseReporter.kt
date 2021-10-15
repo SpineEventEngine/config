@@ -40,12 +40,21 @@ import org.gradle.kotlin.dsl.the
  * Generates the license report for all dependencies used in a Gradle project.
  *
  * Transitive dependencies are included.
- *
- * Use `generateLicenseReport` task to trigger the generation.
  */
 object LicenseReporter {
 
-    fun applyToSingle(project: Project) {
+    /**
+     * The name of the Gradle task which generates the reports for a specific Gradle project.
+     */
+    private const val projectTaskName = "generateLicenseReport"
+
+    /**
+     * The name of the Gradle task merging the license reports across all Gradle projects
+     * in the repository into a single report file.
+     */
+    private const val repoTaskName = "mergeAllLicenseReports"
+
+    fun generateReportIn(project: Project) {
         project.applyPlugin(LicenseReportPlugin::class.java)
         val reportOutputDir = project.buildDir.resolve(Config.relativePath)
 
@@ -58,40 +67,61 @@ object LicenseReporter {
         }
     }
 
-    fun enableConsolidation(project: Project) {
+    fun mergeAllReports(project: Project) {
         val rootProject = project.rootProject
-        val reportLicensesInRepo = rootProject.tasks.register("reportLicensesInRepo") {
-            val task = this
-            val targetProjects: Iterable<Project> = if (rootProject.subprojects.isEmpty()) {
-                println("Configuring the license report for a single root project.")
-                listOf(this.project)
-            } else {
-                println("Configuring the license report for all subprojects of a root project.")
-                rootProject.subprojects
-            }
+        val consolidateAllLicenseReports = rootProject.tasks.register(repoTaskName) {
+            val consolidationTask = this
+            val assembleTask = project.findTask<Task>("assemble")
 
-            targetProjects.forEach {
-                val generateLicenseReport = it.findTask<Task>("generateLicenseReport")
-                task.dependsOn(generateLicenseReport)
-                generateLicenseReport.dependsOn(project.findTask("assemble"))
+            val sourceProjects: Iterable<Project> = sourceProjects(rootProject)
+            sourceProjects.forEach {
+                val perProjectTask = it.findTask<Task>(projectTaskName)
+                consolidationTask.dependsOn(perProjectTask)
+                perProjectTask.dependsOn(assembleTask)
             }
 
             doLast {
-                val paths = targetProjects.map {
-                    "${it.buildDir}/${Config.relativePath}/${Config.outputFilename}"
-                }
-
-                println("Aggregating the reports from the target projects.")
-                val aggregatedContent =
-                    paths.map { (File(it)).readText() }.joinToString("\n\n\n")
-
-                (File("${rootProject.rootDir}/${Config.outputFilename}")).writeText(
-                    aggregatedContent
-                )
+                mergeReports(sourceProjects, rootProject)
             }
-            dependsOn(project.findTask("assemble"))
+
+            dependsOn(assembleTask)
         }
         project.findTask<Task>("build")
-            .finalizedBy(reportLicensesInRepo)
+            .finalizedBy(consolidateAllLicenseReports)
+    }
+
+    /**
+     * Determines the source projects for which the resulting report will be produced.
+     */
+    private fun Task.sourceProjects(rootProject: Project): Iterable<Project> {
+        val targetProjects: Iterable<Project> = if (rootProject.subprojects.isEmpty()) {
+            println("The license report will be produced for a single root project.")
+            listOf(this.project)
+        } else {
+            println("The license report will be produced for all subprojects of a root project.")
+            rootProject.subprojects
+        }
+        return targetProjects
+    }
+
+    /**
+     * Merges the license reports from all [sourceProjects] into a single file under
+     * the [rootProject]'s root directory.
+     */
+    private fun mergeReports(
+        sourceProjects: Iterable<Project>,
+        rootProject: Project
+    ) {
+        val paths = sourceProjects.map {
+            "${it.buildDir}/${Config.relativePath}/${Config.outputFilename}"
+        }
+
+        println("Merging the license reports from the all projects.")
+        val mergedContent = paths.joinToString("\n\n\n") { (File(it)).readText() }
+
+        val output = File("${rootProject.rootDir}/${Config.outputFilename}")
+        output.writeText(
+            mergedContent
+        )
     }
 }
