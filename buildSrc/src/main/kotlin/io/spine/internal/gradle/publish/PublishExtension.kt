@@ -44,15 +44,55 @@ private constructor(
 ) {
 
     internal companion object {
-        fun create(project: Project): PublishExtension {
+
+        /** The name of the extension as it appears in a Gradle project. */
+        const val name = "spinePublishing"
+
+        /** The prefix to be used before the project name if [spinePrefix] is set to `true`. */
+        const val artifactPrefix = "spine-"
+
+        /**
+         * Creates a new instance of the extension and adds it to the given project.
+         */
+        fun createIn(project: Project): PublishExtension {
             val factory = project.objects
-            return PublishExtension(
+            val extension = PublishExtension(
                 projectsToPublish = factory.setProperty(String::class),
                 targetRepositories = factory.setProperty(Repository::class),
                 spinePrefix = factory.property(Boolean::class)
             )
+            project.extensions.add(PublishExtension::class.java, name, extension)
+            return extension
+        }
+
+        /**
+         * Obtains an artifact ID of the given project.
+         *
+         * If the project has a [PublishExtension] installed, then it is used for
+         * [obtaining][PublishExtension.artifactId] the artifact ID.
+         * Otherwise, the project name is returned.
+         *
+         * @see artifactId
+         */
+        fun artifactIdIn(project: Project): String {
+            val publishExtension = project.extensions.findByType(PublishExtension::class.java)
+            val result = publishExtension?.artifactId(project) ?: project.name
+            return result
         }
     }
+
+    /**
+     * Obtains an artifact ID of the given project, taking into account the value of
+     * the [spinePrefix] property. If the property is set to `true`, [artifactPrefix] will
+     * be used before the project name. Otherwise, just the name of the project will be
+     * used as the artifact ID.
+     */
+    fun artifactId(project: Project): String =
+        if (spinePrefix.get()) {
+            "$artifactPrefix${project.name}"
+        } else {
+            project.name
+        }
 
     /**
      * The project to be published _instead_ of [projectsToPublish].
@@ -67,10 +107,19 @@ private constructor(
 
     /**
      * Instructs to publish the passed project _instead_ of [projectsToPublish].
+     *
+     * @see projectsToPublish
      */
     fun publish(project: Project) {
         soloProject = project
     }
 
+    /**
+     * Returns `true` if the extension is configured to publish only one project.
+     * `false`, otherwise.
+     *
+     * @see publish
+     * @see projectsToPublish
+     */
     fun singleProject(): Boolean = soloProject != null
 }
