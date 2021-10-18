@@ -27,21 +27,26 @@
 package io.spine.internal.gradle.publish
 
 import io.spine.internal.gradle.Repository
+import javax.inject.Inject
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
-import org.gradle.kotlin.dsl.property
-import org.gradle.kotlin.dsl.setProperty
 
 /**
  * The extension for configuring the `Publish` plugin.
  */
-class PublishExtension
-private constructor(
-    val projectsToPublish: SetProperty<String>,
-    val targetRepositories: SetProperty<Repository>,
-    val spinePrefix: Property<Boolean>
-) {
+abstract class PublishExtension @Inject constructor() {
+
+    abstract val projectsToPublish: SetProperty<String>
+    abstract val targetRepositories: SetProperty<Repository>
+    abstract val spinePrefix: Property<Boolean>
+
+    /**
+     * The project to be published _instead_ of [projectsToPublish].
+     *
+     * If set, [projectsToPublish] will be ignored.
+     */
+    private var soloProject: Project? = null
 
     internal companion object {
 
@@ -55,13 +60,8 @@ private constructor(
          * Creates a new instance of the extension and adds it to the given project.
          */
         fun createIn(project: Project): PublishExtension {
-            val factory = project.objects
-            val extension = PublishExtension(
-                projectsToPublish = factory.setProperty(String::class),
-                targetRepositories = factory.setProperty(Repository::class),
-                spinePrefix = factory.property(Boolean::class)
-            )
-            project.extensions.add(PublishExtension::class.java, name, extension)
+            val extension = project.extensions.create(name, PublishExtension::class.java)
+            extension.spinePrefix.convention(true)
             return extension
         }
     }
@@ -78,17 +78,6 @@ private constructor(
         } else {
             project.name
         }
-
-    /**
-     * The project to be published _instead_ of [projectsToPublish].
-     *
-     * If set, [projectsToPublish] will be ignored.
-     */
-    private var soloProject: Project? = null
-
-    init {
-        spinePrefix.convention(true)
-    }
 
     /**
      * Instructs to publish the passed project _instead_ of [projectsToPublish].
