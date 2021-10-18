@@ -64,22 +64,6 @@ private constructor(
             project.extensions.add(PublishExtension::class.java, name, extension)
             return extension
         }
-
-        /**
-         * Obtains an artifact ID of the given project.
-         *
-         * If the project has a [PublishExtension] installed, then it is used for
-         * [obtaining][PublishExtension.artifactId] the artifact ID.
-         * Otherwise, the project name is returned.
-         *
-         * @see artifactId
-         */
-        fun artifactIdIn(project: Project): String {
-            val rootProject = project.rootProject
-            val publishExtension = rootProject.extensions.findByType(PublishExtension::class.java)
-            val result = publishExtension?.artifactId(project) ?: project.name
-            return result
-        }
     }
 
     /**

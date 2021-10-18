@@ -82,7 +82,7 @@ abstract class WriteVersions : DefaultTask() {
      */
     fun includeOwnVersion() {
         val groupId = project.group.toString()
-        val artifactId = artifactId()
+        val artifactId = project.artifactId
         val version = project.version.toString()
         versions.put("${groupId}_${artifactId}", version)
     }
@@ -119,11 +119,9 @@ abstract class WriteVersions : DefaultTask() {
     }
 
     private fun resourceFileName(): String {
-        val artifactId = artifactId()
+        val artifactId = project.artifactId
         return "versions-${artifactId}.properties"
     }
-
-    private fun artifactId() = PublishExtension.artifactIdIn(project)
 }
 
 /**
