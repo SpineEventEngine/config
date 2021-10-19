@@ -27,9 +27,9 @@
 package io.spine.internal.gradle.report.license
 
 /**
- * Configuration of [LicenseReporter].
+ * Filesystem paths used by [LicenseReporter].
  */
-internal object Config {
+internal object Paths {
 
     /**
      * The output filename of the license report.

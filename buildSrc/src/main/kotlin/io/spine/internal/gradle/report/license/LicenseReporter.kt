@@ -80,14 +80,14 @@ object LicenseReporter {
      */
     fun generateReportIn(project: Project) {
         project.applyPlugin(LicenseReportPlugin::class.java)
-        val reportOutputDir = project.buildDir.resolve(Config.relativePath)
+        val reportOutputDir = project.buildDir.resolve(Paths.relativePath)
 
         with(project.the<LicenseReportExtension>()) {
             outputDir = reportOutputDir.absolutePath
             excludeGroups = arrayOf("io.spine", "io.spine.tools", "io.spine.gcloud")
             configurations = ALL
 
-            renderers = arrayOf(MarkdownReportRenderer(Config.outputFilename))
+            renderers = arrayOf(MarkdownReportRenderer(Paths.outputFilename))
         }
     }
 
@@ -95,7 +95,7 @@ object LicenseReporter {
      * Tells to merge all per-project reports which were previously [generated][generateReportIn]
      * for each of the subprojects of the root Gradle project.
      *
-     * The merge result is placed according to the [Config].
+     * The merge result is placed according to [Paths].
      *
      * Registers a `mergeAllLicenseReports` which is specified to be executed after `build`.
      */
@@ -146,11 +146,11 @@ object LicenseReporter {
         rootProject: Project
     ) {
         val paths = sourceProjects.map {
-            "${it.buildDir}/${Config.relativePath}/${Config.outputFilename}"
+            "${it.buildDir}/${Paths.relativePath}/${Paths.outputFilename}"
         }
         println("Merging the license reports from the all projects.")
         val mergedContent = paths.joinToString("\n\n\n") { (File(it)).readText() }
-        val output = File("${rootProject.rootDir}/${Config.outputFilename}")
+        val output = File("${rootProject.rootDir}/${Paths.outputFilename}")
         output.writeText(mergedContent)
     }
 }
