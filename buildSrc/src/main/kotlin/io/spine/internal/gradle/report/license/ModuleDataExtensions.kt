@@ -31,7 +31,7 @@ import io.spine.internal.markup.MarkdownDocument
 import kotlin.reflect.KCallable
 
 /**
- * This file declares the Kotlin extensions for `ModuleData`.
+ * This file declares the Kotlin extensions that help printing `ModuleData` into Markdown.
  */
 
 /**
@@ -43,7 +43,7 @@ internal fun MarkdownDocument.printSection(
 ): MarkdownDocument {
     this.h2(title)
     modules.forEach {
-        it.print(this)
+        printModule(it)
     }
     return this
 }
@@ -51,27 +51,27 @@ internal fun MarkdownDocument.printSection(
 /**
  * Prints the metadata of the module to the specified [Markdown document][out].
  */
-private fun ModuleData.print(out: MarkdownDocument) {
-    out.ol()
+private fun MarkdownDocument.printModule(module: ModuleData) {
+    ol()
 
-    this.print(ModuleData::getGroup, out, "Group")
-        .print(ModuleData::getName, out, "Name")
-        .print(ModuleData::getVersion, out, "Version")
+    this.print(ModuleData::getGroup, module, "Group")
+        .print(ModuleData::getName, module, "Name")
+        .print(ModuleData::getVersion, module, "Version")
 
-    val projectUrl = this.projectUrl()
-    val licenses = this.licenses()
+    val projectUrl = module.projectUrl()
+    val licenses = module.licenses()
 
     if (projectUrl.isNullOrEmpty() && licenses.isEmpty()) {
-        out.bold("No license information found")
+        bold("No license information found")
         return
     }
 
     @SuppressWarnings("MagicNumber")    /* As per the original document layout. */
     val listIndent = 5
-    printProjectUrl(projectUrl, out, listIndent)
-    printLicenses(licenses, out, listIndent)
+    printProjectUrl(projectUrl, listIndent)
+    printLicenses(licenses, listIndent)
 
-    out.nl()
+    nl()
 }
 
 /**
@@ -79,57 +79,42 @@ private fun ModuleData.print(out: MarkdownDocument) {
  *
  * The property is printed with the passed [title].
  */
-private fun ModuleData.print(
+private fun MarkdownDocument.print(
     getter: KCallable<*>,
-    out: MarkdownDocument,
+    module: ModuleData,
     title: String
-): ModuleData {
-    val value = getter.call(this)
+): MarkdownDocument {
+    val value = getter.call(module)
     if (value != null) {
-        out.space()
-            .bold(title)
-            .and()
-            .text(": $value.")
+        space().bold(title).and().text(": $value.")
     }
     return this
 }
+
 
 /**
  * Prints the URL to the project which provides the dependency.
  *
  * If the passed project URL is `null` or empty, it is not printed.
  */
-@Suppress("SameParameterValue")  /* Indentation is consistent across the list. */
-private fun printProjectUrl(
-    projectUrl: String?,
-    out: MarkdownDocument,
-    indent: Int
-) {
+@Suppress("SameParameterValue" /* Indentation is consistent across the list. */)
+private fun MarkdownDocument.printProjectUrl(projectUrl: String?, indent: Int) {
     if (!projectUrl.isNullOrEmpty()) {
-        out.ul(indent)
-            .bold("Project URL:")
-            .and()
-            .link(projectUrl)
+        ul(indent).bold("Project URL:").and().link(projectUrl)
     }
 }
 
 /**
  * Prints the links to the the source code licenses.
  */
-@Suppress("SameParameterValue")  /* Indentation is consistent across the list. */
-private fun printLicenses(
-    licenses: Set<License>,
-    out: MarkdownDocument,
-    indent: Int
-) {
+@Suppress("SameParameterValue" /* Indentation is consistent across the list. */)
+private fun MarkdownDocument.printLicenses(licenses: Set<License>, indent: Int) {
     for (license in licenses) {
-        out.ul(indent)
-            .bold("License:")
-            .and()
+        ul(indent).bold("License:").and()
         if (license.url.isNullOrEmpty()) {
-            out.text(license.text)
+            text(license.text)
         } else {
-            out.link(license.text, license.url)
+            link(license.text, license.url)
         }
     }
 }
