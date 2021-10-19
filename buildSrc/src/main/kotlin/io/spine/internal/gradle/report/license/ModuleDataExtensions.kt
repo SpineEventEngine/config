@@ -66,8 +66,9 @@ private fun ModuleData.print(out: MarkdownDocument) {
         return
     }
 
-    printProjectUrl(projectUrl, out)
-    printLicenses(licenses, out)
+    val listIndent = 5
+    printProjectUrl(projectUrl, out, listIndent)
+    printLicenses(licenses, out, listIndent)
 
     out.nl()
 }
@@ -97,12 +98,14 @@ private fun ModuleData.print(
  *
  * If the passed project URL is `null` or empty, it is not printed.
  */
+@Suppress("SameParameterValue")  /* Indentation is consistent across the list. */
 private fun printProjectUrl(
     projectUrl: String?,
-    out: MarkdownDocument
+    out: MarkdownDocument,
+    indent: Int
 ) {
     if (!projectUrl.isNullOrEmpty()) {
-        out.ul(5)
+        out.ul(indent)
             .bold("Project URL:")
             .and()
             .link(projectUrl)
@@ -112,12 +115,14 @@ private fun printProjectUrl(
 /**
  * Prints the links to the the source code licenses.
  */
+@Suppress("SameParameterValue")  /* Indentation is consistent across the list. */
 private fun printLicenses(
     licenses: Set<License>,
-    out: MarkdownDocument
+    out: MarkdownDocument,
+    indent: Int
 ) {
     for (license in licenses) {
-        out.ul(5)
+        out.ul(indent)
             .bold("License:")
             .and()
         if (license.url.isNullOrEmpty()) {
