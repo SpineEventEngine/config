@@ -26,7 +26,7 @@
 
 package io.spine.internal.gradle.report.license
 
-import io.spine.internal.gradle.publish.prefix
+import io.spine.internal.gradle.artifactId
 import io.spine.internal.markup.MarkdownDocument
 import java.util.*
 import org.gradle.api.Project
@@ -47,7 +47,7 @@ internal class Template(
         out.nl()
             .h1(
                 "Dependencies of " +
-                        "`${project.group}:${project.prefix()}${project.name}:${project.version}`"
+                        "`${project.group}:${project.artifactId}:${project.version}`"
             )
             .nl()
     }
