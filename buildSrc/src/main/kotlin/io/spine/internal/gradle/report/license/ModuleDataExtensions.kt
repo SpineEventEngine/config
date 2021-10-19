@@ -31,7 +31,7 @@ import io.spine.internal.markup.MarkdownDocument
 import kotlin.reflect.KCallable
 
 /**
- * This file declares the Kotlin extensions that help printing `ModuleData` into Markdown.
+ * This file declares the Kotlin extensions that help printing `ModuleData` in Markdown format.
  */
 
 /**
