@@ -66,7 +66,7 @@ private fun ModuleData.print(out: MarkdownDocument) {
         return
     }
 
-    @SuppressWarnings("MagicNumber")    /* As per the original document layout */
+    @SuppressWarnings("MagicNumber")    /* As per the original document layout. */
     val listIndent = 5
     printProjectUrl(projectUrl, out, listIndent)
     printLicenses(licenses, out, listIndent)
