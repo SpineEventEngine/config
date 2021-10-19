@@ -124,10 +124,14 @@ object LicenseReporter {
      */
     private fun Task.sourceProjects(rootProject: Project): Iterable<Project> {
         val targetProjects: Iterable<Project> = if (rootProject.subprojects.isEmpty()) {
-            println("The license report will be produced for a single root project.")
+            rootProject.logger.debug(
+                "The license report will be produced for a single root project."
+            )
             listOf(this.project)
         } else {
-            println("The license report will be produced for all subprojects of a root project.")
+            rootProject.logger.debug(
+                "The license report will be produced for all subprojects of a root project."
+            )
             rootProject.subprojects
         }
         return targetProjects
