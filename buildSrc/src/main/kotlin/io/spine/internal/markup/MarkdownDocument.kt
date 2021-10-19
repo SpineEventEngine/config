@@ -37,6 +37,7 @@ import java.io.File
  *
  * After it's finished, end-users would typically write it to a [real file][appendToFile].
  */
+@SuppressWarnings("detekt.complexity.TooManyFunctions")     /* By design. */
 class MarkdownDocument {
 
     private val builder: StringBuilder = StringBuilder()
