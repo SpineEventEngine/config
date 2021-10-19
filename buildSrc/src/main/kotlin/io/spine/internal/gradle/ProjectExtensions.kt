@@ -27,7 +27,9 @@
 package io.spine.internal.gradle
 
 import io.spine.internal.gradle.publish.PublishExtension
+import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.kotlin.dsl.getByType
@@ -49,6 +51,27 @@ val Project.sourceSets: SourceSetContainer
     get() = javaPluginExtension.sourceSets
 
 /**
+ * Applies the specified Gradle plugin to this project by the plugin [class][cls].
+ */
+fun Project.applyPlugin(cls: Class<out Plugin<*>>) {
+    this.apply {
+        plugin(cls)
+    }
+}
+
+/**
+ * Finds the task of type `T` in this project by the task name.
+ *
+ * The task must be present. Also, a caller is responsible for using the proper value of
+ * the generic parameter `T`.
+ */
+@Suppress("UNCHECKED_CAST")     /* See the method docs. */
+fun <T : Task> Project.findTask(name: String): T {
+    val task = this.tasks.findByName(name)
+    return task!! as T
+}
+
+/**
  * Obtains the Maven artifact ID of the project taking into account
  * the value of the [PublishExtension.spinePrefix] property.
  *
@@ -62,3 +85,5 @@ val Project.artifactId: String
         val publishExtension = rootProject.extensions.findByType(PublishExtension::class.java)
         return publishExtension?.artifactId(this) ?: name
     }
+
+
