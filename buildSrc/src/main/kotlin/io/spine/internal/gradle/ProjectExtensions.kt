@@ -85,5 +85,3 @@ val Project.artifactId: String
         val publishExtension = rootProject.extensions.findByType(PublishExtension::class.java)
         return publishExtension?.artifactId(this) ?: name
     }
-
-
