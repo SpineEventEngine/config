@@ -27,7 +27,7 @@
 package io.spine.internal.gradle.report.license
 
 import io.spine.internal.gradle.publish.prefix
-import java.io.File
+import io.spine.internal.markup.MarkdownDocument
 import java.util.*
 import org.gradle.api.Project
 
@@ -36,33 +36,40 @@ import org.gradle.api.Project
  */
 internal class Template(
     private val project: Project,
-    private val file: File
+    private val out: MarkdownDocument
 ) {
 
     private companion object {
-        private const val sectionBreak = "\n\n"
+        private const val longBreak = "\n\n"
     }
 
     internal fun writeHeader() {
-        file.appendText(
-            sectionBreak + "# Dependencies of " +
-                    "`${project.group}:${project.prefix()}${project.name}:${project.version}`\n"
-        )
+        out.nl()
+            .h1(
+                "Dependencies of " +
+                        "`${project.group}:${project.prefix()}${project.name}:${project.version}`"
+            )
+            .nl()
     }
 
     internal fun writeFooter() {
-        file.appendText(
-            sectionBreak +
-                    "The dependencies distributed under several licenses, " +
-                    "are used according their commercial-use-friendly license." +
-                    sectionBreak +
-                    "This report was generated on **${Date()}** " +
-                    "using [Gradle-License-Report plugin]" +
-                    "(https://github.com/jk1/Gradle-License-Report) by Evgeny Naumenko, " +
-                    "licensed under [Apache 2.0 License]" +
-                    "(https://github.com/jk1/Gradle-License-Report/blob/master/LICENSE)."
-        )
-
+        out.text(longBreak)
+            .text("The dependencies distributed under several licenses, ")
+            .text("are used according their commercial-use-friendly license.")
+            .text(longBreak)
+            .text("This report was generated on ")
+            .bold("${Date()}")
+            .text(" using ")
+            .link(
+                "Gradle-License-Report plugin",
+                "https://github.com/jk1/Gradle-License-Report"
+            )
+            .text(" by Evgeny Naumenko, ")
+            .text("licensed under ")
+            .link(
+                "Apache 2.0 License",
+                "https://github.com/jk1/Gradle-License-Report/blob/master/LICENSE"
+            )
+            .text(".")
     }
-
 }

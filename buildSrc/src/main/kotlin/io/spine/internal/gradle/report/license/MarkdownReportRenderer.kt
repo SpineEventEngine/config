@@ -27,17 +27,14 @@
 package io.spine.internal.gradle.report.license
 
 import com.github.jk1.license.LicenseReportExtension
-import com.github.jk1.license.ModuleData
 import com.github.jk1.license.ProjectData
 import com.github.jk1.license.render.ReportRenderer
-import com.google.errorprone.annotations.CanIgnoreReturnValue
-import io.spine.internal.gradle.report.license.Configuration.runtime
-import io.spine.internal.gradle.report.license.Configuration.runtimeClasspath
+import io.spine.internal.markup.MarkdownDocument
 import java.io.File
-import kotlin.reflect.KCallable
+import org.gradle.api.Project
 
 /**
- * Renders the dependency report in markdown.
+ * Renders the dependency report for a single [project][ProjectData] in Markdown.
  */
 internal class MarkdownReportRenderer(
     private val filename: String
@@ -45,139 +42,21 @@ internal class MarkdownReportRenderer(
 
     override fun render(data: ProjectData) {
         val project = data.project
+        val outputFile = outputFile(project)
+        val document = MarkdownDocument()
+        val template = Template(project, document)
+
+        template.writeHeader()
+        ProjectDependencies.of(data).printTo(document)
+        template.writeFooter()
+
+        document.appendToFile(outputFile)
+    }
+
+    private fun outputFile(project: Project): File {
         val config =
             project.extensions.findByName("licenseReport") as LicenseReportExtension
-        val outputFile = File(config.outputDir).resolve(filename)
-
-
-        val template = Template(project, outputFile)
-        template.writeHeader()
-        printDependencies(outputFile, data)
-        template.writeFooter()
-    }
-
-    private fun printDependencies(outputFile: File, data: ProjectData) {
-        val deps = Dependencies.of(data)
-        deps.printRuntime(outputFile)
-            .printCompileTooling(outputFile)
+        return File(config.outputDir).resolve(filename)
     }
 }
 
-private class Dependencies(
-    private val runtime: Iterable<ModuleData>,
-    private val compileTooling: Iterable<ModuleData>
-
-) {
-
-    companion object {
-        fun of(data: ProjectData): Dependencies {
-            val runtimeDeps = mutableListOf<ModuleData>()
-            val compileToolingDeps = mutableListOf<ModuleData>()
-            data.configurations.forEach { config ->
-                if (config.isOneOf(runtime, runtimeClasspath)) {
-                    runtimeDeps.addAll(config.dependencies)
-                } else {
-                    compileToolingDeps.addAll(config.dependencies)
-                }
-            }
-            return Dependencies(runtimeDeps.toSortedSet(), compileToolingDeps.toSortedSet())
-        }
-    }
-
-    @CanIgnoreReturnValue
-    fun printRuntime(outputFile: File): Dependencies {
-        outputFile.printSection("Runtime", runtime)
-        return this
-    }
-
-    @CanIgnoreReturnValue
-    fun printCompileTooling(outputFile: File): Dependencies {
-        outputFile.printSection("Compile, tests and tooling", compileTooling)
-        return this
-    }
-}
-
-private fun ModuleData.print(outputFile: File) {
-    outputFile.appendText("\n1.")
-
-    this.print(ModuleData::getGroup, outputFile, "Group")
-        .print(ModuleData::getName, outputFile, "Name")
-        .print(ModuleData::getVersion, outputFile, "Version")
-
-    if (this.poms.isEmpty() && this.manifests.isEmpty()) {
-        outputFile.appendText(" **No license information found**")
-        return
-    }
-
-    var projectUrlDone = false
-    if (this.manifests.isNotEmpty() && this.poms.isNotEmpty()) {
-        val manifest = this.manifests.first()
-        val pomData = this.poms.first()
-        if (manifest.url != null && pomData.projectUrl != null && manifest.url == pomData.projectUrl) {
-            outputFile.appendText("\n     * **Project URL:** [${manifest.url}](${manifest.url})")
-            projectUrlDone = true
-        }
-    }
-
-    if (this.manifests.isNotEmpty()) {
-        val manifest = this.manifests.first()
-        if (!manifest.url.isNullOrEmpty() && !projectUrlDone) {
-            outputFile.appendText("\n     * **Manifest Project URL:** [${manifest.url}](${manifest.url})")
-        }
-        if (!manifest.license.isNullOrEmpty()) {
-            when {
-                manifest.license.startsWith("http") -> {
-                    outputFile.appendText("\n     * **Manifest license URL:** [${manifest.license}](${manifest.license})")
-
-                }
-                manifest.hasPackagedLicense -> {
-                    outputFile.appendText("\n     * **Packaged License File:** [${manifest.license}](${manifest.url})")
-                }
-                else -> {
-                    outputFile.appendText("\n     * **Manifest License:** ${manifest.license} (Not packaged)")
-
-                }
-            }
-        }
-    }
-
-    if (this.poms.isNotEmpty()) {
-        val pomData = this.poms.first()
-        if (!pomData.projectUrl.isNullOrEmpty() && !projectUrlDone) {
-            outputFile.appendText("\n     * **POM Project URL:** [${pomData.projectUrl}](${pomData.projectUrl})")
-
-        }
-        if (pomData.licenses != null) {
-            pomData.licenses.forEach { license ->
-                outputFile.appendText("\n     * **POM License: ${license.name}**")
-
-                if (!license.url.isNullOrEmpty()) {
-                    when {
-                        license.url.startsWith("http") -> {
-                            outputFile.appendText(" - [${license.url}](${license.url})")
-                        }
-                        else -> {
-                            outputFile.appendText(" **License:** ${license.url}")
-                        }
-                    }
-                }
-            }
-        }
-    }
-    outputFile.appendText("\n")
-}
-
-private fun ModuleData.print(getter: KCallable<*>, outputFile: File, title: String): ModuleData {
-    val value = getter.call(this)
-    if (value != null) {
-        outputFile.appendText(" **${title}:** ${value}")
-    }
-    return this
-}
-
-private fun File.printSection(title: String, modules: Iterable<ModuleData>) {
-    this.appendText("\n## $title")
-    modules.forEach {
-        it.print(this)
-    }
-}

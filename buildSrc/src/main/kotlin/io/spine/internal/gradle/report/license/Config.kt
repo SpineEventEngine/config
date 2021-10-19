@@ -32,7 +32,13 @@ package io.spine.internal.gradle.report.license
 internal object Config {
 
     /**
-     * The output filename.
+     * The output filename of the license report.
+     *
+     * The file with this name is placed to the root folder of the root Gradle project —
+     * as the result of the [LicenseReporter] work.
+     *
+     * Its contents describe the licensing information for each of the Java dependencies
+     * which are referenced by Gradle projects in the repository.
      */
     internal const val outputFilename = "license-report.md"
 
