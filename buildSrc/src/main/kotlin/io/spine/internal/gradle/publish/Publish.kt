@@ -80,7 +80,7 @@ import io.spine.internal.gradle.publish.proto.AssembleProto
  *
  *     //...
  *
- *     // Typically used with a child sub-project, and NOT with a root project.
+ *     // Typically used with a sub-project, and NOT with a root project.
  *     publishProtoArtifact(project)
  * ```
  *
