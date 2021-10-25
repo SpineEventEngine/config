@@ -84,6 +84,14 @@ import io.spine.internal.gradle.publish.proto.AssembleProto
  *     publishProtoArtifact(project)
  * ```
  *
+ * The resulting artifact is available under "proto" classifier. I.e., in Gradle 7, one could
+ * depend on it like this:
+ *
+ * ```
+ *     // Depend on the Proto files of `spine-client`.
+ *     implementation("io.spine:spine-client:$version@proto")
+ * ```
+ *
  * To publish more artifacts for a certain project, add them to the `archives` configuration:
  * ```
  *     artifacts {
@@ -105,15 +113,6 @@ class Publish : Plugin<Project> {
          * and the proto files extracted from the JAR dependencies of the project.
          *
          * The relative file paths are kept.
-         *
-         * To depend onto such an artifact, one should declare the dependency as follows:
-         *
-         * ```
-         *     dependencies {
-         *         // Points to the `.proto` files of "spine-client" module.
-         *         compile "io.spine:spine-client:$version@proto"
-         *     }
-         * ```
          */
         @Suppress("unused")
         fun publishProtoArtifact(project: Project) {
