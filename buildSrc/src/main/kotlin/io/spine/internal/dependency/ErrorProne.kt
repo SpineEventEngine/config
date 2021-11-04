@@ -44,7 +44,7 @@ object ErrorProne {
     const val javacPlugin  = "com.google.errorprone:javac:${javacPluginVersion}"
 
     /**
-     * The version of this plugin is already specified in `build.gradle.kts` file.
+     * The version of this plugin is already specified in `buildSrc/build.gradle.kts` file.
      * Thus, when applying the plugin in projects build files, only id should be used.
      */
     object GradlePlugin {
