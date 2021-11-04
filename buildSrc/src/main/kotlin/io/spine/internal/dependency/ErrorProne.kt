@@ -45,7 +45,7 @@ object ErrorProne {
 
     /**
      * The version of this plugin is already specified in `build.gradle.kts` file.
-     * Thus, when applying the plugin in projects build files, only id should be specified.
+     * Thus, when applying the plugin in projects build files, only id should be used.
      */
     object GradlePlugin {
         const val id = "net.ltgt.errorprone"
