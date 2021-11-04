@@ -64,9 +64,8 @@ val guavaVersion = "30.1.1-jre"
 /**
  * The version of ErrorProne Gradle plugin.
  *
- * Always use the same version as the one specified in `io.spine.internal.dependency.ErrorProne`.
- * Otherwise, when testing Gradle plugins, clashes may occur. Thus, when applying the plugin
- * in build files, no version should be specified, only the plugin's ID.
+ * @see <a href="https://github.com/tbroyer/gradle-errorprone-plugin/releases">
+ *     Error Prone Gradle Plugin Releases</a>
  */
 val errorProneVersion = "2.0.2"
 
