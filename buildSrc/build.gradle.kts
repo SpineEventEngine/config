@@ -61,6 +61,15 @@ val grGitVersion = "3.1.1"
  */
 val guavaVersion = "30.1.1-jre"
 
+/**
+ * The version of ErrorProne Gradle plugin.
+ *
+ * Always use the same version as the one specified in `io.spine.internal.dependency.ErrorProne`.
+ * Otherwise, when testing Gradle plugins, clashes may occur. Thus, when applying the plugin
+ * in build files, no version should be specified, only the plugin's ID.
+ */
+val errorProneVersion = "2.0.2"
+
 dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.google.cloud.artifactregistry:artifactregistry-auth-common:$googleAuthToolVersion") {
@@ -68,5 +77,5 @@ dependencies {
     }
     implementation("com.google.guava:guava:$guavaVersion")
     api("com.github.jk1:gradle-license-report:$licenseReportVersion")
-    implementation("org.ajoberstar.grgit:grgit-core:${grGitVersion}")
+    implementation("net.ltgt.gradle:gradle-errorprone-plugin:${errorProneVersion}")
 }
