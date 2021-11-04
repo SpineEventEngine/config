@@ -32,20 +32,16 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.process.CommandLineArgumentProvider
 
 /**
- * Sets up `javac` by applying [JavacConfig].
+ * Configures the `javac` tool through this `JavaCompile` task.
  *
- * Which means:
+ * There are several steps performed:
  *
- *  1. Ensuring JDK 8 would be used for compilation;
- *  2. Specifying arguments for `javac` invocations;
- *  3. Specifying the `UTF-8` encoding to be used when reading source files.
+ *  1. Ensures JDK 8 is used for compilation;
+ *  2. Passes a couple of arguments to the compiler. See [JavacConfig] for more details;
+ *  3. Sets the UTF-8 encoding to be used when reading Java source files.
  *
- *
- * Supporting other JDKs
- *
- * `Spine Event Engine` can be built with JDK 8 only. Supporting JDK 11 and above
- * at build-time is planned in 2.0 release.
- *
+ * Please note that Spine Event Engine can be built with JDK 8 only.
+ * Supporting JDK 11 and above at build-time is planned in 2.0 release.
  *
  * Here's an example of how to use it:
  *
