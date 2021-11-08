@@ -31,7 +31,7 @@
 //
 
 println("`test-artifacts.gradle` script is deprecated. " +
-        "Please use the `Project.exposeTestArtifacts` utility instead.")
+        "Please use the `Project.exposeTestArtifacts()` utility instead.")
 
 configurations {
     testArtifacts.extendsFrom testRuntime
