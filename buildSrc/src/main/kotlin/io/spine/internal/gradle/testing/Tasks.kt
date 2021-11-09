@@ -33,6 +33,8 @@ import org.gradle.kotlin.dsl.register
 /**
  * Registers [slowTest][SlowTest] and [fastTest][FastTest] tasks in this [TaskContainer].
  *
+ * Slow tests are registered to run after all fast tests.
+ *
  * Usage example:
  *
  * ```
@@ -41,6 +43,7 @@ import org.gradle.kotlin.dsl.register
  * }
  * ```
  */
+@Suppress("unused")
 fun TaskContainer.registerTestTasks() {
     register<FastTest>("fastTest").let {
         register<SlowTest>("slowTest") {
@@ -53,8 +56,8 @@ fun TaskContainer.registerTestTasks() {
  * Name of a tag for annotating a test class or method that is known to be slow and
  * should not normally be run together with the main test suite.
  *
- * @see io.spine.testing.SlowTest
- * @see org.junit.jupiter.api.Tag
+ * @see [SlowTest](https://spine.io/base/reference/testlib/io/spine/testing/SlowTest.html)
+ * @see [Tag](https://junit.org/junit5/docs/5.0.2/api/org/junit/jupiter/api/Tag.html)
  */
 private const val SLOW_TAG = "slow"
 
