@@ -81,12 +81,12 @@ cp -a .github/workflows/. ../.github/workflows
 cp -a .github-workflows/. ../.github/workflows
 
 echo "Updating Gradle 'buildSrc' scripts"
-cp -Ru buildSrc ..
+cp -R buildSrc ..
 
 echo "Updating Gradle Wrapper"
-cp -Ru ./gradle ..
-cp -u gradlew ..
-cp -u gradlew.bat ..
+cp -R ./gradle ..
+cp gradlew ..
+cp gradlew.bat ..
 
 cd ..
 
