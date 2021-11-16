@@ -49,7 +49,7 @@ repositories {
 }
 
 /**
- * The version of Jackson used by `buildScr`.
+ * The version of Jackson used by `buildSrc`.
  *
  * Please keep this value in sync. with `io.spine.internal.dependency.Jackson.version`.
  * It's not a requirement, but would be good in terms of consistency.
