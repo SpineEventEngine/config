@@ -33,7 +33,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
  * Sets [Java toolchain](https://kotlinlang.org/docs/gradle.html#gradle-java-toolchains-support)
  * to the specified version (e.g. "11" or "8").
  */
-fun KotlinJvmProjectExtension.applyJvmToolchain(version: String) {
+fun KotlinJvmProjectExtension.applyJvmToolchain(version: Int) {
     jvmToolchain {
         (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(version))
     }
