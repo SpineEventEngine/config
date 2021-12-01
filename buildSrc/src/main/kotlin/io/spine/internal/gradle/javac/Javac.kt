@@ -53,6 +53,7 @@ import org.gradle.process.CommandLineArgumentProvider
  * }
  *```
  */
+@Suppress("unused")
 fun JavaCompile.configureJavac() {
 
     if (JavaVersion.current() != JavacConfig.EXPECTED_JAVA_VERSION) {
