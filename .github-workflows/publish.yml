@@ -16,10 +16,6 @@ jobs:
           distribution: zulu
           cache: gradle
 
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 'lts/*'
-
       - run: git submodule update --init --recursive
 
       - name: Decrypt CloudRepo credentials
