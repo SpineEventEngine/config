@@ -42,7 +42,7 @@ fun JsPlugins.mcJs() {
         apply("io.spine.mc-js")
     }
 
-    // TODO:2021-11-24:yevhenii.nadtochii: Temporarily use GroovyInterop.
+    // Temporarily use GroovyInterop.
     // Currently, it is not possible to obtain `McJsPlugin` on the classpath of `buildSrc`.
     // See issue: https://github.com/SpineEventEngine/config/issues/298
 

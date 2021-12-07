@@ -80,8 +80,8 @@ fun JsTasks.integrationTest() {
 
     register(integrationTestName) {
 
-        // TODO:2019-05-29:yegor.udovchenko: Find a way to run the same tests against `spine-web`.
-        // in `client-js` module to recover coverage.
+        // Find a way to run the same tests against `spine-web` in `client-js` module
+        // to recover coverage.
         // See issue: https://github.com/SpineEventEngine/web/issues/96
 
         description = "Runs integration tests of the `spine-web` library " +
