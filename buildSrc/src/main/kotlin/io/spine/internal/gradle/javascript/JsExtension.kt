@@ -55,8 +55,8 @@ import org.gradle.kotlin.dsl.findByType
  *
  * ### Environment
  *
- * One of the main features of this extension is [JsEnvironment]. Environment describes a module itself,
- * used tools with their input/output files, code generation.
+ * One of the main features of this extension is [JsEnvironment]. Environment describes a module
+ * itself, used tools with their input/output files, code generation.
  *
  * The extension is shipped with a pre-configured environment. So, no pre-configuration is required.
  * Most properties in [JsEnvironment] have calculated defaults right in the interface.
