@@ -86,7 +86,18 @@ val guavaVersion = "30.1.1-jre"
  */
 val errorProneVersion = "2.0.2"
 
+/**
+ * The version of Protobuf Gradle Plugin.
+ *
+ * Please keep in sync. with `io.spine.internal.dependency.Protobuf.GradlePlugin.version`.
+ *
+ * @see <a href="https://github.com/google/protobuf-gradle-plugin/releases">
+ *     Protobuf Gradle Plugins Releases</a>
+ */
+val protobufPluginVersion = "0.8.17"
+
 dependencies {
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.google.cloud.artifactregistry:artifactregistry-auth-common:$googleAuthToolVersion") {
         exclude(group = "com.google.guava")
@@ -96,4 +107,5 @@ dependencies {
     implementation("org.ajoberstar.grgit:grgit-core:${grGitVersion}")
     implementation("net.ltgt.gradle:gradle-errorprone-plugin:${errorProneVersion}")
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
+    implementation("gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:$protobufPluginVersion")
 }
