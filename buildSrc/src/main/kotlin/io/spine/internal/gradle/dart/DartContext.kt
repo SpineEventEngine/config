@@ -24,45 +24,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.tools.ant.taskdefs.condition.Os
+package io.spine.internal.gradle.dart
 
-println("`build-tasks.gradle` script is deprecated. " +
-        "Please use `DartTasks.build()` extension instead.")
+import org.gradle.api.Project
+import org.gradle.api.tasks.Exec
 
-final def GROUP = 'Dart'
-final def packageIndex = "$projectDir/.packages" as File
-final def extension = Os.isFamily(Os.FAMILY_WINDOWS) ? '.bat' : ''
-final def PUB_EXECUTABLE = 'pub' + extension
-
-task resolveDependencies(type: Exec) {
-    group = GROUP
-    description = 'Fetches the dependencies declared via `pubspec.yaml`.'
-
-    inputs.file "$projectDir/pubspec.yaml"
-    outputs.file packageIndex
-
-    commandLine PUB_EXECUTABLE, 'get'
-
-    mustRunAfter 'cleanPackageIndex'
+/**
+ * Provides access to the current [DartEnvironment] and shortcuts for running `pub` tool.
+ */
+open class DartContext(dartEnv: DartEnvironment, internal val project: Project)
+    : DartEnvironment by dartEnv
+{
+    /**
+     * Executes `pub` command in this [Exec] task.
+     *
+     * The Dart ecosystem uses packages to manage shared software such as libraries and tools.
+     * To get or publish Dart packages, the `pub` package manager is to be used.
+     */
+    fun Exec.pub(vararg args: Any) = commandLine(pubExecutable, *args)
 }
-
-tasks['assemble'].dependsOn 'resolveDependencies'
-
-task cleanPackageIndex(type: Delete) {
-    group = GROUP
-    description = 'Deletes the `.packages` file on this Dart module.'
-    delete = [packageIndex]
-}
-
-tasks['clean'].dependsOn 'cleanPackageIndex'
-
-task testDart(type: Exec) {
-    group = GROUP
-    description = 'Runs Dart tests declared in the `./test` directory. See `https://pub.dev/packages/test#running-tests`.'
-
-    commandLine PUB_EXECUTABLE, 'run', 'test'
-
-    dependsOn 'resolveDependencies'
-}
-
-tasks['check'].dependsOn 'testDart'

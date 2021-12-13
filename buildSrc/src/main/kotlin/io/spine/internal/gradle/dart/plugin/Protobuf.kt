@@ -24,45 +24,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.tools.ant.taskdefs.condition.Os
+package io.spine.internal.gradle.dart.plugin
 
-println("`build-tasks.gradle` script is deprecated. " +
-        "Please use `DartTasks.build()` extension instead.")
+import com.google.protobuf.gradle.builtins
+import com.google.protobuf.gradle.id
+import com.google.protobuf.gradle.plugins
+import com.google.protobuf.gradle.protobuf
+import com.google.protobuf.gradle.remove
+import io.spine.internal.dependency.Protobuf
 
-final def GROUP = 'Dart'
-final def packageIndex = "$projectDir/.packages" as File
-final def extension = Os.isFamily(Os.FAMILY_WINDOWS) ? '.bat' : ''
-final def PUB_EXECUTABLE = 'pub' + extension
+/**
+ * Applies `protobuf` plugin and configures `GenerateProtoTask` to work with a Dart module.
+ *
+ * @see DartPlugins
+ */
+fun DartPlugins.protobuf() {
 
-task resolveDependencies(type: Exec) {
-    group = GROUP
-    description = 'Fetches the dependencies declared via `pubspec.yaml`.'
+    plugins.apply(Protobuf.GradlePlugin.id)
 
-    inputs.file "$projectDir/pubspec.yaml"
-    outputs.file packageIndex
-
-    commandLine PUB_EXECUTABLE, 'get'
-
-    mustRunAfter 'cleanPackageIndex'
+    project.protobuf {
+        generateProtoTasks.all().forEach { task ->
+            task.apply {
+                plugins { id("dart") }
+                builtins { remove("java") }
+            }
+        }
+    }
 }
-
-tasks['assemble'].dependsOn 'resolveDependencies'
-
-task cleanPackageIndex(type: Delete) {
-    group = GROUP
-    description = 'Deletes the `.packages` file on this Dart module.'
-    delete = [packageIndex]
-}
-
-tasks['clean'].dependsOn 'cleanPackageIndex'
-
-task testDart(type: Exec) {
-    group = GROUP
-    description = 'Runs Dart tests declared in the `./test` directory. See `https://pub.dev/packages/test#running-tests`.'
-
-    commandLine PUB_EXECUTABLE, 'run', 'test'
-
-    dependsOn 'resolveDependencies'
-}
-
-tasks['check'].dependsOn 'testDart'
