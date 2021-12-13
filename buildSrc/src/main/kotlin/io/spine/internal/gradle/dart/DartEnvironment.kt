@@ -34,7 +34,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
  *
  * Consists of two parts describing:
  *
- *  1. A module itself.
+ *  1. The module itself.
  *  2. Tools and their input/output files.
  */
 interface DartEnvironment {
