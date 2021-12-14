@@ -62,6 +62,9 @@ cp CODE_OF_CONDUCT.md ..
 echo "Updating Codecov settings"
 cp .codecov.yml ..
 
+echo "Updating Sonatype Lift settings"
+cp .lift.toml ..
+
 # Copies the file or directory passed as the first parameter to the upper directory,
 # only if such a file or directory does not exist there.
 function initialize() {
