@@ -31,10 +31,6 @@ project. The following files will be copied:
  * `.gitignore`
  * `buildSrc` — a folder containing the common build-time code, in Kotlin.
  
-## Adding credentials to a new repository
-
-For details, please see [this page][travis-creds].
-
 ## Checking updated configuration
 
 When changing the configuration (e.g. a version of a dependency, or adding a build script plugin),
@@ -88,4 +84,3 @@ These scripts are copied by the `pull` script when `config` is applied to a new 
 [base]: https://github.com/SpineEventEngine/base
 [base-types]: https://github.com/SpineEventEngine/base-types
 [core-java]: https://github.com/SpineEventEngine/core-java
-[travis-creds]: https://github.com/SpineEventEngine/config/wiki/Encrypting-Credential-Files-for-Travis 
