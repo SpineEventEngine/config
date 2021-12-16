@@ -29,7 +29,7 @@ package io.spine.internal.dependency
 // https://junit.org/junit5/
 @Suppress("unused")
 object JUnit {
-    private const val version            = "5.8.2"
+    const val version                    = "5.8.2"
     private const val platformVersion    = "1.8.2"
     private const val legacyVersion      = "4.13.1"
 
@@ -44,6 +44,7 @@ object JUnit {
         "org.junit.jupiter:junit-jupiter-api:${version}",
         "org.junit.jupiter:junit-jupiter-params:${version}"
     )
+    const val bom     = "org.junit:junit-bom:${version}"
     const val runner  = "org.junit.jupiter:junit-jupiter-engine:${version}"
     const val pioneer = "org.junit-pioneer:junit-pioneer:${pioneerVersion}"
     const val platformCommons = "org.junit.platform:junit-platform-commons:${platformVersion}"
