@@ -26,13 +26,9 @@
 
 package io.spine.internal.dependency
 
-// https://commons.apache.org/
 @Suppress("unused")
-object Apache {
+object ApacheHttp {
 
     // https://hc.apache.org/downloads.cgi
-    const val httpCore = "org.apache.httpcomponents:httpcore:4.4.14"
-
-    // https://commons.apache.org/proper/commons-codec/changes-report.html
-    const val codec = "commons-codec:commons-codec:1.15"
+    const val core = "org.apache.httpcomponents:httpcore:4.4.14"
 }
