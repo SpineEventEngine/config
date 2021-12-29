@@ -36,6 +36,7 @@ object HttpClient {
     const val google   = "com.google.http-client:google-http-client:${version}"
     const val jackson2 = "com.google.http-client:google-http-client-jackson2:${version}"
     const val gson     = "com.google.http-client:google-http-client-gson:${version}"
+    const val apache2  = "com.google.http-client:google-http-client-apache-v2:${version}"
 
     const val apache   = "com.google.http-client:google-http-client-apache:2.1.2"
 }
