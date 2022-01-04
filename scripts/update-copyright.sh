@@ -79,11 +79,7 @@ echo "Committing changes copyright notice..."
 
 version_file="./version.gradle.kts"
 if [ -f "$version_file" ]; then
-  text_editor=$EDITOR
-  if [ -e "$text_editor" ]; then
-    text_editor="vim"
-  fi
-  "$text_editor" "$version_file"
+  vim "$version_file"
 
   echo "Committing version file changes..."
   git commit -am "Update version"

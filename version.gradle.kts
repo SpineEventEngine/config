@@ -24,4 +24,5 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val foo = ""
+val foo = "bar"
+
