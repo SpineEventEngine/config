@@ -83,7 +83,7 @@ if [ -f "$version_file" ]; then
   if [ -e "$text_editor" ]; then
     text_editor="vim"
   fi
-  text_editor "$version_file"
+  "$text_editor" "$version_file"
 
   echo "Committing version file changes..."
   git commit -am "Update version"
