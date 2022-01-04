@@ -36,21 +36,21 @@
 
 echo "Checking out 'master'..."
 
-#git checkout master
-#git pull
+git checkout master
+git pull
 
 echo "Switching to branch 'update-copyright-notice'..."
-#git checkout -b update-copyright-notice
+git checkout -b update-copyright-notice
 
 echo "Updating config..."
 
-#if [ -f "./pull" ]; then
-#    ./pull
-#elif [ "./config/pull" ]; then
-#    ./config/pull
-#fi
+if [ -f "./pull" ]; then
+    ./pull
+elif [ -f "./config/pull" ]; then
+    ./config/pull
+fi
 
-#git commit -am "Update config"
+git commit -am "Update config"
 
 echo "Switching locale-related env variables..."
 
@@ -74,8 +74,8 @@ export LANG=$formal_lang
 
 echo "Committing changes copyright notice..."
 
-#git commit -am "Update copyright notices"
-#git push origin update-copyright-notice
+git commit -am "Update copyright notices"
+git push origin update-copyright-notice
 
 version_file="./version.gradle.kts"
 if [ -f "$version_file" ]; then
