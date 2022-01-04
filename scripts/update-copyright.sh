@@ -81,6 +81,11 @@ version_file="./version.gradle.kts"
 if [ -f "$version_file" ]; then
   nano "$version_file"
 
+  echo "Building the project with the new version."
+  # We need to generate license reports. Running tests in not necessary and can be pretty long.
+  # Also, CI will probably do it anyway.
+  ./gradlew clean build -x check
+
   echo "Committing version file changes..."
   git commit -am "Update version"
 fi
