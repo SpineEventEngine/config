@@ -31,7 +31,8 @@
 #  1. Commit the changes you were working on to your branch.
 #  2. Update the `config` submodule to fetch the latest version of the script.
 #  3. Run the script. It will create a new branch from `master` automatically.
-#  4. In GitHub, press the `Create & pull request` button.
+#  4. The script lets you edit the `version.gradle.kts` file if it exists and commits it.
+#  5. In GitHub, press the `Create & pull request` button.
 #
 
 echo "Checking out 'master'..."
@@ -75,7 +76,6 @@ export LANG=$formal_lang
 echo "Committing changes copyright notice..."
 
 git commit -am "Update copyright notices"
-git push origin update-copyright-notice
 
 version_file="./version.gradle.kts"
 if [ -f "$version_file" ]; then
@@ -84,5 +84,7 @@ if [ -f "$version_file" ]; then
   echo "Committing version file changes..."
   git commit -am "Update version"
 fi
+
+git push origin update-copyright-notice
 
 echo "Done."
