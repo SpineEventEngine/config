@@ -34,29 +34,23 @@
 #  4. In GitHub, press the `Create & pull request` button.
 #
 
-
-if ["$#" -ge 1]; then
-  cd "$1"
-  echo "Switched working directory to '$(pwd)'."
-fi
-
 echo "Checking out 'master'..."
 
-git checkout master
-git pull
+#git checkout master
+#git pull
 
 echo "Switching to branch 'update-copyright-notice'..."
-git checkout -b update-copyright-notice
+#git checkout -b update-copyright-notice
 
 echo "Updating config..."
 
-if [ -f "./pull" ]; then
-    ./pull
-elif [ "./config/pull" ]; then
-    ./config/pull
-fi
+#if [ -f "./pull" ]; then
+#    ./pull
+#elif [ "./config/pull" ]; then
+#    ./config/pull
+#fi
 
-git commit -am "Update config"
+#git commit -am "Update config"
 
 echo "Switching locale-related env variables..."
 
@@ -69,8 +63,8 @@ export LANG=C
 echo "Running search & replace for the copyright notice..."
 
 # Change this line sometime in January.
-let "new_year = 2022"
-let "old_year = $new_year - 1"
+(( new_year = 2022 ))
+(( old_year = new_year - 1 ))
 grep  "Copyright $old_year, TeamDev. All rights reserved." -rl --exclude='**/build/**' . | xargs sed -i "" "s/Copyright $old_year, TeamDev. All rights reserved./Copyright $new_year, TeamDev. All rights reserved./g"
 
 echo "Restoring env variables..."
@@ -78,9 +72,21 @@ echo "Restoring env variables..."
 export LC_CTYPE=$formal_lc_ctype
 export LANG=$formal_lang
 
-echo "Committing changes..."
+echo "Committing changes copyright notice..."
 
-git commit -am "Update copyright notices"
-git push origin update-copyright-notice
+#git commit -am "Update copyright notices"
+#git push origin update-copyright-notice
+
+version_file="./version.gradle.kts"
+if [ -f "$version_file" ]; then
+  text_editor=$EDITOR
+  if [ -e "$text_editor" ]; then
+    text_editor="vim"
+  fi
+  text_editor "$version_file"
+
+  echo "Committing version file changes..."
+  git commit -am "Update version"
+fi
 
 echo "Done."
