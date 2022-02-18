@@ -27,6 +27,7 @@
 package io.spine.internal.gradle.publish
 
 import io.spine.internal.gradle.Repository
+import io.spine.internal.gradle.sourceSets
 import java.util.Objects.isNull
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
@@ -34,11 +35,13 @@ import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.artifacts.PublishArtifactSet
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 
 /**
@@ -71,9 +74,20 @@ class MavenPublishingProject(
         sourcesJar()
         testOutputJar()
         javadocJar()
-        if (publishProtoJar) {
+        if (hasProto() && publishProtoJar) {
             protoJar()
         }
+    }
+
+    /**
+     * Tells whether there are any Proto sources in `main` source set.
+     */
+    private fun Project.hasProto(): Boolean {
+        val mainSourceSet = sourceSets["main"]
+        val protoSourceDirs = mainSourceSet.extensions.getByType<SourceDirectorySet>()
+        val sourceDirs = protoSourceDirs.srcDirs
+        val result = sourceDirs.any { it.exists() }
+        return result
     }
 
     private fun Project.createMavenPublication() {
