@@ -27,6 +27,7 @@
 package io.spine.internal.gradle.javadoc
 
 import io.spine.internal.gradle.javadoc.ExcludeInternalDoclet.Companion.taskName
+import io.spine.internal.gradle.javadoc.JavadocConfig.registerCustomTags
 import io.spine.internal.gradle.sourceSets
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
@@ -65,7 +66,7 @@ class ExcludeInternalDoclet(val version: String) {
     }
 
     /**
-     * Creates a custom Javadoc task for the [project] which excludes the the types
+     * Creates a custom Javadoc task for the [project] which excludes the types
      * annotated as `@Internal`.
      *
      * The task is registered under [taskName].
@@ -107,7 +108,8 @@ private fun Project.appendCustomJavadocTask(excludeInternalDoclet: Configuration
             docletpath = excludeInternalDoclet.files.toList()
         }
 
-        val docletOptions = options as StandardJavadocDocletOptions
-        JavadocConfig.registerCustomTags(docletOptions)
+        with(options as StandardJavadocDocletOptions) {
+            registerCustomTags()
+        }
     }
 }
