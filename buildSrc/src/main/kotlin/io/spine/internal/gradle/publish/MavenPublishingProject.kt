@@ -77,21 +77,22 @@ class MavenPublishingProject(
     }
 
     private fun Project.createMavenPublication() {
-        val nonEmptyPrefix = artifactPrefix.ifEmpty { null }
-        val artifact = listOfNotNull(nonEmptyPrefix, name).joinToString("-")
-        val publishing = extensions.getByType<PublishingExtension>()
-        publishing.publications.create<MavenPublication>("mavenJava") {
-            groupId = project.group.toString()
-            artifactId = artifact
-            version = project.version.toString()
+        val nullablePrefix = artifactPrefix.ifEmpty { null }
+        val artifact = listOfNotNull(nullablePrefix, name).joinToString("-")
+        extensions.getByType<PublishingExtension>()
+            .publications
+            .create<MavenPublication>("mavenJava") {
+                groupId = project.group.toString()
+                artifactId = artifact
+                version = project.version.toString()
 
-            from(project.components.getAt("java"))
+                from(project.components.getAt("java"))
 
-            val archivesConfig = project.configurations.getAt(ConfigurationName.archives)
-            val allArtifacts = archivesConfig.allArtifacts
-            val deduplicated = allArtifacts.deduplicate()
-            setArtifacts(deduplicated)
-        }
+                val archivesConfig = project.configurations.getAt(ConfigurationName.archives)
+                val allArtifacts = archivesConfig.allArtifacts
+                val deduplicated = allArtifacts.deduplicate()
+                setArtifacts(deduplicated)
+            }
     }
 
     /**
@@ -109,13 +110,11 @@ class MavenPublishingProject(
         distinctBy { it.extension to it.classifier }
 
     private fun Project.specifyRepositories() {
-        val isSnapshot = project.version
-            .toString()
+        val isSnapshot = project.version.toString()
             .matches(Regex(".+[-.]SNAPSHOT([+.]\\d+)?"))
-        val publishing = extensions.getByType<PublishingExtension>()
-        destinations.forEach { destination ->
-            publishing.repositories.maven {
-                initialize(destination, project, isSnapshot)
+        with(extensions.getByType<PublishingExtension>()) {
+            destinations.forEach { destination ->
+                repositories.maven { initialize(destination, project, isSnapshot) }
             }
         }
     }

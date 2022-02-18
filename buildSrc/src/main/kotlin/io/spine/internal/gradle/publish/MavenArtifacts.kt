@@ -35,7 +35,6 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 
@@ -45,20 +44,28 @@ import org.gradle.kotlin.dsl.register
 internal class MavenArtifacts {
 
     /**
-     * Sources of `main` source set.
+     * Sources from `main` source set.
+     *
+     * Includes:
+     *
+     *  - Kotlin
+     *  - Java
+     *  - Proto
      */
     fun Project.sourcesJar() = jarArtifact("sourcesJar") {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource) // puts Java and Kotlin sources
-        from(protoSources()) // puts Proto sources
+        from(protoSources()) // puts Proto sources.
     }
 
     /**
      * Collects Proto sources from `main` source set.
+     *
+     * Special treatment for them because they are not Java-related.
      */
     private fun Project.protoSources(): Collection<File> {
         val mainSourceSet = sourceSets["main"]
-        val protoSourceDirs = mainSourceSet.extensions.getByType<SourceDirectorySet>()
+        val protoSourceDirs = mainSourceSet.extensions.getByName("proto") as SourceDirectorySet
         return protoSourceDirs.srcDirs
     }
 
@@ -80,7 +87,7 @@ internal class MavenArtifacts {
     }
 
     /**
-     * Only Proto sources of `main` source set.
+     * Only Proto sources from `main` source set.
      */
     fun Project.protoJar() = jarArtifact("protoJar") {
         archiveClassifier.set("proto")

@@ -91,7 +91,8 @@ abstract class WriteVersions : DefaultTask() {
      * taking in account the value of the [Project.artifactId] property.
      *
      * If [SpinePublishing][io.spine.internal.gradle.publish.SpinePublishing] is used to set up
-     * publishing, [Project.artifactId] usually returns project's name along with "spine" prefix:
+     * publishing, [Project.artifactId] usually returns project's name along with "spine" prefix.
+     * In this case, the name of the file would be:
      *
      * ```
      *     versions-spine-<projectName>.properties
