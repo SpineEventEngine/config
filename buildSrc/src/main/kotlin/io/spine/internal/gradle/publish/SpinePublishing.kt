@@ -87,7 +87,6 @@ import org.gradle.kotlin.dsl.findByType
  *    sourceSets {
  *        val generatedDir by extra("$projectDir/generated")
  *        val generatedSpineDir by extra("$generatedDir/main/java")
- *
  *        main {
  *            java.srcDir(generatedSpineDir)
  *        }
