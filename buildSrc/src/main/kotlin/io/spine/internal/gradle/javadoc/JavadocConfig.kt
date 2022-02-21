@@ -53,7 +53,7 @@ object JavadocConfig {
         val javadocTask = project.tasks.javadocTask().apply {
             discardJavaModulesInLinks()
         }
-        with(javadocTask.options as StandardJavadocDocletOptions) {
+        (javadocTask.options as StandardJavadocDocletOptions).apply {
             encoding = JavadocConfig.encoding.name
             reduceParamWarnings()
             registerCustomTags()

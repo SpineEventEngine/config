@@ -108,7 +108,7 @@ private fun Project.appendCustomJavadocTask(excludeInternalDoclet: Configuration
             docletpath = excludeInternalDoclet.files.toList()
         }
 
-        with(options as StandardJavadocDocletOptions) {
+        (options as StandardJavadocDocletOptions).apply {
             registerCustomTags()
         }
     }
