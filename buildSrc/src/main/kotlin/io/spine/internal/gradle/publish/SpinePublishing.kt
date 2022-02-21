@@ -97,8 +97,9 @@ import org.gradle.kotlin.dsl.findByType
  * 3. [MavenArtifacts.javadocJar] - javadoc, generated upon Java sources from `main` source set.
  *    If javadoc for Kotlin is also needed, apply Dokka plugin. It tunes `javadoc` task to generate
  *    docs upon Kotlin sources as well.
- * 4. [MavenArtifacts.protoJar] – only Proto sources from `main` source set. This artifact
- *    is optional and can be dropped out.
+ * 4. [MavenArtifacts.protoJar] – only Proto sources from `main` source set. It's published only if
+ *    Proto files are actually present in the source set. Publication of this artifact is optional,
+ *    and can be disabled.
  *
  *    Here's an example of how to disable it for some of published modules:
  *
