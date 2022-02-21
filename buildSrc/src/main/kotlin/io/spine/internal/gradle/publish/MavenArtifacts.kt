@@ -39,9 +39,20 @@ import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 
 /**
- * Enumerates artifacts, which can be published along with the default project compilation output.
+ * JAR artifacts, which can be published along with the default project compilation output.
  */
-internal class MavenArtifacts {
+internal class MavenArtifacts(private val publishProtoJar: Boolean) {
+
+    fun registerIn(project: Project) = with(project) {
+
+        sourcesJar()
+        testOutputJar()
+        javadocJar()
+
+        if (hasProto() && publishProtoJar) {
+            protoJar()
+        }
+    }
 
     /**
      * Sources from `main` source set.
@@ -52,16 +63,34 @@ internal class MavenArtifacts {
      *  - Java
      *  - Proto
      */
-    fun Project.sourcesJar() = jarArtifact("sourcesJar") {
+    private fun Project.sourcesJar() = jarArtifact("sourcesJar") {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource) // puts Java and Kotlin sources
         from(protoSources()) // puts Proto sources.
     }
 
     /**
-     * Collects Proto sources from `main` source set.
+     * Only Proto sources from `main` source set.
+     */
+    private fun Project.protoJar() = jarArtifact("protoJar") {
+        archiveClassifier.set("proto")
+        from(protoSources())
+    }
+
+    /**
+     * Tells whether there are any Proto sources in `main` source set.
+     */
+    private fun Project.hasProto(): Boolean {
+        val protoSources = protoSources()
+        val result = protoSources.any { it.exists() }
+        return result
+    }
+
+    /**
+     * Locates Proto sources in `main` source set.
      *
-     * Special treatment for them because they are not Java-related.
+     * Special treatment for them because they are not Java-related, and, thus, not included
+     * into `sourceSets["main"].allSource`.
      */
     private fun Project.protoSources(): Collection<File> {
         val mainSourceSet = sourceSets["main"]
@@ -72,7 +101,7 @@ internal class MavenArtifacts {
     /**
      * Compilation output of `test` source set.
      */
-    fun Project.testOutputJar() = jarArtifact("testOutputJar") {
+    private fun Project.testOutputJar() = jarArtifact("testOutputJar") {
         archiveClassifier.set("test")
         from(sourceSets["test"].output)
     }
@@ -80,18 +109,10 @@ internal class MavenArtifacts {
     /**
      * Javadoc, generated upon Java and Kotlin sources from `main` source set.
      */
-    fun Project.javadocJar() = jarArtifact("javadocJar") {
+    private fun Project.javadocJar() = jarArtifact("javadocJar") {
         archiveClassifier.set("javadoc")
         from(files("$buildDir/docs/javadoc"))
         dependsOn("javadoc")
-    }
-
-    /**
-     * Only Proto sources from `main` source set.
-     */
-    fun Project.protoJar() = jarArtifact("protoJar") {
-        archiveClassifier.set("proto")
-        from(protoSources())
     }
 
     private fun Project.jarArtifact(taskName: String, init: Jar.() -> Unit) {

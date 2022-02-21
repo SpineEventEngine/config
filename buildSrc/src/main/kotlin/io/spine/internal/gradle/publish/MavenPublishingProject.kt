@@ -27,7 +27,6 @@
 package io.spine.internal.gradle.publish
 
 import io.spine.internal.gradle.Repository
-import io.spine.internal.gradle.sourceSets
 import java.util.Objects.isNull
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
@@ -35,19 +34,17 @@ import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.artifacts.PublishArtifactSet
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
-import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 
 /**
  * A [Project] that publishes one or more JAR artifacts using `maven-publish` plugin.
  *
- * @param project source of artifacts
+ * @param project producer of artifacts
  * @param artifactPrefix string to be prepended (by "-") to an identifier of each artifact
  * @param publishProtoJar tells whether to publish a dedicated [MavenArtifacts.protoJar]
  * @param destinations Maven repositories, to which the resulting artifacts are sent
@@ -70,24 +67,9 @@ class MavenPublishingProject(
         setTaskDependencies()
     }
 
-    private fun Project.declareArtifacts() = with(MavenArtifacts()) {
-        sourcesJar()
-        testOutputJar()
-        javadocJar()
-        if (hasProto() && publishProtoJar) {
-            protoJar()
-        }
-    }
-
-    /**
-     * Tells whether there are any Proto sources in `main` source set.
-     */
-    private fun Project.hasProto(): Boolean {
-        val mainSourceSet = sourceSets["main"]
-        val protoSourceDirs = mainSourceSet.extensions.getByType<SourceDirectorySet>()
-        val sourceDirs = protoSourceDirs.srcDirs
-        val result = sourceDirs.any { it.exists() }
-        return result
+    private fun Project.declareArtifacts() {
+        val artifacts = MavenArtifacts(publishProtoJar)
+        artifacts.registerIn(this)
     }
 
     private fun Project.createMavenPublication() {
