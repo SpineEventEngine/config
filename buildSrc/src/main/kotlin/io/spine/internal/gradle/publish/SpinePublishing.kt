@@ -233,11 +233,12 @@ open class SpinePublishing(private val project: Project) {
 
         val protoJarExclusions = protoJar.exclusions
         val publishingProjects = modules.ifEmpty { setOf(project.path) }
-            .map { path ->
-                val isProtoJarExcluded = (protoJarExclusions.contains(path) || protoJar.disabled)
+            .map { name ->
+                val isProtoJarExcluded = (protoJarExclusions.contains(name) || protoJar.disabled)
+                val project = project.project(name)
                 MavenPublishingProject(
-                    project = project.project(path),
-                    artifactPrefix = artifactPrefix,
+                    project = project,
+                    artifactId = artifactId(project),
                     publishProtoJar = isProtoJarExcluded.not(),
                     destinations
                 )
@@ -246,6 +247,22 @@ open class SpinePublishing(private val project: Project) {
         project.afterEvaluate {
             publishingProjects.forEach { it.setUp() }
         }
+    }
+
+    /**
+     * Obtains an artifact ID of the given project, taking into account
+     * the value of [artifactPrefix] property.
+     *
+     * If [artifactPrefix] is set to a non-empty string, it will be used before
+     * the published project name. Otherwise, just project name is returned.
+     */
+    internal fun artifactId(project: Project): String {
+        if (artifactPrefix.isEmpty()) {
+            return project.name
+        }
+
+        val id = "$artifactPrefix-${project.name}"
+        return id
     }
 
     /**

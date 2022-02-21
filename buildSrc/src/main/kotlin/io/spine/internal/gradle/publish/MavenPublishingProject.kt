@@ -45,13 +45,13 @@ import org.gradle.kotlin.dsl.getByType
  * A [Project] that publishes one or more JAR artifacts using `maven-publish` plugin.
  *
  * @param project producer of artifacts
- * @param artifactPrefix string to be prepended (by "-") to an identifier of each artifact
+ * @param artifactId string to be prepended (by "-") to an identifier of each artifact
  * @param publishProtoJar tells whether to publish a dedicated [MavenArtifacts.protoJar]
  * @param destinations Maven repositories, to which the resulting artifacts are sent
  */
 class MavenPublishingProject(
     private val project: Project,
-    private val artifactPrefix: String,
+    private val artifactId: String,
     private val publishProtoJar: Boolean,
     private val destinations: Set<Repository>
 ) {
@@ -59,7 +59,7 @@ class MavenPublishingProject(
     /**
      * Applies `maven-publish` plugin, sets up `mavenJava` publication and declares artifacts.
      */
-    fun setUp() = project.afterEvaluate {
+    fun setUp() = with(project) {
         apply(plugin = "maven-publish")
         declareArtifacts()
         createMavenPublication()
@@ -73,13 +73,11 @@ class MavenPublishingProject(
     }
 
     private fun Project.createMavenPublication() {
-        val nullablePrefix = artifactPrefix.ifEmpty { null }
-        val artifact = listOfNotNull(nullablePrefix, name).joinToString("-")
         extensions.getByType<PublishingExtension>()
             .publications
             .create<MavenPublication>("mavenJava") {
                 groupId = project.group.toString()
-                artifactId = artifact
+                artifactId = this@MavenPublishingProject.artifactId
                 version = project.version.toString()
 
                 from(project.components.getAt("java"))
