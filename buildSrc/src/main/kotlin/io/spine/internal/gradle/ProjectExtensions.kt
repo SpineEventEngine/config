@@ -75,13 +75,18 @@ fun <T : Task> Project.findTask(name: String): T {
 /**
  * Obtains Maven artifact ID of the project.
  *
- * Determines if [SpinePublishing] is configured upon this project. If yes, returns
- * [SpinePublishing.artifactId] for the project. Otherwise, returns project's name.
+ * The method determines if [SpinePublishing] is configured upon this project. If yes, returns
+ * [SpinePublishing.artifactId] for the project. Otherwise, returns a project name.
  */
 val Project.artifactId: String
     get() {
+
+        // When publishing is configured for a multi-module project, the extension is opened
+        // in a root project's build file. For a single-module project – in a project's build file.
+
         val spinePublishing = extensions.findByType<SpinePublishing>()
             ?: rootProject.extensions.findByType()
+
         val artifactId = spinePublishing?.artifactId(this)
         return artifactId ?: name
     }
