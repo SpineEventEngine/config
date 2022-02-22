@@ -197,7 +197,9 @@ open class SpinePublishing(private val project: Project) {
     var destinations: Set<Repository> = emptySet()
 
     /**
-     * String to be prepended (by "-") to an identifier of each artifact.
+     * A prefix to be added before the name of each artifact.
+     *
+     * The added prefix is followed by a hyphen.
      *
      * Default value is "spine".
      */

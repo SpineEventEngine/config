@@ -45,7 +45,7 @@ import org.gradle.kotlin.dsl.getByType
  * A [Project] that publishes one or more JAR artifacts using `maven-publish` plugin.
  *
  * @param project producer of artifacts
- * @param artifactId string to be prepended (by "-") to an identifier of each artifact
+ * @param artifactId the name of jars without version
  * @param publishProtoJar tells whether to publish a dedicated [MavenArtifacts.protoJar]
  * @param destinations Maven repositories, to which the resulting artifacts are sent
  */
