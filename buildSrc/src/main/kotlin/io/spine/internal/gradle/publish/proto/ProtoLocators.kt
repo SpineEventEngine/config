@@ -95,7 +95,7 @@ internal fun Project.protoFiles(): Collection<File> {
  *
  * If this file is a directory, scans its children recursively.
  *
- * @return `true` if the this [is a Protobuf file][isProto], or
+ * @return `true` if this [is a Protobuf file][isProto], or
  *         a directory containing at least one Protobuf file,
  *         `false` otherwise
  */
