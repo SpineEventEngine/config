@@ -31,6 +31,13 @@ package io.spine.internal.dependency
 object Dokka {
     object GradlePlugin {
         const val id = "org.jetbrains.dokka"
+
+        /**
+         * The version of this plugin is already specified in `buildSrc/build.gradle.kts` file.
+         * Thus, when applying the plugin in project's build files, only the [id] should be used.
+         *
+         * When changing the version, also change the version used in the `buildSrc/build.gradle.kts`.
+         */
         const val version = "1.6.10"
     }
 }
