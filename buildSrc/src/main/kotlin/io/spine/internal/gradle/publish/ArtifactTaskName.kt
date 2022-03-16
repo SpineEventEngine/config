@@ -35,5 +35,6 @@ package io.spine.internal.gradle.publish
 internal enum class ArtifactTaskName {
     sourceJar,
     testOutputJar,
-    javadocJar;
+    javadocJar,
+    dokkaJar;
 }

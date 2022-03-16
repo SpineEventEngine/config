@@ -128,12 +128,19 @@ private fun Project.setUpDefaultArtifacts() {
         classifier = "javadoc",
         dependencies = setOf("javadoc")
     )
+    val dokkaJar = tasks.createIfAbsent(
+        artifactTask = ArtifactTaskName.dokkaJar,
+        from = files("$buildDir/docs/dokka"),
+        classifier = "dokka",
+        dependencies = setOf("dokkaHtml")
+    )
 
     artifacts {
         val archives = ConfigurationName.archives
         add(archives, sourceJar)
         add(archives, testOutputJar)
         add(archives, javadocJar)
+        add(archives, dokkaJar)
     }
 }
 
