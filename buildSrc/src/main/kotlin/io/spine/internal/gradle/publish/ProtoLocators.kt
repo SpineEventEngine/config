@@ -26,9 +26,30 @@
 
 package io.spine.internal.gradle.publish
 
+import io.spine.internal.gradle.sourceSets
+import java.io.File
+import org.gradle.api.Project
+import org.gradle.api.file.SourceDirectorySet
+import org.gradle.kotlin.dsl.get
+
+
 /**
- * Popular names of Gradle configurations.
+ * Tells whether there are any Proto sources in "main" source set.
  */
-internal object ConfigurationName {
-    const val archives = "archives"
+internal fun Project.hasProto(): Boolean {
+    val protoSources = protoSources()
+    val result = protoSources.any { it.exists() }
+    return result
+}
+
+/**
+ * Locates Proto sources in "main" source set.
+ *
+ * "main" source set is added by `java` plugin. Special treatment for Proto sources is needed,
+ * because they are not Java-related, and, thus, not included in `sourceSets["main"].allSource`.
+ */
+internal fun Project.protoSources(): Collection<File> {
+    val mainSourceSet = sourceSets["main"]
+    val protoSourceDirs = mainSourceSet.extensions.findByName("proto") as SourceDirectorySet?
+    return protoSourceDirs?.srcDirs ?: emptyList()
 }
