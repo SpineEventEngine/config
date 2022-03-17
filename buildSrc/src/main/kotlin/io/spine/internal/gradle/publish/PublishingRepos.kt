@@ -41,12 +41,7 @@ object PublishingRepos {
         credentialsFile = "credentials.properties"
     )
 
-    val cloudRepo = Repository(
-        name = "CloudRepo",
-        releases = "https://spine.mycloudrepo.io/public/repositories/releases",
-        snapshots = "https://spine.mycloudrepo.io/public/repositories/snapshots",
-        credentialsFile = "cloudrepo.properties"
-    )
+    val cloudRepo = CloudRepo
 
     val cloudArtifactRegistry = CloudArtifactRegistry.repository
 
@@ -56,3 +51,37 @@ object PublishingRepos {
     fun gitHub(repoName: String): Repository = GitHubPackages.repository(repoName)
 }
 
+/**
+ * CloudRepo Maven repository.
+ *
+ * There is a special treatment for this repository. Usually, fetching and pushing of artifacts
+ * is performed via the same URL. But it is not true for CloudRepo. Fetching is performed via
+ * public repository, and pushing via private one. Their URLs differ in `/public` infix.
+ */
+object CloudRepo {
+
+    private const val name = "CloudRepo"
+    private const val baseUrl = "https://spine.mycloudrepo.io/public/repositories"
+    private const val credentialsFile = "cloudrepo.properties"
+
+    /**
+     * Use this instance to depend on artifacts from this repository.
+     */
+    val reading = Repository(
+        name = name,
+        releases = "$baseUrl/releases",
+        snapshots = "$baseUrl/snapshots",
+        credentialsFile = credentialsFile
+    )
+
+    /**
+     * Use this instance to publish artifacts to this repository.
+     */
+    val writing = Repository(
+        name = name,
+        releases = "${baseUrl.replace("/public", "")}/releases",
+        snapshots = "${baseUrl.replace("/public", "")}/snapshots",
+        credentialsFile = credentialsFile
+    )
+
+}
