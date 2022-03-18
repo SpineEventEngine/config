@@ -76,7 +76,7 @@ internal class MavenJavaPublication(
     }
 
     /**
-     * Creates a new "mavenJava" [MavenPublication] in the given Gradle project.
+     * Creates a new "mavenJava" [MavenPublication] in the given project.
      */
     private fun createPublication(project: Project) {
         val gradlePublishing = project.extensions.getByType<PublishingExtension>()
@@ -105,7 +105,7 @@ internal class MavenJavaPublication(
      *  Metadata files contain information about a publication itself, its artifacts and their
      *  dependencies. Presence of ".pom" file is mandatory for publication to be consumed by
      *  `mvn` build tool itself or other build tools that understand Maven notation (Gradle, Ivy).
-     *  Presence of ".module" is optional, but useful when a publication is consumed by `gradle`.
+     *  Presence of ".module" is optional, but useful when a publication is consumed by Gradle.
      *
      *  See: [Maven – POM Reference](https://maven.apache.org/pom.html)
      *       [Understanding Gradle Module Metadata](https://docs.gradle.org/current/userguide/publishing_gradle_module_metadata.html)

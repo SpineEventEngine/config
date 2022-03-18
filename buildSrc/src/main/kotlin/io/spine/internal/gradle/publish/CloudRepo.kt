@@ -35,7 +35,7 @@ import io.spine.internal.gradle.Repository
  * is performed via the same URL. But it is not true for CloudRepo. Fetching is performed via
  * public repository, and pushing via private one. Their URLs differ in `/public` infix.
  */
-object CloudRepo {
+internal object CloudRepo {
 
     private const val name = "CloudRepo"
     private const val baseUrl = "https://spine.mycloudrepo.io/public/repositories"
