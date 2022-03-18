@@ -40,6 +40,11 @@ import org.gradle.external.javadoc.StandardJavadocDocletOptions
 @Suppress("unused")
 object JavadocConfig {
 
+    /**
+     * Link to the javadoc of OpenJDK SE 11 API.
+     */
+    private const val standardLibraryAPI = "https://cr.openjdk.java.net/~iris/se/11/latestSpec/api/"
+
     @Suppress("MemberVisibilityCanBePrivate") // opened to be visible from docs.
     val tags = listOf(
         JavadocTag("apiNote", "API Note"),
@@ -64,7 +69,7 @@ object JavadocConfig {
         docletOptions.encoding = encoding.name
         reduceParamWarnings(docletOptions)
         registerCustomTags(docletOptions)
-        linkOpenJdkApi(docletOptions)
+        linkStandardLibraryAPI(docletOptions)
     }
 
     /**
@@ -90,11 +95,10 @@ object JavadocConfig {
     }
 
     /**
-     * Links OpenJDK SE 11 API to be referenced to when navigating to the types
+     * Links javadoc of OpenJDK SE 11 API to be referenced to when navigating to the types
      * from the standard library (`String`, `List`, etc.).
      */
-    private fun linkOpenJdkApi(docletOptions: StandardJavadocDocletOptions) {
-        val standardLibraryAPI = "https://cr.openjdk.java.net/~iris/se/11/latestSpec/api/"
+    private fun linkStandardLibraryAPI(docletOptions: StandardJavadocDocletOptions) {
         docletOptions.addStringOption("link", standardLibraryAPI)
     }
 
