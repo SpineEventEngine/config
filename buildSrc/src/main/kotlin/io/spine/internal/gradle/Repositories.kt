@@ -112,8 +112,8 @@ object Repos {
     )
     val oldSpineSnapshots = PublishingRepos.mavenTeamDev.snapshots
 
-    val spine = CloudRepo.reading.releases
-    val spineSnapshots = CloudRepo.reading.snapshots
+    val spine = CloudRepo.published.releases
+    val spineSnapshots = CloudRepo.published.snapshots
 
     val artifactRegistry = PublishingRepos.cloudArtifactRegistry.releases
     val artifactRegistrySnapshots = PublishingRepos.cloudArtifactRegistry.snapshots

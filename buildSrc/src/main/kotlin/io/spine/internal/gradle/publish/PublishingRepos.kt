@@ -41,7 +41,7 @@ object PublishingRepos {
         credentialsFile = "credentials.properties"
     )
 
-    val cloudRepo = CloudRepo.writing
+    val cloudRepo = CloudRepo.destination
 
     val cloudArtifactRegistry = CloudArtifactRegistry.repository
 

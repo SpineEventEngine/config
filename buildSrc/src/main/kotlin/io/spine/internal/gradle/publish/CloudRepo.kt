@@ -42,9 +42,11 @@ internal object CloudRepo {
     private const val credentialsFile = "cloudrepo.properties"
 
     /**
+     * CloudRepo repository for fetching of artifacts.
+     *
      * Use this instance to depend on artifacts from this repository.
      */
-    val reading = Repository(
+    val published = Repository(
         name = name,
         releases = "$baseUrl/releases",
         snapshots = "$baseUrl/snapshots",
@@ -52,9 +54,11 @@ internal object CloudRepo {
     )
 
     /**
+     * CloudRepo repository for pushing of artifacts.
+     *
      * Use this instance to publish artifacts to this repository.
      */
-    val writing = Repository(
+    val destination = Repository(
         name = name,
         releases = "${baseUrl.replace("/public", "")}/releases",
         snapshots = "${baseUrl.replace("/public", "")}/snapshots",
