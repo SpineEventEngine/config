@@ -83,7 +83,7 @@ fun <T : Task> Project.findTask(name: String): T {
 val Project.artifactId: String
     get() {
 
-        // Publishing of a project can be configured either from a project itself or
+        // Publishing of a project can be configured either from the project itself or
         // from its root project. This is why it is required to check both places.
 
         val spinePublishing = extensions.findByType<SpinePublishing>()
