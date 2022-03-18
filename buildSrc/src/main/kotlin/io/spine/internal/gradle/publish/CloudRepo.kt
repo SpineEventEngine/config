@@ -29,24 +29,35 @@ package io.spine.internal.gradle.publish
 import io.spine.internal.gradle.Repository
 
 /**
- * Repositories to which we may publish.
+ * CloudRepo Maven repository.
+ *
+ * There is a special treatment for this repository. Usually, fetching and pushing of artifacts
+ * is performed via the same URL. But it is not true for CloudRepo. Fetching is performed via
+ * public repository, and pushing via private one. Their URLs differ in `/public` infix.
  */
-object PublishingRepos {
+object CloudRepo {
 
-    @Suppress("HttpUrlsUsage") // HTTPS is not supported by this repository.
-    val mavenTeamDev = Repository(
-        name = "maven.teamdev.com",
-        releases = "http://maven.teamdev.com/repository/spine",
-        snapshots = "http://maven.teamdev.com/repository/spine-snapshots",
-        credentialsFile = "credentials.properties"
-    )
-
-    val cloudRepo = CloudRepo.writing
-
-    val cloudArtifactRegistry = CloudArtifactRegistry.repository
+    private const val name = "CloudRepo"
+    private const val baseUrl = "https://spine.mycloudrepo.io/public/repositories"
+    private const val credentialsFile = "cloudrepo.properties"
 
     /**
-     * Obtains a GitHub repository by the given name.
+     * Use this instance to depend on artifacts from this repository.
      */
-    fun gitHub(repoName: String): Repository = GitHubPackages.repository(repoName)
+    val reading = Repository(
+        name = name,
+        releases = "$baseUrl/releases",
+        snapshots = "$baseUrl/snapshots",
+        credentialsFile = credentialsFile
+    )
+
+    /**
+     * Use this instance to publish artifacts to this repository.
+     */
+    val writing = Repository(
+        name = name,
+        releases = "${baseUrl.replace("/public", "")}/releases",
+        snapshots = "${baseUrl.replace("/public", "")}/snapshots",
+        credentialsFile = credentialsFile
+    )
 }
