@@ -83,8 +83,8 @@ fun <T : Task> Project.findTask(name: String): T {
 val Project.artifactId: String
     get() {
 
-        // When publishing is configured for a multi-module project, the extension is opened
-        // in a root project's build file. For a single-module project – in a project's build file.
+        // Publishing of a project can be configured either from a project itself or
+        // from its root project. This is why it is required to check both places.
 
         val spinePublishing = extensions.findByType<SpinePublishing>()
             ?: rootProject.extensions.findByType()
