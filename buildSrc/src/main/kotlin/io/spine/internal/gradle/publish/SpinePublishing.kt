@@ -47,12 +47,10 @@ import org.gradle.kotlin.dsl.findByType
  *         "subprojectA",
  *         "subprojectB",
  *     )
- *     destinations = targetRepositories {
- *         setOf(
- *             cloudRepo,
- *             cloudArtifactRegistry,
- *         )
- *     }
+ *     destinations = setOf(
+ *         PublishingRepos.cloudRepo,
+ *         PublishingRepos.cloudArtifactRegistry,
+ *     )
  * }
  * ```
  *
@@ -61,13 +59,10 @@ import org.gradle.kotlin.dsl.findByType
  *
  * ```
  * spinePublishing {
- *     destinations = targetRepositories {
- *         setOf(
- *             cloudRepo,
- *             cloudArtifactRegistry,
- *             gitHub("base"),
- *         )
- *     }
+ *     destinations = setOf(
+ *         PublishingRepos.cloudRepo,
+ *         PublishingRepos.cloudArtifactRegistry,
+ *     )
  * }
  * ```
  *
@@ -172,17 +167,15 @@ open class SpinePublishing(private val project: Project) {
     /**
      * Set of repositories, to which the resulting artifacts will be sent.
      *
-     * One can use [targetRepositories] shortcut to select destinations from the pre-defined
-     * [set of repositories][PublishingRepos], to which a spine-related project may be published:
+     * Usually, Spine-related projects are published to one or more repositories,
+     * declared in [PublishingRepos]:
      *
      * ```
-     * destinations = targetRepositories {
-     *     setOf(
-     *         cloudRepo,
-     *         cloudArtifactRegistry,
-     *         gitHub("base"),
-     *     )
-     * }
+     * destinations = setOf(
+     *     PublishingRepos.cloudRepo,
+     *     PublishingRepos.cloudArtifactRegistry,
+     *     PublishingRepos.gitHub("base"),
+     * )
      * ```
      *
      * Empty by default.
@@ -197,12 +190,6 @@ open class SpinePublishing(private val project: Project) {
      * Default value is "spine".
      */
     var artifactPrefix: String = "spine"
-
-    /**
-     * A shortcut for selecting destinations from the pre-defined
-     * [set of repositories][PublishingRepos], to which a spine-related project may be published.
-     */
-    fun targetRepositories(select: PublishingRepos.() -> Set<Repository>) = select(PublishingRepos)
 
     /**
      * Allows disabling publishing of a dedicated [protoJar] artifact,
