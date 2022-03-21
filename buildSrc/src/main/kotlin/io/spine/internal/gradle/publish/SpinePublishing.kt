@@ -210,8 +210,8 @@ open class SpinePublishing(private val project: Project) {
      */
     internal fun configured() {
 
-        assertProtoExclusionsArePublished()
-        assertModulesNotDuplicated()
+        ensureProtoExclusionsArePublished()
+        ensuresModulesNotDuplicated()
 
         val protoJarExclusions = protoJar.exclusions
         val publishedModules = modules.ifEmpty { setOf(project.name) }
@@ -270,12 +270,27 @@ open class SpinePublishing(private val project: Project) {
     }
 
     /**
-     * Asserts that publishing of a module is configured only from a single place.
+     * Ensures that all modules, marked as excluded from proto JAR publishing,
+     * are actually published.
+     *
+     * It makes no sense to exclude a module from [protoJar] publication, if a module
+     * is not published at all.
+     */
+    private fun ensureProtoExclusionsArePublished() {
+        val nonPublishedExclusions = protoJar.exclusions.minus(modules)
+        if (nonPublishedExclusions.isNotEmpty()) {
+            throw IllegalStateException("One or more modules are marked as `excluded from proto " +
+                    "JAR publication`, but they are not even published: $nonPublishedExclusions")
+        }
+    }
+
+    /**
+     * Ensures that publishing of a module is configured only from a single place.
      *
      * We allow configuration of publishing from two places - a root project and module itself.
      * Here we verify that publishing of a module is not configured in both places simultaneously.
      */
-    private fun assertModulesNotDuplicated() {
+    private fun ensuresModulesNotDuplicated() {
         val rootProject = project.rootProject
         if (rootProject == project) {
             return
@@ -288,21 +303,6 @@ open class SpinePublishing(private val project: Project) {
                 throw IllegalStateException("Publishing of `$thisProject` module is already " +
                             "configured in a root project!")
             }
-        }
-    }
-
-    /**
-     * Asserts that all modules, marked as excluded from proto JAR publishing,
-     * are actually published.
-     *
-     * It makes no sense to exclude a module from [protoJar] publication, if a module
-     * is not published at all.
-     */
-    private fun assertProtoExclusionsArePublished() {
-        val nonPublishedExclusions = protoJar.exclusions.minus(modules)
-        if (nonPublishedExclusions.isNotEmpty()) {
-            throw IllegalStateException("One or more modules are marked as `excluded from proto " +
-                    "JAR publication`, but they are not even published: $nonPublishedExclusions")
         }
     }
 }

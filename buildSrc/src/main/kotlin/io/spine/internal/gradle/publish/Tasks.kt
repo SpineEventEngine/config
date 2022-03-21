@@ -61,11 +61,11 @@ private fun TaskContainer.getOrCreatePublishTask() =
 private fun TaskContainer.registerCheckCredentialsTask(destinations: Collection<Repository>) =
     register("checkCredentials") {
         doLast {
-            destinations.forEach { it.assertCredentials(project) }
+            destinations.forEach { it.ensureCredentials(project) }
         }
     }
 
-private fun Repository.assertCredentials(project: Project) {
+private fun Repository.ensureCredentials(project: Project) {
     val credentials = credentials(project)
     if (Objects.isNull(credentials)) {
         throw InvalidUserDataException(
