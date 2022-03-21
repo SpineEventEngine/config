@@ -79,7 +79,7 @@ object JavadocConfig {
         // We ask `Javadoc` task to modify "search.js" and override a method, responsible for
         // the formation of URL prefixes. We can't specify the option "--no-module-directories",
         // because it leads to discarding of all module prefixes in generated links. That means,
-        // links to the types from the standard library would not work, as they declared
+        // links to the types from the standard library would not work, as they are declared
         // within modules since Java 9.
 
         val discardModulePrefix = """
