@@ -38,8 +38,9 @@ import io.spine.internal.gradle.Repository
 internal object CloudRepo {
 
     private const val name = "CloudRepo"
-    private const val baseUrl = "https://spine.mycloudrepo.io/public/repositories"
     private const val credentialsFile = "cloudrepo.properties"
+    private const val publicUrl = "https://spine.mycloudrepo.io/public/repositories"
+    private val privateUrl = publicUrl.replace("/public", "")
 
     /**
      * CloudRepo repository for fetching of artifacts.
@@ -48,8 +49,8 @@ internal object CloudRepo {
      */
     val published = Repository(
         name = name,
-        releases = "$baseUrl/releases",
-        snapshots = "$baseUrl/snapshots",
+        releases = "$publicUrl/releases",
+        snapshots = "$publicUrl/snapshots",
         credentialsFile = credentialsFile
     )
 
@@ -60,8 +61,8 @@ internal object CloudRepo {
      */
     val destination = Repository(
         name = name,
-        releases = "${baseUrl.replace("/public", "")}/releases",
-        snapshots = "${baseUrl.replace("/public", "")}/snapshots",
+        releases = "$privateUrl/releases",
+        snapshots = "$privateUrl/snapshots",
         credentialsFile = credentialsFile
     )
 }
