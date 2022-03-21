@@ -41,7 +41,9 @@ import org.gradle.external.javadoc.StandardJavadocDocletOptions
 object JavadocConfig {
 
     /**
-     * Link to the javadoc of OpenJDK SE 11 API.
+     * Link to the documentation for Java 11 Standard Library API.
+     *
+     * OpenJDK SE 11 is used for the reference.
      */
     private const val standardLibraryAPI = "https://cr.openjdk.java.net/~iris/se/11/latestSpec/api/"
 
@@ -95,8 +97,12 @@ object JavadocConfig {
     }
 
     /**
-     * Links javadoc of OpenJDK SE 11 API to be referenced to when navigating to the types
-     * from the standard library (`String`, `List`, etc.).
+     * Links the documentation for Java 11 Standard Library API.
+     *
+     * This documentation is used to be referenced to when navigating to the types from the
+     * standard library (`String`, `List`, etc.).
+     *
+     * OpenJDK SE 11 is used for the reference.
      */
     private fun linkStandardLibraryAPI(docletOptions: StandardJavadocDocletOptions) {
         docletOptions.addStringOption("link", standardLibraryAPI)
