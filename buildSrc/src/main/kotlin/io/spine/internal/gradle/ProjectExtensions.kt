@@ -76,9 +76,7 @@ fun <T : Task> Project.findTask(name: String): T {
  * Obtains Maven artifact ID of this [Project].
  *
  * The method checks if [SpinePublishing] extension is configured upon this project. If yes,
- * returns [SpinePublishing.artifactId] for the project.
- *
- * Otherwise, a project's name is returned.
+ * returns [SpinePublishing.artifactId] for the project. Otherwise, a project's name is returned.
  */
 val Project.artifactId: String
     get() {
