@@ -58,13 +58,9 @@ object JavadocConfig {
 
     fun applyTo(project: Project) {
         val javadocTask = project.tasks.javadocTask()
-        configureTask(javadocTask)
+        discardJavaModulesInLinks(javadocTask)
         val docletOptions = javadocTask.options as StandardJavadocDocletOptions
         configureDoclet(docletOptions)
-    }
-
-    private fun configureTask(javadocTask: Javadoc) {
-        discardJavaModulesInLinks(javadocTask)
     }
 
     private fun configureDoclet(docletOptions: StandardJavadocDocletOptions) {
