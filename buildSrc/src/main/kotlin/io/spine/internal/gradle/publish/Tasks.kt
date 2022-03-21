@@ -49,13 +49,13 @@ internal fun Project.configurePublishTask(destinations: Collection<Repository>) 
     localPublish.configure { dependsOn(checkCredentials) }
 }
 
-private const val publish = "publish"
+private const val PUBLISH = "publish"
 
 private fun TaskContainer.getOrCreatePublishTask() =
-    if (names.contains(publish)) {
-        named(publish)
+    if (names.contains(PUBLISH)) {
+        named(PUBLISH)
     } else {
-        register(publish)
+        register(PUBLISH)
     }
 
 private fun TaskContainer.registerCheckCredentialsTask(destinations: Collection<Repository>) =
