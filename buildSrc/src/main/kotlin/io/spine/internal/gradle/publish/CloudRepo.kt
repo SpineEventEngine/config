@@ -31,9 +31,9 @@ import io.spine.internal.gradle.Repository
 /**
  * CloudRepo Maven repository.
  *
- * There is a special treatment for this repository. Usually, fetching and pushing of artifacts
+ * There is a special treatment for this repository. Usually, fetching and publishing of artifacts
  * is performed via the same URL. But it is not true for CloudRepo. Fetching is performed via
- * public repository, and pushing via private one. Their URLs differ in `/public` infix.
+ * public repository, and publishing via private one. Their URLs differ in `/public` infix.
  */
 internal object CloudRepo {
 
@@ -54,9 +54,9 @@ internal object CloudRepo {
     )
 
     /**
-     * CloudRepo repository for pushing of artifacts.
+     * CloudRepo repository for publishing of artifacts.
      *
-     * Use this instance to publish artifacts to this repository.
+     * Use this instance to push new artifacts to this repository.
      */
     val destination = Repository(
         name = name,
