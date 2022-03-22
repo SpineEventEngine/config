@@ -27,6 +27,7 @@
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.dokka.gradle.DokkaTask
+import io.spine.internal.dependency.Dokka
 
 plugins {
     id("org.jetbrains.dokka")
@@ -40,7 +41,7 @@ plugins {
  *     Dokka output formats</a>
  */
 dependencies {
-    dokkaPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.6.10")
+    dokkaPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:${Dokka.GradlePlugin.version}")
 }
 
 tasks.withType<DokkaTask>().configureEach {
