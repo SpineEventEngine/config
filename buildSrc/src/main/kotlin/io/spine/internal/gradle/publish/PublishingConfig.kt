@@ -80,15 +80,15 @@ private fun PublishingConfig.createPublication(project: Project) {
  * By default, only a jar with java compilation output is included into publication. This method
  * registers tasks which produce additional artifacts.
  *
- * The list of additional artifacts:
+ * The list of additional artifacts to be registered:
  *
  *  1. [sourcesJar] – Java, Kotlin and Proto source files.
- *  2. [javadocJar] – documentation, generated upon Java files.
- *
- * Optionally, the following artifacts can also be registered:
- *
- *  1. [testJar] – compilation output of "test" source set.
  *  2. [protoJar] – only Proto source files.
+ *  3. [javadocJar] – documentation, generated upon Java files.
+ *  4. [testJar] – compilation output of "test" source set.
+ *
+ * Registration of [protoJar] and [testJar] is optional. It can be controlled by method's
+ * parameters.
  *
  * @return the list of the registered tasks.
  */

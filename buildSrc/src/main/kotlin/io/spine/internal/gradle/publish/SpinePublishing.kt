@@ -92,12 +92,12 @@ import org.gradle.kotlin.dsl.findByType
  *        }
  *    }
  *    ```
- * 2. [javadocJar] - javadoc, generated upon Java sources from "main" source set.
- *   If javadoc for Kotlin is also needed, apply Dokka plugin. It tunes `javadoc` task to generate
- *   docs upon Kotlin sources as well.
- * 3. [protoJar] – only Proto sources from "main" source set. It's published only if
+ * 2. [protoJar] – only Proto sources from "main" source set. It's published only if
  *   Proto files are actually present in the source set. Publication of this artifact is optional
  *   and can be disabled via [SpinePublishing.protoJar].
+ * 3. [javadocJar] - javadoc, generated upon Java sources from "main" source set.
+ *   If javadoc for Kotlin is also needed, apply Dokka plugin. It tunes `javadoc` task to generate
+ *   docs upon Kotlin sources as well.
  *
  * Additionally, [testJar] artifact can be published. This artifact contains compilation output
  * of "test" source set. Use [SpinePublishing.testJar] to enable its publishing.
