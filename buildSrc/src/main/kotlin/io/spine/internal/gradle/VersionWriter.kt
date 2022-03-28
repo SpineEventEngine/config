@@ -92,8 +92,8 @@ abstract class WriteVersions : DefaultTask() {
      *
      * The name of the file would be: `versions-<artifactId>.properties`.
      *
-     * By default, value of [Project.artifactId] property is a project name with "spine-" prefix.
-     * For example, if a project name is "tools", then the name of the file would be:
+     * By default, value of [Project.artifactId] property is a project's name with "spine-" prefix.
+     * For example, if a project's name is "tools", then the name of the file would be:
      * `versions-spine-tools.properties`.
      */
     @TaskAction
