@@ -204,7 +204,7 @@ open class SpinePublishing(private val project: Project) {
 
     /**
      * Allows enabling publishing of [testJar] artifact, containing compilation output
-     * of `test` source set.
+     * of "test" source set.
      *
      * Here's an example of how to enable it for some of published modules:
      *
