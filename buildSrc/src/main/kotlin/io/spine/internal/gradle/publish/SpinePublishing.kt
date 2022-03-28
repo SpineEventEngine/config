@@ -92,7 +92,7 @@ import org.gradle.kotlin.dsl.findByType
  *        }
  *    }
  *    ```
- * 2. [javadocJar] - javadoc, generated upon Java sources from `main` source set.
+ * 2. [javadocJar] - javadoc, generated upon Java sources from "main" source set.
  *   If javadoc for Kotlin is also needed, apply Dokka plugin. It tunes `javadoc` task to generate
  *   docs upon Kotlin sources as well.
  * 3. [protoJar] – only Proto sources from "main" source set. It's published only if
