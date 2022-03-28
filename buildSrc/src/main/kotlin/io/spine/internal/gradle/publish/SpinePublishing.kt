@@ -157,11 +157,9 @@ open class SpinePublishing(private val project: Project) {
     /**
      * A prefix to be added before the name of each artifact.
      *
-     * The added prefix is followed by a hyphen.
-     *
-     * Default value is "spine".
+     * Default value is "spine-".
      */
-    var artifactPrefix: String = "spine"
+    var artifactPrefix: String = "spine-"
 
     /**
      * Allows disabling publishing of [protoJar] artifact, containing all Proto sources
@@ -301,20 +299,12 @@ open class SpinePublishing(private val project: Project) {
     }
 
     /**
-     * Obtains an artifact ID for the given project, taking into account
-     * the value of [artifactPrefix] property.
+     * Obtains an artifact ID for the given project.
      *
-     * If [artifactPrefix] is set to a non-empty string, it will be used before
-     * the published project name, followed by a hyphen. Otherwise, just project name is returned.
+     * It consists of an [artifactPrefix] followed by a project's name:
+     * `<artifactPrefix><project.name>`.
      */
-    internal fun artifactId(project: Project): String {
-        if (artifactPrefix.isEmpty()) {
-            return project.name
-        }
-
-        val id = "$artifactPrefix-${project.name}"
-        return id
-    }
+    internal fun artifactId(project: Project): String = "$artifactPrefix${project.name}"
 
     /**
      * Ensures that all modules, marked as excluded from proto JAR publishing,
