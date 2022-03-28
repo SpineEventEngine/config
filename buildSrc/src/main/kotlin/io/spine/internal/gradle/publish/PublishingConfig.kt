@@ -42,7 +42,7 @@ import org.gradle.kotlin.dsl.apply
  */
 internal class PublishingConfig(
     val artifactId: String,
-    val destinations: Collection<Repository>,
+    val destinations: Set<Repository>,
     val includeProtoJar: Boolean = true,
     val includeTestJar: Boolean = false,
 )
