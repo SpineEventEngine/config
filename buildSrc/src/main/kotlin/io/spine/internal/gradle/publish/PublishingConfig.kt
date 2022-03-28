@@ -87,7 +87,7 @@ private fun PublishingConfig.createPublication(project: Project) {
  *  3. [javadocJar] – documentation, generated upon Java files.
  *  4. [testJar] – compilation output of "test" source set.
  *
- * Registration of [protoJar] and [testJar] is optional. It can be controlled by method's
+ * Registration of [protoJar] and [testJar] is optional. It can be controlled by the method's
  * parameters.
  *
  * @return the list of the registered tasks.

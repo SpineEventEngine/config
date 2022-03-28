@@ -301,7 +301,7 @@ open class SpinePublishing(private val project: Project) {
     /**
      * Obtains an artifact ID for the given project.
      *
-     * It consists of an [artifactPrefix] followed by a project's name:
+     * It consists of a project's name and [prefix][artifactPrefix]:
      * `<artifactPrefix><project.name>`.
      */
     internal fun artifactId(project: Project): String = "$artifactPrefix${project.name}"
