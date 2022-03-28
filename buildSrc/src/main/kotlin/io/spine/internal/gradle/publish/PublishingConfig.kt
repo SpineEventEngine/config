@@ -95,9 +95,9 @@ private fun PublishingConfig.createPublication(project: Project) {
 private fun Project.registerArtifacts(
     includeProtoJar: Boolean = true,
     includeTestJar: Boolean = false
-): List<TaskProvider<Jar>> {
+): Set<TaskProvider<Jar>> {
 
-    val artifacts = mutableListOf(
+    val artifacts = mutableSetOf(
         sourcesJar(),
         javadocJar(),
     )
