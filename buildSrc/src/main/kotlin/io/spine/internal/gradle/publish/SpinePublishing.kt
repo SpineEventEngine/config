@@ -307,11 +307,11 @@ open class SpinePublishing(private val project: Project) {
     internal fun artifactId(project: Project): String = "$artifactPrefix${project.name}"
 
     /**
-     * Ensures that all modules, marked as excluded from proto JAR publishing,
+     * Ensures that all modules, marked as excluded from [protoJar] publishing,
      * are actually published.
      *
-     * It makes no sense to exclude a module from [protoJar] publication, if a module
-     * is not published at all.
+     * It makes no sense to tell a module don't publish [protoJar] artifact, if the module is not
+     * published at all.
      */
     private fun ensureProtoJarExclusionsArePublished() {
         val nonPublishedExclusions = protoJar.exclusions.minus(modules)
@@ -322,11 +322,11 @@ open class SpinePublishing(private val project: Project) {
     }
 
     /**
-     * Ensures that all modules, marked as included into test JAR publishing,
+     * Ensures that all modules, marked as included into [testJar] publishing,
      * are actually published.
      *
-     * It makes no sense to include a module into [testJar] publication, if a module
-     * is not published at all.
+     * It makes no sense to tell a module publish [testJar] artifact, if the module is not
+     * published at all.
      */
     private fun ensureTestJarInclusionsArePublished() {
         val nonPublishedInclusions = testJar.inclusions.minus(modules)
