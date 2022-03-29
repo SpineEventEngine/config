@@ -42,7 +42,7 @@ plugins {
  *     Dokka output formats</a>
  */
 dependencies {
-    dokkaPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:${Dokka.GradlePlugin.version}")
+    dokkaPlugin(Dokka.KotlinAsJava.lib)
 }
 
 tasks.withType<DokkaTask>().configureEach {
