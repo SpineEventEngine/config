@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.withType
-import org.jetbrains.dokka.gradle.DokkaTask
 import io.spine.internal.dependency.Dokka
 import java.time.LocalDate
+import org.jetbrains.dokka.base.DokkaBase
+import org.jetbrains.dokka.base.DokkaBaseConfiguration
+import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
     id("org.jetbrains.dokka")
@@ -55,7 +55,6 @@ tasks.withType<DokkaTask>().configureEach {
      * @see <a href="https://kotlin.github.io/dokka/1.6.10/user_guide/base-specific/frontend/#prerequisites">
      * Dokka modifying frontend assets</a>
      */
-    val dokkaBaseRef = "org.jetbrains.dokka.base.DokkaBase"
     val dokkaConfDir = rootDir.resolve("buildSrc/src/main/kotlin/io/spine/internal/gradle/dokka")
 
     /**
@@ -65,21 +64,10 @@ tasks.withType<DokkaTask>().configureEach {
      * Also, there is a `customAssets` property to provide resources. We need to
      * provide an image with the name "logo-icon.svg" to overwrite the default one used by Dokka.
      */
-    val dokkaConf = """
-        {
-            "customStyleSheets": [
-                "${dokkaConfDir.resolve("styles/custom-styles.css")}"
-             ],
-             "customAssets": [
-                "${dokkaConfDir.resolve("assets/logo-icon.svg")}"
-             ],
-             "footerMessage": "Copyright ${LocalDate.now().year}, TeamDev"
-        }
-        """.trimIndent()
-
-    pluginsMapConfiguration.set(
-        mapOf(
-            dokkaBaseRef to dokkaConf
-        )
-    )
+    pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
+        customStyleSheets = listOf(file("${dokkaConfDir.resolve("styles/custom-styles.css")}"))
+        customAssets = listOf(file("${dokkaConfDir.resolve("assets/logo-icon.svg")}"))
+        footerMessage = "Copyright ${LocalDate.now().year}, TeamDev"
+    }
 }
+
