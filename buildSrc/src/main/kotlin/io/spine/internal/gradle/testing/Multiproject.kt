@@ -37,7 +37,9 @@ import io.spine.internal.gradle.publish.testJar
  * of some "parent" project.
  *
  * Please note that this utility requires Gradle `java` plugin to be applied. Hence, it is
- * recommended to call this extension method from `java` scope:
+ * recommended to call this extension method from `java` scope.
+ *
+ * Here's an example of how to expose the test classes of "projectA":
  *
  * ```
  * java {
@@ -45,20 +47,24 @@ import io.spine.internal.gradle.publish.testJar
  * }
  * ```
  *
- * Here's an example of how to consume the exposed configuration:
+ * Here's an example of how to consume the exposed classes in "projectB":
  *
  * ```
  * dependencies {
- *     testImplementation(project(path = ":projectName", configuration = "testArtifacts"))
+ *     testImplementation(project(path = ":projectA", configuration = "testArtifacts"))
  * }
  * ```
+ *
+ * Don't forget that this exposure mechanism works only for projects that reside within the same
+ * multi-project build. In order to share the test classes with external projects, publish a
+ * dedicated [testJar][io.spine.internal.gradle.publish.SpinePublishing.testJar] artifact.
  */
 @Suppress("unused")
 fun Project.exposeTestConfiguration() {
 
     if (pluginManager.hasPlugin("java").not()) {
         throw IllegalStateException(
-            "Can't expose test configuration because `java` plugin has not been applied!"
+            "Can't expose the test configuration because `java` plugin has not been applied!"
         )
     }
 
