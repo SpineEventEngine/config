@@ -27,27 +27,25 @@
 package io.spine.internal.gradle.testing
 
 import org.gradle.api.Project
-import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.tasks.bundling.Jar
-import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.register
+import io.spine.internal.gradle.publish.testJar
 
 /**
- * Exposes the test classes of this project as a new `testArtifacts` configuration.
+ * Exposes the test classes of this project as a new "testArtifacts" configuration.
  *
- * This allows other Gradle projects to depend on the test classes of some project. It is helpful
- * in case the dependant projects re-use abstract test suites of some "parent" project.
+ * This allows other projects to depend on the test classes from this project within a Gradle
+ * multi-project build. It is helpful in case the dependant projects re-use abstract test suites
+ * of some "parent" project.
  *
- * Please note that this utility requires Gradle `java` plugin to be applied.
- * Hence, it is recommended to call this extension method from `java` scope:
+ * Please note that this utility requires Gradle `java` plugin to be applied. Hence, it is
+ * recommended to call this extension method from `java` scope:
  *
  * ```
  * java {
- *     exposeTestArtifacts()
+ *     exposeTestConfiguration()
  * }
  * ```
  *
- * Here is a snippet which consumes the exposed test classes:
+ * Here's an example of how to consume the exposed configuration:
  *
  * ```
  * dependencies {
@@ -55,17 +53,18 @@ import org.gradle.kotlin.dsl.register
  * }
  * ```
  */
-fun Project.exposeTestArtifacts() {
+fun Project.exposeTestConfiguration() {
 
-    val testArtifacts = configurations.create("testArtifacts") {
-        extendsFrom(configurations.getAt("testRuntimeClasspath"))
+    if (pluginManager.hasPlugin("java").not()) {
+        throw IllegalStateException(
+            "Can't expose test configuration because `java` plugin has not been applied!"
+        )
     }
 
-    val sourceSets = extensions.getByType<JavaPluginExtension>().sourceSets
-    val testJar = tasks.register<Jar>("testJar") {
-        archiveClassifier.set("test")
-        from(sourceSets.getAt("test").output)
+    configurations.create("testArtifacts") {
+        extendsFrom(configurations.getByName("testRuntimeClasspath"))
+        outgoing {
+            artifact(testJar())
+        }
     }
-
-    artifacts.add(testArtifacts.name, testJar)
 }
