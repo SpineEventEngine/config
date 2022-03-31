@@ -53,6 +53,7 @@ import io.spine.internal.gradle.publish.testJar
  * }
  * ```
  */
+@Suppress("unused")
 fun Project.exposeTestConfiguration() {
 
     if (pluginManager.hasPlugin("java").not()) {
