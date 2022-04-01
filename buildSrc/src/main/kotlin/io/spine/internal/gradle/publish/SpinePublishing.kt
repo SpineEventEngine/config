@@ -116,11 +116,11 @@ fun Project.spinePublishing(configuration: SpinePublishing.() -> Unit) {
 /**
  * A Gradle extension for setting up publishing of spine modules using `maven-publish` plugin.
  *
- * @param targetProject a project in which the extension is opened
+ * @param project a project in which the extension is opened
  *
  * @see spinePublishing
  */
-open class SpinePublishing(private val targetProject: Project) {
+open class SpinePublishing(private val project: Project) {
 
     private val protoJar = ProtoJar()
     private val testJar = TestJar()
@@ -132,8 +132,7 @@ open class SpinePublishing(private val targetProject: Project) {
      *
      * Use this property if the extension is configured from a root project's build file.
      *
-     * If left empty, the [project][targetProject], in which the extension is opened,
-     * will be published.
+     * If left empty, the [project] in which the extension is opened, will be published.
      *
      * Empty by default.
      */
@@ -271,14 +270,15 @@ open class SpinePublishing(private val targetProject: Project) {
      *
      * The method considers two options:
      *
-     * 1. The set of [modules] is not empty. It means that a [targetProject] is a root. And each
-     *  of the specified modules is a subproject of a [targetProject].
-     * 2. The set is empty. Then the published module is a [targetProject] itself.
+     * 1. The [set][modules] of subprojects to publish is not empty. It means that the extension
+     *   is opened from a root project.
+     * 2. The [set][modules] is empty. Then, the [project] in which the extension is opened
+     *   will be published.
      *
      * @see modules
      */
-    private fun publishedProjects() = modules.map { name -> targetProject.project(name) }
-        .ifEmpty { setOf(targetProject) }
+    private fun publishedProjects() = modules.map { name -> project.project(name) }
+        .ifEmpty { setOf(project) }
 
     /**
      * Sets up `maven-publish` plugin for the given project.
@@ -360,14 +360,14 @@ open class SpinePublishing(private val targetProject: Project) {
      * Here we verify that publishing of a module is not configured in both places simultaneously.
      */
     private fun ensuresModulesNotDuplicated() {
-        val rootProject = targetProject.rootProject
-        if (rootProject == targetProject) {
+        val rootProject = project.rootProject
+        if (rootProject == project) {
             return
         }
 
         val rootExtension = with(rootProject.extensions) { findByType<SpinePublishing>() }
         rootExtension?.let { rootPublishing ->
-            val thisProject = setOf(targetProject.name, targetProject.path)
+            val thisProject = setOf(project.name, project.path)
             if (thisProject.minus(rootPublishing.modules).size != 2) {
                 throw IllegalStateException("Publishing of `$thisProject` module is already " +
                             "configured in a root project!")
