@@ -132,7 +132,7 @@ open class SpinePublishing(private val project: Project) {
      *
      * Use this property if the extension is configured from a root project's build file.
      *
-     * If left empty, the [project] in which the extension is opened, will be published.
+     * If left empty, the [project], in which the extension is opened, will be published.
      *
      * Empty by default.
      */
