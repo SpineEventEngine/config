@@ -272,8 +272,9 @@ open class SpinePublishing(private val extensionReceiver: Project) {
      * The method considers two options:
      *
      * 1. The set of [modules] is not empty. It means that the extension is opened in
-     *   a root project. And each of the specified modules is a subproject of [extensionReceiver].
-     * 2. The set is empty. Then the published module is an [extensionReceiver] itself.
+     *   a root project. And each of the specified modules is a subproject
+     *   of the [extensionReceiver].
+     * 2. The set is empty. Then the published module is the [extensionReceiver] itself.
      */
     private fun publishedProjects() = modules.map { name -> extensionReceiver.project(name) }
         .ifEmpty { setOf(extensionReceiver) }
@@ -282,7 +283,7 @@ open class SpinePublishing(private val extensionReceiver: Project) {
      * Sets up `maven-publish` plugin for the given project.
      *
      * Firstly, an instance of [PublishingConfig] is assembled for the project. Then, this
-     * config is applied to the project.
+     * config is applied.
      *
      * This method utilizes `project.afterEvaluate` closure. General rule of thumb is to avoid using
      * of this closure, as it configures a project when its configuration is considered completed.
