@@ -116,7 +116,8 @@ fun Project.spinePublishing(configuration: SpinePublishing.() -> Unit) {
 /**
  * A Gradle extension for setting up publishing of spine modules using `maven-publish` plugin.
  *
- * @param project a project in which the extension is opened
+ * @param project a project in which the extension is opened. By default, this project will be
+ *  published as long as a [set][modules] of modules to publish is not specified explicitly.
  *
  * @see spinePublishing
  */
