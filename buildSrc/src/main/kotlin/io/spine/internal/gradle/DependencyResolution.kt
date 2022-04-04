@@ -35,6 +35,7 @@ import io.spine.internal.dependency.CommonsCli
 import io.spine.internal.dependency.CommonsLogging
 import io.spine.internal.dependency.ErrorProne
 import io.spine.internal.dependency.FindBugs
+import io.spine.internal.dependency.Flogger
 import io.spine.internal.dependency.Gson
 import io.spine.internal.dependency.Guava
 import io.spine.internal.dependency.J2ObjC
@@ -84,6 +85,8 @@ private fun ResolutionStrategy.forceProductionDependencies() {
         ErrorProne.core,
         Guava.lib,
         FindBugs.annotations,
+        Flogger.lib,
+        Flogger.Runtime.systemBackend,
         Kotlin.reflect,
         Kotlin.stdLib,
         Kotlin.stdLibCommon,
