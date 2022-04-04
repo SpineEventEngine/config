@@ -30,22 +30,37 @@ import io.spine.internal.gradle.Repository
 import java.util.*
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.TaskProvider
 
 /**
  * Sets dependencies for `publish` task in this [Project].
  *
  * This method performs the following:
  *
- *  1. Makes `publish` task in a root project depend on local `publish`.
+ *  1. When this [Project] is not a root, makes `publish` task in a root project
+ *     depend on a local `publish`.
  *  2. Makes local `publish` task verify that credentials are present for each
  *     of destination repositories.
  */
 internal fun Project.configurePublishTask(destinations: Set<Repository>) {
-    val rootPublish = rootProject.tasks.getOrCreatePublishTask()
     val localPublish = tasks.getOrCreatePublishTask()
-    val checkCredentials = tasks.registerCheckCredentialsTask(destinations)
+    attachCredentialsVerification(localPublish, destinations)
+    bindToRootPublish(localPublish)
+}
+
+private fun Project.bindToRootPublish(localPublish: TaskProvider<Task>) {
+    if (project == rootProject) {
+        return
+    }
+
+    val rootPublish = rootProject.tasks.getOrCreatePublishTask()
     rootPublish.configure { dependsOn(localPublish) }
+}
+
+private fun Project.attachCredentialsVerification(localPublish: TaskProvider<Task>, destinations: Set<Repository>) {
+    val checkCredentials = tasks.registerCheckCredentialsTask(destinations)
     localPublish.configure { dependsOn(checkCredentials) }
 }
 
