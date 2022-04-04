@@ -44,6 +44,8 @@ import io.spine.internal.dependency.Okio
 import io.spine.internal.dependency.Plexus
 import io.spine.internal.dependency.Protobuf
 import io.spine.internal.dependency.Truth
+import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.ResolutionStrategy
 import org.gradle.api.artifacts.dsl.RepositoryHandler
@@ -59,7 +61,7 @@ fun doForceVersions(configurations: ConfigurationContainer) {
 /**
  * Forces dependencies used in the project.
  */
-fun ConfigurationContainer.forceVersions() {
+fun NamedDomainObjectContainer<Configuration>.forceVersions() {
     all {
         resolutionStrategy {
             failOnVersionConflict()
@@ -119,7 +121,7 @@ private fun ResolutionStrategy.forceTransitiveDependencies() {
     )
 }
 
-fun ConfigurationContainer.excludeProtobufLite() {
+fun NamedDomainObjectContainer<Configuration>.excludeProtobufLite() {
 
     fun excludeProtoLite(configurationName: String) {
         named(configurationName).get().exclude(
