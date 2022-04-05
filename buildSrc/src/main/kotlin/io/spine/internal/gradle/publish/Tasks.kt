@@ -34,6 +34,8 @@ import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 
+private const val PUBLISH = "publish"
+
 /**
  * Locates `publish` task in this [TaskContainer].
  *
@@ -46,18 +48,49 @@ import org.gradle.api.tasks.TaskProvider
  *     Tasks | Maven Publish Plugin</a>
  */
 internal val TaskContainer.publish: TaskProvider<Task>
-    get() = named("publish")
+    get() = named(PUBLISH)
 
 /**
- * Makes `publish` task verify that credentials are present for each of destination repositories.
+ * Sets dependencies for `publish` task in this [Project].
+ *
+ * This method performs the following:
+ *
+ *  1. When this [Project] is not a root, makes `publish` task in a root project
+ *     depend on a local `publish`.
+ *  2. Makes local `publish` task verify that credentials are present for each
+ *     of destination repositories.
  */
-internal fun Project.attachCredentialsVerification(destinations: Set<Repository>) {
+internal fun Project.configurePublishTask(destinations: Set<Repository>) {
+    attachCredentialsVerification(destinations)
+    bindToRootPublish()
+}
+
+private fun Project.attachCredentialsVerification(destinations: Set<Repository>) {
     val checkCredentials = tasks.registerCheckCredentialsTask(destinations)
     val localPublish = tasks.publish
-    localPublish.configure {
-        dependsOn(checkCredentials)
-    }
+    localPublish.configure { dependsOn(checkCredentials) }
 }
+
+private fun Project.bindToRootPublish() {
+    if (project == rootProject) {
+        return
+    }
+
+    val localPublish = tasks.publish
+    val rootPublish = rootProject.tasks.getOrCreatePublishTask()
+    rootPublish.configure { dependsOn(localPublish) }
+}
+
+/**
+ * Use this task accessor when it is not guaranteed that the task is present
+ * in this [TaskContainer].
+ */
+private fun TaskContainer.getOrCreatePublishTask() =
+    if (names.contains(PUBLISH)) {
+        named(PUBLISH)
+    } else {
+        register(PUBLISH)
+    }
 
 private fun TaskContainer.registerCheckCredentialsTask(destinations: Set<Repository>) =
     register("checkCredentials") {
