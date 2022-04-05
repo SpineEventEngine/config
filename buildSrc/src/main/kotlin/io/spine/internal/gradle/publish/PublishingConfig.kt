@@ -61,7 +61,7 @@ internal class PublishingConfig(
 internal fun PublishingConfig.apply(project: Project) = with(project) {
     apply(plugin = "maven-publish")
     createPublication(project)
-    configurePublishTask(destinations)
+    attachCredentialsVerification(destinations)
 }
 
 private fun PublishingConfig.createPublication(project: Project) {

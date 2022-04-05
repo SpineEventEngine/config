@@ -35,43 +35,29 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 
 /**
- * Sets dependencies for `publish` task in this [Project].
+ * Locates `publish` task in this [TaskContainer].
  *
- * This method performs the following:
+ * This task publishes all defined publications to all defined repositories. To achieve that,
+ * the task depends on all `publish`*PubName*`PublicationTo`*RepoName*`Repository` tasks.
  *
- *  1. When this [Project] is not a root, makes `publish` task in a root project
- *     depend on a local `publish`.
- *  2. Makes local `publish` task verify that credentials are present for each
- *     of destination repositories.
+ * Please note, task execution would not copy publications to the local Maven cache.
+ *
+ * @see <a href="https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:tasks">
+ *     Tasks | Maven Publish Plugin</a>
  */
-internal fun Project.configurePublishTask(destinations: Set<Repository>) {
-    val localPublish = tasks.getOrCreatePublishTask()
-    attachCredentialsVerification(localPublish, destinations)
-    bindToRootPublish(localPublish)
-}
+internal val TaskContainer.publish: TaskProvider<Task>
+    get() = named("publish")
 
-private fun Project.bindToRootPublish(localPublish: TaskProvider<Task>) {
-    if (project == rootProject) {
-        return
-    }
-
-    val rootPublish = rootProject.tasks.getOrCreatePublishTask()
-    rootPublish.configure { dependsOn(localPublish) }
-}
-
-private fun Project.attachCredentialsVerification(localPublish: TaskProvider<Task>, destinations: Set<Repository>) {
+/**
+ * Makes `publish` task verify that credentials are present for each of destination repositories.
+ */
+internal fun Project.attachCredentialsVerification(destinations: Set<Repository>) {
     val checkCredentials = tasks.registerCheckCredentialsTask(destinations)
-    localPublish.configure { dependsOn(checkCredentials) }
-}
-
-private const val PUBLISH = "publish"
-
-private fun TaskContainer.getOrCreatePublishTask() =
-    if (names.contains(PUBLISH)) {
-        named(PUBLISH)
-    } else {
-        register(PUBLISH)
+    val localPublish = tasks.publish
+    localPublish.configure {
+        dependsOn(checkCredentials)
     }
+}
 
 private fun TaskContainer.registerCheckCredentialsTask(destinations: Set<Repository>) =
     register("checkCredentials") {
