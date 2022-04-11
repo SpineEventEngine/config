@@ -93,6 +93,16 @@ val errorProneVersion = "2.0.2"
  */
 val protobufPluginVersion = "0.8.18"
 
+/**
+ * The version of the Dokka Gradle Plugin.
+ *
+ * Please keep in sync with [io.spine.internal.dependency.Dokka.version].
+ *
+ * @see <a href="https://github.com/Kotlin/dokka/releases">
+ *     Dokka Releases</a>
+ */
+val dokkaPluginVersion = "1.6.10"
+
 dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
@@ -105,4 +115,5 @@ dependencies {
     implementation("net.ltgt.gradle:gradle-errorprone-plugin:${errorProneVersion}")
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
     implementation("gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:$protobufPluginVersion")
+    implementation("org.jetbrains.dokka:dokka-gradle-plugin:${dokkaPluginVersion}")
 }
