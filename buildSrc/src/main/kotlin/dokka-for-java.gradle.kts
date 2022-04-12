@@ -34,15 +34,24 @@ plugins {
     id("org.jetbrains.dokka")
 }
 
-/**
- * To generate the documentation as seen from Java perspective, the kotlin-as-java plugin was added
- * to the Dokka's classpath.
- *
- * @see <a href="https://github.com/Kotlin/dokka#output-formats">
- *     Dokka output formats</a>
- */
 dependencies {
+    /**
+     * To generate the documentation as seen from Java perspective, the kotlin-as-java plugin was
+     * added to the Dokka's classpath.
+     *
+     * @see <a href="https://github.com/Kotlin/dokka#output-formats">
+     *     Dokka output formats</a>
+     */
     dokkaPlugin(Dokka.KotlinAsJavaPlugin.lib)
+
+    /**
+     * To exclude pieces of code annotated with `@Internal` from the documentation a custom plugin
+     * is added to the Dokka's classpath.
+     *
+     * @see <a href="https://github.com/SpineEventEngine/dokka-tools/tree/master/dokka-extensions">
+     *     Custom Dokka Plugins</a>
+     */
+    dokkaPlugin(Dokka.SpineExtensions.lib)
 }
 
 tasks.withType<DokkaTask>().configureEach {

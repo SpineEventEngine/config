@@ -50,7 +50,27 @@ object Dokka {
         const val lib = "${group}:dokka-base:${version}"
     }
 
+    /**
+     * To generate the documentation as seen from Java perspective use this plugin.
+     *
+     * @see <a href="https://github.com/Kotlin/dokka#output-formats">
+     *     Dokka output formats</a>
+     */
     object KotlinAsJavaPlugin {
         const val lib = "${group}:kotlin-as-java-plugin:${version}"
+    }
+
+    /**
+     * Custom Dokka plugins developed for Spine-specific needs like excluding by `@Internal`
+     * annotation.
+     *
+     * @see <a href="https://github.com/SpineEventEngine/dokka-tools/tree/master/dokka-extensions">
+     *     Custom Dokka Plugins</a>
+     */
+    object SpineExtensions {
+        private const val group = "io.spine.tools"
+
+        const val version = "2.0.0-SNAPSHOT.2"
+        const val lib = "${group}:spine-dokka-extensions:${version}"
     }
 }
