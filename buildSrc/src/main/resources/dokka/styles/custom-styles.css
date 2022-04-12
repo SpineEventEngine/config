@@ -24,33 +24,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.dependency
+:root,
+:root.theme-dark {
+    --color-dark: #007bff;
+}
 
-// https://github.com/Kotlin/dokka
-@Suppress("unused")
-object Dokka {
-    private const val group = "org.jetbrains.dokka"
+.library-name a::before {
+    background-image: url('https://spine.io/img/spine-sign-white.svg')
+}
 
-    /**
-    When changing the version, also change the version used in the `buildSrc/build.gradle.kts`.
-     */
-    const val version = "1.6.10"
+.cover a,
+.main-subrow.keyValue a {
+    font-family: monospace;
+}
 
-    object GradlePlugin {
-        const val id = "org.jetbrains.dokka"
-
-        /**
-         * The version of this plugin is already specified in `buildSrc/build.gradle.kts` file.
-         * Thus, when applying the plugin in project's build files, only the [id] should be used.
-         */
-        const val lib = "${group}:dokka-gradle-plugin:${version}"
-    }
-
-    object Base {
-        const val lib = "${group}:dokka-base:${version}"
-    }
-
-    object KotlinAsJava {
-        const val lib = "${group}:kotlin-as-java-plugin:${version}"
-    }
+:root.theme-dark dt {
+    color: #fff;
 }
