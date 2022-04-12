@@ -45,4 +45,8 @@ object Dokka {
          */
         const val lib = "${group}:dokka-gradle-plugin:${version}"
     }
+
+    object Base {
+        const val lib = "${group}:dokka-base:${version}"
+    }
 }
