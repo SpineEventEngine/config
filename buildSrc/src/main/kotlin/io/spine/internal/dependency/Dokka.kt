@@ -46,11 +46,11 @@ object Dokka {
         const val lib = "${group}:dokka-gradle-plugin:${version}"
     }
 
-    object Base {
+    object BasePlugin {
         const val lib = "${group}:dokka-base:${version}"
     }
 
-    object KotlinAsJava {
+    object KotlinAsJavaPlugin {
         const val lib = "${group}:kotlin-as-java-plugin:${version}"
     }
 }

@@ -42,7 +42,7 @@ plugins {
  *     Dokka output formats</a>
  */
 dependencies {
-    dokkaPlugin(Dokka.KotlinAsJava.lib)
+    dokkaPlugin(Dokka.KotlinAsJavaPlugin.lib)
 }
 
 tasks.withType<DokkaTask>().configureEach {
