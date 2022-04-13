@@ -125,6 +125,7 @@ open class SpinePublishing(private val project: Project) {
 
     private val protoJar = ProtoJar()
     private val testJar = TestJar()
+    private val dokkaJar = DokkaJar()
 
     /**
      * Set of modules to be published.
@@ -245,7 +246,7 @@ open class SpinePublishing(private val project: Project) {
 
     /**
      * Configures publishing of [dokkaJar] artifact, containing Dokka-generated documentation. By
-     * default, this option is set to `false`.
+     * default, publishing of the artifact is disabled.
      *
      * Remember that the Dokka Gradle plugin should be applied to publish this artifact as it is
      * produced by the `dokkaHtml` task. It can be done by using the
@@ -256,13 +257,15 @@ open class SpinePublishing(private val project: Project) {
      *
      * ```
      * spinePublishing {
-     *     includeDokkaJar = true
+     *     dokkaJar {
+     *         enabled = true
+     *     }
      * }
      * ```
      *
      * The resulting artifact is available under "dokka" classifier.
      */
-    var includeDokkaJar = false
+    fun dokkaJar(configuration: DokkaJar.() -> Unit)  = dokkaJar.run(configuration)
 
     /**
      * Called to notify the extension that its configuration is completed.
@@ -284,7 +287,7 @@ open class SpinePublishing(private val project: Project) {
             val name = project.name
             val includeProtoJar = (protoJarExclusions.contains(name) || protoJar.disabled).not()
             val includeTestJar = (testJarInclusions.contains(name) || testJar.enabled)
-            setUpPublishing(project, includeProtoJar, includeTestJar, includeDokkaJar)
+            setUpPublishing(project, includeProtoJar, includeTestJar, dokkaJar.enabled)
         }
     }
 
