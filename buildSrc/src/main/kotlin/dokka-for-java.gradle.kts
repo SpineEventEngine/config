@@ -25,6 +25,8 @@
  */
 
 import io.spine.internal.dependency.Dokka
+import io.spine.internal.gradle.dokka.onlyJavaSources
+
 import java.time.LocalDate
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
@@ -56,6 +58,10 @@ dependencies {
 
 tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
+        sourceRoots.setFrom(
+            onlyJavaSources()
+        )
+
         skipEmptyPackages.set(true)
     }
 
