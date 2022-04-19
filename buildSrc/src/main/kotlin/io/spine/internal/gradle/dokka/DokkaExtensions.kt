@@ -37,9 +37,9 @@ import org.jetbrains.dokka.gradle.GradleDokkaSourceSetBuilder
 /**
  * Returns only Java source roots out of all present in the source set.
  *
- * This method helps restrict Kotlin code from being documented. When both Kotlin and Java source
- * files are present in multi-language projects, only one source file type is documented correctly
- * depending on the configuration used.
+ * It is a helper method for generating documentation by Dokka only for Java code. It is helpful
+ * when both Java and Kotlin source files are present in a source set. Dokka can properly generate
+ * documentation for either Kotlin or Java depending on the configuration, but not both.
  */
 internal fun GradleDokkaSourceSetBuilder.onlyJavaSources(): FileCollection {
     return sourceRoots.filter(File::isJavaSourceDirectory)
