@@ -34,6 +34,12 @@ import org.jetbrains.dokka.base.DokkaBaseConfiguration
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.dokka.gradle.GradleDokkaSourceSetBuilder
 
+/**
+ * Returns only Java source roots out of all present in the source set.
+ *
+ * This method helps restrict Kotlin code from being documented. When both Kotlin and Java source
+ * files are present in multi-language projects, only one source file type is documented correctly.
+ */
 public fun GradleDokkaSourceSetBuilder.onlyJavaSources(): FileCollection {
     return sourceRoots.filter(File::isJavaSourceDirectory)
 }
