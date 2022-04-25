@@ -43,6 +43,8 @@ import org.gradle.kotlin.dsl.get
  *    the `com.google` package is removed.
  *
  * 3. Make `processResource` tasks depend on corresponding `generateProto` tasks.
+ *    If the source set of the configured task isn't `main`, appropriate infix for
+ *    the task names is used.
  *
  * The usage of this extension in a <em>module build file</em> would be:
  * ```
@@ -108,6 +110,9 @@ fun GenerateProtoTask.setup(generatedDir: String) {
     project.tasks[processResources].dependsOn(this)
 }
 
+/**
+ * Obtains the name of the task `processResource` task for the given source set name.
+ */
 fun processResourceTaskName(sourceSetName: String): String {
     val infix = if (sourceSetName == "main") "" else sourceSetName.capitalized()
     return "process${infix}Resources"
