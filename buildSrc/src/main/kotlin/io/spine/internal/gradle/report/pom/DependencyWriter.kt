@@ -145,10 +145,10 @@ private fun Dependency.isExternal(): Boolean {
  * When there are several versions of the same dependency, the method will retain only
  * the one with the newest version.
  *
- * Sometimes, set of project dependencies contain several versions of the same dependency.
- * This may happen when different modules of the project use different versions of the
- * same dependency. But for our `pom.xml`, which has clearly representative character,
- * a single version of a dependency is quite enough.
+ * Sometimes, a project uses several versions of the same dependency. This may happen
+ * when different modules of the project use different versions of the same dependency.
+ * But for our `pom.xml`, which has clearly representative character, a single version
+ * of a dependency is quite enough.
  */
 private fun MutableSet<ScopedDependency>.deduplicate() =
     groupBy { it.dependency().run { "$group:$name" } }
