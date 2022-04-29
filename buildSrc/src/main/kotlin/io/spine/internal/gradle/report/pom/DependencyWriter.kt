@@ -112,8 +112,7 @@ fun Project.dependencies(): SortedSet<ScopedDependency> {
 }
 
 /**
- * Returns the scoped dependencies of the project from all
- * the project configurations.
+ * Returns the scoped dependencies of the project from all the project configurations.
  */
 private fun Project.depsFromAllConfigurations(): Set<ScopedDependency> {
     val result = mutableSetOf<ScopedDependency>()
