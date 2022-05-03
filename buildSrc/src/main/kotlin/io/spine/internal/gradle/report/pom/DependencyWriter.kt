@@ -111,7 +111,6 @@ fun Project.dependencies(): SortedSet<ScopedDependency> {
     val result = deduplicate(dependencies)
         .map { it.scoped }
         .toSortedSet()
-
     return result
 }
 
@@ -177,7 +176,7 @@ private fun Project.logDuplicate(dependency: String, versions: List<ModuleDepend
 
     versions.forEach {
         logger.lifecycle(
-            "module: {}, configuration: {},version: {}",
+            "module: {}, configuration: {}, version: {}",
             it.module.name,
             it.configuration.name,
             it.version
