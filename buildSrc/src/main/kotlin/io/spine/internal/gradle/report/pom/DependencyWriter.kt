@@ -109,11 +109,14 @@ fun Project.dependencies(): SortedSet<ScopedDependency> {
     }
 
     val result = deduplicate(dependencies)
+        .map { it.scoped }
+        .toSortedSet()
+
     return result
 }
 
 /**
- * Returns the scoped dependencies of the project from all the project configurations.
+ * Returns the external dependencies of the project from all the project configurations.
  */
 private fun Project.depsFromAllConfigurations(): Set<ModuleDependency> {
     val result = mutableSetOf<ModuleDependency>()
@@ -151,16 +154,15 @@ private fun Dependency.isExternal(): Boolean {
  *
  * The rejected duplicates are logged.
  */
-private fun Project.deduplicate(dependencies: Set<ModuleDependency>): SortedSet<ScopedDependency> {
+private fun Project.deduplicate(dependencies: Set<ModuleDependency>): List<ModuleDependency> {
     val groups = dependencies.distinctBy { it.gav }
         .groupBy { it.run { "$group:$name" } }
 
     logDuplicates(groups)
 
-    val filtered = groups.map { it.value.maxOrNull()!! }
-        .map { it.scoped }
-        .toSortedSet()
-
+    val filtered = groups.map { group ->
+        group.value.maxByOrNull { dep -> dep.version!! }!!
+    }
     return filtered
 }
 
