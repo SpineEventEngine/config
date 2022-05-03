@@ -100,7 +100,7 @@ private constructor(
  * Returns the [scoped dependencies][ScopedDependency] of a Gradle project.
  */
 fun Project.dependencies(): SortedSet<ScopedDependency> {
-    val dependencies = mutableSetOf<ScopedDependency>()
+    val dependencies = mutableSetOf<ModuleDependency>()
     dependencies.addAll(this.depsFromAllConfigurations())
 
     this.subprojects.forEach { subproject ->
@@ -108,25 +108,25 @@ fun Project.dependencies(): SortedSet<ScopedDependency> {
         dependencies.addAll(subprojectDeps)
     }
 
-    return dependencies.deduplicate()
+    val result = deduplicate(dependencies)
+    return result
 }
 
 /**
  * Returns the scoped dependencies of the project from all the project configurations.
  */
-private fun Project.depsFromAllConfigurations(): Set<ScopedDependency> {
-    val result = mutableSetOf<ScopedDependency>()
+private fun Project.depsFromAllConfigurations(): Set<ModuleDependency> {
+    val result = mutableSetOf<ModuleDependency>()
     this.configurations.forEach { configuration ->
         if (configuration.isCanBeResolved) {
             // Force resolution of the configuration.
             configuration.resolvedConfiguration
         }
-        configuration.dependencies.forEach {
-            if (it.isExternal()) {
-                val dependency = ScopedDependency.of(it, configuration)
-                result.add(dependency)
+        configuration.dependencies.filter { it.isExternal() }
+            .forEach { dependency ->
+                val moduleDependency = ModuleDependency(project, configuration, dependency)
+                result.add(moduleDependency)
             }
-        }
     }
     return result
 }
@@ -148,8 +148,37 @@ private fun Dependency.isExternal(): Boolean {
  * when different modules of the project use different versions of the same dependency.
  * But for our `pom.xml`, which has clearly representative character, a single version
  * of a dependency is quite enough.
+ *
+ * The rejected duplicates are logged.
  */
-private fun MutableSet<ScopedDependency>.deduplicate() =
-    groupBy { it.dependency().run { "$group:$name" } }
-        .map { it.value.maxOrNull()!! }
+private fun Project.deduplicate(dependencies: Set<ModuleDependency>): SortedSet<ScopedDependency> {
+    val groups = dependencies.distinctBy { it.gav }
+        .groupBy { it.run { "$group:$name" } }
+
+    logDuplicates(groups)
+
+    val filtered = groups.map { it.value.maxOrNull()!! }
+        .map { it.scoped }
         .toSortedSet()
+
+    return filtered
+}
+
+private fun Project.logDuplicates(dependencies: Map<String, List<ModuleDependency>>) {
+    dependencies.filter { it.value.size > 1 }
+        .forEach { (dependency, versions) -> logDuplicate(dependency, versions) }
+}
+
+private fun Project.logDuplicate(dependency: String, versions: List<ModuleDependency>) {
+    logger.lifecycle("")
+    logger.lifecycle("The project uses several versions of `$dependency` dependency.")
+
+    versions.forEach {
+        logger.lifecycle(
+            "module: {}, configuration: {},version: {}",
+            it.module.name,
+            it.configuration.name,
+            it.version
+        )
+    }
+}
