@@ -57,7 +57,7 @@ import org.gradle.kotlin.dsl.get
  *     }
  * }
  * ```
- * Using the same code under `subprojects` in a root build file does not seem work because
+ * Using the same code under `subprojects` in a root build file does not seem to work because
  * test descriptor set files are not copied to resources. Performing this configuration from
  * subprojects solves the issue.
  */
