@@ -34,9 +34,9 @@ import org.gradle.kotlin.dsl.get
 /**
  * Configures protobuf code generation task.
  *
- * The task configuration consists of the following steps.
+ * The task configuration consists of the following steps:
  *
- * 1. Generation of descriptor set file is turned op for each source set.
+ * 1. Generation of descriptor set file is turned on for each source set.
  *    These files are placed under the `build/descriptors` directory.
  *
  * 2. At the final steps of the code generation, the code belonging to
