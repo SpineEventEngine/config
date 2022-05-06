@@ -104,8 +104,8 @@ val dokkaVersion = "1.6.20"
 
 configurations.all {
     resolutionStrategy {
-        // Force Kotlin lib versions avoiding using those bundled with Gradle.
         force(
+            // Force Kotlin lib versions avoiding using those bundled with Gradle.
             "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
             "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion",
             "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
