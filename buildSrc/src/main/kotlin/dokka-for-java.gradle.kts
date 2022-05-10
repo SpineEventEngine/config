@@ -59,6 +59,12 @@ dependencies {
 
 tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
+        /**
+         * Configures links to the external Java documentation.
+         * By default links are pointing to Java 8 documentation.
+         */
+        jdkVersion.set(11)
+
         sourceRoots.setFrom(
             onlyJavaSources()
         )
