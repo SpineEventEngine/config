@@ -31,6 +31,7 @@ import java.time.LocalDate
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.dokka.DokkaConfiguration.Visibility
 
 plugins {
     id("org.jetbrains.dokka")
@@ -63,6 +64,13 @@ tasks.withType<DokkaTask>().configureEach {
         )
 
         skipEmptyPackages.set(true)
+
+        documentedVisibilities.set(
+            setOf(
+                Visibility.PUBLIC,
+                Visibility.PROTECTED,
+            )
+        )
     }
 
     outputDirectory.set(buildDir.resolve("docs/dokka"))
