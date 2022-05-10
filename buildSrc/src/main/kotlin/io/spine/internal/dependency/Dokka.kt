@@ -32,7 +32,8 @@ object Dokka {
     private const val group = "org.jetbrains.dokka"
 
     /**
-     * When changing the version, also change the version used in the `buildSrc/build.gradle.kts`.
+     * When changing the version, also change the version used in the
+     * `buildSrc/build.gradle.kts`.
      */
     const val version = "1.6.20"
 
@@ -40,8 +41,9 @@ object Dokka {
         const val id = "org.jetbrains.dokka"
 
         /**
-         * The version of this plugin is already specified in `buildSrc/build.gradle.kts` file.
-         * Thus, when applying the plugin in project's build files, only the [id] should be used.
+         * The version of this plugin is already specified in `buildSrc/build.gradle.kts`
+         * file. Thus, when applying the plugin in project's build files, only the [id]
+         * should be used.
          */
         const val lib = "${group}:dokka-gradle-plugin:${version}"
     }
@@ -61,8 +63,8 @@ object Dokka {
     }
 
     /**
-     * Custom Dokka plugins developed for Spine-specific needs like excluding by `@Internal`
-     * annotation.
+     * Custom Dokka plugins developed for Spine-specific needs like excluding by
+     * `@Internal` annotation.
      *
      * @see <a href="https://github.com/SpineEventEngine/dokka-tools/tree/master/dokka-extensions">
      *     Custom Dokka Plugins</a>
