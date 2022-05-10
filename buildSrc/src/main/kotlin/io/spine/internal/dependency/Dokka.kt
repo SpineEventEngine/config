@@ -32,8 +32,7 @@ object Dokka {
     private const val group = "org.jetbrains.dokka"
 
     /**
-     * When changing the version, also change the version used in the
-     * `buildSrc/build.gradle.kts`.
+     * Please keep in sync with `buildSrc/build.gradle.kts` and [Kotlin.version].
      */
     const val version = "1.6.21"
 
