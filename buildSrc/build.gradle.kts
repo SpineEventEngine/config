@@ -100,7 +100,7 @@ val protobufPluginVersion = "0.8.18"
  * @see <a href="https://github.com/Kotlin/dokka/releases">
  *     Dokka Releases</a>
  */
-val dokkaVersion = "1.6.20"
+val dokkaVersion = "1.6.21"
 
 configurations.all {
     resolutionStrategy {
