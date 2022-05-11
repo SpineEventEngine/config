@@ -52,6 +52,10 @@ object Dokka {
         const val lib = "${group}:dokka-base:${version}"
     }
 
+    object CorePlugin {
+        const val lib = "${group}:dokka-core:${version}"
+    }
+
     /**
      * To generate the documentation as seen from Java perspective use this plugin.
      *
