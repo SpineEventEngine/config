@@ -110,8 +110,8 @@ private class Operation(
     }
 
     /**
-     * Configures Git to publish the changes under "UpdateGitHubPages Plugin" Git user name
-     * and email stored in "FORMAL_GIT_HUB_PAGES_AUTHOR" env variable.
+     * Configures Git to publish the changes under "UpdateGitHubPages Plugin" Git
+     * user name and email stored in "FORMAL_GIT_HUB_PAGES_AUTHOR" env variable.
      */
     private fun configureCommitter() {
         pagesExecute("git", "config", "user.name", "\"UpdateGitHubPages Plugin\"")
@@ -137,8 +137,8 @@ private class Operation(
 private class SshKey(private val rootFolder: File) {
 
     /**
-     * Creates an SSH key with the credentials and registers it
-     * by invoking the `register-ssh-key.sh` script.
+     * Creates an SSH key with the credentials and registers it by invoking the
+     * `register-ssh-key.sh` script.
      */
     fun register() {
         val gitHubAccessKey = gitHubKey()
@@ -162,13 +162,14 @@ private class SshKey(private val rootFolder: File) {
      *
      * If it is not found, a [GradleException] is thrown.
      *
-     * <p>A CI instance comes with an RSA key. However, of course, the default key has no
-     * privileges in Spine repositories. Thus, we add our own RSA key — `deploy_rsa_key`.
-     * It must have `write` rights in the associated repository.
-     * Also, we don't want that key to be used for anything else but GitHub Pages publishing.
+     * A CI instance comes with an RSA key. However, of course, the default key has
+     * no privileges in Spine repositories. Thus, we add our own RSA key —
+     * `deploy_rsa_key`. It must have `write` rights in the associated repository.
+     * Also, we don't want that key to be used for anything else but GitHub Pages
+     * publishing.
      *
-     * Thus, we configure the SSH agent to use the `deploy_rsa_key`
-     * only for specific references, namely in `github.com-publish`.
+     * Thus, we configure the SSH agent to use the `deploy_rsa_key` only for specific
+     * references, namely in `github.com-publish`.
      */
     private fun gitHubKey(): File {
         val gitHubAccessKey = File("${rootFolder.absolutePath}/deploy_key_rsa")

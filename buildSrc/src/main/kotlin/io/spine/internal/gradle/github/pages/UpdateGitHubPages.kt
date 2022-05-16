@@ -41,14 +41,16 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 
 /**
- * Registers the `updateGitHubPages` task which performs the update of the GitHub Pages
- * with the Javadoc generated for a particular Gradle project. The generated documentation
- * is appended to the `spine.io` site via GitHub pages by pushing commits to the `gh-pages` branch.
+ * Registers the `updateGitHubPages` task which performs the update of the GitHub
+ * Pages with the Javadoc generated for a particular Gradle project. The generated
+ * documentation is appended to the `spine.io` site via GitHub pages by pushing
+ * commits to the `gh-pages` branch.
  *
- * Please note that the update is only performed for the projects which are NOT snapshots.
+ * Please note that the update is only performed for the projects which are NOT
+ * snapshots.
  *
- * Users may supply [allowInternalJavadoc][UpdateGitHubPagesExtension.allowInternalJavadoc] option,
- * which if `true`, includes the documentation for types marked `@Internal`.
+ * Users may supply [allowInternalJavadoc][UpdateGitHubPagesExtension.allowInternalJavadoc]
+ * option, which if `true`, includes the documentation for types marked `@Internal`.
  * By default, this option is `false`.
  *
  * Usage:
@@ -63,25 +65,26 @@ import org.gradle.api.tasks.TaskProvider
  *      }
  * ```
  *
- * In order to work, the script needs a `deploy_key_rsa` private RSA key file in the repository
- * root. It is recommended to decrypt it in the repository and then decrypt it on CI upon
- * publication. Also, the script uses the `FORMAL_GIT_HUB_PAGES_AUTHOR` environment variable to
- * set the author email for the commits. The `gh-pages` branch itself should exist before the plugin
- * is run.
+ * In order to work, the script needs a `deploy_key_rsa` private RSA key file in the
+ * repository root. It is recommended to encrypt it in the repository and then decrypt
+ * it on CI upon publication. Also, the script uses the `FORMAL_GIT_HUB_PAGES_AUTHOR`
+ * environment variable to set the author email for the commits. The `gh-pages`
+ * branch itself should exist before the plugin is run.
  *
  * NOTE: when changing the value of "FORMAL_GIT_HUB_PAGES_AUTHOR", one also must change
- * the SSH private (encrypted `deploy_key_rsa`) and the public ("GitHub Pages publisher (Travis CI)"
- * on GitHub) keys.
+ * the SSH private (encrypted `deploy_key_rsa`) and the public
+ * ("GitHub Pages publisher" on GitHub) keys.
  *
- * Another requirement is an environment variable `REPO_SLUG`, which is set by the CI environment,
- * such as `Publish` GitHub Actions workflow. It points to the repository for which the update
- * is executed. E.g.:
+ * Another requirement is an environment variable `REPO_SLUG`, which is set by the CI
+ * environment, such as `Publish` GitHub Actions workflow. It points to the repository
+ * for which the update is executed. E.g.:
  *
  * ```
  *      REPO_SLUG: SpineEventEngine/base
  * ```
  *
- * @see UpdateGitHubPagesExtension for the extension which is used to configure this plugin
+ * @see UpdateGitHubPagesExtension for the extension which is used to configure this
+ *      plugin
  */
 class UpdateGitHubPages : Plugin<Project> {
 
@@ -98,8 +101,8 @@ class UpdateGitHubPages : Plugin<Project> {
     private lateinit var includedInputs: Set<Any>
 
     /**
-     * Path to the temp folder used to gather the Javadoc output
-     * before submitting it to the GitHub Pages update.
+     * Path to the temp folder used to gather the Javadoc output before submitting it
+     * to the GitHub Pages update.
      */
     internal val javadocOutputPath = LazyTempPath("javadoc")
 
@@ -113,9 +116,9 @@ class UpdateGitHubPages : Plugin<Project> {
      *
      * If the project version says it is a snapshot, the plugin registers a no-op task.
      *
-     * Even in such a case, the extension object is still created in the given project, to allow
-     * customization of the parameters in its build script, for later usage when the project
-     * version changes to non-snapshot.
+     * Even in such a case, the extension object is still created in the given project,
+     * to allow customization of the parameters in its build script, for later usage
+     * when the projectnversion changes to non-snapshot.
      */
     override fun apply(project: Project) {
         val extension = UpdateGitHubPagesExtension.createIn(project)
@@ -186,8 +189,9 @@ class UpdateGitHubPages : Plugin<Project> {
 }
 
 /**
- * Registers `updateGitHubPages` task which performs no actual update, but prints the message
- * telling the update is skipped, since the project is in its `SNAPSHOT` version.
+ * Registers `updateGitHubPages` task which performs no actual update, but prints
+ * the message telling the update is skipped, since the project is in its `SNAPSHOT`
+ * version.
  */
 private fun Project.registerNoOpTask() {
     tasks.register(updateGitHubPages) {
