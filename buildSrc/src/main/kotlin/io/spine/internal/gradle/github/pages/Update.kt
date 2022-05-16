@@ -43,7 +43,7 @@ import org.gradle.api.logging.Logger
 fun Task.updateGhPages(project: Project) {
     val plugin = project.plugins.getPlugin(UpdateGitHubPages::class.java)
     val op = with(plugin) {
-        Operation(project, rootFolder, checkoutTempFolder, javadocOutputPath, logger)
+        Operation(project, rootFolder, checkoutTempFolder, javadocOutputPath, dokkaOutputPath, logger)
     }
     op.run()
 }
@@ -53,18 +53,28 @@ private class Operation(
     private val rootFolder: File,
     checkoutTempFolder: Path,
     private val javadocOutputPath: Path,
+    private val dokkaOutputPath: Path,
     private val logger: Logger
 ) {
 
     private val ghRepoFolder: File = File("${checkoutTempFolder}/${Branch.ghPages}")
-    private val docDirPostfix = "reference/${project.name}"
-    private val mostRecentDocDir = File("$ghRepoFolder/$docDirPostfix")
+
+    private val javadocDirPostfix = "reference/${project.name}"
+    private val dokkaDirPostfix = "dokka_reference/${project.name}"
+
+    private val mostRecentJavadocDir = File("$ghRepoFolder/$javadocDirPostfix")
+    private val mostRecentDokkaDir = File("$ghRepoFolder/$dokkaDirPostfix")
 
     fun run() {
         SshKey(rootFolder).register()
         checkoutDocs()
-        val generatedDocs = replaceMostRecentDocs()
-        copyIntoVersionDir(generatedDocs)
+
+        val generatedJavadoc = replaceMostRecentJavadoc()
+        copyIntoJavadocVersionDir(generatedJavadoc)
+
+        val generatedDokka = replaceMostRecentDokka()
+        copyIntoDokkaVersionDir(generatedDokka)
+
         addCommitAndPush()
         logger.debug("The GitHub Pages contents were successfully updated.")
     }
@@ -82,21 +92,34 @@ private class Operation(
         pagesExecute("git", "checkout", Branch.ghPages)
     }
 
-    private fun replaceMostRecentDocs(): ConfigurableFileCollection {
-        logger.debug("Replacing the most recent docs in `$mostRecentDocDir`.")
+    private fun replaceMostRecentJavadoc(): ConfigurableFileCollection {
+        logger.debug("Replacing the most recent Javadoc in `$mostRecentJavadocDir`.")
         val generatedDocs = project.files(javadocOutputPath)
-        copyDocs(generatedDocs, mostRecentDocDir)
+        copyDocs(generatedDocs, mostRecentJavadocDir)
         return generatedDocs
     }
 
-    private fun copyIntoVersionDir(generatedDocs: ConfigurableFileCollection) {
-        val versionedDocDir = File("$mostRecentDocDir/v/${project.name}")
-        logger.debug("Storing the new version of docs in the directory `$versionedDocDir`.")
+    private fun copyIntoJavadocVersionDir(generatedDocs: ConfigurableFileCollection) {
+        val versionedDocDir = File("$mostRecentJavadocDir/v/${project.version}")
+        logger.debug("Storing the new version of Javadoc in the directory `$versionedDocDir`.")
+        copyDocs(generatedDocs, versionedDocDir)
+    }
+
+    private fun replaceMostRecentDokka(): ConfigurableFileCollection {
+        logger.debug("Replacing the most recent Dokka documentation in `$mostRecentDokkaDir`.")
+        val generatedDocs = project.files(dokkaOutputPath)
+        copyDocs(generatedDocs, mostRecentDokkaDir)
+        return generatedDocs
+    }
+
+    private fun copyIntoDokkaVersionDir(generatedDocs: ConfigurableFileCollection) {
+        val versionedDocDir = File("$mostRecentDokkaDir/v/${project.version}")
+        logger.debug("Storing the new version of Dokka documentatioin in the directory `$versionedDocDir`.")
         copyDocs(generatedDocs, versionedDocDir)
     }
 
     private fun addCommitAndPush() {
-        pagesExecute("git", "add", docDirPostfix)
+        pagesExecute("git", "add", javadocDirPostfix, dokkaDirPostfix)
         configureCommitter()
         commitAndPush()
     }
@@ -124,7 +147,7 @@ private class Operation(
             "git",
             "commit",
             "--allow-empty",
-            "--message=\"Update Javadoc for module ${project.name}" +
+            "--message=\"Update documentation for module ${project.name}" +
                     " as for version ${project.version}\""
         )
         pagesExecute("git", "push")
