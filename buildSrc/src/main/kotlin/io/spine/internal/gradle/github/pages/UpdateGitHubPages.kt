@@ -141,6 +141,23 @@ class UpdateGitHubPages : Plugin<Project> {
         }
     }
 
+    /**
+     * Registers `updateGitHubPages` task which performs no actual update, but prints
+     * the message telling the update is skipped, since the project is in its `SNAPSHOT`
+     * version.
+     */
+    private fun Project.registerNoOpTask() {
+        tasks.register(updateGitHubPages) {
+            doLast {
+                val project = this@registerNoOpTask
+                println(
+                    "GitHub Pages update will be skipped since this project is a snapshot: " +
+                            "`${project.name}-${project.version}`."
+                )
+            }
+        }
+    }
+
     private fun Project.registerTasks(extension: UpdateGitHubPagesExtension) {
         val allowInternalJavadoc = extension.allowInternalJavadoc()
         rootFolder = extension.rootFolder()
@@ -218,23 +235,6 @@ class UpdateGitHubPages : Plugin<Project> {
         val folders = listOf(checkoutTempFolder, javadocOutputPath)
         folders.forEach {
             it.toFile().deleteRecursively()
-        }
-    }
-}
-
-/**
- * Registers `updateGitHubPages` task which performs no actual update, but prints
- * the message telling the update is skipped, since the project is in its `SNAPSHOT`
- * version.
- */
-private fun Project.registerNoOpTask() {
-    tasks.register(updateGitHubPages) {
-        doLast {
-            val project = this@registerNoOpTask
-            println(
-                "GitHub Pages update will be skipped since this project is a snapshot: " +
-                        "`${project.name}-${project.version}`."
-            )
         }
     }
 }
