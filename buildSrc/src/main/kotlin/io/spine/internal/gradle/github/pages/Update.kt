@@ -79,12 +79,6 @@ private class Operation(
         logger.debug("The GitHub Pages contents were successfully updated.")
     }
 
-    /** Executes a command in the project [rootFolder]. */
-    private fun execute(vararg command: String): String = Cli(rootFolder).execute(*command)
-
-    /** Executes a command in the [ghRepoFolder] */
-    private fun pagesExecute(vararg command: String): String = Cli(ghRepoFolder).execute(*command)
-
     private fun checkoutDocs() {
         val gitHost = RepoSlug.fromVar().gitHost()
 
@@ -92,36 +86,19 @@ private class Operation(
         pagesExecute("git", "checkout", Branch.ghPages)
     }
 
+    /** Executes a command in the project [rootFolder]. */
+    private fun execute(vararg command: String): String = Cli(rootFolder).execute(*command)
+
+    /** Executes a command in the [ghRepoFolder] */
+    private fun pagesExecute(vararg command: String): String = Cli(ghRepoFolder).execute(*command)
+
     private fun replaceMostRecentJavadoc(): ConfigurableFileCollection {
-        logger.debug("Replacing the most recent Javadoc in `$mostRecentJavadocDir`.")
         val generatedDocs = project.files(javadocOutputPath)
+
+        logger.debug("Replacing the most recent Javadoc in `$mostRecentJavadocDir`.")
         copyDocs(generatedDocs, mostRecentJavadocDir)
+
         return generatedDocs
-    }
-
-    private fun copyIntoJavadocVersionDir(generatedDocs: ConfigurableFileCollection) {
-        val versionedDocDir = File("$mostRecentJavadocDir/v/${project.version}")
-        logger.debug("Storing the new version of Javadoc in the directory `$versionedDocDir`.")
-        copyDocs(generatedDocs, versionedDocDir)
-    }
-
-    private fun replaceMostRecentDokka(): ConfigurableFileCollection {
-        logger.debug("Replacing the most recent Dokka documentation in `$mostRecentDokkaDir`.")
-        val generatedDocs = project.files(dokkaOutputPath)
-        copyDocs(generatedDocs, mostRecentDokkaDir)
-        return generatedDocs
-    }
-
-    private fun copyIntoDokkaVersionDir(generatedDocs: ConfigurableFileCollection) {
-        val versionedDocDir = File("$mostRecentDokkaDir/v/${project.version}")
-        logger.debug("Storing the new version of Dokka documentatioin in the directory `$versionedDocDir`.")
-        copyDocs(generatedDocs, versionedDocDir)
-    }
-
-    private fun addCommitAndPush() {
-        pagesExecute("git", "add", javadocDirPostfix, dokkaDirPostfix)
-        configureCommitter()
-        commitAndPush()
     }
 
     private fun copyDocs(source: FileCollection, destination: File) {
@@ -130,6 +107,35 @@ private class Operation(
             from(source)
             into(destination)
         }
+    }
+
+    private fun copyIntoJavadocVersionDir(generatedDocs: ConfigurableFileCollection) {
+        val versionedDocDir = File("$mostRecentJavadocDir/v/${project.version}")
+
+        logger.debug("Storing the new version of Javadoc in `$versionedDocDir`.")
+        copyDocs(generatedDocs, versionedDocDir)
+    }
+
+    private fun replaceMostRecentDokka(): ConfigurableFileCollection {
+        val generatedDocs = project.files(dokkaOutputPath)
+
+        logger.debug("Replacing the most recent Dokka documentation in `$mostRecentDokkaDir`.")
+        copyDocs(generatedDocs, mostRecentDokkaDir)
+
+        return generatedDocs
+    }
+
+    private fun copyIntoDokkaVersionDir(generatedDocs: ConfigurableFileCollection) {
+        val versionedDocDir = File("$mostRecentDokkaDir/v/${project.version}")
+
+        logger.debug("Storing the new version of Dokka documentation in `$versionedDocDir`.")
+        copyDocs(generatedDocs, versionedDocDir)
+    }
+
+    private fun addCommitAndPush() {
+        pagesExecute("git", "add", javadocDirPostfix, dokkaDirPostfix)
+        configureCommitter()
+        commitAndPush()
     }
 
     /**

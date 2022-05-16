@@ -180,6 +180,7 @@ class UpdateGitHubPages : Plugin<Project> {
 
     private fun TaskContainer.registerCopyJavadoc(allowInternalJavadoc: Boolean) {
         val inputs = composeJavadocInputs(allowInternalJavadoc)
+
         register(copyJavadoc) {
             doLast {
                 project.copy {
