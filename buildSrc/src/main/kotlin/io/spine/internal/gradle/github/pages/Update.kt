@@ -60,7 +60,7 @@ private class Operation(
     private val ghRepoFolder: File = File("${checkoutTempFolder}/${Branch.ghPages}")
 
     private val javadocDirPostfix = "reference/${project.name}"
-    private val dokkaDirPostfix = "dokka_reference/${project.name}"
+    private val dokkaDirPostfix = "dokka-reference/${project.name}"
 
     private val mostRecentJavadocDir = File("$ghRepoFolder/$javadocDirPostfix")
     private val mostRecentDokkaDir = File("$ghRepoFolder/$dokkaDirPostfix")
