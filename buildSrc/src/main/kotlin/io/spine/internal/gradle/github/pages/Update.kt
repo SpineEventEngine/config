@@ -57,7 +57,7 @@ private class Operation(
 ) {
 
     private val ghRepoFolder: File = File("${checkoutTempFolder}/${Branch.ghPages}")
-    private val docDirPostfix = "reference/$project.name"
+    private val docDirPostfix = "reference/${project.name}"
     private val mostRecentDocDir = File("$ghRepoFolder/$docDirPostfix")
 
     fun run() {
@@ -90,7 +90,7 @@ private class Operation(
     }
 
     private fun copyIntoVersionDir(generatedDocs: ConfigurableFileCollection) {
-        val versionedDocDir = File("$mostRecentDocDir/v/$project.version")
+        val versionedDocDir = File("$mostRecentDocDir/v/${project.name}")
         logger.debug("Storing the new version of docs in the directory `$versionedDocDir`.")
         copyDocs(generatedDocs, versionedDocDir)
     }
