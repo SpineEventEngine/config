@@ -34,11 +34,11 @@ import org.gradle.api.GradleException
 /**
  * Represents the branch used for publishing documentation.
  *
- * Repository's GitHub URL is derived from `REPO_SLUG` environment variable. In this
- * repository, the branch dedicated for publishing documentation is automatically
- * checked out. Also, username and email of git commiter are automatically configured.
- * Username is set to "UpdateGitHubPages Plugin" and email is derived from
- * `FORMAL_GIT_HUB_PAGES_AUTHOR` environment variable.
+ * The repository's GitHub URL is derived from the `REPO_SLUG` environment variable.
+ * The branch dedicated to publishing documentation is automatically checked out in
+ * this repository. Also, the username and email of the git committer are
+ * automatically configured. The username is set to "UpdateGitHubPages Plugin", and
+ * the email is derived from the `FORMAL_GIT_HUB_PAGES_AUTHOR` environment variable.
  *
  * This class provides functionality to commit changes in the specific directory and
  * push them to the remote repository.
@@ -54,8 +54,8 @@ internal class GitHubPagesBranch {
 
         SshKey(rootFolder).register()
         clone(rootFolder)
-        configureCommitter()
         checkout()
+        configureCommitter()
     }
 
     /**
