@@ -32,35 +32,20 @@ import java.io.File
 import org.gradle.api.GradleException
 
 internal class Repository {
-    private val location: File
+
+    val location: File
 
     internal constructor(rootFolder: File, location: File) {
         this.location = location
 
         SshKey(rootFolder).register()
         clone(rootFolder)
+        configureCommitter()
     }
 
     private fun clone(rootFolder: File) {
         val gitHost = RepoSlug.fromVar().gitHost()
         Cli(rootFolder).execute("git", "clone", gitHost, location.absolutePath)
-    }
-
-    fun checkout(branchName: String) {
-        pagesExecute("git", "checkout", branchName)
-    }
-
-    /** Executes a command in the [location]. */
-    private fun pagesExecute(vararg command: String): String = Cli(location).execute(*command)
-
-    fun commit(directory: String, message: String) {
-        stage(directory)
-        configureCommitter()
-        commit(message)
-    }
-
-    private fun stage(directory: String) {
-        pagesExecute("git", "add", "${directory}")
     }
 
     /**
@@ -71,6 +56,22 @@ internal class Repository {
         pagesExecute("git", "config", "user.name", "\"UpdateGitHubPages Plugin\"")
         val authorEmail = AuthorEmail.fromVar().toString()
         pagesExecute("git", "config", "user.email", authorEmail)
+    }
+
+    /** Executes a command in the [location]. */
+    private fun pagesExecute(vararg command: String): String = Cli(location).execute(*command)
+
+    fun checkout(branchName: String) {
+        pagesExecute("git", "checkout", branchName)
+    }
+
+    fun commit(directory: String, message: String) {
+        stage(directory)
+        commit(message)
+    }
+
+    private fun stage(directory: String) {
+        pagesExecute("git", "add", "${directory}")
     }
 
     private fun commit(message: String) {
