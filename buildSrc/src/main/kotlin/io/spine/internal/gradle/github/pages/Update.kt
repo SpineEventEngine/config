@@ -42,41 +42,58 @@ import org.gradle.api.logging.Logger
  */
 fun Task.updateGhPages(project: Project) {
     val plugin = project.plugins.getPlugin(UpdateGitHubPages::class.java)
-    val op = with(plugin) {
-        Operation(project, rootFolder, checkoutTempFolder, javadocOutputPath, dokkaOutputPath, logger)
+
+    val updateJavadoc = with(plugin) {
+        UpdateJavadoc(project, rootFolder, checkoutTempFolder, javadocOutputFolder, logger)
     }
-    op.run()
+    updateJavadoc.run()
+
+    val updateDokka = with(plugin) {
+        UpdateDokka(project, rootFolder, checkoutTempFolder, dokkaOutputFolder, logger)
+    }
+    updateDokka.run()
 }
 
-private class Operation(
+private abstract class UpdateOperation(
     private val project: Project,
     private val rootFolder: File,
-    checkoutTempFolder: Path,
-    private val javadocOutputPath: Path,
-    private val dokkaOutputPath: Path,
+    private val checkoutTempFolder: Path,
+    private val docsOutputFolder: Path,
     private val logger: Logger
 ) {
 
+    /**
+     * The folder under the repository's root(`/`) for storing documentation.
+     *
+     * The value should not contain any leading or trailing file separators.
+     *
+     * The absolute path to the project's documentation is made by appending its
+     * name to the end, making `/[documentationRoot]/[project.name]`.
+     */
+    protected abstract val documentationRoot: String
+
+    /**
+     * The name of the tool used to generate the documentation to update.
+     *
+     * This name will appear in logs as part of a message.
+     */
+    protected abstract val toolName: String
+
     private val ghRepoFolder: File = File("${checkoutTempFolder}/${Branch.ghPages}")
-
-    private val javadocDirPostfix = "reference/${project.name}"
-    private val dokkaDirPostfix = "dokka-reference/${project.name}"
-
-    private val mostRecentJavadocDir = File("$ghRepoFolder/$javadocDirPostfix")
-    private val mostRecentDokkaDir = File("$ghRepoFolder/$dokkaDirPostfix")
+    private val mostRecentFolder = File("${ghRepoFolder}/${documentationRoot}/${project.name}")
 
     fun run() {
+        logger.debug("Update of the ${toolName} documentation for `${project.name}` started.")
         SshKey(rootFolder).register()
         checkoutDocs()
 
-        val generatedJavadoc = replaceMostRecentJavadoc()
-        copyIntoJavadocVersionDir(generatedJavadoc)
+        val documentation = replaceMostRecentDocs()
+        copyIntoVersionDir(documentation)
 
-        val generatedDokka = replaceMostRecentDokka()
-        copyIntoDokkaVersionDir(generatedDokka)
+        commitAndPush()
+        logger.debug("Update of the ${toolName} documentation for `${project.name}` successfully finished.")
 
-        addCommitAndPush()
-        logger.debug("The GitHub Pages contents were successfully updated.")
+        cleanup()
     }
 
     private fun checkoutDocs() {
@@ -89,14 +106,14 @@ private class Operation(
     /** Executes a command in the project [rootFolder]. */
     private fun execute(vararg command: String): String = Cli(rootFolder).execute(*command)
 
-    /** Executes a command in the [ghRepoFolder] */
+    /** Executes a command in the [ghRepoFolder]. */
     private fun pagesExecute(vararg command: String): String = Cli(ghRepoFolder).execute(*command)
 
-    private fun replaceMostRecentJavadoc(): ConfigurableFileCollection {
-        val generatedDocs = project.files(javadocOutputPath)
+    private fun replaceMostRecentDocs(): ConfigurableFileCollection {
+        val generatedDocs = project.files(docsOutputFolder)
 
-        logger.debug("Replacing the most recent Javadoc in `$mostRecentJavadocDir`.")
-        copyDocs(generatedDocs, mostRecentJavadocDir)
+        logger.debug("Replacing the most recent ${toolName} documentation in ${mostRecentFolder}.")
+        copyDocs(generatedDocs, mostRecentFolder)
 
         return generatedDocs
     }
@@ -109,33 +126,22 @@ private class Operation(
         }
     }
 
-    private fun copyIntoJavadocVersionDir(generatedDocs: ConfigurableFileCollection) {
-        val versionedDocDir = File("$mostRecentJavadocDir/v/${project.version}")
+    private fun copyIntoVersionDir(generatedDocs: ConfigurableFileCollection) {
+        val versionedDocDir = File("$mostRecentFolder/v/${project.version}")
 
-        logger.debug("Storing the new version of Javadoc in `$versionedDocDir`.")
+        logger.debug("Storing the new version of ${toolName} documentation in `${versionedDocDir}.")
         copyDocs(generatedDocs, versionedDocDir)
     }
 
-    private fun replaceMostRecentDokka(): ConfigurableFileCollection {
-        val generatedDocs = project.files(dokkaOutputPath)
-
-        logger.debug("Replacing the most recent Dokka documentation in `$mostRecentDokkaDir`.")
-        copyDocs(generatedDocs, mostRecentDokkaDir)
-
-        return generatedDocs
-    }
-
-    private fun copyIntoDokkaVersionDir(generatedDocs: ConfigurableFileCollection) {
-        val versionedDocDir = File("$mostRecentDokkaDir/v/${project.version}")
-
-        logger.debug("Storing the new version of Dokka documentation in `$versionedDocDir`.")
-        copyDocs(generatedDocs, versionedDocDir)
-    }
-
-    private fun addCommitAndPush() {
-        pagesExecute("git", "add", javadocDirPostfix, dokkaDirPostfix)
+    private fun commitAndPush() {
+        stageChanges()
         configureCommitter()
-        commitAndPush()
+        commit()
+        push()
+    }
+
+    private fun stageChanges() {
+        pagesExecute("git", "add", documentationRoot)
     }
 
     /**
@@ -148,15 +154,24 @@ private class Operation(
         pagesExecute("git", "config", "user.email", authorEmail)
     }
 
-    private fun commitAndPush() {
+    private fun commit() {
+        val updateMesssage = "Update ${toolName} documentation for ${project.name} as for version" +
+                " ${project.version}"
+
         pagesExecute(
             "git",
             "commit",
             "--allow-empty",
-            "--message=\"Update documentation for module ${project.name}" +
-                    " as for version ${project.version}\""
+            "--message=${updateMesssage}"
         )
+    }
+
+    private fun push() {
         pagesExecute("git", "push")
+    }
+
+    private fun cleanup() {
+        ghRepoFolder.deleteRecursively();
     }
 }
 
@@ -172,13 +187,7 @@ private class SshKey(private val rootFolder: File) {
     fun register() {
         val gitHubAccessKey = gitHubKey()
         val sshConfigFile = sshConfigFile()
-        val nl = System.lineSeparator()
-        sshConfigFile.appendText(
-            nl +
-                    "Host github.com-publish" + nl +
-                    "User git" + nl +
-                    "IdentityFile ${gitHubAccessKey.absolutePath}" + nl
-        )
+        sshConfigFile.appendPublisher(gitHubAccessKey)
 
         execute(
             "${rootFolder.absolutePath}/config/scripts/register-ssh-key.sh",
@@ -214,14 +223,54 @@ private class SshKey(private val rootFolder: File) {
 
     private fun sshConfigFile(): File {
         val sshConfigFile = File("${System.getProperty("user.home")}/.ssh/config")
+
         if (!sshConfigFile.exists()) {
             val parentDir = sshConfigFile.canonicalFile.parentFile
             parentDir.mkdirs()
             sshConfigFile.createNewFile()
         }
+
         return sshConfigFile
+    }
+
+    private fun File.appendPublisher(privateKey: File) {
+        val nl = System.lineSeparator()
+        this.appendText(
+            nl +
+                    "Host github.com-publish" + nl +
+                    "User git" + nl +
+                    "IdentityFile ${privateKey.absolutePath}" + nl
+        )
     }
 
     /** Executes a command in the project [rootFolder]. */
     private fun execute(vararg command: String): String = Cli(rootFolder).execute(*command)
+}
+
+private class UpdateJavadoc(
+    project: Project,
+    rootFolder: File,
+    checkoutTempFolder: Path,
+    docsOutputFolder: Path,
+    logger: Logger
+) : UpdateOperation(project, rootFolder, checkoutTempFolder, docsOutputFolder, logger) {
+
+    override val documentationRoot: String
+        get() = "reference"
+    override val toolName: String
+        get() = "Javadoc"
+}
+
+private class UpdateDokka(
+    project: Project,
+    rootFolder: File,
+    checkoutTempFolder: Path,
+    docsOutputFolder: Path,
+    logger: Logger
+) : UpdateOperation(project, rootFolder, checkoutTempFolder, docsOutputFolder, logger) {
+
+    override val documentationRoot: String
+        get() = "dokka-reference"
+    override val toolName: String
+        get() = "Dokka"
 }
