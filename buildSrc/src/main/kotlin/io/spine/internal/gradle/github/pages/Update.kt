@@ -40,28 +40,26 @@ import org.gradle.api.logging.Logger
 fun Task.updateGhPages(project: Project) {
     val plugin = project.plugins.getPlugin(UpdateGitHubPages::class.java)
 
-    val repository = with(plugin) {
-        Repository(rootFolder, checkoutTempFolder.toFile())
+    val documentationBranch = with(plugin) {
+        GitHubPagesBranch(rootFolder, checkoutTempFolder.toFile())
     }
 
-    repository.checkout(Branch.ghPages)
-
     val updateJavadoc = with(plugin) {
-        UpdateJavadoc(project, repository, javadocOutputFolder, logger)
+        UpdateJavadoc(project, documentationBranch, javadocOutputFolder, logger)
     }
     updateJavadoc.run()
 
     val updateDokka = with(plugin) {
-        UpdateDokka(project, repository, dokkaOutputFolder, logger)
+        UpdateDokka(project, documentationBranch, dokkaOutputFolder, logger)
     }
     updateDokka.run()
 
-    repository.push()
+    documentationBranch.push()
 }
 
 private abstract class UpdateOperation(
     private val project: Project,
-    private val repository: Repository,
+    private val documentationBranch: GitHubPagesBranch,
     private val docsOutputFolder: Path,
     private val logger: Logger
 ) {
@@ -83,7 +81,7 @@ private abstract class UpdateOperation(
      */
     protected abstract val toolName: String
 
-    private val mostRecentFolder = File("${repository.location}/${documentationRoot}/${project.name}")
+    private val mostRecentFolder = File("${documentationBranch.repoFolder}/${documentationRoot}/${project.name}")
 
     fun run() {
         logger.debug("Update of the ${toolName} documentation for module `${project.name}` started.")
@@ -93,7 +91,7 @@ private abstract class UpdateOperation(
 
         val updateMessage = "Update ${toolName} documentation for module `${project.name}` as for " +
                 "version ${project.version}"
-        repository.commit(documentationRoot, updateMessage)
+        documentationBranch.commit(documentationRoot, updateMessage)
 
         logger.debug("Update of the ${toolName} documentation for `${project.name}` successfully finished.")
     }
@@ -125,10 +123,10 @@ private abstract class UpdateOperation(
 
 private class UpdateJavadoc(
     project: Project,
-    repository: Repository,
+    documentationBranch: GitHubPagesBranch,
     docsOutputFolder: Path,
     logger: Logger
-) : UpdateOperation(project, repository, docsOutputFolder, logger) {
+) : UpdateOperation(project, documentationBranch, docsOutputFolder, logger) {
 
     override val documentationRoot: String
         get() = "reference"
@@ -138,10 +136,10 @@ private class UpdateJavadoc(
 
 private class UpdateDokka(
     project: Project,
-    repository: Repository,
+    documentationBranch: GitHubPagesBranch,
     docsOutputFolder: Path,
     logger: Logger
-) : UpdateOperation(project, repository, docsOutputFolder, logger) {
+) : UpdateOperation(project, documentationBranch, docsOutputFolder, logger) {
 
     override val documentationRoot: String
         get() = "dokka-reference"

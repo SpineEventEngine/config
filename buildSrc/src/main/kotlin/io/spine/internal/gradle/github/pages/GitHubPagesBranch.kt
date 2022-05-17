@@ -31,26 +31,46 @@ import io.spine.internal.gradle.RepoSlug
 import java.io.File
 import org.gradle.api.GradleException
 
-internal class Repository {
+/**
+ * Represents the branch used for publishing documentation.
+ *
+ * Repository's GitHub URL is derived from `REPO_SLUG` environment variable. In this
+ * repository, the branch dedicated for publishing documentation is automatically
+ * checked out. Also, username and email of git commiter are automatically configured.
+ * Username is set to "UpdateGitHubPages Plugin" and email is derived from
+ * `FORMAL_GIT_HUB_PAGES_AUTHOR` environment variable.
+ *
+ * This class provides functionality to commit changes in the specific directory and
+ * push them to the remote repository.
+ */
+internal class GitHubPagesBranch {
 
-    val location: File
+    /** The branch dedicated to publishing documentation. */
+    private val targetBranch = "gh-pages"
+    val repoFolder: File
 
-    internal constructor(rootFolder: File, location: File) {
-        this.location = location
+    internal constructor(rootFolder: File, repoFolder: File) {
+        this.repoFolder = repoFolder
 
         SshKey(rootFolder).register()
         clone(rootFolder)
         configureCommitter()
+        checkout()
     }
 
+    /**
+     * Clones the Git repository with the GitHub URL retrieved from the `REPO_SLUG`
+     * environment variable.
+     */
     private fun clone(rootFolder: File) {
         val gitHost = RepoSlug.fromVar().gitHost()
-        Cli(rootFolder).execute("git", "clone", gitHost, location.absolutePath)
+        Cli(rootFolder).execute("git", "clone", gitHost, repoFolder.absolutePath)
     }
 
     /**
      * Configures Git to publish the changes under "UpdateGitHubPages Plugin" Git
-     * user name and email stored in "FORMAL_GIT_HUB_PAGES_AUTHOR" env variable.
+     * username and email stored in the `FORMAL_GIT_HUB_PAGES_AUTHOR` environment
+     * variable.
      */
     private fun configureCommitter() {
         pagesExecute("git", "config", "user.name", "\"UpdateGitHubPages Plugin\"")
@@ -58,13 +78,17 @@ internal class Repository {
         pagesExecute("git", "config", "user.email", authorEmail)
     }
 
-    /** Executes a command in the [location]. */
-    private fun pagesExecute(vararg command: String): String = Cli(location).execute(*command)
+    /** Executes a command in the [repoFolder]. */
+    private fun pagesExecute(vararg command: String): String = Cli(repoFolder).execute(*command)
 
-    fun checkout(branchName: String) {
-        pagesExecute("git", "checkout", branchName)
+    private fun checkout() {
+        pagesExecute("git", "checkout", targetBranch)
     }
 
+    /**
+     * Stages all changes in the provided directory and commits with the provided
+     * message.
+     */
     fun commit(directory: String, message: String) {
         stage(directory)
         commit(message)
@@ -83,6 +107,9 @@ internal class Repository {
         )
     }
 
+    /**
+     * Pushes local branch named [targetBranch] to the remote repository.
+     */
     fun push() {
         pagesExecute("git", "push")
     }
