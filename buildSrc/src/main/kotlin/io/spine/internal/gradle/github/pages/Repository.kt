@@ -85,10 +85,6 @@ internal class Repository {
     fun push() {
         pagesExecute("git", "push")
     }
-
-    override fun toString(): String {
-        return location.toString()
-    }
 }
 
 /**

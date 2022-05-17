@@ -83,7 +83,7 @@ private abstract class UpdateOperation(
      */
     protected abstract val toolName: String
 
-    private val mostRecentFolder = File("${repository}/${documentationRoot}/${project.name}")
+    private val mostRecentFolder = File("${repository.location}/${documentationRoot}/${project.name}")
 
     fun run() {
         logger.debug("Update of the ${toolName} documentation for module `${project.name}` started.")
