@@ -41,8 +41,8 @@ import org.gradle.api.GradleException
  * automatically configured. The username is set to "UpdateGitHubPages Plugin", and
  * the email is derived from the `FORMAL_GIT_HUB_PAGES_AUTHOR` environment variable.
  *
- * This class provides functionality to commit changes in the specific directory and
- * push them to the remote repository.
+ * This class provides functionality to commit changes and push them to the
+ * remote repository.
  */
 internal class GitHubPagesBranch: AutoCloseable {
 
@@ -96,16 +96,15 @@ internal class GitHubPagesBranch: AutoCloseable {
     }
 
     /**
-     * Stages all changes in the provided directory and commits with the provided
-     * message.
+     * Stages all changes and commits with the provided message.
      */
-    fun commit(directory: String, message: String) {
-        stage(directory)
+    fun commitAllChanges(message: String) {
+        stageAllChanges()
         commit(message)
     }
 
-    private fun stage(directory: String) {
-        repoExecute("git", "add", "${directory}")
+    private fun stageAllChanges() {
+        repoExecute("git", "add", "--all")
     }
 
     private fun commit(message: String) {

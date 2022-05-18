@@ -93,7 +93,7 @@ private abstract class UpdateDocumentation(
 
         val updateMessage = "Update ${toolName} documentation for module `${project.name}` as for " +
                 "version ${project.version}"
-        docsBranch.commit(docsDestinationFolder, updateMessage)
+        docsBranch.commitAllChanges(updateMessage)
 
         logger.debug("Update of the ${toolName} documentation for `${project.name}` successfully finished.")
     }
