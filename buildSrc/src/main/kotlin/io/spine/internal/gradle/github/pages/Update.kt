@@ -40,27 +40,27 @@ import org.gradle.api.logging.Logger
 fun Task.updateGhPages(project: Project) {
     val plugin = project.plugins.getPlugin(UpdateGitHubPages::class.java)
 
-    val documentationBranch = with(plugin) {
+    val docsBranch = with(plugin) {
         GitHubPagesBranch(rootFolder, checkoutTempFolder.toFile())
     }
 
     val updateJavadoc = with(plugin) {
-        UpdateJavadoc(project, documentationBranch, javadocOutputFolder, logger)
+        UpdateJavadoc(project, javadocOutputFolder, docsBranch, logger)
     }
     updateJavadoc.run()
 
     val updateDokka = with(plugin) {
-        UpdateDokka(project, documentationBranch, dokkaOutputFolder, logger)
+        UpdateDokka(project, dokkaOutputFolder, docsBranch, logger)
     }
     updateDokka.run()
 
-    documentationBranch.push()
+    docsBranch.push()
 }
 
 private abstract class UpdateDocumentation(
     private val project: Project,
-    private val documentationBranch: GitHubPagesBranch,
-    private val docsOutputFolder: Path,
+    private val docsSourceFolder: Path,
+    private val docsBranch: GitHubPagesBranch,
     private val logger: Logger
 ) {
 
@@ -70,9 +70,9 @@ private abstract class UpdateDocumentation(
      * The value should not contain any leading or trailing file separators.
      *
      * The absolute path to the project's documentation is made by appending its
-     * name to the end, making `/[documentationRoot]/[project.name]`.
+     * name to the end, making `/[docsDestinationFolder]/[project.name]`.
      */
-    protected abstract val documentationRoot: String
+    protected abstract val docsDestinationFolder: String
 
     /**
      * The name of the tool used to generate the documentation to update.
@@ -81,7 +81,7 @@ private abstract class UpdateDocumentation(
      */
     protected abstract val toolName: String
 
-    private val mostRecentFolder = File("${documentationBranch.repoFolder}/${documentationRoot}/${project.name}")
+    private val mostRecentFolder = File("${docsBranch.repoFolder}/${docsDestinationFolder}/${project.name}")
 
     fun run() {
         logger.debug("Update of the ${toolName} documentation for module `${project.name}` started.")
@@ -91,13 +91,13 @@ private abstract class UpdateDocumentation(
 
         val updateMessage = "Update ${toolName} documentation for module `${project.name}` as for " +
                 "version ${project.version}"
-        documentationBranch.commit(documentationRoot, updateMessage)
+        docsBranch.commit(docsDestinationFolder, updateMessage)
 
         logger.debug("Update of the ${toolName} documentation for `${project.name}` successfully finished.")
     }
 
     private fun replaceMostRecentDocs(): ConfigurableFileCollection {
-        val generatedDocs = project.files(docsOutputFolder)
+        val generatedDocs = project.files(docsSourceFolder)
 
         logger.debug("Replacing the most recent ${toolName} documentation in ${mostRecentFolder}.")
         copyDocs(generatedDocs, mostRecentFolder)
@@ -123,12 +123,12 @@ private abstract class UpdateDocumentation(
 
 private class UpdateJavadoc(
     project: Project,
-    documentationBranch: GitHubPagesBranch,
-    docsOutputFolder: Path,
+    docsSourceFolder: Path,
+    docsBranch: GitHubPagesBranch,
     logger: Logger
-) : UpdateDocumentation(project, documentationBranch, docsOutputFolder, logger) {
+) : UpdateDocumentation(project, docsSourceFolder, docsBranch, logger) {
 
-    override val documentationRoot: String
+    override val docsDestinationFolder: String
         get() = "reference"
     override val toolName: String
         get() = "Javadoc"
@@ -136,12 +136,12 @@ private class UpdateJavadoc(
 
 private class UpdateDokka(
     project: Project,
-    documentationBranch: GitHubPagesBranch,
-    docsOutputFolder: Path,
+    docsSourceFolder: Path,
+    docsBranch: GitHubPagesBranch,
     logger: Logger
-) : UpdateDocumentation(project, documentationBranch, docsOutputFolder, logger) {
+) : UpdateDocumentation(project, docsSourceFolder, docsBranch, logger) {
 
-    override val documentationRoot: String
+    override val docsDestinationFolder: String
         get() = "dokka-reference"
     override val toolName: String
         get() = "Dokka"
