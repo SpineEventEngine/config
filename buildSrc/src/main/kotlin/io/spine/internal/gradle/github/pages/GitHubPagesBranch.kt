@@ -69,7 +69,7 @@ internal class GitHubPagesBranch: AutoCloseable {
      */
     private fun clone() {
         val gitHost = RepoSlug.fromVar().gitHost()
-        pagesExecute(
+        repoExecute(
             "git",
             "clone",
             gitHost,
@@ -78,7 +78,7 @@ internal class GitHubPagesBranch: AutoCloseable {
     }
 
     /** Executes a command in the [repoFolder]. */
-    private fun pagesExecute(vararg command: String): String = Cli(repoFolder.toFile()).execute(*command)
+    private fun repoExecute(vararg command: String): String = Cli(repoFolder.toFile()).execute(*command)
 
     /**
      * Configures Git to publish the changes under "UpdateGitHubPages Plugin" Git
@@ -86,13 +86,13 @@ internal class GitHubPagesBranch: AutoCloseable {
      * variable.
      */
     private fun configureCommitter() {
-        pagesExecute("git", "config", "user.name", "\"UpdateGitHubPages Plugin\"")
+        repoExecute("git", "config", "user.name", "\"UpdateGitHubPages Plugin\"")
         val authorEmail = AuthorEmail.fromVar().toString()
-        pagesExecute("git", "config", "user.email", authorEmail)
+        repoExecute("git", "config", "user.email", authorEmail)
     }
 
     private fun checkout() {
-        pagesExecute("git", "checkout", targetBranch)
+        repoExecute("git", "checkout", targetBranch)
     }
 
     /**
@@ -105,11 +105,11 @@ internal class GitHubPagesBranch: AutoCloseable {
     }
 
     private fun stage(directory: String) {
-        pagesExecute("git", "add", "${directory}")
+        repoExecute("git", "add", "${directory}")
     }
 
     private fun commit(message: String) {
-        pagesExecute(
+        repoExecute(
             "git",
             "commit",
             "--allow-empty",
@@ -121,7 +121,7 @@ internal class GitHubPagesBranch: AutoCloseable {
      * Pushes local branch named [targetBranch] to the remote repository.
      */
     fun push() {
-        pagesExecute("git", "push")
+        repoExecute("git", "push")
     }
 
     override fun close() {
