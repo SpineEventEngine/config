@@ -61,7 +61,7 @@ internal class GitHubPagesBranch: AutoCloseable {
      * Configures a temporal local repository with the branch dedicated to publishing
      * GitHub Pages checked out.
      *
-     * For more information please read the description of the current class.
+     * For more information please read the description of the [GitHubPagesBranch].
      *
      * @param rootProjectFolder is required to find the `register-ssh-key.sh` script
      *        and register the SSH key for further operations with GitHub Pages.
