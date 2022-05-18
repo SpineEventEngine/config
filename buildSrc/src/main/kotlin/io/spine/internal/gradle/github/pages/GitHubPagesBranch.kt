@@ -33,7 +33,8 @@ import java.io.File
 import org.gradle.api.GradleException
 
 /**
- * Represents the branch used for publishing documentation.
+ * Configures a temporal local repository with the branch dedicated to publishing
+ * GitHub Pages checked out.
  *
  * The repository's GitHub URL is derived from the `REPO_SLUG` environment variable.
  * The branch dedicated to publishing documentation is automatically checked out in
@@ -47,15 +48,24 @@ import org.gradle.api.GradleException
 internal class GitHubPagesBranch: AutoCloseable {
 
     /**
-     * The branch dedicated to publishing documentation.
+     * The name of the branch dedicated to publishing documentation.
      */
-    private val targetBranch = "gh-pages"
+    private val name = "gh-pages"
 
     /**
      * Path to the temporal folder for a clone of the project repository.
      */
     val repoFolder = LazyTempPath("repoTemp")
 
+    /**
+     * Configures a temporal local repository with the branch dedicated to publishing
+     * GitHub Pages checked out.
+     *
+     * For more information please read the description of the current class.
+     *
+     * @param rootProjectFolder is required to find the `register-ssh-key.sh` script
+     *        and register the SSH key for further operations with GitHub Pages.
+     */
     internal constructor(rootProjectFolder: File) {
         SshKey(rootProjectFolder).register()
         clone()
@@ -81,9 +91,10 @@ internal class GitHubPagesBranch: AutoCloseable {
     private fun repoExecute(vararg command: String): String = Cli(repoFolder.toFile()).execute(*command)
 
     /**
-     * Configures Git to publish the changes under "UpdateGitHubPages Plugin" Git
-     * username and email stored in the `FORMAL_GIT_HUB_PAGES_AUTHOR` environment
-     * variable.
+     * Configures Git username and email to publish the changes.
+     *
+     * Username is set to "UpdateGitHubPages Plugin" and email is retrieved from the
+     * `FORMAL_GIT_HUB_PAGES_AUTHOR` environment variable.
      */
     private fun configureCommitter() {
         repoExecute("git", "config", "user.name", "\"UpdateGitHubPages Plugin\"")
@@ -117,7 +128,7 @@ internal class GitHubPagesBranch: AutoCloseable {
     }
 
     /**
-     * Pushes local branch named [targetBranch] to the remote repository.
+     * Pushes this branch to the remote repository.
      */
     fun push() {
         repoExecute("git", "push")
