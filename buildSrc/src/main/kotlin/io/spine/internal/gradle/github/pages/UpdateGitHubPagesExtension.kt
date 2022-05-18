@@ -54,8 +54,8 @@ class UpdateGitHubPagesExtension
 private constructor(
 
     /**
-     * Tells whether the types marked `@Internal` should be included into the doc
-     * generation.
+     * Tells whether the types marked `@Internal` should be included into
+     * the doc generation.
      */
     val allowInternalJavadoc: Property<Boolean>,
 
@@ -65,11 +65,11 @@ private constructor(
     var rootFolder: Property<File>,
 
     /**
-     * The external inputs, which output should be included into the GitHub Pages
-     * update.
+     * The external inputs, which output should be included into
+     * the GitHub Pages update.
      *
-     * The values are interpreted according to [org.gradle.api.tasks.Copy.from]
-     * specification.
+     * The values are interpreted according to
+     * [org.gradle.api.tasks.Copy.from] specification.
      *
      * This property is optional.
      */
@@ -83,7 +83,7 @@ private constructor(
      *
      * This value is used when adding dependency on the doclet when the plugin tasks
      * are registered. Since the doclet dependency is required, its value passed as
-     * parameter for the extension, rather than a property.
+     * a parameter for the extension, rather than a property.
      */
     internal lateinit var excludeInternalDocletVersion: String
 
@@ -122,8 +122,8 @@ private constructor(
     }
 
     /**
-     * Returns the external inputs, which results should be included into the GitHub
-     * Pages update.
+     * Returns the external inputs, which results should be included into the
+     * GitHub Pages update.
      */
     fun includedInputs(): Set<Any> {
         return includeInputs.get()
