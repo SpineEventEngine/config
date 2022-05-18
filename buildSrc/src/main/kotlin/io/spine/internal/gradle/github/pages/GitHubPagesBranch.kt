@@ -56,9 +56,9 @@ internal class GitHubPagesBranch: AutoCloseable {
      */
     val repoFolder = LazyTempPath("repoTemp")
 
-    internal constructor(rootFolder: File) {
-        SshKey(rootFolder).register()
-        clone(rootFolder)
+    internal constructor(rootProjectFolder: File) {
+        SshKey(rootProjectFolder).register()
+        clone(rootProjectFolder)
         checkout()
         configureCommitter()
     }
@@ -67,9 +67,9 @@ internal class GitHubPagesBranch: AutoCloseable {
      * Clones the Git repository with the GitHub URL retrieved from the `REPO_SLUG`
      * environment variable.
      */
-    private fun clone(rootFolder: File) {
+    private fun clone(rootProjectFolder: File) {
         val gitHost = RepoSlug.fromVar().gitHost()
-        Cli(rootFolder).execute("git", "clone", gitHost, "${repoFolder}")
+        Cli(rootProjectFolder).execute("git", "clone", gitHost, "${repoFolder}")
     }
 
     /**
@@ -127,7 +127,7 @@ internal class GitHubPagesBranch: AutoCloseable {
 /**
  * Registers SSH key for further operations with GitHub Pages.
  */
-private class SshKey(private val rootFolder: File) {
+private class SshKey(private val rootProjectFolder: File) {
 
     /**
      * Creates an SSH key with the credentials and registers it by invoking the
@@ -139,13 +139,13 @@ private class SshKey(private val rootFolder: File) {
         sshConfigFile.appendPublisher(gitHubAccessKey)
 
         execute(
-            "${rootFolder.absolutePath}/config/scripts/register-ssh-key.sh",
+            "${rootProjectFolder.absolutePath}/config/scripts/register-ssh-key.sh",
             gitHubAccessKey.absolutePath
         )
     }
 
     /**
-     * Locates `deploy_key_rsa` in the [rootFolder] and returns it as a [File].
+     * Locates `deploy_key_rsa` in the [rootProjectFolder] and returns it as a [File].
      *
      * If it is not found, a [GradleException] is thrown.
      *
@@ -159,7 +159,7 @@ private class SshKey(private val rootFolder: File) {
      * references, namely in `github.com-publish`.
      */
     private fun gitHubKey(): File {
-        val gitHubAccessKey = File("${rootFolder.absolutePath}/deploy_key_rsa")
+        val gitHubAccessKey = File("${rootProjectFolder.absolutePath}/deploy_key_rsa")
 
         if (!gitHubAccessKey.exists()) {
             throw GradleException(
@@ -192,6 +192,6 @@ private class SshKey(private val rootFolder: File) {
         )
     }
 
-    /** Executes a command in the project [rootFolder]. */
-    private fun execute(vararg command: String): String = Cli(rootFolder).execute(*command)
+    /** Executes a command in the project [rootProjectFolder]. */
+    private fun execute(vararg command: String): String = Cli(rootProjectFolder).execute(*command)
 }
