@@ -116,11 +116,6 @@ class UpdateGitHubPages : Plugin<Project> {
     internal val dokkaOutputFolder = LazyTempPath("dokka")
 
     /**
-     * Path to the temp folder used checkout the original GitHub Pages branch.
-     */
-    internal val checkoutTempFolder = LazyTempPath("repoTemp")
-
-    /**
      * Applies the plugin to the specified [project].
      *
      * If the project version says it is a snapshot, the plugin registers a no-op task.
@@ -237,7 +232,7 @@ class UpdateGitHubPages : Plugin<Project> {
     }
 
     private fun cleanup() {
-        val folders = listOf(checkoutTempFolder, dokkaOutputFolder, javadocOutputFolder)
+        val folders = listOf(dokkaOutputFolder, javadocOutputFolder)
         folders.forEach {
             it.toFile().deleteRecursively()
         }

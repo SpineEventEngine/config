@@ -41,20 +41,22 @@ fun Task.updateGhPages(project: Project) {
     val plugin = project.plugins.getPlugin(UpdateGitHubPages::class.java)
 
     val docsBranch = with(plugin) {
-        GitHubPagesBranch(rootFolder, checkoutTempFolder.toFile())
+        GitHubPagesBranch(rootFolder)
     }
 
     val updateJavadoc = with(plugin) {
         UpdateJavadoc(project, javadocOutputFolder, docsBranch, logger)
     }
-    updateJavadoc.run()
 
     val updateDokka = with(plugin) {
         UpdateDokka(project, dokkaOutputFolder, docsBranch, logger)
     }
-    updateDokka.run()
 
-    docsBranch.push()
+    docsBranch.use {
+        updateJavadoc.run()
+        updateDokka.run()
+        docsBranch.push()
+    }
 }
 
 private abstract class UpdateDocumentation(

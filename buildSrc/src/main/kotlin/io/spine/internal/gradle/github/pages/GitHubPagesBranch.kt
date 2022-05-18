@@ -28,6 +28,7 @@ package io.spine.internal.gradle.github.pages
 
 import io.spine.internal.gradle.Cli
 import io.spine.internal.gradle.RepoSlug
+import io.spine.internal.gradle.fs.LazyTempPath
 import java.io.File
 import org.gradle.api.GradleException
 
@@ -43,15 +44,19 @@ import org.gradle.api.GradleException
  * This class provides functionality to commit changes in the specific directory and
  * push them to the remote repository.
  */
-internal class GitHubPagesBranch {
+internal class GitHubPagesBranch: AutoCloseable {
 
-    /** The branch dedicated to publishing documentation. */
+    /**
+     * The branch dedicated to publishing documentation.
+     */
     private val targetBranch = "gh-pages"
-    val repoFolder: File
 
-    internal constructor(rootFolder: File, repoFolder: File) {
-        this.repoFolder = repoFolder
+    /**
+     * Path to the temporal folder for a clone of the project repository.
+     */
+    val repoFolder = LazyTempPath("repoTemp")
 
+    internal constructor(rootFolder: File) {
         SshKey(rootFolder).register()
         clone(rootFolder)
         checkout()
@@ -64,7 +69,7 @@ internal class GitHubPagesBranch {
      */
     private fun clone(rootFolder: File) {
         val gitHost = RepoSlug.fromVar().gitHost()
-        Cli(rootFolder).execute("git", "clone", gitHost, repoFolder.absolutePath)
+        Cli(rootFolder).execute("git", "clone", gitHost, "${repoFolder}")
     }
 
     /**
@@ -79,7 +84,7 @@ internal class GitHubPagesBranch {
     }
 
     /** Executes a command in the [repoFolder]. */
-    private fun pagesExecute(vararg command: String): String = Cli(repoFolder).execute(*command)
+    private fun pagesExecute(vararg command: String): String = Cli(repoFolder.toFile()).execute(*command)
 
     private fun checkout() {
         pagesExecute("git", "checkout", targetBranch)
@@ -112,6 +117,10 @@ internal class GitHubPagesBranch {
      */
     fun push() {
         pagesExecute("git", "push")
+    }
+
+    override fun close() {
+        repoFolder.toFile().deleteRecursively()
     }
 }
 
