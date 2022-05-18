@@ -58,7 +58,7 @@ internal class GitHubPagesBranch: AutoCloseable {
 
     internal constructor(rootProjectFolder: File) {
         SshKey(rootProjectFolder).register()
-        clone(rootProjectFolder)
+        clone()
         checkout()
         configureCommitter()
     }
@@ -67,10 +67,18 @@ internal class GitHubPagesBranch: AutoCloseable {
      * Clones the Git repository with the GitHub URL retrieved from the `REPO_SLUG`
      * environment variable.
      */
-    private fun clone(rootProjectFolder: File) {
+    private fun clone() {
         val gitHost = RepoSlug.fromVar().gitHost()
-        Cli(rootProjectFolder).execute("git", "clone", gitHost, "${repoFolder}")
+        pagesExecute(
+            "git",
+            "clone",
+            gitHost,
+            "."
+        )
     }
+
+    /** Executes a command in the [repoFolder]. */
+    private fun pagesExecute(vararg command: String): String = Cli(repoFolder.toFile()).execute(*command)
 
     /**
      * Configures Git to publish the changes under "UpdateGitHubPages Plugin" Git
@@ -82,9 +90,6 @@ internal class GitHubPagesBranch: AutoCloseable {
         val authorEmail = AuthorEmail.fromVar().toString()
         pagesExecute("git", "config", "user.email", authorEmail)
     }
-
-    /** Executes a command in the [repoFolder]. */
-    private fun pagesExecute(vararg command: String): String = Cli(repoFolder.toFile()).execute(*command)
 
     private fun checkout() {
         pagesExecute("git", "checkout", targetBranch)
