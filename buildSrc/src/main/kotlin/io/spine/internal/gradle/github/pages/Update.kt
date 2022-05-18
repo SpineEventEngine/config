@@ -57,7 +57,7 @@ fun Task.updateGhPages(project: Project) {
     documentationBranch.push()
 }
 
-private abstract class UpdateOperation(
+private abstract class UpdateDocumentation(
     private val project: Project,
     private val documentationBranch: GitHubPagesBranch,
     private val docsOutputFolder: Path,
@@ -126,7 +126,7 @@ private class UpdateJavadoc(
     documentationBranch: GitHubPagesBranch,
     docsOutputFolder: Path,
     logger: Logger
-) : UpdateOperation(project, documentationBranch, docsOutputFolder, logger) {
+) : UpdateDocumentation(project, documentationBranch, docsOutputFolder, logger) {
 
     override val documentationRoot: String
         get() = "reference"
@@ -139,7 +139,7 @@ private class UpdateDokka(
     documentationBranch: GitHubPagesBranch,
     docsOutputFolder: Path,
     logger: Logger
-) : UpdateOperation(project, documentationBranch, docsOutputFolder, logger) {
+) : UpdateDocumentation(project, documentationBranch, docsOutputFolder, logger) {
 
     override val documentationRoot: String
         get() = "dokka-reference"
