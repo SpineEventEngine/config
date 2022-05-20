@@ -176,13 +176,9 @@ class UpdateGitHubPages : Plugin<Project> {
     private fun TaskContainer.registerCopyJavadoc(allowInternalJavadoc: Boolean) {
         val inputs = composeJavadocInputs(allowInternalJavadoc)
 
-        register(copyJavadoc) {
-            doLast {
-                project.copy {
-                    from(*inputs.toTypedArray())
-                    into(javadocOutputFolder)
-                }
-            }
+        register(copyJavadoc, Copy::class.java) {
+            from(*inputs.toTypedArray())
+            into(javadocOutputFolder)
         }
     }
 
@@ -200,13 +196,9 @@ class UpdateGitHubPages : Plugin<Project> {
     private fun TaskContainer.registerCopyDokka() {
         val inputs = composeDokkaInputs()
 
-        register(copyDokka) {
-            doLast {
-                project.copy {
-                    from(*inputs.toTypedArray())
-                    into(dokkaOutputFolder)
-                }
-            }
+        register(copyDokka, Copy::class.java) {
+            from(*inputs.toTypedArray())
+            into(dokkaOutputFolder)
         }
     }
 
