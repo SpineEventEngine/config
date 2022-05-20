@@ -49,7 +49,7 @@ import io.spine.internal.gradle.github.pages.AuthorEmail
  */
 class Repository : AutoCloseable {
     /**
-     * The GitHub SSH URL to the underlying repository
+     * The GitHub SSH URL to the underlying repository.
      */
     val sshUrl: String
 
@@ -59,8 +59,9 @@ class Repository : AutoCloseable {
     val location = LazyTempPath("repoTemp")
 
     /**
-     * Current user configuration. This fields determines what ends up in author and
-     * commiter fields of a commit.
+     * Current user configuration.
+     *
+     * This configuration determines what ends up in author and commiter fields of a commit.
      */
     private var user: Config.User
         get() = field
@@ -79,7 +80,7 @@ class Repository : AutoCloseable {
     }
 
     /**
-     * Clones the repository with [SSH url][sshUrl] into the [temporal folder][location].
+     * Clones the repository with [the SSH url][sshUrl] into the [temporal folder][location].
      */
     private fun clone() {
         repoExecute("git", "clone", sshUrl, ".")

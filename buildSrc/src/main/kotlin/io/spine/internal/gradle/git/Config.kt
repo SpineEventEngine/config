@@ -48,11 +48,11 @@ class Config {
             fun of(name: String, email: String): User {
                 Preconditions.checkArgument(
                     name.isNotBlank(),
-                    "Name cannot be an empty string"
+                    "Name cannot be an empty string."
                 )
                 Preconditions.checkArgument(
                     email.isNotBlank(),
-                    "Email cannot be an empty string"
+                    "Email cannot be an empty string."
                 )
 
                 return User(name, email)
