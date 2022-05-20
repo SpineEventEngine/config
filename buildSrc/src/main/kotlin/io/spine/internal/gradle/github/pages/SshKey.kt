@@ -27,122 +27,13 @@
 package io.spine.internal.gradle.github.pages
 
 import io.spine.internal.gradle.Cli
-import io.spine.internal.gradle.RepoSlug
-import io.spine.internal.gradle.fs.LazyTempPath
 import java.io.File
 import org.gradle.api.GradleException
 
 /**
- * Configures a temporal local repository with the branch dedicated to publishing
- * GitHub Pages checked out.
- *
- * The repository's GitHub URL is derived from the `REPO_SLUG` environment variable.
- * The branch dedicated to publishing documentation is automatically checked out in
- * this repository. Also, the username and email of the git committer are
- * automatically configured. The username is set to "UpdateGitHubPages Plugin", and
- * the email is derived from the `FORMAL_GIT_HUB_PAGES_AUTHOR` environment variable.
- *
- * This class provides functionality to commit changes and push them to the
- * remote repository.
- */
-internal class GitHubPagesBranch: AutoCloseable {
-
-    /**
-     * The name of the branch dedicated to publishing documentation.
-     */
-    private val name = "gh-pages"
-
-    /**
-     * Path to the temporal folder for a clone of the project repository.
-     */
-    val repoFolder = LazyTempPath("repoTemp")
-
-    /**
-     * Configures a temporal local repository with the branch dedicated to publishing
-     * GitHub Pages checked out.
-     *
-     * For more information please read the description of the [GitHubPagesBranch].
-     *
-     * @param rootProjectFolder is required to find the `register-ssh-key.sh` script
-     *        and register the SSH key for further operations with GitHub Pages.
-     */
-    internal constructor(rootProjectFolder: File) {
-        SshKey(rootProjectFolder).register()
-        cloneBranch()
-        configureCommitter()
-    }
-
-    /**
-     * Clones the branch dedicated to publishing into the [repoFolder].
-     *
-     * The GitHub URL of the repository is retrieved from the `REPO_SLUG`
-     * environment variable.
-     */
-    private fun cloneBranch() {
-        val gitHost = RepoSlug.fromVar().gitHost()
-
-        repoExecute("git",
-            "clone",
-            "--branch", name,
-            "--single-branch",
-            gitHost,
-            "."
-        )
-    }
-
-    /** Executes a command in the [repoFolder]. */
-    private fun repoExecute(vararg command: String): String = Cli(repoFolder.toFile()).execute(*command)
-
-    /**
-     * Configures Git username and email to publish the changes.
-     *
-     * Username is set to "UpdateGitHubPages Plugin" and email is retrieved from the
-     * `FORMAL_GIT_HUB_PAGES_AUTHOR` environment variable.
-     */
-    private fun configureCommitter() {
-        repoExecute("git", "config", "user.name", "\"UpdateGitHubPages Plugin\"")
-        val authorEmail = AuthorEmail.fromVar().toString()
-        repoExecute("git", "config", "user.email", authorEmail)
-    }
-
-    /**
-     * Stages all changes and commits with the provided message.
-     */
-    fun commitAllChanges(message: String) {
-        stageAllChanges()
-        commit(message)
-    }
-
-    private fun stageAllChanges() {
-        repoExecute("git", "add", "--all")
-    }
-
-    private fun commit(message: String) {
-        repoExecute(
-            "git",
-            "commit",
-            "--allow-empty",
-            "--message=${message}"
-        )
-    }
-
-    /**
-     * Pushes this branch to the remote repository.
-     */
-    fun push() {
-        repoExecute("git", "push")
-    }
-
-    override fun close() {
-        repoFolder.toFile().deleteRecursively()
-    }
-}
-
-/**
  * Registers SSH key for further operations with GitHub Pages.
  */
-private class SshKey(private val rootProjectFolder: File) {
-
+internal class SshKey(private val rootProjectFolder: File) {
     /**
      * Creates an SSH key with the credentials and registers it by invoking the
      * `register-ssh-key.sh` script.
@@ -161,8 +52,6 @@ private class SshKey(private val rootProjectFolder: File) {
     /**
      * Locates `deploy_key_rsa` in the [rootProjectFolder] and returns it as a [File].
      *
-     * If it is not found, a [GradleException] is thrown.
-     *
      * A CI instance comes with an RSA key. However, of course, the default key has
      * no privileges in Spine repositories. Thus, we add our own RSA key —
      * `deploy_rsa_key`. It must have `write` rights in the associated repository.
@@ -171,6 +60,8 @@ private class SshKey(private val rootProjectFolder: File) {
      *
      * Thus, we configure the SSH agent to use the `deploy_rsa_key` only for specific
      * references, namely in `github.com-publish`.
+     *
+     * @throws GradleException if `deploy_key_rsa` is not found.
      */
     private fun gitHubKey(): File {
         val gitHubAccessKey = File("${rootProjectFolder.absolutePath}/deploy_key_rsa")
@@ -206,6 +97,8 @@ private class SshKey(private val rootProjectFolder: File) {
         )
     }
 
-    /** Executes a command in the project [rootProjectFolder]. */
+    /**
+     * Executes a command in the project [rootProjectFolder].
+     */
     private fun execute(vararg command: String): String = Cli(rootProjectFolder).execute(*command)
 }

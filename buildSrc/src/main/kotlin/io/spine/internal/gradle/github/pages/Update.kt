@@ -33,6 +33,7 @@ import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
+import io.spine.internal.gradle.git.Repository
 
 /**
  * Performs the update of GitHub pages.
@@ -40,29 +41,31 @@ import org.gradle.api.logging.Logger
 fun Task.updateGhPages(project: Project) {
     val plugin = project.plugins.getPlugin(UpdateGitHubPages::class.java)
 
-    val docsBranch = with(plugin) {
-        GitHubPagesBranch(rootFolder)
+    with(plugin) {
+        SshKey(rootFolder).register()
     }
 
+    val repository = Repository.Factory.forPublishingDocumentation()
+
     val updateJavadoc = with(plugin) {
-        UpdateJavadoc(project, javadocOutputFolder, docsBranch, logger)
+        UpdateJavadoc(project, javadocOutputFolder, repository, logger)
     }
 
     val updateDokka = with(plugin) {
-        UpdateDokka(project, dokkaOutputFolder, docsBranch, logger)
+        UpdateDokka(project, dokkaOutputFolder, repository, logger)
     }
 
-    docsBranch.use {
+    repository.use {
         updateJavadoc.run()
         updateDokka.run()
-        docsBranch.push()
+        repository.push()
     }
 }
 
 private abstract class UpdateDocumentation(
     private val project: Project,
     private val docsSourceFolder: Path,
-    private val docsBranch: GitHubPagesBranch,
+    private val repository: Repository,
     private val logger: Logger
 ) {
 
@@ -83,7 +86,7 @@ private abstract class UpdateDocumentation(
      */
     protected abstract val toolName: String
 
-    private val mostRecentFolder = File("${docsBranch.repoFolder}/${docsDestinationFolder}/${project.name}")
+    private val mostRecentFolder = File("${repository.location}/${docsDestinationFolder}/${project.name}")
 
     fun run() {
         logger.debug("Update of the ${toolName} documentation for module `${project.name}` started.")
@@ -93,7 +96,7 @@ private abstract class UpdateDocumentation(
 
         val updateMessage = "Update ${toolName} documentation for module `${project.name}` as for " +
                 "version ${project.version}"
-        docsBranch.commitAllChanges(updateMessage)
+        repository.commitAllChanges(updateMessage)
 
         logger.debug("Update of the ${toolName} documentation for `${project.name}` successfully finished.")
     }
@@ -126,9 +129,9 @@ private abstract class UpdateDocumentation(
 private class UpdateJavadoc(
     project: Project,
     docsSourceFolder: Path,
-    docsBranch: GitHubPagesBranch,
+    repository: Repository,
     logger: Logger
-) : UpdateDocumentation(project, docsSourceFolder, docsBranch, logger) {
+) : UpdateDocumentation(project, docsSourceFolder, repository, logger) {
 
     override val docsDestinationFolder: String
         get() = "reference"
@@ -139,9 +142,9 @@ private class UpdateJavadoc(
 private class UpdateDokka(
     project: Project,
     docsSourceFolder: Path,
-    docsBranch: GitHubPagesBranch,
+    repository: Repository,
     logger: Logger
-) : UpdateDocumentation(project, docsSourceFolder, docsBranch, logger) {
+) : UpdateDocumentation(project, docsSourceFolder, repository, logger) {
 
     override val docsDestinationFolder: String
         get() = "dokka-reference"
