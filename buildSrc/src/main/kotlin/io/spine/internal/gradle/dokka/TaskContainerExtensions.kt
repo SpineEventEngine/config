@@ -24,13 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.gradle.github.pages
+package io.spine.internal.gradle.dokka
+
+import org.gradle.api.tasks.TaskContainer
+import org.jetbrains.dokka.gradle.DokkaTask
 
 /**
- * Names of branches involved when updating documentation.
+ * Finds the `dokkaHtml` Gradle task.
  */
-object Branch {
-
-    /** The branch to use when pushing the updates to the documentation. */
-    const val ghPages = "gh-pages"
-}
+fun TaskContainer.dokkaHtmlTask() = this.getByName("dokkaHtml") as DokkaTask

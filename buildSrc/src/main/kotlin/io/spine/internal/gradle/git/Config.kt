@@ -24,24 +24,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.gradle.github.pages
+package io.spine.internal.gradle.git
 
-object TaskName {
+import com.google.api.client.util.Preconditions
 
-    /**
-     * The name of the task which updates the GitHub Pages.
-     */
-    const val updateGitHubPages = "updateGitHubPages"
-
-    /**
-     * The name of the helper task to gather the generated Javadoc before updating
-     * GitHub Pages.
-     */
-    const val copyJavadoc = "copyJavadoc"
+/**
+ * Wrapper for different Git settings.
+ */
+class Config {
 
     /**
-     * The name of the helper task to gather Dokka-generated documentation before
-     * updating GitHub Pages.
+     * Encapsulates `user.name` and `user.email` settings. These settings determine
+     * what ends up in author and commiter fields of a commit.
      */
-    const val copyDokka = "copyDokka"
+    data class User private constructor(val name: String, val email: String) {
+        companion object Factory{
+            /**
+             * Validates provided parameters and constructs a [User] object.
+             *
+             * @throws IllegalArgumentException if the name or the email is an empty
+             *         string.
+             */
+            fun of(name: String, email: String): User {
+                Preconditions.checkArgument(
+                    name.isNotBlank(),
+                    "Name cannot be an empty string."
+                )
+                Preconditions.checkArgument(
+                    email.isNotBlank(),
+                    "Email cannot be an empty string."
+                )
+
+                return User(name, email)
+            }
+        }
+    }
 }
