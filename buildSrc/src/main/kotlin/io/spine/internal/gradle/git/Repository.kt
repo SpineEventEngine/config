@@ -164,7 +164,7 @@ class Repository : AutoCloseable {
         fun of(sshUrl: String, user: Config.User, branch: String = Branch.master): Repository {
             Preconditions.checkArgument(
                 !sshUrl.isBlank(),
-                "SSH URL cannot not be an empty string."
+                "SSH URL cannot be an empty string."
             )
 
             val repo = Repository(sshUrl, user, branch)
