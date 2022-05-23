@@ -63,14 +63,19 @@ class Repository : AutoCloseable {
      *
      * This configuration determines what ends up in author and commiter fields of a commit.
      */
-    private var user: Config.User
+    var user: Config.User
         get() = field
-
+        private set(value) {
+            field = value
+        }
     /**
      * Currently checked out branch.
      */
-    private var currentBranch: String
+    var currentBranch: String
         get() = field
+        private set(value) {
+            field = value
+        }
 
 
     private constructor(sshUrl: String, user: Config.User, branch: String) {
