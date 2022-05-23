@@ -180,31 +180,5 @@ class Repository : AutoCloseable {
 
             return repo
         }
-
-        /**
-         * Clones the current project repository with the branch dedicated to
-         * publishing documentation to GitHub Pages checked out.
-         *
-         * The repository's GitHub SSH URL is derived from the `REPO_SLUG`
-         * environment variable. The [branch][Branch.documentation] dedicated to
-         * publishing documentation is automatically checked out in this repository.
-         * Also, the username and the email of the git user are automatically configured.
-         * The username is set to "UpdateGitHubPages Plugin", and the email is derived
-         * from the `FORMAL_GIT_HUB_PAGES_AUTHOR` environment variable.
-         *
-         * @throws GradleException if any of the environment variables described above
-         *         is not set.
-         */
-        fun forPublishingDocumentation(): Repository {
-            val host = RepoSlug.fromVar().gitHost()
-
-            val username = "UpdateGitHubPages Plugin"
-            val userEmail = AuthorEmail.fromVar().toString()
-            val user = Config.User.Factory.of(username, userEmail)
-
-            val branch = Branch.documentation
-
-            return of(host, user, branch)
-        }
     }
 }
