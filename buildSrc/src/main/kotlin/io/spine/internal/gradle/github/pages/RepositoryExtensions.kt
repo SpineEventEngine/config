@@ -54,5 +54,5 @@ internal fun Repository.Factory.forPublishingDocumentation(): Repository {
 
     val branch = Branch.documentation
 
-    return Repository.of(host, user, branch)
+    return of(host, user, branch)
 }
