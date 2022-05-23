@@ -33,7 +33,7 @@ import io.spine.internal.gradle.fs.LazyTempPath
 import io.spine.internal.gradle.github.pages.AuthorEmail
 
 /**
- * Interacts with a real git repository.
+ * Interacts with a real Git repository.
  *
  * Clones the repository with the provided SSH URL in a temporal folder. Provides
  * functionality to configure a user, checkout branches, commit changes and push them

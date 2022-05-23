@@ -29,7 +29,7 @@ package io.spine.internal.gradle.git
 import com.google.api.client.util.Preconditions
 
 /**
- * Wrapper for different git settings.
+ * Wrapper for different Git settings.
  */
 class Config {
 
