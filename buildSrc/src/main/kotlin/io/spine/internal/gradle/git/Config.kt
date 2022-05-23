@@ -38,10 +38,6 @@ class Config {
      * what ends up in author and commiter fields of a commit.
      */
     data class User private constructor(val name: String, val email: String) {
-
-        /**
-         * Factory methods.
-         */
         companion object Factory{
             /**
              * Validates provided parameters and constructs a [User] object.

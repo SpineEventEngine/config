@@ -152,9 +152,6 @@ class Repository : AutoCloseable {
         location.toFile().deleteRecursively()
     }
 
-    /**
-     * Factory methods.
-     */
     companion object Factory {
         /**
          * Clones the repository with the provided SSH URL in a temporal folder.
