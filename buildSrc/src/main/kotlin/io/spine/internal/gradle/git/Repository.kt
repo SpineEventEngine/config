@@ -33,19 +33,19 @@ import io.spine.internal.gradle.fs.LazyTempPath
 import io.spine.internal.gradle.github.pages.AuthorEmail
 
 /**
- * Clones the repository with the provided SSH URL in a temporal folder.
+ * Interacts with a real git repository.
  *
- * Simulates interacting with a real git repository. Provides functionality to
- * configure a user, checkout branches, commit changes and push them to the
- * remote repository.
+ * Clones the repository with the provided SSH URL in a temporal folder. Provides
+ * functionality to configure a user, checkout branches, commit changes and push them
+ * to the remote repository.
  *
  * It is assumed that before using this class an appropriate SSH key that has
  * sufficient rights to perform described above operations was registered
  * in `ssh-agent`.
  *
  * NOTE: This class creates a temporal folder, so it holds resources. For the proper
- * release of resources please use the provided functionality inside `use` block or
- * call `close` method manually.
+ * release of resources please use the provided functionality inside a `use` block or
+ * call the `close` method manually.
  */
 class Repository : AutoCloseable {
     /**

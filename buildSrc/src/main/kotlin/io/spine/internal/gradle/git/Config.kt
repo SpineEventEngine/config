@@ -39,11 +39,15 @@ class Config {
      */
     data class User private constructor(val name: String, val email: String) {
 
+        /**
+         * Factory methods.
+         */
         companion object Factory{
             /**
              * Validates provided parameters and constructs a [User] object.
              *
-             * @throws IllegalArgumentException if the name or the email is empty.
+             * @throws IllegalArgumentException if the name or the email is an empty
+             *         string.
              */
             fun of(name: String, email: String): User {
                 Preconditions.checkArgument(
