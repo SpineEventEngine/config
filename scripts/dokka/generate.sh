@@ -74,7 +74,10 @@ do
 
       cd ..
       echo "include(\"$module\")" >> "settings.gradle.kts"
+
+      echo "" > "$module/build.gradle"
       echo "" > "$module/build.gradle.kts"
+
       ./gradlew ":$module:dokkaHtml"
       cd "workspace"
   done
