@@ -47,6 +47,8 @@ allprojects {
     }
 
     repositories.applyStandard()
+
+    version = extra["versionToPublish"]!!
 }
 
 subprojects {

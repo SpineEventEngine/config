@@ -69,7 +69,6 @@ do
 
   #The version which will show up in Dokka-generated documentation
   echo "val versionToPublish: String by extra(\"$release\")" >> "../version.gradle.kts"
-  echo "allprojects { version = extra[\"versionToPublish\"]!! }" >> "../build.gradle.kts"
 
   for module in $(echo "$modules" | tr "," "\n")
   do
@@ -110,7 +109,6 @@ do
 
   rm "../version.gradle.kts"
   rm "../settings.gradle.kts"
-  git restore "../build.gradle.kts"
 
   log "Finished working on the $release release"
 done
