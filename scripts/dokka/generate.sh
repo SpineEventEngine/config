@@ -24,8 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-USAGE_MESSAGE="Usage: generateDokka.sh repositoryUrl='' releases='x,y,z' modules='x,y,z'"
-EXAMPLE_MESSAGE="Example: generateDokka.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='1.8.0,1.7.0' modules='core,client'"
+USAGE_MESSAGE="Usage: generate.sh repositoryUrl='' releases='x,y,z' modules='x,y,z'"
+EXAMPLE_MESSAGE="Example: generate.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.8.0,v1.7.0' modules='core,client'"
 
 #Check that exactly three parameters were provided.
 if [ "$#" -ne 3 ]; then
@@ -62,9 +62,11 @@ log() {
 for release in $(echo "$releases" | tr "," "\n")
 do
   log "Started working on the $release release"
-  git checkout -f "tags/v$release"
+  git checkout -f "tags/$release"
   git submodule update --init --recursive
 
+  #Remove leading 'v' in a release name
+  release="${release:1}"
   jenv local 1.8
 
   #The version which will show up in Dokka-generated documentation
