@@ -99,7 +99,7 @@ do
     cp -r "../$module/build/docs/dokka/" "dokka-reference/$module/v/$release/"
 
     git add "dokka-reference/$module/v/$release"
-    git commit -m "Generate Dokka documentation for \`$module\` of the \`$release\ version"
+    git commit -m "Generate Dokka documentation for \`$module\` of \`$release\` version"
 
     rm -rf "../$module"
     log "Finished working on the $module module for the $release release"
