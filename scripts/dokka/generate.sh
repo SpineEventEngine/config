@@ -24,13 +24,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-USAGE_MESSAGE="Usage: generate.sh repositoryUrl='' releases='x,y,z' modules='x,y,z'"
-EXAMPLE_MESSAGE="Example: generate.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.8.0,v1.7.0' modules='core,client'"
+USAGE_TEMPLATE="Usage: generate.sh repositoryUrl='' releases='x,y,z' modules='x,y,z'"
+USAGE_EXAMPLE="Example: generate.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.8.0,v1.7.0' modules='core,client'"
 
 #Check that exactly three parameters were provided.
 if [ "$#" -ne 3 ]; then
-    echo "$USAGE_MESSAGE"
-    echo "$EXAMPLE_MESSAGE"
+    echo "$USAGE_TEMPLATE"
+    echo "$USAGE_EXAMPLE"
     exit 1
 fi
 
@@ -47,8 +47,8 @@ done
 
 #Check that all necessary for the script parameters were set.
 if [ -z "$repositoryUrl" ] || [ -z "$releases" ] || [ -z "$modules" ]; then
-    echo "$USAGE_MESSAGE"
-    echo "$EXAMPLE_MESSAGE"
+    echo "$USAGE_TEMPLATE"
+    echo "$USAGE_EXAMPLE"
     exit 1
 fi
 
@@ -65,11 +65,11 @@ do
   git checkout -f "tags/$release"
   git submodule update --init --recursive
 
-  #Remove leading 'v' in a release name
+  #Remove leading 'v' in a release name.
   release="${release:1}"
   jenv local 1.8
 
-  #The version which will show up in Dokka-generated documentation
+  #The version that will show up in Dokka-generated documentation.
   echo "val versionToPublish: String by extra(\"$release\")" >> "../version.gradle.kts"
 
   for module in $(echo "$modules" | tr "," "\n")
@@ -83,7 +83,7 @@ do
       echo "include(\"$module\")" >> "settings.gradle.kts"
 
       #Configuration in module's build files is not needed for the `classes` task,
-      #but if present can result in an error.
+      #but if present can result in an error, so it is removed completely.
       echo "" > "$module/build.gradle"
       echo "" > "$module/build.gradle.kts"
 
