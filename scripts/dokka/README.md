@@ -1,8 +1,11 @@
 ### Description
 
 This directory contains a script and serves as a workspace for it. The script generates and publishes
-Dokka documentation for 'old' releases of Spine projects. Documentation is published to `gh-pages` 
-of the target repository on behalf of the local git user. 
+Dokka documentation for 'old' releases of Spine projects. 
+
+Documentation is published to the `gh-pages` branch of the target repository. The script works with 
+the repository over HTTPS, so if you are not authenticated in `git`, you will be prompted to do so 
+using a username and a personal access token.
 
 ### Important details
 
@@ -17,8 +20,8 @@ Prerequisites for the target repository:
 
 Prerequisites for running the script:
 - have [`git`](https://git-scm.com/downloads) and [`jenv`](https://github.com/jenv/jenv#12-adding-your-java-environment) installed;
-- have Java **1.8** [registered](https://github.com/jenv/jenv#12-adding-your-java-environment) in `jenv`;
-- be authenticated in `git`.
+- have Java **1.8** installed and [registered](https://github.com/jenv/jenv#12-adding-your-java-environment) in `jenv`;
+- have Java **11** installed, registered and [set as global](https://github.com/jenv/jenv#13-setting-a-global-java-version) in `jenv`.
 
 ### Usage
 
@@ -40,4 +43,4 @@ An example is provided below:
 ### OS details
 
 The script was developed under and for the macOS. 
-It should not have problems working on a Linux distro, however it was not meant and tested to do so.
+It should not have problems working on a Linux distribution, however it was not meant and tested to do so.
