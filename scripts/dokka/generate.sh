@@ -96,7 +96,7 @@ do
 
   rm "../version.gradle.kts"
   rm "../settings.gradle.kts"
-  git reset -- "../build.gradle.kts"
+  git restore "../build.gradle.kts"
 
   echo "-----------------Finished working on the $release release----------------"
 done
