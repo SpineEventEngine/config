@@ -24,10 +24,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+USAGE_MESSAGE="Usage: generateDokka.sh repositoryUrl='' releases='x,y,z' modules='x,y,z'"
+EXAMPLE_MESSAGE="Example: generateDokka.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='1.8.0,1.7.0' modules='core,client'"
+
 #Check that exactly three parameters were provided.
 if [ "$#" -ne 3 ]; then
-    echo "Usage: generateDokka.sh repositoryUrl='' releases='x,y,z' modules='x,y,z'"
-    echo "Example: generateDokka.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='1.8.0,1.7.0' modules='core,client'"
+    echo "$USAGE_MESSAGE"
+    echo "$EXAMPLE_MESSAGE"
     exit 1
 fi
 
@@ -44,30 +47,33 @@ done
 
 #Check that all necessary for the script parameters were set.
 if [ -z "$repositoryUrl" ] || [ -z "$releases" ] || [ -z "$modules" ]; then
-    echo "Usage: generateDokka.sh repositoryUrl='' releases='x,y,z' modules='x,y,z'"
-    echo "Example: generateDokka.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='1.8.0,1.7.0' modules='core,client'"
+    echo "$USAGE_MESSAGE"
+    echo "$EXAMPLE_MESSAGE"
     exit 1
 fi
 
 mkdir "workspace" && cd "workspace"
 git clone --branch="1.x-dev" "$repositoryUrl" "."
 
+log() {
+  echo "-----------------$1-----------------"
+}
+
 for release in $(echo "$releases" | tr "," "\n")
 do
-  echo "-----------------Started working on the $release release----------------"
+  log "Started working on the $release release"
   git checkout -f "tags/v$release"
-
   git submodule update --init --recursive
 
   jenv local 1.8
 
-  #The version which will show up in the Dokka documentation
+  #The version which will show up in Dokka-generated documentation
   echo "val versionToPublish: String by extra(\"$release\")" >> "../version.gradle.kts"
   echo "allprojects { version = extra[\"versionToPublish\"]!! }" >> "../build.gradle.kts"
 
   for module in $(echo "$modules" | tr "," "\n")
   do
-      echo "-----------------Started working on the $module module for the $release release----------------"
+      log "Started working on the $module module for the $release release"
       ./gradlew ":$module:classes"
       mkdir "../$module"
       cp -r "$module/" "../$module/"
@@ -75,10 +81,13 @@ do
       cd ..
       echo "include(\"$module\")" >> "settings.gradle.kts"
 
+      #Configuration in module's build files is not needed for the `classes` task,
+      #but if present can result in an error.
       echo "" > "$module/build.gradle"
       echo "" > "$module/build.gradle.kts"
 
       ./gradlew ":$module:dokkaHtml"
+
       cd "workspace"
   done
 
@@ -89,10 +98,12 @@ do
   do
     mkdir -p "dokka-reference/$module/v/$release"
     cp -r "../$module/build/docs/dokka/" "dokka-reference/$module/v/$release/"
+
     git add "dokka-reference/$module/v/$release"
-    git commit -m "Generate Dokka documentation for \`$module\` as for version \`$release\`."
+    git commit -m "Generate Dokka documentation for \`$module\` of the \`$release\ version"
+
     rm -rf "../$module"
-    echo "-----------------Finished working on the $module module for the $release release----------------"
+    log "Finished working on the $module module for the $release release"
   done
 
   git push
@@ -101,7 +112,7 @@ do
   rm "../settings.gradle.kts"
   git restore "../build.gradle.kts"
 
-  echo "-----------------Finished working on the $release release----------------"
+  log "Finished working on the $release release"
 done
 
 cd ..
