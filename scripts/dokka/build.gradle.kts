@@ -46,7 +46,6 @@ allprojects {
         from("$rootDir/version.gradle.kts")
     }
 
-    group = "io.spine.dokka"
     repositories.applyStandard()
 }
 
