@@ -74,7 +74,7 @@ tasks.withType<DokkaTask>().configureEach {
         documentedVisibilities.set(
             setOf(
                 Visibility.PUBLIC,
-                Visibility.PROTECTED,
+                Visibility.PROTECTED
             )
         )
     }
