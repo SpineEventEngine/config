@@ -103,3 +103,4 @@ done
 
 cd ..
 rm -rf "workspace"
+rm -rf ".gradle"
