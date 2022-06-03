@@ -9,7 +9,7 @@ using a username and a personal access token.
 
 ### Important details
 
-- Documentation is generated following [this configuration](buildSrc/src/main/kotlin/dokka-for-java.gradle.kts).
+- Documentation is generated following [this configuration](../../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts).
 - It is assumed that 'old' releases of Spine projects use Java 8, as Java 11 is planned for future(`>2.0.0`) releases.
 
 ### Prerequisites
