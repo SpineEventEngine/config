@@ -41,6 +41,108 @@ An example is provided below:
 ./generate.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.7.0,v1.8.0*' modules='core,client'
 ```
 
+After running the example, the following happens:
+
+- Documentation for the release `v1.7.0` is generated and pushed to the `gh-pages`. This release was 
+passed without an asterisk, so it is considered a 'secondary' release. It means that changes are 
+published only to the 'v' directory. The following directory structure is produced:
+    ```
+    /(root)
+    └───dokka-reference
+    │   │
+    │   └───client
+    │   │   └───v
+    │   │       └───1.7.0
+    │   │           │   client
+    │   │           │   images
+    │   │           │   scripts
+    │   │           │   styles
+    │   │           │   index.html
+    │   │           │   navigation.html
+    │   │
+    │   └───server
+    │       └───v
+    │           └───1.7.0
+    │               │   server
+    │               │   images
+    │               │   scripts
+    │               │   styles
+    │               │   index.html
+    │               │   navigation.html
+    │
+    ```
+
+- Documentation for the release `v1.8.0` is generated and pushed to the `gh-pages`. This release is 
+marked with an asterisk, so it is considered the 'primary' release. It means that changes are made 
+not only to the 'v' directory but also to files/directories alongside it. The following directory 
+structure is produced:
+    ```
+    /(root)
+    └───dokka-reference
+    │   │
+    │   └───client
+    │   │   │   client
+    │   │   │   images
+    │   │   │   scripts
+    │   │   │   styles
+    │   │   │   index.html
+    │   │   │   navigation.html
+    │   │   │
+    │   │   └───v
+    │   │       └───1.7.0
+    │   │       │    │   client
+    │   │       │    │   images
+    │   │       │    │   scripts
+    │   │       │    │   styles
+    │   │       │    │   index.html
+    │   │       │    │   navigation.html
+    │   │       │   
+    │   │       └───1.8.0
+    │   │           │   client
+    │   │           │   images
+    │   │           │   scripts
+    │   │           │   styles
+    │   │           │   index.html
+    │   │           │   navigation.html
+    │   │
+    │   └───server
+    │       │   server
+    │       │   images
+    │       │   scripts
+    │       │   styles
+    │       │   index.html
+    │       │   navigation.html
+    │       │
+    │       └───v
+    │           └───1.7.0
+    │           │    │   server
+    │           │    │   images
+    │           │    │   scripts
+    │           │    │   styles
+    │           │    │   index.html
+    │           │    │   navigation.html
+    │           │   
+    │           └───1.8.0
+    │               │   server
+    │               │   images
+    │               │   scripts
+    │               │   styles
+    │               │   index.html
+    │               │   navigation.html
+    │
+    ```
+#### Edge cases
+
+- If passed releases already have Dokka documentation published to the `gh-pages` branch, the script 
+will overwrite all files related to a release. However, a commit happens only if there are changes 
+present. Everything described applies to the releases passed with an asterisk.
+
+- If no releases were passed with an asterisk, they all are published as 'secondary' in 
+the `v` directory.
+
+- If multiple releases are followed with an asterisk, then the last in the list marked with an 
+asterisk ends up being the 'primary' release.
+
 ### OS details
 
 The script was developed under and for the macOS. It should not have problems working on a Linux 
