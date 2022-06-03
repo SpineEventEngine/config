@@ -1,10 +1,10 @@
 ### Description
 
 This directory contains a script and serves as a workspace for it. The script generates and publishes
-Dokka documentation for 'old'(`<2.0.0`) releases of Spine projects. 
+Dokka documentation for 'old'(`<2.0.0`) releases of Spine projects.
 
-Documentation is published to the `gh-pages` branch of the target repository. The script works with 
-the repository over HTTPS, so if you are not authenticated in `git`, you will be prompted to do so 
+Documentation is published to the `gh-pages` branch of the target repository. The script works with
+the repository over HTTPS, so if you are not authenticated in `git`, you will be prompted to do so
 using a username and a personal access token.
 
 ### Important details
@@ -31,8 +31,8 @@ The script should be launched from this directory and follow the template provid
 ```
 
 Description of parameters:
-* `repositoryUrl` - a GitHub HTTPS URL. 
-* `releases` - a list of comma-separated release(tag) names. 
+* `repositoryUrl` - a GitHub HTTPS URL.
+* `releases` - a list of comma-separated release(tag) names.
 * `modules` - a list of comma-separated module names.
 
 An example is provided below:
@@ -42,5 +42,5 @@ An example is provided below:
 
 ### OS details
 
-The script was developed under and for the macOS. 
-It should not have problems working on a Linux distribution, however it was not meant and tested to do so.
+The script was developed under and for the macOS. It should not have problems working on a Linux
+distribution. However, it was not meant and tested to do so.
