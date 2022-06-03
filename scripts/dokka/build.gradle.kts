@@ -37,7 +37,6 @@ buildscript {
 }
 
 plugins {
-    `java-library`
     kotlin("jvm")
 }
 
@@ -53,7 +52,6 @@ allprojects {
 
 subprojects {
     apply {
-        plugin("java-library")
         plugin("kotlin")
         plugin("dokka-for-java")
     }
