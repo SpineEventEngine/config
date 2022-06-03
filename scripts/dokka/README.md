@@ -1,16 +1,15 @@
 ### Description
 
 This directory contains a script and serves as a workspace for it. The script generates and publishes
-Dokka documentation for 'old'(`<2.0.0`) releases of Spine projects.
-
-Documentation is published to the `gh-pages` branch of the target repository. The script works with
-the repository over HTTPS, so if you are not authenticated in `git`, you will be prompted to do so
-using a username and a personal access token.
+Dokka documentation for 'old'(`<2.0.0`) releases of Spine projects. Documentation is published to 
+the `gh-pages` branch of the target repository.
 
 ### Important details
 
-- Documentation is generated using [this configuration](../../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts).
+- Documentation is generated using [this configuration](https://github.com/SpineEventEngine/config/blob/master/buildSrc/src/main/kotlin/dokka-for-java.gradle.kts).
 - It is assumed that 'old' releases of Spine projects use Java 8.
+- The script works with the repository over HTTPS, so if you are not authenticated in `git`, 
+  you will be prompted to do so using a username and a personal access token.
 
 ### Prerequisites
 
@@ -42,5 +41,5 @@ An example is provided below:
 
 ### OS details
 
-The script was developed under and for the macOS. It should not have problems working on a Linux
-distribution. However, it was not meant and tested to do so.
+The script was developed under and for the macOS. It should not have problems working on a Linux distribution. 
+However, it was not meant and tested to do so.
