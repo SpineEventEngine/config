@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #
 # Copyright 2022, TeamDev. All rights reserved.
 #
@@ -52,7 +54,7 @@ if [ -z "$repositoryUrl" ] || [ -z "$releases" ] || [ -z "$modules" ]; then
     exit 1
 fi
 
-mkdir "workspace" && cd "workspace"
+mkdir "workspace" && cd "workspace" || exit 2
 git clone --branch="1.x-dev" "$repositoryUrl" "."
 
 log() {
@@ -89,7 +91,7 @@ do
 
       ./gradlew ":$module:dokkaHtml"
 
-      cd "workspace"
+      cd "workspace" || exit 2
   done
 
   git checkout gh-pages
