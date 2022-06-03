@@ -29,14 +29,14 @@
 USAGE_TEMPLATE="Usage: generate.sh repositoryUrl='' releases='x,y,z' modules='x,y,z'"
 USAGE_EXAMPLE="Example: generate.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.8.0,v1.7.0' modules='core,client'"
 
-#Check that exactly three parameters were provided.
+# Check that exactly three parameters were provided.
 if [ "$#" -ne 3 ]; then
     echo "$USAGE_TEMPLATE"
     echo "$USAGE_EXAMPLE"
-    exit 22 #Invalid argument
+    exit 22 # Invalid argument
 fi
 
-#Declare variables matching those passed to the script.
+# Declare variables matching those passed to the script.
 for arg in "$@"
 do
    key=$(echo "$arg" | cut -f1 -d=)
@@ -47,14 +47,14 @@ do
    declare "$key"="$value"
 done
 
-#Check that all necessary for the script parameters were set.
+# Check that all necessary for the script parameters were set.
 if [ -z "$repositoryUrl" ] || [ -z "$releases" ] || [ -z "$modules" ]; then
     echo "$USAGE_TEMPLATE"
     echo "$USAGE_EXAMPLE"
     exit 22 #Invalid argument
 fi
 
-mkdir "workspace" && cd "workspace" || exit 2 #Folder does not exist
+mkdir "workspace" && cd "workspace" || exit 2 # Folder does not exist.
 git clone --branch="1.x-dev" "$repositoryUrl" "."
 
 log() {
@@ -63,20 +63,20 @@ log() {
 
 for release in $(echo "$releases" | tr "," "\n")
 do
-  log "Started working on the $release release"
+  log "Started working on the $release release."
   git checkout -f "tags/$release"
   git submodule update --init --recursive
 
-  #Remove leading 'v' in a release name.
+  # Remove leading 'v' in a release name.
   release="${release:1}"
   jenv local 1.8
 
-  #The version that will show up in Dokka-generated documentation.
+  # The version that will show up in Dokka-generated documentation.
   echo "val versionToPublish: String by extra(\"$release\")" >> "../version.gradle.kts"
 
   for module in $(echo "$modules" | tr "," "\n")
   do
-      log "Started working on the $module module for the $release release"
+      log "Started working on the $module module for the $release release."
       ./gradlew ":$module:classes"
       mkdir "../$module"
       cp -r "$module/" "../$module/"
@@ -84,14 +84,14 @@ do
       cd ..
       echo "include(\"$module\")" >> "settings.gradle.kts"
 
-      #Configuration in module's build files is not needed for the `classes` task,
-      #but if present can result in an error, so it is removed completely.
+      # Configuration in module's build files is not needed for the `classes` task,
+      # but if present can result in an error, so it is removed completely.
       echo "" > "$module/build.gradle"
       echo "" > "$module/build.gradle.kts"
 
       ./gradlew ":$module:dokkaHtml"
 
-      cd "workspace" || exit 2 #Folder does not exist
+      cd "workspace" || exit 2 # Folder does not exist.
   done
 
   git checkout gh-pages
@@ -106,7 +106,7 @@ do
     git commit -m "Generate Dokka documentation for \`$module\` of \`$release\` version"
 
     rm -rf "../$module"
-    log "Finished working on the $module module for the $release release"
+    log "Finished working on the $module module for the $release release."
   done
 
   git push
@@ -114,9 +114,9 @@ do
   rm "../version.gradle.kts"
   rm "../settings.gradle.kts"
 
-  log "Finished working on the $release release"
+  log "Finished working on the $release release."
 done
 
 cd ..
-rm -rf "workspace"
+#rm -rf "workspace"
 rm -rf ".gradle"
