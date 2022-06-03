@@ -6,7 +6,7 @@ the `gh-pages` branch of the target repository.
 
 ### Important details
 
-- Documentation is generated using [this configuration](https://github.com/SpineEventEngine/config/blob/master/buildSrc/src/main/kotlin/dokka-for-java.gradle.kts).
+- Documentation is generated using [this configuration](../../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts).
 - It is assumed that 'old' releases of Spine projects use Java 8.
 - The script works with the repository over HTTPS, so if you are not authenticated in `git`, 
   you will be prompted to do so using a username and a personal access token.
@@ -26,20 +26,22 @@ Prerequisites for running the script:
 
 The script should be launched from this directory and follow the template provided below:
 ```Bash
-./generate.sh repositoryUrl='' releases='x,y,z' modules='x,y,z'
+./generate.sh repositoryUrl='' releases='x,y,z*' modules='x,y,z'
 ```
 
 Description of parameters:
 * `repositoryUrl` - a GitHub HTTPS URL.
-* `releases` - a list of comma-separated release(tag) names.
+* `releases` - a list of comma-separated release(tag) names. The release with an asterisk will 
+overwrite the published 'primary' one. The release without an asterisk is considered 'secondary', 
+so it is published only to the 'v' directory.
 * `modules` - a list of comma-separated module names.
 
 An example is provided below:
 ```Bash
-./generate.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.8.0,v1.7.0' modules='core,client'
+./generate.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.7.0,v1.8.0*' modules='core,client'
 ```
 
 ### OS details
 
-The script was developed under and for the macOS. It should not have problems working on a Linux distribution. 
-However, it was not meant and tested to do so.
+The script was developed under and for the macOS. It should not have problems working on a Linux 
+distribution. However, it was not meant and tested to do so.

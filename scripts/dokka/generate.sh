@@ -25,9 +25,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-
-USAGE_TEMPLATE="Usage: generate.sh repositoryUrl='' releases='x,y,z' modules='x,y,z'"
-USAGE_EXAMPLE="Example: generate.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.8.0,v1.7.0' modules='core,client'"
+PRIMARY_MARK="*"
+USAGE_TEMPLATE="Usage: generate.sh repositoryUrl='' releases='x,y$PRIMARY_MARK,z' modules='x,y,z'"
+USAGE_EXAMPLE="Example: generate.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.8.0$PRIMARY_MARK,v1.7.0' modules='core,client'"
 
 # Check that exactly three parameters were provided.
 if [ "$#" -ne 3 ]; then
@@ -63,12 +63,22 @@ log() {
 
 for release in $(echo "$releases" | tr "," "\n")
 do
-  log "Started working on the $release release."
+  # As the `release` variable will be modified there is a copy created for consistent logging.
+  release_copy="$release"
+  log "Started working on the $release_copy release."
+
   git checkout -f "tags/$release"
   git submodule update --init --recursive
 
   # Remove leading 'v' in a release name.
-  release="${release:1}"
+  release=${release:1}
+
+  if [[ $release == *"$PRIMARY_MARK" ]]; then
+    # Remove trailing ASTERISK_MARK in the primary release name.
+    release=${release:0:${#release}-1}
+    is_primary=true
+  fi
+
   jenv local 1.8
 
   # The version that will show up in Dokka-generated documentation.
@@ -76,7 +86,7 @@ do
 
   for module in $(echo "$modules" | tr "," "\n")
   do
-      log "Started working on the $module module for the $release release."
+      log "Started working on the $module module for the $release_copy release."
       ./gradlew ":$module:classes"
       mkdir "../$module"
       cp -r "$module/" "../$module/"
@@ -102,11 +112,15 @@ do
     mkdir -p "dokka-reference/$module/v/$release"
     cp -r "../$module/build/docs/dokka/" "dokka-reference/$module/v/$release/"
 
-    git add "dokka-reference/$module/v/$release"
+    if [ $is_primary = true ]; then
+      cp -r "../$module/build/docs/dokka/" "dokka-reference/$module/"
+    fi
+
+    git add "dokka-reference/$module/*"
     git commit -m "Generate Dokka documentation for \`$module\` of \`$release\` version"
 
     rm -rf "../$module"
-    log "Finished working on the $module module for the $release release."
+    log "Finished working on the $module module for the $release_copy release."
   done
 
   git push
@@ -114,7 +128,7 @@ do
   rm "../version.gradle.kts"
   rm "../settings.gradle.kts"
 
-  log "Finished working on the $release release."
+  log "Finished working on the $release_copy release."
 done
 
 cd ..
