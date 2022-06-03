@@ -33,7 +33,7 @@ USAGE_EXAMPLE="Example: generate.sh repositoryUrl='https://github.com/SpineEvent
 if [ "$#" -ne 3 ]; then
     echo "$USAGE_TEMPLATE"
     echo "$USAGE_EXAMPLE"
-    exit 1
+    exit 22 #Invalid argument
 fi
 
 #Declare variables matching those passed to the script.
@@ -51,10 +51,10 @@ done
 if [ -z "$repositoryUrl" ] || [ -z "$releases" ] || [ -z "$modules" ]; then
     echo "$USAGE_TEMPLATE"
     echo "$USAGE_EXAMPLE"
-    exit 1
+    exit 22 #Invalid argument
 fi
 
-mkdir "workspace" && cd "workspace" || exit 2
+mkdir "workspace" && cd "workspace" || exit 2 #Folder does not exist
 git clone --branch="1.x-dev" "$repositoryUrl" "."
 
 log() {
@@ -91,7 +91,7 @@ do
 
       ./gradlew ":$module:dokkaHtml"
 
-      cd "workspace" || exit 2
+      cd "workspace" || exit 2 #Folder does not exist
   done
 
   git checkout gh-pages
