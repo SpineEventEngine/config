@@ -77,6 +77,8 @@ do
     # Remove trailing ASTERISK_MARK in the primary release name.
     release=${release:0:${#release}-1}
     is_primary=true
+  else
+    is_primary=false
   fi
 
   jenv local 1.8
