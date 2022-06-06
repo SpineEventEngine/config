@@ -114,12 +114,16 @@ do
     mkdir -p "dokka-reference/$module/v/$release"
     cp -r "../$module/build/docs/dokka/" "dokka-reference/$module/v/$release/"
 
+    commit_message="Publish Dokka documentation for \`$module\` of \`$release\` "
     if [ $is_primary = true ]; then
       cp -r "../$module/build/docs/dokka/" "dokka-reference/$module/"
+      commit_message+="as primary release"
+    else
+      commit_message+="as secondary release"
     fi
 
     git add "dokka-reference/$module/*"
-    git commit -m "Generate Dokka documentation for \`$module\` of \`$release\` version"
+    git commit -m "$commit_message"
 
     rm -rf "../$module"
     log "Finished working on the $module module for the $release_copy release."
