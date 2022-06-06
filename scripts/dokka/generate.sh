@@ -67,12 +67,6 @@ do
   release_copy="$release"
   log "Started working on the $release_copy release."
 
-  git checkout -f "tags/$release"
-  git submodule update --init --recursive
-
-  # Remove leading 'v' in a release name.
-  release=${release:1}
-
   if [[ $release == *"$PRIMARY_MARK" ]]; then
     # Remove trailing ASTERISK_MARK in the primary release name.
     release=${release:0:${#release}-1}
@@ -80,6 +74,12 @@ do
   else
     is_primary=false
   fi
+
+  git checkout -f "tags/$release"
+  git submodule update --init --recursive
+
+  # Remove leading 'v' in a release name.
+  release=${release:1}
 
   jenv local 1.8
 
