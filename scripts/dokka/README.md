@@ -133,15 +133,16 @@ structure is produced:
     ```
 #### Edge cases
 
-- If passed releases already have Dokka documentation published to the `gh-pages` branch, the script 
-will overwrite all files related to a release. However, a commit happens only if there are changes 
-present. Everything described applies to the releases passed with an asterisk.
+- If any of the passed releases already has Dokka documentation published to the `gh-pages` branch, 
+the script will overwrite some release files. The amount of overwritten files depends on how much the 
+Dokka configuration used for the script has changed since the last publication. If the amount of 
+changed release files is zero, then a commit is not made. Everything described applies to the releases 
+passed with an asterisk.
 
-- If no releases were passed with an asterisk, they all are published as 'secondary' in 
-the `v` directory.
+- If no releases were passed with an asterisk, they all are published as 'secondary' in the `v` directory.
 
-- If multiple releases are followed with an asterisk, then the last in the list marked with an 
-asterisk ends up being the 'primary' release.
+- If multiple releases are followed with an asterisk, then the last in the list marked with an asterisk 
+ends up being the 'primary' release.
 
 ### OS details
 
