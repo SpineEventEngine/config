@@ -12,7 +12,7 @@ Dokka documentation for 'old'(`<2.0.0`) releases of Spine projects. Documentatio
 - It is assumed that 'old' releases of Spine projects use Java 8.
 - Documentation is generated using [this configuration](../../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts).
 - The script modifies the parent directory during its run. At the end, of its run the script reverts 
-  everything to the initial state.
+  the directory to the initial state.
 
 ### Prerequisites
 
@@ -29,18 +29,18 @@ Prerequisites for running the script:
 
 The script should be launched from this directory and follow the template provided below:
 ```Bash
-./publish.sh repositoryUrl='' tags='x,y,z@' modules='x,y,z'
+./publish.sh repositoryUrl='' tags='x,y,*z' modules='x,y,z'
 ```
 
 Description of parameters:
 * `repositoryUrl` - a GitHub HTTPS URL.
-* `tags` - a list of comma-separated git tags. A tag marked with **@** is considered 'primary'. A tag 
-  without it is considered 'secondary'.
+* `tags` - a list of comma-separated git tags. A tag marked with an asterisk is considered 'primary'. 
+   A tag without it is considered 'secondary'.
 * `modules` - a list of comma-separated module names.
 
 An example is provided below:
 ```Bash
-./publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' tags='v1.7.0,v1.8.0@' modules='core,client'
+./publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' tags='v1.7.0,*v1.8.0' modules='core,client'
 ```
 
 After running the example, the following happens:
@@ -74,8 +74,8 @@ After running the example, the following happens:
     │
   ```
 
-- Documentation for the release `v1.8.0` is generated and pushed to the `gh-pages`. This tag is 
-  passed marked, so it is considered 'primary'. It means that changes are made not only to the 'v' 
+- Documentation for the tag `v1.8.0` is generated and pushed to the `gh-pages`. This tag is marked 
+  with an asterisk, so it is considered 'primary'. It means that changes are made not only to the 'v' 
   directory but also to files/directories alongside it. The following directory structure is produced:
     ```
     /(root)
@@ -132,11 +132,12 @@ After running the example, the following happens:
     │               │   navigation.html
     │
     ```
+
 #### Edge cases
 
 - If any of the passed tags already has Dokka documentation published to the `gh-pages` branch, the 
-  script tries to overwrite it if there are changes in the tool output. The presence of changes 
-  depends on how much the Dokka configuration has changed since the last publication. If the output 
+  script tries to overwrite it if there are changes in a tool output. The presence of changes 
+  depends on how much the Dokka configuration has changed since the last publication. If an output 
   matches the published one, a commit is not made.
 
 - If no tags are marked 'primary', they all are considered 'secondary' and processed accordingly.

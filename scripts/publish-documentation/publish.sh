@@ -25,9 +25,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-PRIMARY_MARK="@"
-USAGE_TEMPLATE="Usage: publish.sh repositoryUrl='' tags='x,y$PRIMARY_MARK,z' modules='x,y,z'"
-USAGE_EXAMPLE="Example: publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' tags='v1.7.0,v1.8.0$PRIMARY_MARK' modules='core,client'"
+PRIMARY_MARK="*"
+USAGE_TEMPLATE="Usage: publish.sh repositoryUrl='' tags='x,${PRIMARY_MARK}y,z' modules='x,y,z'"
+USAGE_EXAMPLE="Example: publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' tags='v1.7.0,${PRIMARY_MARK}v1.8.0' modules='core,client'"
 
 # Check that exactly three parameters were provided.
 if [ "$#" -ne 3 ]; then
@@ -63,9 +63,9 @@ log() {
 
 for tag in $(echo "$tags" | tr "," "\n")
 do
-  if [[ $tag == *"$PRIMARY_MARK" ]]; then
-    # Remove trailing ASTERISK_MARK in the primary release name.
-    tag=${tag:0:${#tag}-1}
+  if [[ $tag == "$PRIMARY_MARK"* ]]; then
+    # Remove leading $PRIMARY_MARK.
+    tag=${tag:1}
     is_primary=true
   else
     is_primary=false
