@@ -142,7 +142,7 @@ After running the example, the following happens:
 - If no tags are marked 'primary', they all are considered 'secondary' and processed accordingly.
 
 - If multiple tags are marked 'primary', then each of these tags is published as 'primary' one by one. 
-  That means the last in the list marked as 'primary' overwrites all others as if they are published
+  That means the last in the list marked as 'primary' overwrites all others as if they were published
   as 'secondary'.
 
 ### OS details
