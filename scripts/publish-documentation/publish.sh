@@ -27,7 +27,7 @@
 #
 PRIMARY_MARK="@"
 USAGE_TEMPLATE="Usage: publish.sh repositoryUrl='' tags='x,y$PRIMARY_MARK,z' modules='x,y,z'"
-USAGE_EXAMPLE="Example: publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' tags='v1.8.0$PRIMARY_MARK,v1.7.0' modules='core,client'"
+USAGE_EXAMPLE="Example: publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' tags='v1.7.0,v1.8.0$PRIMARY_MARK' modules='core,client'"
 
 # Check that exactly three parameters were provided.
 if [ "$#" -ne 3 ]; then
