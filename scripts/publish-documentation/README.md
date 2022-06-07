@@ -26,7 +26,7 @@ Prerequisites for running the script:
 
 The script should be launched from this directory and follow the template provided below:
 ```Bash
-./generate.sh repositoryUrl='' releases='x,y,z*' modules='x,y,z'
+./publish.sh repositoryUrl='' releases='x,y,z*' modules='x,y,z'
 ```
 
 Description of parameters:
@@ -38,7 +38,7 @@ Description of parameters:
 
 An example is provided below:
 ```Bash
-./generate.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.7.0,v1.8.0*' modules='core,client'
+./publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.7.0,v1.8.0*' modules='core,client'
 ```
 
 After running the example, the following happens:

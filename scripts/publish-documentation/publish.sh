@@ -26,8 +26,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 PRIMARY_MARK="*"
-USAGE_TEMPLATE="Usage: generate.sh repositoryUrl='' releases='x,y$PRIMARY_MARK,z' modules='x,y,z'"
-USAGE_EXAMPLE="Example: generate.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.8.0$PRIMARY_MARK,v1.7.0' modules='core,client'"
+USAGE_TEMPLATE="Usage: publish.sh repositoryUrl='' releases='x,y$PRIMARY_MARK,z' modules='x,y,z'"
+USAGE_EXAMPLE="Example: publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.8.0$PRIMARY_MARK,v1.7.0' modules='core,client'"
 
 # Check that exactly three parameters were provided.
 if [ "$#" -ne 3 ]; then
