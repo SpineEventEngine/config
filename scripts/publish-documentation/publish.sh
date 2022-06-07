@@ -64,7 +64,7 @@ log() {
 for tag in $(echo "$tags" | tr "," "\n")
 do
   if [[ $tag == "$PRIMARY_MARK"* ]]; then
-    # Remove leading $PRIMARY_MARK.
+    # Remove the leading $PRIMARY_MARK.
     tag=${tag:1}
     is_primary=true
   else
@@ -75,7 +75,7 @@ do
   git checkout -f "tags/$tag"
   git submodule update --init --recursive
 
-  # Remove leading 'v' in a tag to derive a version.
+  # Remove the leading 'v' to derive the version.
   version=${tag:1}
 
   jenv local 1.8
