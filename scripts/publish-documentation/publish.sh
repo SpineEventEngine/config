@@ -85,7 +85,7 @@ do
 
   for module in $(echo "$modules" | tr "," "\n")
   do
-      log "Started working on the $module module for the $tag tag."
+      log "Started working on the $module module."
       ./gradlew ":$module:classes"
       mkdir "../$module"
       cp -r "$module/" "../$module/"
@@ -123,7 +123,7 @@ do
     git commit -m "$commit_message"
 
     rm -rf "../$module"
-    log "Finished working on the $module module for the $tag tag."
+    log "Finished working on the $module module."
   done
 
   git push
