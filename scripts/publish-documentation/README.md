@@ -11,7 +11,7 @@ Dokka documentation for 'old'(`<2.0.0`) releases of Spine projects. Documentatio
 - The script conceptually relies on the fact that each release has a corresponding tag.
 - It is assumed that 'old' releases of Spine projects use Java 8.
 - Documentation is generated using [this configuration](../../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts).
-- The script modifies the parent directory during its run. At the end of its run the script reverts 
+- The script modifies the parent directory during its run. At the end, of its run the script reverts 
   everything to the initial state.
 
 ### Prerequisites
@@ -142,7 +142,8 @@ After running the example, the following happens:
 - If no tags are marked 'primary', they all are considered 'secondary' and processed accordingly.
 
 - If multiple tags are marked 'primary', then each of these tags is published as 'primary' one by one. 
-  That means the last in the list marked as 'primary' overwrites all others.
+  That means the last in the list marked as 'primary' overwrites all others as if they are published
+  as 'secondary'.
 
 ### OS details
 
