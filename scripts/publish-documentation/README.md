@@ -1,21 +1,24 @@
 ### Description
 
-This directory contains a script and serves as a workspace for it. The script generates and publishes
-Dokka documentation for 'old'(`<2.0.0`) releases of Spine projects. Documentation is published to
-the `gh-pages` branch of the target repository.
+This directory contains a script and serves as a workspace for it. The script generates and publishes 
+Dokka documentation for 'old'(`<2.0.0`) releases of Spine projects. Documentation is published to the 
+`gh-pages` branch of the target repository.
 
 ### Important details
 
-- Documentation is generated using [this configuration](../../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts).
+- The script works with the repository over HTTPS, so if you are not authenticated in `git`, you will 
+  be prompted to do so using a username and a personal access token.
+- The script conceptually relies on the fact that each release has a corresponding tag.
 - It is assumed that 'old' releases of Spine projects use Java 8.
-- The script works with the repository over HTTPS, so if you are not authenticated in `git`,
-  you will be prompted to do so using a username and a personal access token.
+- Documentation is generated using [this configuration](../../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts).
+- The script modifies the workspace during its run. At the end of its run the script will bring the 
+  workspace to the initial state.
 
 ### Prerequisites
 
 Prerequisites for the target repository:
 - be a Gradle project;
-- have at least one release and module.
+- have at least one tag and module.
 
 Prerequisites for running the script:
 - have [`git`](https://git-scm.com/downloads) and [`jenv`](https://github.com/jenv/jenv#12-adding-your-java-environment) installed;
@@ -26,27 +29,26 @@ Prerequisites for running the script:
 
 The script should be launched from this directory and follow the template provided below:
 ```Bash
-./publish.sh repositoryUrl='' releases='x,y,z*' modules='x,y,z'
+./publish.sh repositoryUrl='' tags='x,y,z@' modules='x,y,z'
 ```
 
 Description of parameters:
 * `repositoryUrl` - a GitHub HTTPS URL.
-* `releases` - a list of comma-separated release(tag) names. The release with an asterisk will
-  overwrite the published 'primary' one. The release without an asterisk is considered 'secondary',
-  so it is published only to the 'v' directory.
+* `tags` - a list of comma-separated git tags. A tag marked with **@** is considered 'primary'. A tag 
+  without it is considered 'secondary'.
 * `modules` - a list of comma-separated module names.
 
 An example is provided below:
 ```Bash
-./publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.7.0,v1.8.0*' modules='core,client'
+./publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' tags='v1.7.0,v1.8.0@' modules='core,client'
 ```
 
 After running the example, the following happens:
 
-- Documentation for the release `v1.7.0` is generated and pushed to the `gh-pages`. This release was
-  passed without an asterisk, so it is considered a 'secondary' release. It means that changes are
-  published only to the 'v' directory. The following directory structure is produced:
-    ```
+- Documentation for the tag `v1.7.0` is generated and pushed to the `gh-pages`. This tag is passed 
+  unmarked, so it is considered 'secondary'. It means that changes are published only to the 'v' directory. 
+  The following directory structure is produced:
+  ```
     /(root)
     └───dokka-reference
     │   │
@@ -70,12 +72,11 @@ After running the example, the following happens:
     │               │   index.html
     │               │   navigation.html
     │
-    ```
+  ```
 
-- Documentation for the release `v1.8.0` is generated and pushed to the `gh-pages`. This release is
-  marked with an asterisk, so it is considered the 'primary' release. It means that changes are made
-  not only to the 'v' directory but also to files/directories alongside it. The following directory
-  structure is produced:
+- Documentation for the release `v1.8.0` is generated and pushed to the `gh-pages`. This tag is 
+  passed marked, so it is considered 'primary'. It means that changes are made not only to the 'v' 
+  directory but also to files/directories alongside it. The following directory structure is produced:
     ```
     /(root)
     └───dokka-reference
@@ -133,18 +134,17 @@ After running the example, the following happens:
     ```
 #### Edge cases
 
-- If any of the passed releases already has Dokka documentation published to the `gh-pages` branch,
-  the script will overwrite some release files. The amount of overwritten files depends on how much the
-  Dokka configuration used for the script has changed since the last publication. If the amount of
-  changed release files is zero, then a commit is not made. Everything described applies to the releases
-  passed with an asterisk.
+- If any of the passed tags already has Dokka documentation published to the `gh-pages` branch, the 
+  script tries to overwrite it if there are changes in the tool output. The presence of changes 
+  depends on how much the Dokka configuration has changed since the last publication. If the output 
+  matches the published one, a commit is not made.
 
-- If no releases were passed with an asterisk, they all are published as 'secondary' in the `v` directory.
+- If no tags are marked 'primary', they all are considered 'secondary' and processed accordingly.
 
-- If multiple releases are followed with an asterisk, then the last in the list marked with an asterisk
-  ends up being the 'primary' release.
+- If multiple tags are marked 'primary', then the last marked in the list ends up being 'primary'. 
+  Therefore, all others are 'secondary'.
 
 ### OS details
 
-The script was developed under and for the macOS. It should not have problems working on a Linux
+The script was developed under and for the macOS. It should not have problems working on a Linux 
 distribution. However, it was not meant and tested to do so.

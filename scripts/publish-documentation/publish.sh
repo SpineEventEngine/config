@@ -25,9 +25,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-PRIMARY_MARK="*"
-USAGE_TEMPLATE="Usage: publish.sh repositoryUrl='' releases='x,y$PRIMARY_MARK,z' modules='x,y,z'"
-USAGE_EXAMPLE="Example: publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' releases='v1.8.0$PRIMARY_MARK,v1.7.0' modules='core,client'"
+PRIMARY_MARK="@"
+USAGE_TEMPLATE="Usage: publish.sh repositoryUrl='' tags='x,y$PRIMARY_MARK,z' modules='x,y,z'"
+USAGE_EXAMPLE="Example: publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' tags='v1.8.0$PRIMARY_MARK,v1.7.0' modules='core,client'"
 
 # Check that exactly three parameters were provided.
 if [ "$#" -ne 3 ]; then
@@ -48,7 +48,7 @@ do
 done
 
 # Check that all necessary for the script parameters were set.
-if [ -z "$repositoryUrl" ] || [ -z "$releases" ] || [ -z "$modules" ]; then
+if [ -z "$repositoryUrl" ] || [ -z "$tags" ] || [ -z "$modules" ]; then
     echo "$USAGE_TEMPLATE"
     echo "$USAGE_EXAMPLE"
     exit 22 #Invalid argument
@@ -61,34 +61,31 @@ log() {
   echo "-----------------$1-----------------"
 }
 
-for release in $(echo "$releases" | tr "," "\n")
+for tag in $(echo "$tags" | tr "," "\n")
 do
-  # As the `release` variable will be modified there is a copy created for consistent logging.
-  release_copy="$release"
-  log "Started working on the $release_copy release."
-
-  if [[ $release == *"$PRIMARY_MARK" ]]; then
+  if [[ $tag == *"$PRIMARY_MARK" ]]; then
     # Remove trailing ASTERISK_MARK in the primary release name.
-    release=${release:0:${#release}-1}
+    tag=${tag:0:${#tag}-1}
     is_primary=true
   else
     is_primary=false
   fi
 
-  git checkout -f "tags/$release"
+  log "Started working on the $tag tag."
+  git checkout -f "tags/$tag"
   git submodule update --init --recursive
 
-  # Remove leading 'v' in a release name.
-  release=${release:1}
+  # Remove leading 'v' in a tag to derive a version.
+  version=${tag:1}
 
   jenv local 1.8
 
   # The version that will show up in Dokka-generated documentation.
-  echo "val versionToPublish: String by extra(\"$release\")" >> "../version.gradle.kts"
+  echo "val versionToPublish: String by extra(\"$version\")" >> "../version.gradle.kts"
 
   for module in $(echo "$modules" | tr "," "\n")
   do
-      log "Started working on the $module module for the $release_copy release."
+      log "Started working on the $module module for the $tag tag."
       ./gradlew ":$module:classes"
       mkdir "../$module"
       cp -r "$module/" "../$module/"
@@ -111,10 +108,10 @@ do
 
   for module in $(echo "$modules" | tr "," "\n")
   do
-    mkdir -p "dokka-reference/$module/v/$release"
-    cp -r "../$module/build/docs/dokka/" "dokka-reference/$module/v/$release/"
+    mkdir -p "dokka-reference/$module/v/$version"
+    cp -r "../$module/build/docs/dokka/" "dokka-reference/$module/v/$version/"
 
-    commit_message="Publish Dokka documentation for \`$module\` of \`$release\` "
+    commit_message="Publish Dokka documentation for \`$module\` of \`$version\` "
     if [ $is_primary = true ]; then
       cp -r "../$module/build/docs/dokka/" "dokka-reference/$module/"
       commit_message+="as primary release"
@@ -126,7 +123,7 @@ do
     git commit -m "$commit_message"
 
     rm -rf "../$module"
-    log "Finished working on the $module module for the $release_copy release."
+    log "Finished working on the $module module for the $tag tag."
   done
 
   git push
@@ -134,7 +131,7 @@ do
   rm "../version.gradle.kts"
   rm "../settings.gradle.kts"
 
-  log "Finished working on the $release_copy release."
+  log "Finished working on the $tag tag."
 done
 
 cd ..
