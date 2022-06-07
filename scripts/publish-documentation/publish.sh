@@ -114,9 +114,9 @@ do
     commit_message="Publish Dokka documentation for \`$module\` of \`$version\` "
     if [ $is_primary = true ]; then
       cp -r "../$module/build/docs/dokka/" "dokka-reference/$module/"
-      commit_message+="as primary release"
+      commit_message+="as primary"
     else
-      commit_message+="as secondary release"
+      commit_message+="as secondary"
     fi
 
     git add "dokka-reference/$module/*"
