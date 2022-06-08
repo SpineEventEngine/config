@@ -71,7 +71,7 @@ do
     is_primary=false
   fi
 
-  log "Started working on the $tag tag."
+  log "Started working on the \`$tag\` tag."
   git checkout -f "tags/$tag"
   git submodule update --init --recursive
 
@@ -85,7 +85,7 @@ do
 
   for module in $(echo "$modules" | tr "," "\n")
   do
-      log "Started working on the $module module."
+      log "Started working on the \`$module\` module."
       ./gradlew ":$module:classes"
       mkdir "../$module"
       cp -r "$module/" "../$module/"
@@ -123,7 +123,7 @@ do
     git commit -m "$commit_message"
 
     rm -rf "../$module"
-    log "Finished working on the $module module."
+    log "Finished working on the \`$module\` module."
   done
 
   git push
@@ -131,7 +131,7 @@ do
   rm "../version.gradle.kts"
   rm "../settings.gradle.kts"
 
-  log "Finished working on the $tag tag."
+  log "Finished working on the \`$tag\` tag."
 done
 
 cd ..
