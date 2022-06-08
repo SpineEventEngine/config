@@ -55,7 +55,7 @@ if [ -z "$repositoryUrl" ] || [ -z "$tags" ] || [ -z "$modules" ]; then
 fi
 
 mkdir "workspace" && cd "workspace" || exit 2 # Folder does not exist.
-git clone --branch="1.x-dev" "$repositoryUrl" "."
+git clone "$repositoryUrl" "."
 
 log() {
   echo "-----------------$1-----------------"
