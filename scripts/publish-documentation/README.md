@@ -1,15 +1,15 @@
 ### Description
 
 This directory contains a script and serves as a workspace for it. The script generates and publishes 
-Dokka documentation for 'old'(`<2.0.0`) releases of Spine projects. Documentation is published to the 
-`gh-pages` branch of the target repository.
+Dokka documentation for releases of Spine projects prior to the `2.0.0` version. Documentation is 
+published to the `gh-pages` branch of the target repository.
 
 ### Important details
 
 - The script works with the repository over HTTPS, so if you are not authenticated in `git`, you will 
   be prompted to do so using a username and a personal access token.
 - The script conceptually relies on the fact that each release has a corresponding tag.
-- It is assumed that 'old' releases of Spine projects use Java 8.
+- It is assumed that releases of Spine projects prior to the `2.0.0` version use Java 8.
 - Documentation is generated using [this configuration](../../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts).
 - The script modifies the parent directory during its run. At the end, of its run the script reverts 
   the directory to the initial state.
