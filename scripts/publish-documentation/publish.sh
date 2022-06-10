@@ -57,6 +57,13 @@ fi
 mkdir "workspace" && cd "workspace" || exit 2 # Folder does not exist.
 git clone "$repositoryUrl" "."
 
+# Create the `gh-pages` branch if it does not exist.
+if ! [[ $(git branch --list gh-pages) ]]; then
+  git switch --orphan gh-pages
+  git commit --allow-empty -m "Initial commit"
+  git push -u origin gh-pages
+fi
+
 log() {
   echo "-----------------$1-----------------"
 }

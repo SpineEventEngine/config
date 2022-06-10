@@ -9,6 +9,7 @@ published to the `gh-pages` branch of the target repository.
 - The script works with the repository over HTTPS, so if you are not authenticated in `git`, you will 
   be prompted to do so using a username and a personal access token.
 - The script conceptually relies on the fact that each release has a corresponding tag.
+- If the `gh-pages` branch does not exist, it is created.
 - It is assumed that releases of Spine projects prior to the `2.0.0` version use Java 8.
 - Documentation is generated using [this configuration](../../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts).
 - The script modifies the parent directory during its run. At the end, of its run the script reverts 
