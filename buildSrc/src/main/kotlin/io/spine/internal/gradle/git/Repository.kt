@@ -28,9 +28,7 @@ package io.spine.internal.gradle.git
 
 import com.google.common.base.Preconditions
 import io.spine.internal.gradle.Cli
-import io.spine.internal.gradle.RepoSlug
 import io.spine.internal.gradle.fs.LazyTempPath
-import io.spine.internal.gradle.github.pages.AuthorEmail
 
 /**
  * Interacts with a real Git repository.
