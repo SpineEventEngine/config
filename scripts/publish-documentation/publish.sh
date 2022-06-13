@@ -110,7 +110,7 @@ do
       cd "workspace" || exit 2 # Folder does not exist.
   done
 
-  git checkout gh-pages
+  git switch gh-pages
   git clean -fdx
 
   for module in $(echo "$modules" | tr "," "\n")
