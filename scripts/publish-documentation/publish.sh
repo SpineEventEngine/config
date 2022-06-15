@@ -26,7 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 PRIMARY_MARK="*"
-USAGE_TEMPLATE="Usage: publish.sh repositoryUrl='' tags='x,${PRIMARY_MARK}y,z' paths='x,y,z'"
+USAGE_TEMPLATE="Usage: publish.sh repositoryUrl='' tags='x,${PRIMARY_MARK}y,z' paths='foo,bar/baz'"
 USAGE_EXAMPLE="Example: publish.sh repositoryUrl='https://github.com/SpineEventEngine/base.git' tags='v1.7.0,${PRIMARY_MARK}v1.8.0' paths='base,tools/proto-js-plugin'"
 
 # Check that exactly three parameters were provided.

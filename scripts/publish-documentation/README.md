@@ -30,7 +30,7 @@ Prerequisites for running the script:
 
 The script should be launched from this directory and follow the template provided below:
 ```Bash
-./publish.sh repositoryUrl='' tags='x,y,*z' paths='x,foo/y,z'
+./publish.sh repositoryUrl='' tags='x,*y,z' paths='foo,bar/baz'
 ```
 
 Description of parameters:
@@ -38,7 +38,7 @@ Description of parameters:
 * `tags` - a list of comma-separated git tags. A tag marked with an asterisk is considered 'primary'. 
    A tag without it is considered 'secondary'.
 * `paths` - a list of comma-separated paths to modules. A path should be using the Unix file separator("/"). 
-   A path is considered relative to the root of the repository, i.e. for a root-level module the path 
+   A path is considered relative to the root of the repository, i.e. for a root-level module, the path 
    is just the name of the module.
 
 An example is provided below:
