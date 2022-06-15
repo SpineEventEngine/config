@@ -30,18 +30,20 @@ Prerequisites for running the script:
 
 The script should be launched from this directory and follow the template provided below:
 ```Bash
-./publish.sh repositoryUrl='' tags='x,y,*z' modules='x,y,z'
+./publish.sh repositoryUrl='' tags='x,y,*z' paths='x,foo/y,z'
 ```
 
 Description of parameters:
 * `repositoryUrl` - a GitHub HTTPS URL.
 * `tags` - a list of comma-separated git tags. A tag marked with an asterisk is considered 'primary'. 
    A tag without it is considered 'secondary'.
-* `modules` - a list of comma-separated module names.
+* `paths` - a list of comma-separated paths to modules. A path should be using the Unix file separator("/"). 
+   A path is considered relative to the root of the repository, i.e. for a root-level module the path 
+   is just the name of the module.
 
 An example is provided below:
 ```Bash
-./publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' tags='v1.7.0,*v1.8.0' modules='core,client'
+./publish.sh repositoryUrl='https://github.com/SpineEventEngine/base.git' tags='v1.7.0,*v1.8.0' paths='base,tools/proto-js-plugin'
 ```
 
 After running the example, the following happens:
@@ -53,20 +55,20 @@ After running the example, the following happens:
     /(root)
     └───dokka-reference
     │   │
-    │   └───client
+    │   └───base
     │   │   └───v
     │   │       └───1.7.0
-    │   │           │   client
+    │   │           │   base
     │   │           │   images
     │   │           │   scripts
     │   │           │   styles
     │   │           │   index.html
     │   │           │   navigation.html
     │   │
-    │   └───server
+    │   └───proto-js-plugin
     │       └───v
     │           └───1.7.0
-    │               │   server
+    │               │   proto-js-plugin
     │               │   images
     │               │   scripts
     │               │   styles
@@ -82,8 +84,8 @@ After running the example, the following happens:
     /(root)
     └───dokka-reference
     │   │
-    │   └───client
-    │   │   │   client
+    │   └───base
+    │   │   │   base
     │   │   │   images
     │   │   │   scripts
     │   │   │   styles
@@ -92,7 +94,7 @@ After running the example, the following happens:
     │   │   │
     │   │   └───v
     │   │       └───1.7.0
-    │   │       │    │   client
+    │   │       │    │   base
     │   │       │    │   images
     │   │       │    │   scripts
     │   │       │    │   styles
@@ -100,15 +102,15 @@ After running the example, the following happens:
     │   │       │    │   navigation.html
     │   │       │   
     │   │       └───1.8.0
-    │   │           │   client
+    │   │           │   base
     │   │           │   images
     │   │           │   scripts
     │   │           │   styles
     │   │           │   index.html
     │   │           │   navigation.html
     │   │
-    │   └───server
-    │       │   server
+    │   └───proto-js-plugin
+    │       │   proto-js-plugin
     │       │   images
     │       │   scripts
     │       │   styles
@@ -117,7 +119,7 @@ After running the example, the following happens:
     │       │
     │       └───v
     │           └───1.7.0
-    │           │    │   server
+    │           │    │   proto-js-plugin
     │           │    │   images
     │           │    │   scripts
     │           │    │   styles
@@ -125,7 +127,7 @@ After running the example, the following happens:
     │           │    │   navigation.html
     │           │   
     │           └───1.8.0
-    │               │   server
+    │               │   proto-js-plugin
     │               │   images
     │               │   scripts
     │               │   styles

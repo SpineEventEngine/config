@@ -26,8 +26,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 PRIMARY_MARK="*"
-USAGE_TEMPLATE="Usage: publish.sh repositoryUrl='' tags='x,${PRIMARY_MARK}y,z' modules='x,y,z'"
-USAGE_EXAMPLE="Example: publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' tags='v1.7.0,${PRIMARY_MARK}v1.8.0' modules='core,client'"
+USAGE_TEMPLATE="Usage: publish.sh repositoryUrl='' tags='x,${PRIMARY_MARK}y,z' paths='x,y,z'"
+USAGE_EXAMPLE="Example: publish.sh repositoryUrl='https://github.com/SpineEventEngine/base.git' tags='v1.7.0,${PRIMARY_MARK}v1.8.0' paths='base,tools/proto-js-plugin'"
 
 # Check that exactly three parameters were provided.
 if [ "$#" -ne 3 ]; then
@@ -48,11 +48,16 @@ do
 done
 
 # Check that all necessary for the script parameters were set.
-if [ -z "$repositoryUrl" ] || [ -z "$tags" ] || [ -z "$modules" ]; then
+if [ -z "$repositoryUrl" ] || [ -z "$tags" ] || [ -z "$paths" ]; then
     echo "$USAGE_TEMPLATE"
     echo "$USAGE_EXAMPLE"
-    exit 22 #Invalid argument
+    exit 22 # Invalid argument
 fi
+
+# Extracts the module name from a path. A path should use the "/" as a file separator.
+moduleNameFromPath() {
+  return "${1##*\/}"
+}
 
 mkdir "workspace" && cd "workspace" || exit 2 # Folder does not exist.
 git clone "$repositoryUrl" "."
@@ -90,12 +95,15 @@ do
   # The version that will show up in Dokka-generated documentation.
   echo "val versionToPublish: String by extra(\"$version\")" >> "../version.gradle.kts"
 
-  for module in $(echo "$modules" | tr "," "\n")
+  for path in $(echo "$paths" | tr "," "\n")
   do
+      # Extracts the module name from a path. A path should use the "/" as a file separator
+      module="${path##*\/}"
       log "Started working on the \`$module\` module."
+
       ./gradlew ":$module:classes"
       mkdir "../$module"
-      cp -r "$module/" "../$module/"
+      cp -r "$path/" "../$module/"
 
       cd ..
       echo "include(\"$module\")" >> "settings.gradle.kts"
@@ -113,8 +121,11 @@ do
   git switch gh-pages
   git clean -fdx
 
-  for module in $(echo "$modules" | tr "," "\n")
+  for path in $(echo "$paths" | tr "," "\n")
   do
+    # Extracts the module name from a path. A path should use the "/" as a file separator
+    module="${path##*\/}"
+
     mkdir -p "dokka-reference/$module/v/$version"
     cp -r "../$module/build/docs/dokka/" "dokka-reference/$module/v/$version/"
 
