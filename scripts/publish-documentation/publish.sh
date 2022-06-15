@@ -54,11 +54,6 @@ if [ -z "$repositoryUrl" ] || [ -z "$tags" ] || [ -z "$paths" ]; then
     exit 22 # Invalid argument
 fi
 
-# Extracts the module name from a path. A path should use the "/" as a file separator.
-moduleNameFromPath() {
-  return "${1##*\/}"
-}
-
 mkdir "workspace" && cd "workspace" || exit 2 # Folder does not exist.
 git clone "$repositoryUrl" "."
 
@@ -97,7 +92,7 @@ do
 
   for path in $(echo "$paths" | tr "," "\n")
   do
-      # Extracts the module name from a path. A path should use the "/" as a file separator
+      # Extracts the module name from a path. A path should use the "/" as a file separator.
       module="${path##*\/}"
       log "Started working on the \`$module\` module."
 
@@ -123,7 +118,7 @@ do
 
   for path in $(echo "$paths" | tr "," "\n")
   do
-    # Extracts the module name from a path. A path should use the "/" as a file separator
+    # Extracts the module name from a path. A path should use the "/" as a file separator.
     module="${path##*\/}"
 
     mkdir -p "dokka-reference/$module/v/$version"
