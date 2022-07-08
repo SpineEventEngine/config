@@ -26,7 +26,6 @@
 
 package io.spine.internal.gradle.git
 
-import com.google.common.base.Preconditions
 import io.spine.internal.gradle.Cli
 import io.spine.internal.gradle.fs.LazyTempPath
 
@@ -160,10 +159,7 @@ class Repository : AutoCloseable {
          * @throws IllegalArgumentException if SSH URL is an empty string.
          */
         fun of(sshUrl: String, user: Config.User, branch: String = Branch.master): Repository {
-            Preconditions.checkArgument(
-                !sshUrl.isBlank(),
-                "SSH URL cannot be an empty string."
-            )
+            check(sshUrl.isNotBlank()) { "SSH URL cannot be an empty string." }
 
             val repo = Repository(sshUrl, user, branch)
             repo.clone()
