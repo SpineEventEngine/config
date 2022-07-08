@@ -27,8 +27,9 @@
 package io.spine.internal.gradle.git
 
 /**
- * Encapsulates `user.name` and `user.email` settings. These settings determine
- * what ends up in author and commiter fields of a commit.
+ * Contains infromation about a Git user.
+ *
+ * Determines the author and committer fields of a commit.
  */
 data class UserInfo private constructor(val name: String, val email: String) {
     companion object Factory {
