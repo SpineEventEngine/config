@@ -28,8 +28,8 @@ package io.spine.internal.gradle.github.pages
 
 import io.spine.internal.gradle.RepoSlug
 import io.spine.internal.gradle.git.Branch
-import io.spine.internal.gradle.git.Config
 import io.spine.internal.gradle.git.Repository
+import io.spine.internal.gradle.git.UserInfo
 
 /**
  * Clones the current project repository with the branch dedicated to publishing
@@ -50,7 +50,7 @@ internal fun Repository.Factory.forPublishingDocumentation(): Repository {
 
     val username = "UpdateGitHubPages Plugin"
     val userEmail = AuthorEmail.fromVar().toString()
-    val user = Config.User.Factory.of(username, userEmail)
+    val user = UserInfo.Factory.of(username, userEmail)
 
     val branch = Branch.documentation
 
