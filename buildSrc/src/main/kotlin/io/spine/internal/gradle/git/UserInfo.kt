@@ -26,31 +26,23 @@
 
 package io.spine.internal.gradle.git
 
-import com.google.api.client.util.Preconditions
-
 /**
- * Wrapper for different Git settings.
+ * Encapsulates `user.name` and `user.email` settings. These settings determine
+ * what ends up in author and commiter fields of a commit.
  */
-class Config {
+data class UserInfo private constructor(val name: String, val email: String) {
+    companion object Factory {
+        /**
+         * Validates provided parameters and constructs a [UserInfo] object.
+         *
+         * @throws IllegalArgumentException if the name or the email is an empty
+         *         string.
+         */
+        fun of(name: String, email: String): UserInfo {
+            check(name.isNotBlank()) { "Name cannot be an empty string." }
+            check(email.isNotBlank()) { "Email cannot be an empty string." }
 
-    /**
-     * Encapsulates `user.name` and `user.email` settings. These settings determine
-     * what ends up in author and commiter fields of a commit.
-     */
-    data class User private constructor(val name: String, val email: String) {
-        companion object Factory{
-            /**
-             * Validates provided parameters and constructs a [User] object.
-             *
-             * @throws IllegalArgumentException if the name or the email is an empty
-             *         string.
-             */
-            fun of(name: String, email: String): User {
-                check(name.isNotBlank()) { "Name cannot be an empty string." }
-                check(email.isNotBlank()) { "Email cannot be an empty string." }
-
-                return User(name, email)
-            }
+            return UserInfo(name, email)
         }
     }
 }

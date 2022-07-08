@@ -60,11 +60,12 @@ class Repository : AutoCloseable {
      *
      * This configuration determines what ends up in author and commiter fields of a commit.
      */
-    var user: Config.User
+    var user: UserInfo
         get() = field
         private set(value) {
             field = value
         }
+
     /**
      * Currently checked out branch.
      */
@@ -75,7 +76,7 @@ class Repository : AutoCloseable {
         }
 
 
-    private constructor(sshUrl: String, user: Config.User, branch: String) {
+    private constructor(sshUrl: String, user: UserInfo, branch: String) {
         this.sshUrl = sshUrl
         this.user = user
         this.currentBranch = branch
@@ -110,7 +111,7 @@ class Repository : AutoCloseable {
      * values from [user]. These settings determine what ends up in author and
      * commiter fields of a commit.
      */
-    fun configureUser(user: Config.User) {
+    fun configureUser(user: UserInfo) {
         repoExecute("git", "config", "user.name", user.name)
         repoExecute("git", "config", "user.email", user.email)
 
@@ -158,14 +159,14 @@ class Repository : AutoCloseable {
          *
          * @throws IllegalArgumentException if SSH URL is an empty string.
          */
-        fun of(sshUrl: String, user: Config.User, branch: String = Branch.master): Repository {
+        fun of(sshUrl: String, user: UserInfo, branch: String = Branch.master): Repository {
             check(sshUrl.isNotBlank()) { "SSH URL cannot be an empty string." }
 
             val repo = Repository(sshUrl, user, branch)
             repo.clone()
             repo.configureUser(user)
 
-            if(branch != Branch.master) {
+            if (branch != Branch.master) {
                 repo.checkout(branch)
             }
 
