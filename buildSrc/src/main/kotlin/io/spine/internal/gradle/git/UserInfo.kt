@@ -27,7 +27,7 @@
 package io.spine.internal.gradle.git
 
 /**
- * Contains infromation about a Git user.
+ * Contains information about a Git user.
  *
  * Determines the author and committer fields of a commit.
  */
