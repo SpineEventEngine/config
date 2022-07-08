@@ -32,6 +32,7 @@ package io.spine.internal.gradle.git
  * Determines the author and committer fields of a commit.
  */
 data class UserInfo private constructor(val name: String, val email: String) {
+
     companion object Factory {
         /**
          * Validates provided parameters and constructs a [UserInfo] object.
