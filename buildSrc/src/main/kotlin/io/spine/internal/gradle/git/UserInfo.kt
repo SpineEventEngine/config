@@ -31,8 +31,8 @@ package io.spine.internal.gradle.git
  *
  * Determines the author and committer fields of a commit.
  *
- * @constructor throws an [IllegalStateException] if the provided name
- *              or the email is an empty string.
+ * @constructor throws an [IllegalStateException] if the name or the email
+ *              is an empty string.
  */
 data class UserInfo(val name: String, val email: String) {
     init {
