@@ -31,6 +31,9 @@ package io.spine.internal.gradle.git
  */
 object Branch {
 
+    /**
+     * The default branch.
+     */
     const val master = "master"
 
     /**
