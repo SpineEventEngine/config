@@ -157,10 +157,10 @@ class Repository : AutoCloseable {
          * documentation for more information. Performs checkout of the branch in
          * case it was passed. By default, [master][Branch.master] is checked out.
          *
-         * @throws IllegalStateException if SSH URL is an empty string.
+         * @throws IllegalArgumentException if SSH URL is an empty string.
          */
         fun of(sshUrl: String, user: UserInfo, branch: String = Branch.master): Repository {
-            check(sshUrl.isNotBlank()) { "SSH URL cannot be an empty string." }
+            require(sshUrl.isNotBlank()) { "SSH URL cannot be an empty string." }
 
             val repo = Repository(sshUrl, user, branch)
             repo.clone()
