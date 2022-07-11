@@ -30,21 +30,13 @@ package io.spine.internal.gradle.git
  * Contains information about a Git user.
  *
  * Determines the author and committer fields of a commit.
+ *
+ * @constructor throws an [IllegalStateException] if the provided name
+ *              or the email is an empty string.
  */
-data class UserInfo private constructor(val name: String, val email: String) {
-
-    companion object Factory {
-        /**
-         * Validates provided parameters and constructs a [UserInfo] object.
-         *
-         * @throws IllegalArgumentException if the name or the email is an empty
-         *         string.
-         */
-        fun of(name: String, email: String): UserInfo {
-            check(name.isNotBlank()) { "Name cannot be an empty string." }
-            check(email.isNotBlank()) { "Email cannot be an empty string." }
-
-            return UserInfo(name, email)
-        }
+data class UserInfo(val name: String, val email: String) {
+    init {
+        check(name.isNotBlank()) { "Name cannot be an empty string." }
+        check(email.isNotBlank()) { "Email cannot be an empty string." }
     }
 }
