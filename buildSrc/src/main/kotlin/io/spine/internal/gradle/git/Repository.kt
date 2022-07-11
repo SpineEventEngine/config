@@ -160,7 +160,7 @@ class Repository : AutoCloseable {
          * @throws IllegalArgumentException if SSH URL is an empty string.
          */
         fun of(sshUrl: String, user: UserInfo, branch: String = Branch.master): Repository {
-            check(sshUrl.isNotBlank()) { "SSH URL cannot be an empty string." }
+            require(sshUrl.isNotBlank()) { "SSH URL cannot be an empty string." }
 
             val repo = Repository(sshUrl, user, branch)
             repo.clone()

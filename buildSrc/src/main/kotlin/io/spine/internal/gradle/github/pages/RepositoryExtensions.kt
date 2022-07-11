@@ -50,7 +50,7 @@ internal fun Repository.Factory.forPublishingDocumentation(): Repository {
 
     val username = "UpdateGitHubPages Plugin"
     val userEmail = AuthorEmail.fromVar().toString()
-    val user = UserInfo.Factory.of(username, userEmail)
+    val user = UserInfo(username, userEmail)
 
     val branch = Branch.documentation
 
