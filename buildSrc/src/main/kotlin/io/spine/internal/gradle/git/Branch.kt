@@ -31,10 +31,13 @@ package io.spine.internal.gradle.git
  */
 object Branch {
 
-    val master = "master"
+    /**
+     * The default branch.
+     */
+    const val master = "master"
 
     /**
      * The branch used for publishing documentation to GitHub Pages.
      */
-    val documentation = "gh-pages"
+    const val documentation = "gh-pages"
 }
