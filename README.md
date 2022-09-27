@@ -1,14 +1,14 @@
-In Spine, dependencies and CI configurations are shared among the sub-projects. 
+In Spine, dependencies and CI configurations are shared among the subprojects. 
 
-The code of this repository should be added to a target project as a Git sub-module.
+The code of this repository should be added to a target project as a Git submodule.
 
-## Adding a sub-module to your project
+## Adding a submodule to your project
 
 To add a sub-module:
 ```bash
 git submodule add https://github.com/SpineEventEngine/config config
 ``` 
-This will only add a sub-module with the reference to the repository.
+This will only add a submodule with the reference to the repository.
 
 In order to get the actual code for the `config` submodule, run the following command:
 ```bash
@@ -42,7 +42,7 @@ the local changes in the `config` repository. The usage looks like this:
 // A reference to `config` to use along with the `ConfigTester`.
 val config = Paths.get("./")
 
-// A temp folder to use to checkout the sources of other repositories with the `ConfigTester`.
+// A temp folder to use to check out the sources of other repositories with the `ConfigTester`.
 val tempFolder = File("./tmp")
 
 // Creates a Gradle task which checks out and builds the selected Spine repositories
