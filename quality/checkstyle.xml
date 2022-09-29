@@ -32,6 +32,16 @@
 
 <module name="Checker">
 
+    <!--  Exclude `generated` subdirectory for each module for being checked.  -->
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value=".*[/\\]generated[/\\]*.$"/>
+    </module>
+
+    <!--  Exclude `generated-proto` subdirectory for each module for being checked.  -->
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value=".*[/\\]generated-proto[/\\]*.$"/>
+    </module>
+
     <module name="SuppressWarningsFilter"/>
 
     <module name="SuppressionFilter">

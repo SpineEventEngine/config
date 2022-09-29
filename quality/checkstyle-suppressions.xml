@@ -32,7 +32,11 @@
 
 <suppressions>
 
-    <!-- Suppress all checks for the Protobuf-generated files. -->
+    <!-- Suppress all checks for the Protobuf-generated files.
+         This is a double measure, since these files are excluded at the configuration level.
+         See `checkstyle.xml` and `BeforeExecutionExclusionFileFilter` configuration for details.
+     -->
     <suppress files=".*[\\/]generated[\\/].*" checks=".*"/>
+    <suppress files=".*[\\/]generated-proto[\\/].*" checks=".*"/>
 
 </suppressions>
