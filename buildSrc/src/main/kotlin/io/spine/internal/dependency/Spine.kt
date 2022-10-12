@@ -39,9 +39,62 @@ import org.gradle.kotlin.dsl.extra
 @Suppress("unused")
 class Spine(p: ExtensionAware) {
 
+    /**
+     * Default versions for the modules of Spine, unless they are
+     * configured in `versions.gradle.kts`.
+     */
+    object DefaultVersion {
+
+        /**
+         * The default version  of `base` to use.
+         * @see [Spine.base]
+         */
+        const val base = "2.0.0-SNAPSHOT.112"
+
+        /**
+         * The version of `model-compiler` to use.
+         * @see [Spine.modelCompiler]
+         */
+        const val mc = "2.0.0-SNAPSHOT.90"
+
+        /**
+         * The version of `base-types` to use.
+         * @see [Spine.baseTypes]
+         */
+        const val baseTypes = "2.0.0-SNAPSHOT.108"
+
+        /**
+         * The version of `time` to use.
+         * @see [Spine.time]
+         */
+        const val time = "2.0.0-SNAPSHOT.108"
+
+        /**
+         * The version of `tool-base` to use.
+         * @see [Spine.toolBase]
+         */
+        const val toolBase = "2.0.0-SNAPSHOT.109"
+
+        /**
+         * The version of `validation` to use.
+         * @see [Spine.validation]
+         */
+        const val validation = "2.0.0-SNAPSHOT.32"
+    }
+
     companion object {
         const val group = "io.spine"
         const val toolsGroup = "io.spine.tools"
+
+        /**
+         * The version of ProtoData to be used in the project.
+         *
+         * We do it here instead of `versions.gradle.kts` because we later use
+         * it in a `plugins` section in a build script.
+         *
+         * @see [ProtoData]
+         */
+        const val protoDataVersion = "0.2.18"
     }
 
     val base = "$group:spine-base:${p.baseVersion}"
@@ -49,6 +102,10 @@ class Spine(p: ExtensionAware) {
 
     @Deprecated("Please use `validation.runtime`", replaceWith = ReplaceWith("validation.runtime"))
     val validate = "$group:spine-validate:${p.baseVersion}"
+
+    val baseTypes = "$group:spine-base-types:${p.baseTypesVersion}"
+
+    val time = "$toolsGroup:spine-testlib:${p.timeVersion}"
 
     val toolBase = "$toolsGroup:spine-tool-base:${p.toolBaseVersion}"
     val pluginBase = "$toolsGroup:spine-plugin-base:${p.toolBaseVersion}"
@@ -58,11 +115,20 @@ class Spine(p: ExtensionAware) {
 
     val validation = Validation(p)
 
-    private fun String.asExtra(p: ExtensionAware): String = p.extra[this] as String
+    private val ExtensionAware.baseVersion: String
+        get() = "baseVersion".asExtra(this, DefaultVersion.base)
 
-    private val ExtensionAware.baseVersion: String get() = "baseVersion".asExtra(this)
-    private val ExtensionAware.mcVersion: String get() = "mcVersion".asExtra(this)
-    private val ExtensionAware.toolBaseVersion: String get() = "toolBaseVersion".asExtra(this)
+    private val ExtensionAware.baseTypesVersion: String
+        get() = "baseTypesVersion".asExtra(this, DefaultVersion.baseTypes)
+
+    private val ExtensionAware.timeVersion: String
+        get() = "timeVersion".asExtra(this, DefaultVersion.time)
+
+    private val ExtensionAware.mcVersion: String
+        get() = "mcVersion".asExtra(this, DefaultVersion.mc)
+
+    private val ExtensionAware.toolBaseVersion: String
+        get() = "toolBaseVersion".asExtra(this, DefaultVersion.toolBase)
 
     /**
      * Dependencies on Spine validation modules.
@@ -80,10 +146,8 @@ class Spine(p: ExtensionAware) {
         val model = "$group:spine-validation-model:${p.validationVersion}"
         val config = "$group:spine-validation-configuration:${p.validationVersion}"
 
-        private fun String.asExtra(p: ExtensionAware): String = p.extra[this] as String
-
         private val ExtensionAware.validationVersion: String
-            get() = "validationVersion".asExtra(this)
+            get() = "validationVersion".asExtra(this, DefaultVersion.validation)
     }
 
     /**
@@ -95,13 +159,26 @@ class Spine(p: ExtensionAware) {
 
         const val pluginId = "io.spine.protodata"
 
-        /**
-         * The version of ProtoData.
-         *
-         * We declare ProtoData version here instead of `versions.gradle.kts` because we later use
-         * it in a `plugins` section in a build script.
-         */
-        const val version = "0.2.18"
+        const val version = protoDataVersion
         const val pluginLib = "$group:protodata:$version"
     }
 }
+
+/**
+ * Obtains the value of the extension property named as this string from the given project.
+ *
+ * @param p the project declaring extension properties
+ * @param defaultValue
+ *         the default value to return, if the project does not have such a property.
+ *         If `null` then rely on the property declaration, even if this would cause an error.
+ */
+private fun String.asExtra(p: ExtensionAware, defaultValue: String? = null): String {
+    if (defaultValue != null) {
+        if (p.extra.has(this)) {
+            return p.extra[this] as String
+        }
+        return defaultValue
+    }
+    return p.extra[this] as String
+}
+
