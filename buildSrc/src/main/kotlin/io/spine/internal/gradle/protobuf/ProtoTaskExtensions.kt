@@ -28,6 +28,8 @@ package io.spine.internal.gradle.protobuf
 
 import com.google.protobuf.gradle.GenerateProtoTask
 import java.io.File
+import java.lang.System.lineSeparator
+import org.gradle.api.Task
 import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.kotlin.dsl.get
 
@@ -75,6 +77,8 @@ import org.gradle.kotlin.dsl.get
 @Suppress("unused")
 fun GenerateProtoTask.setup(generatedDir: String) {
 
+    builtins.create("kotlin")
+
     /**
      * Generate descriptor set files.
      */
@@ -86,27 +90,10 @@ fun GenerateProtoTask.setup(generatedDir: String) {
         includeSourceInfo = true
     }
 
-    /**
-     * Remove the code generated for Google Protobuf library types.
-     *
-     * Java code for the `com.google` package was generated because we wanted
-     * to have descriptors for all the types, including those from Google Protobuf library.
-     * We want all the descriptors so that they are included into the resources used by
-     * the `io.spine.type.KnownTypes` class.
-     *
-     * Now, as we have the descriptors _and_ excessive Java code, we delete it to avoid
-     * classes that duplicate those coming from Protobuf library JARs.
-     */
     doLast {
-        val comPackage = File("${generatedDir}/${ssn}/java/com")
-        val googlePackage = comPackage.resolve("google")
-
-        project.delete(googlePackage)
-
-        // We don't need an empty `com` package.
-        if (comPackage.exists() && comPackage.list()?.isEmpty() == true) {
-            project.delete(comPackage)
-        }
+        deleteComGoogle(generatedDir, ssn, "java")
+        deleteComGoogle(generatedDir, ssn, "kotlin")
+        suppressDeprecationsInKotlin(generatedDir, ssn)
     }
 
     /**
@@ -122,9 +109,76 @@ fun GenerateProtoTask.setup(generatedDir: String) {
 }
 
 /**
+ * Remove the code generated for Google Protobuf library types.
+ *
+ * Java code for the `com.google` package was generated because we wanted
+ * to have descriptors for all the types, including those from Google Protobuf library.
+ * We want all the descriptors so that they are included into the resources used by
+ * the `io.spine.type.KnownTypes` class.
+ *
+ * Now, as we have the descriptors _and_ excessive Java or Kotlin code, we delete it to avoid
+ * classes that duplicate those coming from Protobuf library JARs.
+ */
+private fun Task.deleteComGoogle(generatedDir: String, ssn: String, language: String) {
+    val comPackage = File("${generatedDir}/${ssn}/$language/com")
+    val googlePackage = comPackage.resolve("google")
+
+    project.delete(googlePackage)
+
+    // We don't need an empty `com` package.
+    if (comPackage.exists() && comPackage.list()?.isEmpty() == true) {
+        project.delete(comPackage)
+    }
+}
+
+/**
  * Obtains the name of the task `processResource` task for the given source set name.
  */
-fun processResourceTaskName(sourceSetName: String): String {
+private fun processResourceTaskName(sourceSetName: String): String {
     val infix = if (sourceSetName == "main") "" else sourceSetName.capitalized()
     return "process${infix}Resources"
+}
+
+/**
+ * Obtains the path to this source code file.
+ */
+private object SourcePath {
+
+    val value: String
+        get() {
+            val thisClass = SourcePath::class.java
+            val filePath  = thisClass.`package`.name.replace('.', '/') + "/ProtoTaskExtensions.kt"
+            return "buildSrc/src/main/kotin/" + filePath
+        }
+}
+
+private val SUPPRESSION_COMMENT = "// Suppressed by `${SourcePath.value}`."
+private const val SUPPRESS_DEPRECATION = "@file:Suppress(\"DEPRECATION\")"
+
+/**
+ * This file adds [SUPPRESS_DEPRECATION] to the top of a Kotlin file generated
+ * by Protobuf compiler.
+ */
+private fun suppressDeprecationsInKotlin(generatedDir: String, ssn: String) {
+    val kotlinDir = File("${generatedDir}/${ssn}/kotlin")
+
+    kotlinDir.walk().iterator().forEachRemaining {
+        val file = it
+        if (!file.name.endsWith(".kt")) {
+            return@forEachRemaining
+        }
+        val lines = file.readLines()
+        if (lines.isEmpty()) {
+            return@forEachRemaining
+        }
+        if (lines[0] == SUPPRESSION_COMMENT) {
+            return@forEachRemaining
+        }
+        val withSuppression = mutableListOf<String>()
+        withSuppression.add(SUPPRESSION_COMMENT)
+        withSuppression.add(SUPPRESS_DEPRECATION + lineSeparator())
+        withSuppression.addAll(lines)
+        val text = withSuppression.joinToString(lineSeparator())
+        file.writeText(text)
+    }
 }
