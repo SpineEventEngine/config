@@ -124,14 +124,13 @@ fun GenerateProtoTask.setup(generatedDir: String) {
  * classes that duplicate those coming from Protobuf library JARs.
  */
 private fun Task.deleteComGoogle(generatedDir: String, ssn: String, language: String) {
-    val comPackage = File("${generatedDir}/${ssn}/$language/com")
-    val googlePackage = comPackage.resolve("google")
-
+    val comDirectory = File("${generatedDir}/${ssn}/$language/com")
+    val googlePackage = comDirectory.resolve("google")
     project.delete(googlePackage)
 
-    // We don't need an empty `com` package.
-    if (comPackage.exists() && comPackage.list()?.isEmpty() == true) {
-        project.delete(comPackage)
+    // If the `com` directory becomes empty, delete it too.
+    if (comDirectory.exists() && comDirectory.isDirectory && comDirectory.list()!!.isEmpty()) {
+        project.delete(comDirectory)
     }
 }
 
