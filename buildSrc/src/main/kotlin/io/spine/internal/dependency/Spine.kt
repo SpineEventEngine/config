@@ -58,6 +58,11 @@ class Spine(p: ExtensionAware) {
         const val mc = "2.0.0-SNAPSHOT.90"
 
         /**
+         * The version of `mc-java` to use.
+         */
+        const val mcJava = "2.0.0-SNAPSHOT.102"
+
+        /**
          * The version of `base-types` to use.
          * @see [Spine.baseTypes]
          */
@@ -113,6 +118,8 @@ class Spine(p: ExtensionAware) {
 
     val modelCompiler = "$toolsGroup:spine-model-compiler:${p.mcVersion}"
 
+    val mcJavaPlugin = "io.spine.tools:spine-mc-java-plugins:${p.mcJavaVersion}:all"
+
     val validation = Validation(p)
 
     private val ExtensionAware.baseVersion: String
@@ -126,6 +133,9 @@ class Spine(p: ExtensionAware) {
 
     private val ExtensionAware.mcVersion: String
         get() = "mcVersion".asExtra(this, DefaultVersion.mc)
+
+    private val ExtensionAware.mcJavaVersion: String
+        get() = "mcJavaVersion".asExtra(this, DefaultVersion.mcJava)
 
     private val ExtensionAware.toolBaseVersion: String
         get() = "toolBaseVersion".asExtra(this, DefaultVersion.toolBase)
@@ -173,10 +183,11 @@ class Spine(p: ExtensionAware) {
  *         If `null` then rely on the property declaration, even if this would cause an error.
  */
 private fun String.asExtra(p: ExtensionAware, defaultValue: String? = null): String {
-    return if (p.extra.has(this) || defaultValue == null) {
-        p.extra[this] as String
-    } else {
-        defaultValue
+    if (defaultValue != null) {
+        if (p.extra.has(this)) {
+            return p.extra[this] as String
+        }
+        return defaultValue
     }
+    return p.extra[this] as String
 }
-
