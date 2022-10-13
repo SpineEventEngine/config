@@ -169,7 +169,7 @@ private const val SUPPRESS_DEPRECATION = "@file:Suppress(\"DEPRECATION\")"
  * This file adds [SUPPRESS_DEPRECATION] to the top of a Kotlin file generated
  * by Protobuf compiler.
  */
-private fun suppressDeprecationsInKotlin(generatedDir: String, ssn: String) {
+fun suppressDeprecationsInKotlin(generatedDir: String, ssn: String) {
     val kotlinDir = File("${generatedDir}/${ssn}/kotlin")
 
     kotlinDir.walk().iterator().forEachRemaining {
