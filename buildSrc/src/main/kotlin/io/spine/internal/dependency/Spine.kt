@@ -173,12 +173,10 @@ class Spine(p: ExtensionAware) {
  *         If `null` then rely on the property declaration, even if this would cause an error.
  */
 private fun String.asExtra(p: ExtensionAware, defaultValue: String? = null): String {
-    if (defaultValue != null) {
-        if (p.extra.has(this)) {
-            return p.extra[this] as String
-        }
-        return defaultValue
+    return if (defaultValue == null || p.extra.has(this)) {
+        p.extra[this] as String
+    } else {
+        defaultValue
     }
-    return p.extra[this] as String
 }
 
