@@ -82,7 +82,7 @@ class Spine(p: ExtensionAware) {
         const val time = "2.0.0-SNAPSHOT.109"
 
         /**
-         * Tghe version of `change` to use.
+         * The version of `change` to use.
          * @see [Spine.change]
          */
         const val change = "2.0.0-SNAPSHOT.116"
