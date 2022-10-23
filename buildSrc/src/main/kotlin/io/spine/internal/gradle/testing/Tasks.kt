@@ -47,6 +47,7 @@ import org.gradle.kotlin.dsl.register
 fun TaskContainer.registerTestTasks() {
     withType(Test::class.java).configureEach {
         filter {
+            includeTestsMatching("*Test")
             includeTestsMatching("*Spec")
         }
     }
