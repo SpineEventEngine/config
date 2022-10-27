@@ -85,7 +85,7 @@ class Spine(p: ExtensionAware) {
         /**
          * The version of `mc-java` to use.
          */
-        const val mcJava = "2.0.0-SNAPSHOT.103"
+        const val mcJava = "2.0.0-SNAPSHOT.104"
 
         /**
          * The version of `base-types` to use.
@@ -121,6 +121,16 @@ class Spine(p: ExtensionAware) {
     companion object {
         const val group = "io.spine"
         const val toolsGroup = "io.spine.tools"
+
+        /**
+         * The version of ProtoData to be used in the project.
+         *
+         * We do it here instead of `versions.gradle.kts` because we later use
+         * it in a `plugins` section in a build script.
+         *
+         * @see [ProtoData]
+         */
+        const val protoDataVersion = DefaultVersion.protoData
     }
 
     val base = "$group:spine-base:${p.baseVersion}"
@@ -144,9 +154,6 @@ class Spine(p: ExtensionAware) {
     val coreJava = CoreJava(p)
     val client = coreJava.client // Added for brevity.
     val server = coreJava.server // Added for brevity.
-
-    private val ExtensionAware.protoDataVersion: String
-        get() = "protoDataVersion".asExtra(this, DefaultVersion.protoData)
 
     private val ExtensionAware.baseVersion: String
         get() = "baseVersion".asExtra(this, DefaultVersion.base)
@@ -193,9 +200,12 @@ class Spine(p: ExtensionAware) {
      * See [`SpineEventEngine/ProtoData`](https://github.com/SpineEventEngine/ProtoData/).
      */
     object ProtoData {
+        const val group = "io.spine.protodata"
+        const val version = protoDataVersion
+        const val compiler = "$group:protodata-compiler:$version"
+
         const val pluginId = "io.spine.protodata"
-        const val version = DefaultVersion.protoData
-        const val pluginLib = "$group:protodata:$version"
+        const val pluginLib = "${Spine.group}:protodata:$version"
     }
 
     /**
