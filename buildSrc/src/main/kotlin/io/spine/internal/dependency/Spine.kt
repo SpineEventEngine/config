@@ -103,7 +103,7 @@ class Spine(p: ExtensionAware) {
          * The version of `change` to use.
          * @see [Spine.change]
          */
-        const val change = "2.0.0-SNAPSHOT.116"
+        const val change = "2.0.0-SNAPSHOT.117"
 
         /**
          * The version of `tool-base` to use.
@@ -215,6 +215,8 @@ class Spine(p: ExtensionAware) {
         const val group = "io.spine.protodata"
         const val version = protoDataVersion
         const val compiler = "$group:protodata-compiler:$version"
+
+        const val codegenJava = "io.spine.protodata:protodata-codegen-java:$version"
 
         const val pluginId = "io.spine.protodata"
         const val pluginLib = "${Spine.group}:protodata:$version"
