@@ -28,10 +28,10 @@
  * This script-plugin sets up Kotlin code analyzing with Detekt.
  *
  * After apply, Detekt is configured to use `${rootDir}/config/quality/detekt-config.yml` file.
- * Projects can append their own config files to override some parts of the default one or drop it
- * at all in favor of their own one.
+ * Projects can append their own config files to override some parts of the default one or drop
+ * it at all in a favor of their own one.
  *
- * An example of appending a custom config file along with the default one:
+ * An example of appending a custom config file to the default one:
  *
  * ```
  * detekt {
