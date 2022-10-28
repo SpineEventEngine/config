@@ -27,7 +27,7 @@
 /**
  * This script-plugin sets up Kotlin code analyzing with Detekt.
  *
- * After apply, Detekt is configured to use `${rootDir}/config/quality/detekt-config.yml` file.
+ * After applying, Detekt is configured to use `${rootDir}/config/quality/detekt-config.yml` file.
  * Projects can append their own config files to override some parts of the default one or drop
  * it at all in a favor of their own one.
  *
@@ -39,7 +39,7 @@
  * }
  * ```
  *
- * In order to totally substite it, just overwrite the corresponding property:
+ * To totally substitute it, just overwrite the corresponding property:
  *
  * ```
  * detekt {
