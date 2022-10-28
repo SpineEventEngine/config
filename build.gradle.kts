@@ -30,6 +30,26 @@ import io.spine.internal.gradle.cleanFolder
 import java.nio.file.Path
 import java.nio.file.Paths
 
+plugins {
+    id("detekt-code-analysis")
+}
+
+repositories {
+    mavenCentral()
+}
+
+detekt {
+    source.from("buildSrc/src/main/kotlin")
+    config = files("quality/detekt-config.yml")
+    baseline = file("buildSrc/config/detekt-baseline.xml")
+}
+
+tasks {
+    register("build") {
+        dependsOn(named("detekt"))
+    }
+}
+
 // A reference to `config` to use along with the `ConfigTester`.
 val config: Path = Paths.get("./")
 

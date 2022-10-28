@@ -1,3 +1,5 @@
+import io.gitlab.arturbosch.detekt.Detekt
+
 /*
  * Copyright 2022, TeamDev. All rights reserved.
  *
@@ -66,4 +68,16 @@ plugins {
 detekt {
     buildUponDefaultConfig = true
     config = files("${rootDir}/config/quality/detekt-config.yml")
+}
+
+tasks {
+    withType<Detekt>().configureEach {
+        reports {
+            html.required.set(true)
+            xml.required.set(false)
+            txt.required.set(false)
+            sarif.required.set(false)
+            md.required.set(false)
+        }
+    }
 }
