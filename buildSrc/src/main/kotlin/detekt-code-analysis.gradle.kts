@@ -1,5 +1,3 @@
-import io.gitlab.arturbosch.detekt.Detekt
-
 /*
  * Copyright 2022, TeamDev. All rights reserved.
  *
@@ -25,6 +23,8 @@ import io.gitlab.arturbosch.detekt.Detekt
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import io.gitlab.arturbosch.detekt.Detekt
 
 /**
  * This script-plugin sets up Kotlin code analyzing with Detekt.
