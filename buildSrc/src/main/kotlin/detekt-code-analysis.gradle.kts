@@ -73,7 +73,7 @@ detekt {
 tasks {
     withType<Detekt>().configureEach {
         reports {
-            html.required.set(true)
+            html.required.set(true) // Only HTML report is generated.
             xml.required.set(false)
             txt.required.set(false)
             sarif.required.set(false)
