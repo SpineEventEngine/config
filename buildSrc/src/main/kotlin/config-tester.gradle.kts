@@ -50,7 +50,7 @@ ConfigTester(config, tasks, tempFolder)
     .registerUnder("buildDependants")
 
 // Cleans the temp folder used to check out the sources from Git.
-tasks.register("clean") {
+tasks.named("clean") {
     doLast {
         cleanFolder(tempFolder)
     }
