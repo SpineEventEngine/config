@@ -201,25 +201,20 @@ data class Repository(
      * the credentials. The file must have properties `user.name` and `user.password`, which store
      * the username and the password for the Maven repository auth.
      */
-    fun credentials(project: Project): Credentials? {
+    fun credentials(project: Project): Credentials? =
         if (credentialValues != null) {
-            return credentialValues.invoke(project)
+            credentialValues.invoke(project)
+        } else {
+            val log = project.logger
+            val file = project.rootProject.file(credentialsFile!!)
+            log.info("Using credentials from `$credentialsFile`.")
+            val creds = file.takeIf { it.exists() }?.readCredentials()
+            creds?.let { log.info("Publishing build as `${creds.username}`.") }
+            creds
         }
-        credentialsFile!!
-        val log = project.logger
-        log.info("Using credentials from `$credentialsFile`.")
-        val file = project.rootProject.file(credentialsFile)
-        if (!file.exists()) {
-            return null
-        }
-        val creds = file.readCredentials()
-        log.info("Publishing build as `${creds.username}`.")
-        return creds
-    }
 
     private fun File.readCredentials(): Credentials {
-        val properties = Properties()
-        properties.load(inputStream())
+        val properties = Properties().apply { load(inputStream()) }
         val username = properties.getProperty("user.name")
         val password = properties.getProperty("user.password")
         return Credentials(username, password)
