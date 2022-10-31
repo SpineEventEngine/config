@@ -25,7 +25,6 @@
  */
 
 plugins {
-    id("base")
     id("config-tester")
     id("detekt-code-analysis")
 }
