@@ -28,11 +28,14 @@
  * This script configures Gradle Checkstyle plugin.
  */
 
+final def checkstyleConfigDir = "$rootDir/config/quality"
+
 apply plugin: 'checkstyle'
 
 checkstyle {
     toolVersion = "${deps.versions.checkstyle}"
-    configFile = file("$rootDir/config/quality/checkstyle.xml")
+    configFile = file("${checkstyleConfigDir}/checkstyle.xml")
+    configDir = file(checkstyleConfigDir)
 
     // Disable checking the test sources.
     checkstyleTest.enabled = false
