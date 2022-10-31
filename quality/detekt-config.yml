@@ -7,3 +7,6 @@ naming:
     excludes:
       - "**/*Test.kt" # Allows ticks-named top-level test suites.
       - "**/*Spec.kt" # Allows ticks-named top-level spec suites.
+style:
+  UnusedPrivateMember:
+    allowedNames: '(_|ignored|expected|serialVersionUID|about)'
