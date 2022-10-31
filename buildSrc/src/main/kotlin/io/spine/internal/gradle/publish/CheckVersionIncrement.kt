@@ -119,7 +119,7 @@ private data class MavenMetadata(var versioning: Versioning = Versioning()) {
             return try {
                 val metadata = mapper.readValue(url, MavenMetadata::class.java)
                 metadata
-            } catch (e: FileNotFoundException) {
+            } catch (ignored: FileNotFoundException) {
                 null
             }
         }
