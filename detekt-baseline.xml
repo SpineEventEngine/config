@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ForbiddenComment:force-jacoco.gradle.kts$// TODO:2021-07-05:dmytro.dashenkov: https://github.com/SpineEventEngine/config/issues/214.</ID>
+    <ID>ImplicitDefaultLocale:PomFormatting.kt$PomFormatting$String.format( "&lt;!-- %s %s %s -->", NL, description, NL )</ID>
+    <ID>MagicNumber:ConfigTester.kt$ConfigTester$30</ID>
+    <ID>MagicNumber:RunGradle.kt$RunGradle$10</ID>
+    <ID>MagicNumber:ScopedDependency.kt$ScopedDependency$3</ID>
+    <ID>MagicNumber:VersionWriter.kt$WriteVersions$3</ID>
+    <ID>MaxLineLength:MavenJavaPublication.kt$MavenJavaPublication$*</ID>
+    <ID>MaxLineLength:RunGradle.kt$RunGradle$*</ID>
+    <ID>MaxLineLength:ScopedDependency.kt$ScopedDependency$*</ID>
+    <ID>MaxLineLength:ScopedDependency.kt$ScopedDependency.Companion$*</ID>
+    <ID>MaxLineLength:write-manifest.gradle.kts$*</ID>
+    <ID>NestedBlockDepth:ConfigTester.kt$ClonedRepo$@Suppress("TooGenericExceptionCaught") private fun copyFolder(sourceFolder: Path, ignoredFolder: Path?, destinationFolder: Path)</ID>
+    <ID>ReturnCount:IncrementGuard.kt$IncrementGuard$private fun shouldCheckVersion(): Boolean</ID>
+    <ID>ReturnCount:Repositories.kt$Repository$fun credentials(project: Project): Credentials?</ID>
+    <ID>ReturnCount:ScopedDependency.kt$ScopedDependency.Companion$fun of(dependency: Dependency, configuration: Configuration): ScopedDependency</ID>
+    <ID>SpreadOperator:UpdateGitHubPages.kt$UpdateGitHubPages$(*inputs.toTypedArray())</ID>
+    <ID>SwallowedException:CheckVersionIncrement.kt$MavenMetadata.Companion$e: FileNotFoundException</ID>
+    <ID>TooManyFunctions:LazyTempPath.kt$LazyTempPath : Path</ID>
+    <ID>TooManyFunctions:MarkdownDocument.kt$MarkdownDocument</ID>
+    <ID>TooManyFunctions:Scripts.kt$Scripts$Scripts</ID>
+    <ID>UnusedPrivateMember:CheckVersionIncrement.kt$CheckVersionIncrement$@TaskAction private fun fetchAndCheck()</ID>
+    <ID>UnusedPrivateMember:VersionWriter.kt$WriteVersions$@TaskAction private fun writeFile()</ID>
+    <ID>UnusedPrivateMember:detekt-code-analysis.gradle.kts$/** * This script-plugin sets up Kotlin code analyzing with Detekt. * * After applying, Detekt is configured to use `${rootDir}/config/quality/detekt-config.yml` file. * Projects can append their own config files to override some parts of the default one or drop * it at all in a favor of their own one. * * An example of appending a custom config file to the default one: * * ``` * detekt { * config.from("config/detekt-custom-config.yml") * } * ``` * * To totally substitute it, just overwrite the corresponding property: * * ``` * detekt { * config = files("config/detekt-custom-config.yml") * } * ``` * * Also, it's possible to suppress Detekt findings using [baseline](https://detekt.dev/docs/introduction/baseline/) * file instead of suppressions in source code. * * An example of passing a baseline file: * * ``` * detekt { * baseline = file("config/detekt-baseline.yml") * } * ``` */ private val about = ""</ID>
+    <ID>UseCheckOrError:AuthorEmail.kt$AuthorEmail.Companion$throw IllegalStateException( "Unable to obtain an author from `${environmentVariable}`." )</ID>
+    <ID>UseCheckOrError:Multiproject.kt$throw IllegalStateException( "Can't expose the test configuration because `java` plugin has not been applied." )</ID>
+  </CurrentIssues>
+</SmellBaseline>
