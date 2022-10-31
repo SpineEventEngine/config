@@ -60,6 +60,7 @@ import io.gitlab.arturbosch.detekt.Detekt
  * }
  * ```
  */
+private val about = ""
 
 plugins {
     id("io.gitlab.arturbosch.detekt")
