@@ -36,5 +36,5 @@ repositories {
 detekt {
     source.from("buildSrc/src/main/kotlin")
     config = files("quality/detekt-config.yml")
-    baseline = file("buildSrc/config/detekt-baseline.xml")
+    baseline = file("detekt-baseline.xml")
 }
