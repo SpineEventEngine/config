@@ -29,15 +29,10 @@ package io.spine.internal.markup
 import java.io.File
 
 /**
- * Shortcuts for the Markdown syntax.
- */
-
-/**
  * A virtual document written in Markdown.
  *
  * After it's finished, end-users would typically write it to a [real file][writeToFile].
  */
-@SuppressWarnings("detekt.complexity.TooManyFunctions")     /* By design. */
 class MarkdownDocument {
 
     private val builder: StringBuilder = StringBuilder()

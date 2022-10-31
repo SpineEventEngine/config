@@ -26,7 +26,10 @@
   -->
 
 <SmellBaseline>
-  <ManuallySuppressedIssues/>
+  <ManuallySuppressedIssues>
+    <ID>TooManyFunctions:LazyTempPath.kt$LazyTempPath : Path</ID>
+    <ID>TooManyFunctions:MarkdownDocument.kt$MarkdownDocument</ID>
+  </ManuallySuppressedIssues>
   <CurrentIssues>
   </CurrentIssues>
 </SmellBaseline>
