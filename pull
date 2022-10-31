@@ -80,7 +80,8 @@ initialize .github
 
 # Update existing workflows with more recent versions
 echo "Updating GitHub workflows"
-cp -a .github/workflows/. ../.github/workflows
+workflows_without_detekt=$(find .github/workflows -type f ! -name detekt-code-analysis.yml)
+cp -a $workflows_without_detekt ../.github/workflows
 cp -a .github-workflows/. ../.github/workflows
 
 echo "Updating Gradle 'buildSrc' scripts"
