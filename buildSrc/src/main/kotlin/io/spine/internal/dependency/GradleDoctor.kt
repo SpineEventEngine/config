@@ -24,18 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    id("config-tester")
-    id("detekt-code-analysis")
-    id(gradleDoctor.pluginId) version gradleDoctor.version
-}
+package io.spine.internal.dependency
 
-repositories {
-    mavenCentral()
-}
-
-detekt {
-    source.from("buildSrc/src/main/kotlin")
-    config = files("quality/detekt-config.yml")
-    baseline = file("detekt-baseline.xml")
+/**
+ * Helps optimize Gradle Builds by ensuring recommendations at build time.
+ *
+ * See [plugin site](https://runningcode.github.io/gradle-doctor) for features and usage.
+ */
+object GradleDoctor {
+    const val version = "0.8.1"
+    const val pluginId = "com.osacky.doctor"
 }
