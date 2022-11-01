@@ -33,6 +33,7 @@ import java.io.File
  *
  * After it's finished, end-users would typically write it to a [real file][writeToFile].
  */
+@Suppress("TooManyFunctions")
 class MarkdownDocument {
 
     private val builder: StringBuilder = StringBuilder()
