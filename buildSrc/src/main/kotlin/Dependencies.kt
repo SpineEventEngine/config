@@ -27,7 +27,9 @@
 @file:Suppress("unused", "UnusedReceiverParameter")
 
 import io.spine.internal.dependency.ErrorProne
+import io.spine.internal.dependency.GradleDoctor
 import io.spine.internal.dependency.Protobuf
+import io.spine.internal.dependency.Spine
 import io.spine.internal.dependency.Spine.ProtoData
 import org.gradle.plugin.use.PluginDependenciesSpec
 
@@ -50,3 +52,9 @@ val PluginDependenciesSpec.errorPronePlugin: String
 
 val PluginDependenciesSpec.protobufPlugin: String
     get() = Protobuf.GradlePlugin.id
+
+val PluginDependenciesSpec.gradleDoctor: GradleDoctor
+    get() = GradleDoctor
+
+val PluginDependenciesSpec.mcJava: Spine.McJava
+    get() = Spine.McJava
