@@ -19,3 +19,6 @@ style:
       - '1'
       - '2'
       - '3'
+  MaxLineLength:
+    maxLineLength: 120
+    excludeCommentStatements: true
