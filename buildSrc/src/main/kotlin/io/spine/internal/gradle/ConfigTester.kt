@@ -60,6 +60,15 @@ class ConfigTester(
     private val tasks: TaskContainer,
     private val tempFolder: File = File("./tmp")
 ) {
+
+    companion object {
+
+        /**
+         * Gradle build timeout.
+         */
+        private const val BUILD_TIMEOUT_MINUTES = 30L
+    }
+
     private val buildSrc: Path = config.resolve("buildSrc")
 
     /**
@@ -132,7 +141,7 @@ class ConfigTester(
                 println("*** `${gitRepo.name}`: Gradle build completed. ***")
             }
             directory = gitRepo.prepareCheckout(tempFolder).absolutePath
-            maxDurationMins = 30
+            maxDurationMins = BUILD_TIMEOUT_MINUTES
         }
     }
 

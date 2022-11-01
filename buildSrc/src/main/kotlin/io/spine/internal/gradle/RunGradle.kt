@@ -50,9 +50,9 @@ open class RunGradle : DefaultTask() {
     companion object {
 
         /**
-         * By default, wait for 10 minutes for the Gradle build to complete.
+         * Default Gradle build timeout.
          */
-        private const val DEFAULT_BUILD_TIMEOUT: Long = 10
+        private const val BUILD_TIMEOUT_MINUTES: Long = 10
     }
 
 
@@ -71,7 +71,7 @@ open class RunGradle : DefaultTask() {
      * For how many minutes to wait for the Gradle build to complete.
      */
     @Internal
-    var maxDurationMins: Long = DEFAULT_BUILD_TIMEOUT
+    var maxDurationMins: Long = BUILD_TIMEOUT_MINUTES
 
     /**
      * Names of Gradle properties to copy into the launched build.
