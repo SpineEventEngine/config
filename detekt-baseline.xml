@@ -5,6 +5,9 @@
     <ID>TooManyFunctions:MarkdownDocument.kt$MarkdownDocument</ID>
     <ID>MaxLineLength:MavenJavaPublication.kt$MavenJavaPublication$*</ID>
     <ID>MaxLineLength:RunGradle.kt$RunGradle$*</ID>
+    <ID>MaxLineLength:ScopedDependency.kt$ScopedDependency$*</ID>
+    <ID>MaxLineLength:ScopedDependency.kt$ScopedDependency.Companion$*</ID>
+    <ID>MaxLineLength:write-manifest.gradle.kts$*</ID>
   </ManuallySuppressedIssues>
   <CurrentIssues>
   </CurrentIssues>
