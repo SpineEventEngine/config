@@ -39,3 +39,11 @@ detekt {
     config = files("quality/detekt-config.yml")
     baseline = file("detekt-baseline.xml")
 }
+
+doctor {
+    javaHome {
+        // In some cases, this check reports false-positives.
+        // See issue: https://github.com/runningcode/gradle-doctor/issues/187
+        failOnError.set(false)
+    }
+}
