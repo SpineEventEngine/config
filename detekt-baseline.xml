@@ -4,6 +4,7 @@
     <ID>TooManyFunctions:LazyTempPath.kt$LazyTempPath : Path</ID>
     <ID>TooManyFunctions:MarkdownDocument.kt$MarkdownDocument</ID>
     <ID>MaxLineLength:MavenJavaPublication.kt$MavenJavaPublication$*</ID>
+    <ID>MaxLineLength:RunGradle.kt$RunGradle$*</ID>
   </ManuallySuppressedIssues>
   <CurrentIssues>
   </CurrentIssues>
