@@ -12,3 +12,10 @@ style:
     allowedNames: '(_|ignored|expected|serialVersionUID|about)'
     ignoreAnnotated:
       - "org.gradle.api.tasks.TaskAction"
+  MagicNumber:
+    ignoreNumbers:
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
+      - '3'
