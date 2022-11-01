@@ -80,13 +80,22 @@ class IncrementGuard : Plugin<Project> {
      *     List of default environment variables provided for GitHub Actions builds</a>
      */
     private fun shouldCheckVersion(): Boolean {
-        val eventName = System.getenv("GITHUB_EVENT_NAME")
-        if ("push" != eventName) {
+        val event = System.getenv("GITHUB_EVENT_NAME")
+        val reference = System.getenv("GITHUB_REF")
+        if (event != "push" || reference == null) {
             return false
         }
-        val reference = System.getenv("GITHUB_REF") ?: return false
-        val matches = Regex("refs/heads/(.+)").matchEntire(reference) ?: return false
-        val branch = matches.groupValues[1]
-        return !branch.endsWith("master")
+        val branch = branchName(reference)
+        return when {
+            branch == null -> false
+            branch.endsWith("master") -> false
+            else -> true
+        }
+    }
+
+    private fun branchName(gitHubRef: String): String? {
+        val matches = Regex("refs/heads/(.+)").matchEntire(gitHubRef)
+        val branch = matches?.let { it.groupValues[1] }
+        return branch
     }
 }
