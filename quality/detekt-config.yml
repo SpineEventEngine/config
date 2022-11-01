@@ -10,8 +10,6 @@ naming:
 style:
   UnusedPrivateMember:
     allowedNames: '(_|ignored|expected|serialVersionUID|about)'
-    ignoreAnnotated:
-      - "org.gradle.api.tasks.TaskAction"
   MagicNumber:
     ignoreNumbers:
       - '-1'

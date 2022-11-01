@@ -56,7 +56,7 @@ open class CheckVersionIncrement : DefaultTask() {
     val version: String = project.version as String
 
     @TaskAction
-    private fun fetchAndCheck() {
+    fun fetchAndCheck() {
         val artifact = "${project.artifactPath()}/${MavenMetadata.FILE_NAME}"
         checkInRepo(repository.snapshots, artifact)
 
