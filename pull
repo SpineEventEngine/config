@@ -81,8 +81,14 @@ initialize .github
 # Update existing workflows with more recent versions
 echo "Updating GitHub workflows"
 workflows_without_detekt=$(find .github/workflows -type f ! -name detekt-code-analysis.yml)
-cp -a $workflows_without_detekt ../.github/workflows
+cp -a "$workflows_without_detekt" ../.github/workflows
 cp -a .github-workflows/. ../.github/workflows
+
+ehcho "Cleaning up Gradle 'buildSrc' scripts"
+# TODO:2022-11-02:yevhenii.nadtochii: Drop or update clean-up code below from time to time.
+rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
+rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/Scripts.kt
 
 echo "Updating Gradle 'buildSrc' scripts"
 cp -R buildSrc ..
