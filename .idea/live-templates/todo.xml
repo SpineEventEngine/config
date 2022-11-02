@@ -1,0 +1,26 @@
+<!--
+  `todo` live template.
+
+  This template inserts a TODO comment with the current date and username.
+
+  In order to apply it, do the following:
+
+    1. Select and copy XML code below.
+    2. Go to Preferences -> Editor -> Live Templates.
+    3. Create `Custom` tempalates group.
+    4. Select the created group and paste right there copied XML.
+    5. IDEA would create `todo` template.
+    6. Select it and set applicable contexts. For example: Kotlin, Java, Shell, etc.
+
+-->
+
+<template name="todo" value="$LINE_COMMENT_START$ TODO:$DATE$:$USER$: $END$" description="Insert TODO comment with the current date and username" toReformat="false" toShortenFQNames="true">
+  <variable name="LINE_COMMENT_START" expression="lineCommentStart()" defaultValue="" alwaysStopAt="true" />
+  <variable name="DATE" expression="date(&quot;YYYY-MM-dd&quot;)" defaultValue="" alwaysStopAt="true" />
+  <variable name="USER" expression="user()" defaultValue="" alwaysStopAt="true" />
+  <context>
+    <option name="JAVA_CODE" value="true" />
+    <option name="KOTLIN" value="true" />
+    <option name="SHELL_SCRIPT" value="true" />
+  </context>
+</template>
