@@ -9,7 +9,7 @@ naming:
       - "**/*Spec.kt" # Allows ticks-named top-level spec suites.
 style:
   UnusedPrivateMember:
-    allowedNames: '(_|ignored|expected|serialVersionUID|about)'
+    allowedNames: '(_|ignored|expected|serialVersionUID|about|ABOUT)'
   MagicNumber:
     ignoreNumbers:
       - '-1'

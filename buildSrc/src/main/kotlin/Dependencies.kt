@@ -24,8 +24,6 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-@file:Suppress("unused", "UnusedReceiverParameter")
-
 import io.spine.internal.dependency.ErrorProne
 import io.spine.internal.dependency.GradleDoctor
 import io.spine.internal.dependency.Protobuf
