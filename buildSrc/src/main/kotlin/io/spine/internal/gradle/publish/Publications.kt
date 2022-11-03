@@ -47,8 +47,6 @@ internal sealed class PublicationHandler(
 
     /**
      * Registers this publication in the given project.
-     *
-     * The only prerequisite for the project is to have `maven-publish` plugin applied.
      */
     fun registerIn(project: Project) {
         handlePublications(project)
