@@ -31,6 +31,7 @@ import org.gradle.api.Project
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
+import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.getByType
@@ -109,7 +110,7 @@ import org.gradle.kotlin.dsl.getByType
  * @see [registerArtifacts]
  */
 fun Project.spinePublishing(configuration: SpinePublishing.() -> Unit) {
-    pluginManager.apply(MavenPublishPlugin::class.java)
+    apply<MavenPublishPlugin>()
     val name = SpinePublishing::class.java.simpleName
     val extension = with(extensions) {
         findByType<SpinePublishing>() ?: create(name, project)
