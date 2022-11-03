@@ -176,8 +176,8 @@ private fun MavenPublication.specifyArtifacts(project: Project, jars: Set<TaskPr
 }
 
 /**
- * A handler for custom publications, which is declared under the [publications] section
- * of a module.
+ * A handler for custom publications, which are declared under the [publications]
+ * section of a module.
  *
  * Such publications should be treated differently than [MavenJavaPublication],
  * which is <em>created</em> for a module. Instead, since the publications are already declared,
