@@ -97,7 +97,7 @@ class Spine(p: ExtensionAware) {
          * The version of `time` to use.
          * @see [Spine.time]
          */
-        const val time = "2.0.0-SNAPSHOT.111"
+        const val time = "2.0.0-SNAPSHOT.120"
 
         /**
          * The version of `change` to use.
@@ -115,7 +115,7 @@ class Spine(p: ExtensionAware) {
          * The version of `validation` to use.
          * @see [Spine.validation]
          */
-        const val validation = "2.0.0-SNAPSHOT.33"
+        const val validation = "2.0.0-SNAPSHOT.61"
 
         /**
          * The version of Javadoc Tools to use.
