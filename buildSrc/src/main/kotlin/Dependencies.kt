@@ -51,7 +51,7 @@ import org.gradle.plugin.use.PluginDependencySpec
  * But for some plugins, it's impossible to apply them directly to a project.
  * For example, when a plugin is not published to Gradle Portal, it can only be
  * applied with buildscript's classpath. Thus, it's needed to leave some freedom
- * upon how to apply them. In such cases, just a shortcut to a depdnecy object
+ * upon how to apply them. In such cases, just a shortcut to a dependency object
  * can be declared, without applyin of the plugin in-place.
  */
 private const val ABOUT = ""
@@ -69,8 +69,8 @@ val PluginDependenciesSpec.mcJava: Spine.McJava
  * Shortcut to [Spine.ProtoData] dependency object.
  *
  * This plugin is in Gradle Portal. But when used in pair with [mcJava], it cannot be applied
- * directly to a project. It it so, because [mcJava] pulls [protoData] as its dependency.
- * And buildscript classpath ends up with both of them.
+ * directly to a project. It it so, because [mcJava] uses [protoData] as its dependency.
+ * And buildscript's classpath ends up with both of them.
  */
 val PluginDependenciesSpec.protoData: ProtoData
     get() = ProtoData
