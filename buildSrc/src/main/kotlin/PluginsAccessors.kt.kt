@@ -24,7 +24,8 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-@file:Suppress("UnusedReceiverParameter", "unused")
+// Those accessors should match Gradle's naming conventions.
+@file:Suppress("TopLevelPropertyNaming", "unused")
 
 import io.spine.internal.dependency.ErrorProne
 import io.spine.internal.dependency.GradleDoctor
@@ -67,7 +68,7 @@ val PluginDependenciesSpec.protobuf: PluginDependencySpec
     get() = id(Protobuf.GradlePlugin.id)
 
 val PluginDependenciesSpec.`gradle-doctor`: PluginDependencySpec
-    get() = id(GradleDoctor.pluginId)
+    get() = id(GradleDoctor.pluginId).version(GradleDoctor.version)
 
 val PluginDependenciesSpec.`mc-java`: PluginDependencySpec
     get() = id(Spine.McJava.pluginId).version(Spine.McJava.version)

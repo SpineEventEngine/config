@@ -38,9 +38,3 @@ detekt {
     source.from("buildSrc/src/main/kotlin")
     config = files("quality/detekt-config.yml")
 }
-
-doctor {
-    javaHome {
-        failOnError.set(false)
-    }
-}
