@@ -30,8 +30,6 @@
 import io.spine.internal.dependency.ErrorProne
 import io.spine.internal.dependency.GradleDoctor
 import io.spine.internal.dependency.Protobuf
-import io.spine.internal.dependency.Spine
-import io.spine.internal.dependency.Spine.ProtoData
 import org.gradle.plugin.use.PluginDependenciesSpec
 import org.gradle.plugin.use.PluginDependencySpec
 
@@ -52,14 +50,11 @@ import org.gradle.plugin.use.PluginDependencySpec
  *
  * ```
  * plugins {
- *     protodata version("0.3.0-custom")
+ *     protobuf version("0.8.19-custom")
  * }
  * ```
  */
 private const val ABOUT = ""
-
-val PluginDependenciesSpec.protodata: PluginDependencySpec
-    get() = id(ProtoData.pluginId).version(ProtoData.version)
 
 val PluginDependenciesSpec.errorprone: PluginDependencySpec
     get() = id(ErrorProne.GradlePlugin.id)
@@ -69,6 +64,3 @@ val PluginDependenciesSpec.protobuf: PluginDependencySpec
 
 val PluginDependenciesSpec.`gradle-doctor`: PluginDependencySpec
     get() = id(GradleDoctor.pluginId).version(GradleDoctor.version)
-
-val PluginDependenciesSpec.`mc-java`: PluginDependencySpec
-    get() = id(Spine.McJava.pluginId).version(Spine.McJava.version)
