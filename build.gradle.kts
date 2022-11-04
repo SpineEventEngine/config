@@ -25,9 +25,9 @@
  */
 
 plugins {
-    id("config-tester")
-    id("detekt-code-analysis")
-    id(gradleDoctor.pluginId) version gradleDoctor.version
+    `config-tester`
+    `detekt-code-analysis`
+    `gradle-doctor`
 }
 
 repositories {
@@ -37,4 +37,10 @@ repositories {
 detekt {
     source.from("buildSrc/src/main/kotlin")
     config = files("quality/detekt-config.yml")
+}
+
+doctor {
+    javaHome {
+        failOnError.set(false)
+    }
 }
