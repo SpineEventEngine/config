@@ -24,7 +24,8 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-@file:Suppress("UnusedReceiverParameter", "unused")
+// Those accessors should match Gradle's naming conventions.
+@file:Suppress("TopLevelPropertyNaming", "unused")
 
 import io.spine.internal.dependency.ErrorProne
 import io.spine.internal.dependency.GradleDoctor
@@ -32,29 +33,42 @@ import io.spine.internal.dependency.Protobuf
 import io.spine.internal.dependency.Spine
 import io.spine.internal.dependency.Spine.ProtoData
 import org.gradle.plugin.use.PluginDependenciesSpec
+import org.gradle.plugin.use.PluginDependencySpec
 
 /**
- * Allows to escape a fully qualified names for dependencies which cannot be used
- * under `plugins` section because `io` is a value declared in
- * `org.gradle.kotlin.dsl.PluginAccessors.kt`.
+ * Provides shortucts for applying plugins from our dependnecy objects.
  *
- * We still want to keep versions numbers in [io.spine.internal.dependency.Spine]
- * for the time being. So this file allows to reference those without resorting
- * to using strings again.
+ * Dependency objects cannot be used under `plugins` section because `io` is a value
+ * declared in auto-generatated `org.gradle.kotlin.dsl.PluginAccessors.kt` file.
+ * It conflicts with our own declarations.
+ *
+ * Declaring of top-level shortucts eliminates need in applying plugins
+ * using fully-qualified name of dependency objects.
+ *
+ * It is still possible to apply a plugin with a custom version, if needed.
+ * Just delcate a version again on the returned [PluginDependencySpec].
+ *
+ * For example:
+ *
+ * ```
+ * plugins {
+ *     protodata version("0.3.0-custom")
+ * }
+ * ```
  */
 private const val ABOUT = ""
 
-val PluginDependenciesSpec.protoData: ProtoData
-    get() = ProtoData
+val PluginDependenciesSpec.protodata: PluginDependencySpec
+    get() = id(ProtoData.pluginId).version(ProtoData.version)
 
-val PluginDependenciesSpec.errorPronePlugin: String
-    get() = ErrorProne.GradlePlugin.id
+val PluginDependenciesSpec.errorprone: PluginDependencySpec
+    get() = id(ErrorProne.GradlePlugin.id)
 
-val PluginDependenciesSpec.protobufPlugin: String
-    get() = Protobuf.GradlePlugin.id
+val PluginDependenciesSpec.protobuf: PluginDependencySpec
+    get() = id(Protobuf.GradlePlugin.id)
 
-val PluginDependenciesSpec.gradleDoctor: GradleDoctor
-    get() = GradleDoctor
+val PluginDependenciesSpec.`gradle-doctor`: PluginDependencySpec
+    get() = id(GradleDoctor.pluginId).version(GradleDoctor.version)
 
-val PluginDependenciesSpec.mcJava: Spine.McJava
-    get() = Spine.McJava
+val PluginDependenciesSpec.`mc-java`: PluginDependencySpec
+    get() = id(Spine.McJava.pluginId).version(Spine.McJava.version)
