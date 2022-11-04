@@ -22,3 +22,7 @@ style:
     excludeCommentStatements: true
   ForbiddenComment:
     allowedPatterns: 'TODO:'
+complexity:
+  TooManyFunctions:
+    excludes:
+      - '**/*Extensions.kt'
