@@ -89,6 +89,8 @@ echo "Cleaning up Gradle 'buildSrc' scripts"
 rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
 rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
 rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/Scripts.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/test/Logging.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/test/Tasks.kt
 
 echo "Updating Gradle 'buildSrc' scripts"
 cp -R buildSrc ..
