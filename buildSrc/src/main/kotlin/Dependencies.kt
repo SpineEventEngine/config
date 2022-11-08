@@ -26,16 +26,12 @@
 
 @file:Suppress("UnusedReceiverParameter", "unused")
 
-import io.spine.internal.dependency.ErrorProne
-import io.spine.internal.dependency.GradleDoctor
-import io.spine.internal.dependency.Protobuf
 import io.spine.internal.dependency.Spine
 import io.spine.internal.dependency.Spine.ProtoData
 import org.gradle.plugin.use.PluginDependenciesSpec
-import org.gradle.plugin.use.PluginDependencySpec
 
 /**
- * Provides shortucts to reference our dependnecy objects.
+ * Provides shortucts to reference our dependency objects.
  *
  * Dependency objects cannot be used under `plugins` section because `io` is a value
  * declared in auto-generatated `org.gradle.kotlin.dsl.PluginAccessors.kt` file.
