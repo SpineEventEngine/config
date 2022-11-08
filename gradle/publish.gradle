@@ -120,7 +120,8 @@ projectsToPublish.each {
             currentProject.afterEvaluate(publishingAction)
         }
 
-        final boolean isSnapshots = currentProject.version.matches('.+-SNAPSHOT(\\+\\d+)?')
+        final String currentVersion = currentProject.version
+        final boolean isSnapshots = currentVersion.toLowerCase().contains("snapshot")
 
         publishing {
             repositories {
