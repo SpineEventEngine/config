@@ -31,13 +31,13 @@ import io.spine.internal.dependency.Spine.ProtoData
 import org.gradle.plugin.use.PluginDependenciesSpec
 
 /**
- * Provides shortucts to reference our dependency objects.
+ * Provides shortcuts to reference our dependency objects.
  *
  * Dependency objects cannot be used under `plugins` section because `io` is a value
- * declared in auto-generatated `org.gradle.kotlin.dsl.PluginAccessors.kt` file.
+ * declared in auto-generated `org.gradle.kotlin.dsl.PluginAccessors.kt` file.
  * It conflicts with our own declarations.
  *
- * In such cases, a shortctut to apply a plugin can be created:
+ * In such cases, a shortcut to apply a plugin can be created:
  *
  * ```
  * val PluginDependenciesSpec.`gradle-doctor`: PluginDependencySpec
@@ -48,7 +48,7 @@ import org.gradle.plugin.use.PluginDependenciesSpec
  * For example, when a plugin is not published to Gradle Portal, it can only be
  * applied with buildscript's classpath. Thus, it's needed to leave some freedom
  * upon how to apply them. In such cases, just a shortcut to a dependency object
- * can be declared, without applyin of the plugin in-place.
+ * can be declared, without applying of the plugin in-place.
  */
 private const val ABOUT = ""
 
