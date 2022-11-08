@@ -26,3 +26,7 @@ complexity:
   TooManyFunctions:
     excludes:
       - '**/*Extensions.kt'
+  LongMethod:
+    excludes:
+      - "**/*Test.kt" # Allows long names for test methods.
+      - "**/*Spec.kt" # Allows long names for spec methods.
