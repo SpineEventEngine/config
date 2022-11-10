@@ -26,6 +26,8 @@ complexity:
   TooManyFunctions:
     excludes:
       - '**/*Extensions.kt'
+      - '**/*View.kt'
+      - '**/*Projection.kt'
   LongMethod:
     excludes:
       - "**/*Test.kt" # Allows long names for test methods.
