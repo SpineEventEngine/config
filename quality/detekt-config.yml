@@ -1,12 +1,11 @@
 naming:
   ClassNaming:
-    excludes:
-      - "**/*Test.kt" # Allows ticks-named nested test suites.
-      - "**/*Spec.kt" # Allows ticks-named nested spec suites.
+    excludes: &testFiles # Allows ticks-named nested test and spec suites.
+      - "**/*Test.kt"
+      - "**/*Spec.kt"
   MatchingDeclarationName:
-    excludes:
-      - "**/*Test.kt" # Allows ticks-named top-level test suites.
-      - "**/*Spec.kt" # Allows ticks-named top-level spec suites.
+    excludes: *testFiles # Allows ticks-named top-level test and spec suites.
+
 style:
   UnusedPrivateMember:
     allowedNames: '(_|ignored|expected|serialVersionUID|about|ABOUT)'
@@ -22,6 +21,7 @@ style:
     excludeCommentStatements: true
   ForbiddenComment:
     allowedPatterns: 'TODO:'
+
 complexity:
   TooManyFunctions:
     excludes:
@@ -29,6 +29,4 @@ complexity:
       - '**/*View.kt'
       - '**/*Projection.kt'
   LongMethod:
-    excludes:
-      - "**/*Test.kt" # Allows long names for test methods.
-      - "**/*Spec.kt" # Allows long names for spec methods.
+    excludes: *testFiles # Allows long names for test and spec methods.
