@@ -84,6 +84,10 @@ cp -a .github-workflows/. ../.github/workflows
 cp -a .github/workflows/. ../.github/workflows
 rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
 
+echo "Cleaning up GitHub workflows"
+# TODO:2022-11-15:yevhenii.nadtochii: Drop or update clean-up code below from time to time.
+rm -f ../.github/workflows/ensure-reports.updated.yml
+
 echo "Cleaning up Gradle 'buildSrc' scripts"
 # TODO:2022-11-02:yevhenii.nadtochii: Drop or update clean-up code below from time to time.
 rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
