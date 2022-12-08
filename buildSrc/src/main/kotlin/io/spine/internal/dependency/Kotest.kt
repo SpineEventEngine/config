@@ -26,8 +26,13 @@
 
 package io.spine.internal.dependency
 
-// https://github.com/google/auto
-object AutoCommon {
-    private const val version = "1.2.1"
-    const val lib = "com.google.auto:auto-common:${version}"
+/**
+ * Testing framework for Kotlin.
+ *
+ * @see <a href="https://kotest.io/">Kotest site</a>
+ */
+object Kotest {
+    const val version = "5.5.4"
+    const val group = "io.kotest"
+    const val assertions = "$group:kotest-assertions-core:$version"
 }
