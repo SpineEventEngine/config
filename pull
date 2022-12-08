@@ -94,6 +94,9 @@ rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
 rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
 rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/Scripts.kt
 rm -rf ../buildSrc/src/main/kotlin/io/spine/internal/gradle/test
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependencies/AutoCommon.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependencies/AutoService.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependencies/AutoValue.kt
 
 echo "Updating Gradle 'buildSrc' scripts"
 cp -R buildSrc ..
