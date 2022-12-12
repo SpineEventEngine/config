@@ -28,5 +28,7 @@ complexity:
       - '**/*Extensions.kt'
       - '**/*View.kt'
       - '**/*Projection.kt'
+      - '**/*Test.kt'
+      - '**/*Spec.kt'
   LongMethod:
     excludes: *testFiles # Allows long names for test and spec methods.
