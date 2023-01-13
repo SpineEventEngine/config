@@ -34,6 +34,7 @@
 
     <!-- Always exclude the Protobuf-generated files, as they generate a lot of warnings. -->
     <exclude-pattern>.*/generated/.*</exclude-pattern>
+    <exclude-pattern>.*/generated-proto/.*</exclude-pattern>
 
     <!-- Best Practices       -->
     <rule ref="category/java/bestpractices.xml/AvoidReassigningParameters"/>
