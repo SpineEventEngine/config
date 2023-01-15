@@ -34,7 +34,7 @@ Prerequisites for the target repository:
 - have at least one tag and module.
 
 Prerequisites for running the script:
-- have [`git`](https://git-scm.com/downloads) and [`jenv`][jenv] installed;
+- have [`git`](https://git-scm.com/downloads) and [`jenv`][jenv-add] installed;
 - have Java **1.8** installed and [registered][jenv-add] in `jenv`;
 - have Java **11** installed, registered and [set as global][jenv-global] in `jenv`.
 
@@ -172,7 +172,6 @@ After running the example, the following happens:
 The script was developed under and for the macOS. It should not have problems working on a Linux 
 distribution. However, it was not meant and tested to do so.
 
-[jenv]: https://github.com/jenv/jenv#12-adding-your-java-environment
 [jenv-add]: https://github.com/jenv/jenv#12-adding-your-java-environment
 [jenv-global]: https://github.com/jenv/jenv#13-setting-a-global-java-version
 [dokka-for-java]: ../../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts
