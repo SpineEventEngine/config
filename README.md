@@ -78,9 +78,11 @@ These scripts are copied by the `pull` script when `config` is applied to a new 
 
 ## Further reading
 
-  * [GitHub: Working with submodules](https://blog.github.com/2016-02-01-working-with-submodules/)
-  * [Pro Git: Git Tools - Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
+  * [GitHub: Working with submodules][working-with-submodules]
+  * [Pro Git: Git Tools - Git Submodules][submodule-tools]
   
 [base]: https://github.com/SpineEventEngine/base
 [base-types]: https://github.com/SpineEventEngine/base-types
 [core-java]: https://github.com/SpineEventEngine/core-java
+[working-with-submodules]: https://blog.github.com/2016-02-01-working-with-submodules
+[submodule-tools]: https://git-scm.com/book/en/v2/Git-Tools-Submodules 

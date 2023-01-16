@@ -1,17 +1,29 @@
-### Description
+## `publish-documentation` directory
 
-This directory contains a script and serves as a workspace for it. The script generates and publishes 
-Dokka documentation for releases of Spine projects prior to the `2.0.0` version. Documentation is 
-published to the `gh-pages` branch of the target repository.
+This directory contains the [`publish.sh`](publish.sh) script and serves as a workspace for it. 
+The script generates and publishes Dokka documentation for releases of Spine projects prior
+to the `2.0.0` version. Documentation is published to the `gh-pages` branch of
+the target repository.
 
 ### Important details
 
 - The script works with the repository over HTTPS, so if you are not authenticated in `git`, you will 
   be prompted to do so using a username and a personal access token.
-- The script conceptually relies on the fact that each release has a corresponding tag.
+
+
+- The script relies on the fact that each release has a corresponding tag.
+
+
 - If the `gh-pages` branch does not exist, it is created.
+
+
 - It is assumed that releases of Spine projects prior to the `2.0.0` version use Java 8.
-- Documentation is generated using [this configuration](../../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts).
+
+
+- Documentation is generated using 
+  [`dokka-for-java.gradle.kts`][dokka-for-java] script.
+
+
 - The script modifies the parent directory during its run. At the end, of its run the script reverts 
   the directory to the initial state.
 
@@ -22,9 +34,9 @@ Prerequisites for the target repository:
 - have at least one tag and module.
 
 Prerequisites for running the script:
-- have [`git`](https://git-scm.com/downloads) and [`jenv`](https://github.com/jenv/jenv#12-adding-your-java-environment) installed;
-- have Java **1.8** installed and [registered](https://github.com/jenv/jenv#12-adding-your-java-environment) in `jenv`;
-- have Java **11** installed, registered and [set as global](https://github.com/jenv/jenv#13-setting-a-global-java-version) in `jenv`.
+- have [`git`](https://git-scm.com/downloads) and [`jenv`][jenv-repo] installed;
+- have Java **1.8** installed and [registered][jenv-add] in `jenv`;
+- have Java **11** installed, registered and [set as global][jenv-global] in `jenv`.
 
 ### Usage
 
@@ -34,10 +46,14 @@ The script should be launched from this directory and follow the template provid
 ```
 
 Description of parameters:
-* `repositoryUrl` - a GitHub HTTPS URL.
-* `tags` - a list of comma-separated git tags. A tag marked with an asterisk is considered 'primary'. 
+* `repositoryUrl` — a GitHub HTTPS URL.
+
+
+* `tags` — a list of comma-separated git tags. A tag marked with an asterisk is considered 'primary'. 
    A tag without it is considered 'secondary'.
-* `paths` - a list of comma-separated paths to modules. A path should be using the Unix file separator("/"). 
+
+
+* `paths` — a list of comma-separated paths to modules. A path should be using the Unix file separator("/"). 
    A path is considered relative to the root of the repository, i.e. for a root-level module, the path 
    is just the name of the module.
 
@@ -136,14 +152,16 @@ After running the example, the following happens:
     │
     ```
 
-#### Edge cases
+### Edge cases
 
 - If any of the passed tags already has Dokka documentation published to the `gh-pages` branch, the 
   script tries to overwrite it if there are changes in a tool output. The presence of changes 
   depends on how much the Dokka configuration has changed since the last publication. If an output 
   matches the published one, a commit is not made.
 
+
 - If no tags are marked 'primary', they all are considered 'secondary' and processed accordingly.
+
 
 - If multiple tags are marked 'primary', then each of these tags is published as 'primary' one by one. 
   That means the last in the list marked as 'primary' overwrites all others as if they were published
@@ -153,3 +171,8 @@ After running the example, the following happens:
 
 The script was developed under and for the macOS. It should not have problems working on a Linux 
 distribution. However, it was not meant and tested to do so.
+
+[jenv-repo]: https://github.com/jenv/jenv
+[jenv-add]: https://github.com/jenv/jenv#12-adding-your-java-environment
+[jenv-global]: https://github.com/jenv/jenv#13-setting-a-global-java-version
+[dokka-for-java]: ../../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts
