@@ -154,12 +154,14 @@ fun Project.configureTaskDependencies() {
         val createVersionFile = "createVersionFile"
         "compileKotlin".dependOn(launchProtoData)
         "compileTestKotlin".dependOn(launchTestProtoData)
-        "sourcesJar".dependOn(generateProto)
-        "sourcesJar".dependOn(launchProtoData)
-        "sourcesJar".dependOn(createVersionFile)
-        "sourcesJar".dependOn("prepareProtocConfigVersions")
-        "dokkaHtml".dependOn(generateProto)
-        "dokkaHtml".dependOn(launchProtoData)
+        val sourcesJar = "sourcesJar"
+        sourcesJar.dependOn(generateProto)
+        sourcesJar.dependOn(launchProtoData)
+        sourcesJar.dependOn(createVersionFile)
+        sourcesJar.dependOn("prepareProtocConfigVersions")
+        val dokkaHtml = "dokkaHtml"
+        dokkaHtml.dependOn(generateProto)
+        dokkaHtml.dependOn(launchProtoData)
         "dokkaJavadoc".dependOn(launchProtoData)
         "publishPluginJar".dependOn(createVersionFile)
     }
