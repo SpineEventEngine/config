@@ -25,6 +25,7 @@ style:
 complexity:
   TooManyFunctions:
     excludes:
+      - '**/*Exts.kt'
       - '**/*Extensions.kt'
       - '**/*View.kt'
       - '**/*Projection.kt'
