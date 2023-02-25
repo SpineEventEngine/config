@@ -28,7 +28,6 @@ package io.spine.internal.gradle.publish
 
 import io.spine.internal.gradle.sourceSets
 import org.gradle.api.Project
-import org.gradle.api.file.FileTreeElement
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
@@ -50,19 +49,6 @@ fun TaskContainer.excludeGoogleProtoFromArtifacts() {
 }
 
 /**
- * Checks if the given file belongs to the Google `.proto` sources.
- */
-private fun FileTreeElement.isGoogleProtoSource(): Boolean {
-    val pathSegments = relativePath.segments
-    return pathSegments.isNotEmpty() && pathSegments[0].equals("google")
-}
-
-/**
- * The reference to the `generateProto` task of a `main` source set.
- */
-internal fun Project.generateProto() = tasks.getByName("generateProto")
-
-/**
  * Locates or creates `sourcesJar` task in this [Project].
  *
  * The output of this task is a `jar` archive. The archive contains sources from `main` source set.
@@ -77,7 +63,7 @@ internal fun Project.generateProto() = tasks.getByName("generateProto")
  * For Proto sources to be included – [special treatment][protoSources] is needed.
  */
 internal fun Project.sourcesJar() = tasks.getOrCreate("sourcesJar") {
-    dependsOn(generateProto())
+    dependOnGenerateProto()
     archiveClassifier.set("sources")
     from(sourceSets["main"].allSource) // Puts Java and Kotlin sources.
     from(protoSources()) // Puts Proto sources.
@@ -90,7 +76,7 @@ internal fun Project.sourcesJar() = tasks.getOrCreate("sourcesJar") {
  * [Proto sources][protoSources] from `main` source set.
  */
 internal fun Project.protoJar() = tasks.getOrCreate("protoJar") {
-    dependsOn(generateProto())
+    dependOnGenerateProto()
     archiveClassifier.set("proto")
     from(protoSources())
 }

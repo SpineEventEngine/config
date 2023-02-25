@@ -29,9 +29,11 @@ package io.spine.internal.gradle.publish
 import io.spine.internal.gradle.sourceSets
 import java.io.File
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.file.FileTreeElement
 import org.gradle.api.file.SourceDirectorySet
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.get
-
 
 /**
  * Tells whether there are any Proto sources in "main" source set.
@@ -52,4 +54,26 @@ internal fun Project.protoSources(): Set<File> {
     val mainSourceSet = sourceSets["main"]
     val protoSourceDirs = mainSourceSet.extensions.findByName("proto") as SourceDirectorySet?
     return protoSourceDirs?.srcDirs ?: emptySet()
+}
+
+/**
+ * Checks if the given file belongs to the Google `.proto` sources.
+ */
+internal fun FileTreeElement.isGoogleProtoSource(): Boolean {
+    val pathSegments = relativePath.segments
+    return pathSegments.isNotEmpty() && pathSegments[0].equals("google")
+}
+
+/**
+ * The reference to the `generateProto` task of a `main` source set.
+ */
+internal fun Project.generateProto(): Task? = tasks.findByName("generateProto")
+
+/**
+ * Makes this [Jar] task depend on the [generateProto] task, if it exists in the same project.
+ */
+internal fun Jar.dependOnGenerateProto() {
+    project.generateProto()?.let {
+        this.dependsOn(it)
+    }
 }
