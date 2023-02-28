@@ -97,6 +97,10 @@ rm -rf ../buildSrc/src/main/kotlin/io/spine/internal/gradle/test
 rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependencies/AutoCommon.kt
 rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependencies/AutoService.kt
 rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependencies/AutoValue.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/ProtoLocators.kt
+rm -f ../buildSrc/src/main/kotlin/TaskDependencies.kt
+rm -f ../buildSrc/src/main/kotlin/Dependencies.kt
+rm -f ../buildSrc/src/main/kotlin/PluginAccessors.kt
 
 echo "Updating Gradle 'buildSrc' scripts"
 cp -R buildSrc ..
