@@ -1,5 +1,5 @@
 /*
- * Copyright 2022, TeamDev. All rights reserved.
+ * Copyright 2023, TeamDev. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,24 +24,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.gradle.dokka
-
 import java.io.File
-import org.gradle.api.file.FileCollection
-import org.jetbrains.dokka.gradle.GradleDokkaSourceSetBuilder
+import org.gradle.kotlin.dsl.getValue
+import org.gradle.kotlin.dsl.getting
+import org.gradle.kotlin.dsl.jacoco
+import org.gradle.testing.jacoco.tasks.JacocoReport
 
-/**
- * Returns only Java source roots out of all present in the source set.
- *
- * It is a helper method for generating documentation by Dokka only for Java code.
- * It is helpful when both Java and Kotlin source files are present in a source set.
- * Dokka can properly generate documentation for either Kotlin or Java depending on
- * the configuration, but not both.
- */
-internal fun GradleDokkaSourceSetBuilder.onlyJavaSources(): FileCollection {
-    return sourceRoots.filter(File::isJavaSourceDirectory)
+plugins {
+    jacoco
 }
 
-private fun File.isJavaSourceDirectory(): Boolean {
-    return isDirectory && name == "java"
+/**
+ * Configures [JacocoReport] task to run in a Kotlin KMM project for `commonMain` and `jvmMain`
+ * source sets.
+ *
+ * This script plugin must be applied using the following construct at the end of
+ * a `build.gradle.kts` file of a module:
+ *
+ * ```kotlin
+ * apply(plugin="jacoco-kmm-jvm")
+ * ```
+ * Please do not apply this script plugin in the `plugins {}` block because `jacocoTestReport`
+ * task is not yet available at this stage.
+ */
+private val about = ""
+
+/**
+ * Configure Jacoco task with custom input from this KMM project.
+ */
+val jacocoTestReport: JacocoReport by tasks.getting(JacocoReport::class) {
+
+    val classFiles = File("${buildDir}/classes/kotlin/jvm/")
+        .walkBottomUp()
+        .toSet()
+    classDirectories.setFrom(classFiles)
+
+    val coverageSourceDirs = arrayOf(
+        "src/commonMain",
+        "src/jvmMain"
+    )
+    sourceDirectories.setFrom(files(coverageSourceDirs))
+
+    executionData.setFrom(files("${buildDir}/jacoco/jvmTest.exec"))
 }

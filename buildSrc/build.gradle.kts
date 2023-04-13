@@ -62,7 +62,7 @@ val grGitVersion = "4.1.1"
  * Please check that this value matches one defined in
  *  [io.spine.internal.dependency.Kotlin.version].
  */
-val kotlinVersion = "1.8.0"
+val kotlinVersion = "1.8.10"
 
 /**
  * The version of Guava used in `buildSrc`.
@@ -90,7 +90,7 @@ val errorPronePluginVersion = "3.0.1"
  * @see <a href="https://github.com/google/protobuf-gradle-plugin/releases">
  *     Protobuf Gradle Plugins Releases</a>
  */
-val protobufPluginVersion = "0.9.1"
+val protobufPluginVersion = "0.9.2"
 
 /**
  * The version of Dokka Gradle Plugins.
@@ -100,7 +100,7 @@ val protobufPluginVersion = "0.9.1"
  * @see <a href="https://github.com/Kotlin/dokka/releases">
  *     Dokka Releases</a>
  */
-val dokkaVersion = "1.7.20"
+val dokkaVersion = "1.8.10"
 
 /**
  * The version of Detekt Gradle Plugin.

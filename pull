@@ -102,6 +102,18 @@ rm -f ../buildSrc/src/main/kotlin/TaskDependencies.kt
 rm -f ../buildSrc/src/main/kotlin/Dependencies.kt
 rm -f ../buildSrc/src/main/kotlin/PluginAccessors.kt
 
+# 2023-04-13, remove outdated files.
+
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/Artifacts.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/dokka/DokkaExtensions.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/dokka/TaskContainerExtensions.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/publish/DokkaJar.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/publish/ProtoJar.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/publish/TestJar.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/publish/PublishingConfig.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/publish/Tasks.kt
+
+
 echo "Updating Gradle 'buildSrc' scripts"
 cp -R buildSrc ..
 
