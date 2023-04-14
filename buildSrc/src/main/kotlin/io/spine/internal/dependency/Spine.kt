@@ -61,13 +61,13 @@ class Spine(p: ExtensionAware) {
          *
          * @see [ProtoData]
          */
-        const val protoData = "0.7.6"
+        const val protoData = "0.8.0"
 
         /**
          * The default version of `base` to use.
          * @see [Spine.base]
          */
-        const val base = "2.0.0-SNAPSHOT.162"
+        const val base = "2.0.0-SNAPSHOT.170"
 
         /**
          * The default version of `core-java` to use.
