@@ -147,6 +147,8 @@ class Spine(p: ExtensionAware) {
     }
 
     val base = "$group:spine-base:${p.baseVersion}"
+    val logging = "$group:spine-logging:${p.baseVersion}"
+    val reflect = "$group:spine-reflect:${p.baseVersion}"
     val baseTypes = "$group:spine-base-types:${p.baseTypesVersion}"
     val time = "$group:spine-time:${p.timeVersion}"
     val change = "$group:spine-change:${p.changeVersion}"
