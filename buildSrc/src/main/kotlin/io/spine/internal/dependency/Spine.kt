@@ -45,14 +45,16 @@ object Spine {
         const val protoData = ProtoData.version
 
         /** The version of [Spine.base]. */
-        const val base = "2.0.0-SNAPSHOT.170"
+        const val base = "2.0.0-SNAPSHOT.180"
 
         /** The version of [Spine.reflect]. */
-        const val reflect = "2.0.0-SNAPSHOT.170"
+        const val reflect = "2.0.0-SNAPSHOT.181"
 
         /** The version of [Spine.logging]. */
-        const val logging = "2.0.0-SNAPSHOT.170"
-        
+        const val logging = "2.0.0-SNAPSHOT.182"
+
+        /** The version of [Spine.testlib]. */
+        const val testlib = "2.0.0-SNAPSHOT.183"
         /**
          * The version of `core-java`.
          * @see [Spine.CoreJava.client]
@@ -94,14 +96,14 @@ object Spine {
     const val protoDataVersion = ProtoData.version
 
     const val base = "$group:spine-base:${ArtifactVersion.base}"
-    const val logging = "$group:spine-logging:${ArtifactVersion.base}"
-    const val reflect = "$group:spine-reflect:${ArtifactVersion.base}"
+    const val logging = "$group:spine-logging:${ArtifactVersion.logging}"
+    const val reflect = "$group:spine-reflect:${ArtifactVersion.reflect}"
     const val baseTypes = "$group:spine-base-types:${ArtifactVersion.baseTypes}"
     const val time = "$group:spine-time:${ArtifactVersion.time}"
     const val change = "$group:spine-change:${ArtifactVersion.change}"
     const val text = "$group:spine-text:${ArtifactVersion.text}"
 
-    const val testlib = "$toolsGroup:spine-testlib:${ArtifactVersion.base}"
+    const val testlib = "$toolsGroup:spine-testlib:${ArtifactVersion.testlib}"
     const val testUtilTime = "$toolsGroup:spine-testutil-time:${ArtifactVersion.time}"
     const val toolBase = "$toolsGroup:spine-tool-base:${ArtifactVersion.toolBase}"
     const val pluginBase = "$toolsGroup:spine-plugin-base:${ArtifactVersion.toolBase}"
