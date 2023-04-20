@@ -120,7 +120,7 @@ object Spine {
     const val javadocTools = "$toolsGroup::${ArtifactVersion.javadocTools}"
 
     @Deprecated("Please use `validation.runtime`", replaceWith = ReplaceWith("validation.runtime"))
-    val validate = "$group:spine-validate:${ArtifactVersion.base}"
+    const val validate = "$group:spine-validate:${ArtifactVersion.base}"
 
     @Deprecated("Please use `Validation` instead.")
     val validation = Validation
