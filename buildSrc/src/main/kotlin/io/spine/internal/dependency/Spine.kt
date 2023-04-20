@@ -55,6 +55,7 @@ object Spine {
 
         /** The version of [Spine.testlib]. */
         const val testlib = "2.0.0-SNAPSHOT.183"
+
         /**
          * The version of `core-java`.
          * @see [Spine.CoreJava.client]
