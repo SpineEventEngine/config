@@ -117,10 +117,6 @@ object Spine {
         const val pluginLib = "$toolsGroup:spine-mc-java-plugins:${version}:all"
     }
 
-    /**
-     *  Does not allow re-definition via a project property.
-     *  Please change [ArtifactVersion.javadocTools].
-     */
     const val javadocTools = "$toolsGroup::${ArtifactVersion.javadocTools}"
 
     @Deprecated("Please use `validation.runtime`", replaceWith = ReplaceWith("validation.runtime"))
