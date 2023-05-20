@@ -48,10 +48,10 @@ object Spine {
         const val base = "2.0.0-SNAPSHOT.180"
 
         /** The version of [Spine.reflect]. */
-        const val reflect = "2.0.0-SNAPSHOT.181"
+        const val reflect = "2.0.0-SNAPSHOT.182"
 
         /** The version of [Spine.logging]. */
-        const val logging = "2.0.0-SNAPSHOT.182"
+        const val logging = "2.0.0-SNAPSHOT.183"
 
         /** The version of [Spine.testlib]. */
         const val testlib = "2.0.0-SNAPSHOT.183"
@@ -98,6 +98,8 @@ object Spine {
 
     const val base = "$group:spine-base:${ArtifactVersion.base}"
     const val logging = "$group:spine-logging:${ArtifactVersion.logging}"
+    const val loggingContext = "$group:spine-logging-context:${ArtifactVersion.logging}"
+    const val loggingBackend = "$group:spine-logging-backend:${ArtifactVersion.logging}"
     const val reflect = "$group:spine-reflect:${ArtifactVersion.reflect}"
     const val baseTypes = "$group:spine-base-types:${ArtifactVersion.baseTypes}"
     const val time = "$group:spine-time:${ArtifactVersion.time}"
