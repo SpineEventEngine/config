@@ -113,6 +113,9 @@ rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/publish/TestJ
 rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/publish/PublishingConfig.kt
 rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/publish/Tasks.kt
 
+# 2023-05-20, remove outdated files.
+
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/DependencyResolution.kt
 
 echo "Updating Gradle 'buildSrc' scripts"
 cp -R buildSrc ..
