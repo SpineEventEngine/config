@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+#
+# Copyright 2023, TeamDev. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Redistribution and use in source and/or binary forms, with or without
+# modification, must retain the above copyright notice and the following
+# disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+# This file lists the `publish.sh` examples,
+# which were last used for 1.x release.
+#
+# These should help end-users of `publish.sh` gather the required parameter values.
+
+# Base
+./publish.sh repositoryUrl='https://github.com/SpineEventEngine/base.git' tags='*v1.9.0' \
+    paths='base,testlib,tools/errorprone-checks,tools/javadoc-filter,tools/javadoc-prettifier,tools/model-compiler,tools/mute-logging,tools/plugin-base,tools/plugin-testlib,tools/proto-dart-plugin,tools/proto-js-plugin,tools/protoc-api,tools/protoc-plugin,tools/tool-base,tools/tools-api,tools/validation-generator'
+
+# Time
+./publish.sh repositoryUrl='https://github.com/SpineEventEngine/time.git' tags='*v1.9.0' \
+    paths='time,testutil-time'
+
+# Core Java
+./publish.sh repositoryUrl='https://github.com/SpineEventEngine/core-java.git' tags='*v1.9.0' \
+    paths='client,core,server,testutil-client,testutil-core,testutil-server'
+
+# Google Cloud Java
+./publish.sh repositoryUrl='https://github.com/SpineEventEngine/gcloud-java.git' tags='*v1.9.0' \
+    paths='datastore,pubsub,stackdriver-trace,testutil-gcloud'
+
+# Web
+./publish.sh repositoryUrl='https://github.com/SpineEventEngine/web.git' tags='*v1.9.0' \
+    paths='web,testutil-web,firebase-web'
+
+# JDBC Storage
+./publish.sh repositoryUrl='https://github.com/SpineEventEngine/jdbc-storage.git' tags='*v1.9.0' \
+    paths='rdbms'
+
+# Bootstrap
+./publish.sh repositoryUrl='https://github.com/SpineEventEngine/bootstrap.git' tags='*v1.9.0' \
+    paths='plugin'
+
