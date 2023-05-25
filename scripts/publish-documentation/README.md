@@ -172,6 +172,11 @@ After running the example, the following happens:
 The script was developed under and for the macOS. It should not have problems working on a Linux 
 distribution. However, it was not meant and tested to do so.
 
+### Samples
+
+See `sample-publishing-1.x-repos.sh.template` to get a general understanding
+how the publishing was made for 1.x branch last time.
+
 [jenv-repo]: https://github.com/jenv/jenv
 [jenv-add]: https://github.com/jenv/jenv#12-adding-your-java-environment
 [jenv-global]: https://github.com/jenv/jenv#13-setting-a-global-java-version

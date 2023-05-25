@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# Copyright 2022, TeamDev. All rights reserved.
+# Copyright 2023, TeamDev. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,14 +29,14 @@ PRIMARY_MARK="*"
 USAGE_TEMPLATE="Usage: publish.sh repositoryUrl='' tags='x,${PRIMARY_MARK}y,z' paths='foo,bar/baz'"
 USAGE_EXAMPLE="Example: publish.sh repositoryUrl='https://github.com/SpineEventEngine/base.git' tags='v1.7.0,${PRIMARY_MARK}v1.8.0' paths='base,tools/proto-js-plugin'"
 
-# Check that exactly three parameters were provided.
+# Checks that exactly three parameters were provided.
 if [ "$#" -ne 3 ]; then
     echo "$USAGE_TEMPLATE"
     echo "$USAGE_EXAMPLE"
-    exit 22 # Invalid argument
+    exit 22 # Invalid argument.
 fi
 
-# Declare variables matching those passed to the script.
+# Declares variables matching those passed to the script.
 for arg in "$@"
 do
    key=$(echo "$arg" | cut -f1 -d=)
@@ -47,17 +47,17 @@ do
    declare "$key"="$value"
 done
 
-# Check that all necessary for the script parameters were set.
+# Checks that all necessary for the script parameters were set.
 if [ -z "$repositoryUrl" ] || [ -z "$tags" ] || [ -z "$paths" ]; then
     echo "$USAGE_TEMPLATE"
     echo "$USAGE_EXAMPLE"
-    exit 22 # Invalid argument
+    exit 22 # Invalid argument.
 fi
 
 mkdir "workspace" && cd "workspace" || exit 2 # Folder does not exist.
 git clone "$repositoryUrl" "."
 
-# Create the `gh-pages` branch if it does not exist.
+# Creates the `gh-pages` branch if it does not exist.
 if ! [[ $(git branch --list --all origin/gh-pages) ]]; then
   git switch --orphan gh-pages
   git commit --allow-empty -m "Initial commit"
@@ -65,13 +65,13 @@ if ! [[ $(git branch --list --all origin/gh-pages) ]]; then
 fi
 
 log() {
-  echo "-----------------$1-----------------"
+  echo "---$1---"
 }
 
 for tag in $(echo "$tags" | tr "," "\n")
 do
   if [[ $tag == "$PRIMARY_MARK"* ]]; then
-    # Remove the leading $PRIMARY_MARK.
+    # Removes the leading $PRIMARY_MARK.
     tag=${tag:1}
     is_primary=true
   else
@@ -82,7 +82,7 @@ do
   git checkout -f "tags/$tag"
   git submodule update --init --recursive
 
-  # Remove the leading 'v' to derive the version.
+  # Removes the leading 'v' to derive the version.
   version=${tag:1}
 
   jenv local 1.8
@@ -98,6 +98,8 @@ do
 
       ./gradlew ":$module:classes"
       mkdir "../$module"
+
+      log "[$PWD] Copying '$path' to '../$module/'"
       cp -r "$path/" "../$module/"
 
       cd ..
@@ -108,6 +110,7 @@ do
       echo "" > "$module/build.gradle"
       echo "" > "$module/build.gradle.kts"
 
+      log "[$PWD] Executing ':$module:dokkaHtml'"
       ./gradlew ":$module:dokkaHtml"
 
       cd "workspace" || exit 2 # Folder does not exist.
@@ -116,22 +119,38 @@ do
   git switch gh-pages
   git clean -fdx
 
+  # For some reason, recent usage of this script failed since `.config` folder
+  # was preventing from making a commit, as it was "untracked" change.
+  # Therefore, this folder is pre-emptively removed here, just in case.
+  # We don't need it in `gh-pages` branch anyway.
+  log "[$PWD] Removing ./config folder."
+  rm -rf "./config"
+
   for path in $(echo "$paths" | tr "," "\n")
   do
     # Extracts the module name from a path. A path should use the "/" as a file separator.
     module="${path##*\/}"
 
+    log "[$PWD] Creating directory 'dokka-reference/$module/v/$version'"
     mkdir -p "dokka-reference/$module/v/$version"
-    cp -r "../$module/build/docs/dokka/" "dokka-reference/$module/v/$version/"
+
+    # Previous versions of Dokka produced their output in `dokka` subfolder.
+    # Most recent versions do that differently, generating the documentation
+    # into `dokkaJava` folder when used in JVM mode.
+    # We treat the observed behaviour as "new normal".
+    log "[$PWD] Copying recursively: '../$module/build/docs/dokkaJava/' -> 'dokka-reference/$module/v/$version/'"
+    cp -r "../$module/build/docs/dokkaJava/" "dokka-reference/$module/v/$version/"
 
     commit_message="Publish Dokka documentation for \`$module\` of \`$version\` "
     if [ $is_primary = true ]; then
-      cp -r "../$module/build/docs/dokka/" "dokka-reference/$module/"
+      log "[$PWD] PRIMARY Copying recursively: '../$module/build/docs/dokkaJava/' -> 'dokka-reference/$module/'"
+      cp -r "../$module/build/docs/dokkaJava/" "dokka-reference/$module/"
       commit_message+="as primary"
     else
       commit_message+="as secondary"
     fi
 
+    log "[$PWD] Executing 'git add \"dokka-reference/$module/*\"', and committing."
     git add "dokka-reference/$module/*"
     git commit -m "$commit_message"
 
