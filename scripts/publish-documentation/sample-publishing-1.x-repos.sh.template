@@ -58,4 +58,3 @@
 # Bootstrap
 ./publish.sh repositoryUrl='https://github.com/SpineEventEngine/bootstrap.git' tags='*v1.9.0' \
     paths='plugin'
-
