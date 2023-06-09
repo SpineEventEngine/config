@@ -4,6 +4,7 @@ on: push
 
 jobs:
   build:
+    name: Run Detekt code analysis
     runs-on: ubuntu-latest
 
     steps:
