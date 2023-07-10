@@ -39,7 +39,7 @@ object Kotlin {
 
     /**
      * The version of the JetBrains annotations library, which is a transitive
-     * dependency for us.
+     * dependency for us via Kotlin libraries.
      *
      * https://github.com/JetBrains/java-annotations
      */
@@ -47,20 +47,20 @@ object Kotlin {
 
     private const val group = "org.jetbrains.kotlin"
 
-    const val stdLib       = "${group}:kotlin-stdlib:${version}"
-    const val stdLibCommon = "${group}:kotlin-stdlib-common:${version}"
+    const val stdLib       = "$group:kotlin-stdlib:$version"
+    const val stdLibCommon = "$group:kotlin-stdlib-common:$version"
 
     @Deprecated("Please use `stdLib` instead.")
-    const val stdLibJdk7   = "${group}:kotlin-stdlib-jdk7:${version}"
+    const val stdLibJdk7   = "$group:kotlin-stdlib-jdk7:$version"
 
     @Deprecated("Please use `stdLib` instead.")
-    const val stdLibJdk8   = "${group}:kotlin-stdlib-jdk8:${version}"
+    const val stdLibJdk8   = "$group:kotlin-stdlib-jdk8:$version"
 
-    const val reflect    = "${group}:kotlin-reflect:${version}"
-    const val testJUnit5 = "${group}:kotlin-test-junit5:$version"
+    const val reflect    = "$group:kotlin-reflect:$version"
+    const val testJUnit5 = "$group:kotlin-test-junit5:$version"
 
-    const val gradlePluginApi = "${group}:kotlin-gradle-plugin-api:$version"
-    const val gradlePluginLib = "${group}:kotlin-gradle-plugin:${version}"
+    const val gradlePluginApi = "$group:kotlin-gradle-plugin-api:$version"
+    const val gradlePluginLib = "$group:kotlin-gradle-plugin:$version"
 
-    const val jetbrainsAnnotations = "${group}:annotations:$annotationsVersion"
+    const val jetbrainsAnnotations = "org.jetbrains:annotations:$annotationsVersion"
 }
