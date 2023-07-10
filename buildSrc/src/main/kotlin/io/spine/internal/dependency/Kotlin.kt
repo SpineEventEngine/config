@@ -43,7 +43,7 @@ object Kotlin {
      *
      * https://github.com/JetBrains/java-annotations
      */
-    const val annotationsVersion = "23.0"
+    private const val annotationsVersion = "23.0"
 
     private const val group = "org.jetbrains.kotlin"
 

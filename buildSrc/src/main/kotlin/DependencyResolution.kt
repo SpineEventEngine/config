@@ -132,7 +132,7 @@ private fun ResolutionStrategy.forceTransitiveDependencies() {
         Jackson.moduleKotlin,
         Jackson.bom,
         Jackson.annotations,
-        Kotlin.annotationsVersion
+        Kotlin.jetbrainsAnnotations
     )
 }
 
