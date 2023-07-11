@@ -24,12 +24,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.File
-import org.gradle.kotlin.dsl.getValue
-import org.gradle.kotlin.dsl.getting
-import org.gradle.kotlin.dsl.jacoco
-import org.gradle.testing.jacoco.tasks.JacocoReport
-
 plugins {
     jacoco
 }
@@ -47,6 +41,7 @@ plugins {
  * Please do not apply this script plugin in the `plugins {}` block because `jacocoTestReport`
  * task is not yet available at this stage.
  */
+@Suppress("unused")
 private val about = ""
 
 /**
