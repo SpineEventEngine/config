@@ -25,6 +25,18 @@
  */
 
 import BuildSettings.javaVersion
+import Jvm_module_gradle.Module
+import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.api
+import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.clean
+import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.compileOnlyApi
+import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.errorprone
+import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.java
+import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.kotlin
+import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.kover
+import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.koverReport
+import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.runtimeOnly
+import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.test
+import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.testImplementation
 import io.spine.internal.dependency.CheckerFramework
 import io.spine.internal.dependency.Dokka
 import io.spine.internal.dependency.ErrorProne
@@ -45,6 +57,19 @@ import io.spine.internal.gradle.kotlin.setFreeCompilerArgs
 import io.spine.internal.gradle.report.license.LicenseReporter
 import io.spine.internal.gradle.testing.configureLogging
 import io.spine.internal.gradle.testing.registerTestTasks
+import org.gradle.api.Project
+import org.gradle.api.tasks.Delete
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.getValue
+import org.gradle.kotlin.dsl.idea
+import org.gradle.kotlin.dsl.invoke
+import org.gradle.kotlin.dsl.`java-library`
+import org.gradle.kotlin.dsl.kotlin
+import org.gradle.kotlin.dsl.provideDelegate
+import org.gradle.kotlin.dsl.registering
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
