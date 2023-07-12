@@ -113,6 +113,11 @@ object Spine {
     const val pluginTestlib = "$toolsGroup:spine-plugin-testlib:${ArtifactVersion.toolBase}"
     const val modelCompiler = "$toolsGroup:spine-model-compiler:${ArtifactVersion.mc}"
 
+    /**
+     * Dependencies on Spine Model Compiler for Java.
+     *
+     * See [mc-java](https://github.com/SpineEventEngine/mc-java).
+     */
     object McJava {
         const val version = ArtifactVersion.mcJava
         const val pluginId = "io.spine.mc-java"

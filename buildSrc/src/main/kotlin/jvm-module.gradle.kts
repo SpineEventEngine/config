@@ -25,18 +25,6 @@
  */
 
 import BuildSettings.javaVersion
-import Jvm_module_gradle.Module
-import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.api
-import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.clean
-import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.compileOnlyApi
-import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.errorprone
-import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.java
-import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.kotlin
-import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.kover
-import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.koverReport
-import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.runtimeOnly
-import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.test
-import gradle.kotlin.dsl.accessors._64a751ccaf7e88f157625e9dd0b1323b.testImplementation
 import io.spine.internal.dependency.CheckerFramework
 import io.spine.internal.dependency.Dokka
 import io.spine.internal.dependency.ErrorProne
@@ -227,4 +215,3 @@ fun Module.configureGitHubPages() {
         rootFolder.set(rootDir)
     }
 }
-
