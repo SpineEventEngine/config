@@ -121,7 +121,7 @@ rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/DependencyRes
 
 rm -f ../buildSrc/src/main/kotlin/java-module.gradle.kts
 rm -f ../buildSrc/src/main/kotlin/kotlin-jvm-module.gradle.kts
-rm -f ../buildSrc/src/main/kotlin/kotlin-kmm-jvm.gradle.kts
+rm -f ../buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts
 
 echo "Updating Gradle 'buildSrc' scripts"
 cp -R buildSrc ..
