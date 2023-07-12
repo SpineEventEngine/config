@@ -60,7 +60,7 @@ class Repository : AutoCloseable {
      *
      * This configuration determines what ends up in author and commiter fields of a commit.
      */
-    var user: UserInfo
+    var user: UserInfo? = null
         get() = field
         private set(value) {
             field = value
@@ -69,7 +69,7 @@ class Repository : AutoCloseable {
     /**
      * Currently checked out branch.
      */
-    var currentBranch: String
+    var currentBranch: String? = null
         get() = field
         private set(value) {
             field = value
