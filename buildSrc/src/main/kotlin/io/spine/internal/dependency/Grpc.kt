@@ -27,7 +27,7 @@
 package io.spine.internal.dependency
 
 // https://github.com/grpc/grpc-java
-@Suppress("unused")
+@Suppress("unused", "ConstPropertyName")
 object Grpc {
     @Suppress("MemberVisibilityCanBePrivate")
     const val version        = "1.53.0"
