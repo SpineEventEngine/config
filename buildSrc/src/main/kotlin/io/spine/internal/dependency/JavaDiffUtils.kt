@@ -26,9 +26,17 @@
 
 package io.spine.internal.dependency
 
-// https://asm.ow2.io/
+/**
+ * The dependency on the `java-diff-utils` library, which is transitive for us at the time
+ * of writing.
+ *
+ * It might become our dependency as a part of
+ * the [Spine Text](https://github.com/SpineEventEngine/text) library.
+ */
 @Suppress("unused", "ConstPropertyName")
-object Asm {
-    private const val version = "9.2"
-    const val lib = "org.ow2.asm:asm:$version"
+object JavaDiffUtils {
+
+    // https://github.com/java-diff-utils/java-diff-utils/releases
+    private const val version = "4.12"
+    const val lib = "com.github.java-diff-utils:java-diff-utils:${version}"
 }

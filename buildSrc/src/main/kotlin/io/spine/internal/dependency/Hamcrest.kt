@@ -26,9 +26,15 @@
 
 package io.spine.internal.dependency
 
-// https://asm.ow2.io/
+/**
+ * The dependency on the Hamcrest, which is transitive for us.
+ *
+ * If you need assertions in Java, please use Google [Truth] instead.
+ * For Kotlin, please use [Kotest].
+ */
 @Suppress("unused", "ConstPropertyName")
-object Asm {
-    private const val version = "9.2"
-    const val lib = "org.ow2.asm:asm:$version"
+object Hamcrest {
+    // https://github.com/hamcrest/JavaHamcrest/releases
+    private const val version = "2.2"
+    const val core = "org.hamcrest:hamcrest-core:${version}"
 }
