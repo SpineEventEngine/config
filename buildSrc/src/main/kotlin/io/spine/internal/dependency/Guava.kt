@@ -33,7 +33,7 @@ package io.spine.internal.dependency
  * to synchronize the version used in `buildSrc` and in Spine modules. Otherwise, when testing
  * Gradle plugins, errors may occur due to version clashes.
  *
- * @see <a href="https://github.com/google/guava">Guava at GitHub</a>
+ * @see <a href="https://github.com/google/guava">Guava at GitHub</a>.
  */
 @Suppress("unused", "ConstPropertyName")
 object Guava {
