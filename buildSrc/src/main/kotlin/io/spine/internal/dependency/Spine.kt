@@ -45,7 +45,7 @@ object Spine {
          *
          * @see <a href="https://github.com/SpineEventEngine/base">spine-base</a>
          */
-        const val base = "2.0.0-SNAPSHOT.184"
+        const val base = "2.0.0-SNAPSHOT.185"
 
         /**
          * The version of [Spine.reflect].
@@ -75,7 +75,7 @@ object Spine {
          * @see [Spine.CoreJava.server]
          * @see <a href="https://github.com/SpineEventEngine/core-java">core-java</a>
          */
-        const val core = "2.0.0-SNAPSHOT.150"
+        const val core = "2.0.0-SNAPSHOT.152"
 
         /**
          * The version of [Spine.modelCompiler].
@@ -89,14 +89,14 @@ object Spine {
          *
          * @see <a href="https://github.com/SpineEventEngine/mc-java">spine-mc-java</a>
          */
-        const val mcJava = "2.0.0-SNAPSHOT.163"
+        const val mcJava = "2.0.0-SNAPSHOT.166"
 
         /**
          * The version of [Spine.baseTypes].
          *
          * @see <a href="https://github.com/SpineEventEngine/base-types">spine-base-types</a>
          */
-        const val baseTypes = "2.0.0-SNAPSHOT.123"
+        const val baseTypes = "2.0.0-SNAPSHOT.124"
 
         /**
          * The version of [Spine.time].
