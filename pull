@@ -121,6 +121,9 @@ rm -f ../buildSrc/src/main/kotlin/kotlin-jvm-module.gradle.kts
 rm -f ../buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts
 rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/DependencyResolution.kt
 
+# 2023-07-30, remove outdated files.
+rm -f ../.lift.toml
+
 echo "Updating Gradle 'buildSrc' scripts"
 cp -R buildSrc ..
 
