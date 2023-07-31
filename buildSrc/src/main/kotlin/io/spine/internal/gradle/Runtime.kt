@@ -33,6 +33,12 @@ import java.io.StringWriter
 import java.util.*
 
 /**
+ * Utilities for working with processes from Gradle code.
+ */
+@Suppress("unused")
+private const val ABOUT = ""
+
+/**
  * Executor of CLI commands.
  *
  * Uses the passed [workingFolder] as the directory in which the commands are executed.
