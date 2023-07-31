@@ -27,7 +27,6 @@
 package io.spine.internal.gradle
 
 import com.google.common.base.Joiner
-import io.spine.internal.dependency.Flogger
 import java.io.File
 import java.io.InputStream
 import java.io.StringWriter
