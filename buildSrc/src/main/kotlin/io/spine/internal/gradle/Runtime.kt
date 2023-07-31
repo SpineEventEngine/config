@@ -33,11 +33,6 @@ import java.io.InputStream
 import java.io.StringWriter
 import java.util.*
 
-object Runtime {
-    @Suppress("unused")
-    val flogger = Flogger.Runtime
-}
-
 /**
  * Executor of CLI commands.
  *
