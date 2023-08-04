@@ -164,6 +164,7 @@ object Spine {
         const val lib = "$group:spine-logging:$version"
         const val backend = "$group:spine-logging-backend:$version"
         const val context = "$group:spine-logging-context:$version"
+        const val smokeTest = "$group:spine-logging-smoke-test:$version"
     }
 
     /**
