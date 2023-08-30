@@ -82,7 +82,7 @@ object Spine {
          *
          * @see <a href="https://github.com/SpineEventEngine/model-compiler">spine-model-compiler</a>
          */
-        const val mc = "2.0.0-SNAPSHOT.132"
+        const val mc = "2.0.0-SNAPSHOT.133"
 
         /**
          * The version of [McJava].
@@ -124,7 +124,7 @@ object Spine {
          *
          * @see <a href="https://github.com/SpineEventEngine/tool-base">spine-tool-base</a>
          */
-        const val toolBase = "2.0.0-SNAPSHOT.180"
+        const val toolBase = "2.0.0-SNAPSHOT.183"
 
         /**
          * The version of [Spine.javadocTools].
