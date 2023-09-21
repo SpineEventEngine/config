@@ -56,12 +56,24 @@ object ProtoData {
     const val group = "io.spine.protodata"
     const val pluginId = "io.spine.protodata"
 
+    /**
+     * The version of ProtoData dependencies.
+     */
     val version: String
     private const val fallbackVersion = "0.11.0"
 
+    /**
+     * The distinct version of ProtoData used by other build tools.
+     *
+     * When ProtoData is used both for building the project and as a part of the Project's
+     * transitional dependencies, this is the version used to build the project itself.
+     */
     val dogfoodingVersion: String
     private const val fallbackDfVersion = "0.9.11"
 
+    /**
+     * The artifact for the ProtoData Gradle plugin.
+     */
     val pluginLib: String
 
     val compiler
@@ -69,9 +81,24 @@ object ProtoData {
     val codegenJava
         get() = "io.spine.protodata:protodata-codegen-java:$version"
 
+    /**
+     * An env variable storing a custom [version].
+     */
     private const val VERSION_ENV = "PROTO_DATA_VERSION"
+
+    /**
+     * An env variable storing a custom [dogfoodingVersion].
+     */
     private const val DF_VERSION_ENV = "PROTO_DATA_DF_VERSION"
 
+    /**
+     * Sets up the versions and artifacts for the build to use.
+     *
+     * If either [VERSION_ENV] or [DF_VERSION_ENV] is set, those versions are used instead of
+     * the hardcoded ones. Also, in this mode, the [pluginLib] coordinates are changed so that
+     * it points at a locally published artifact. Otherwise it points at an artifact that would be
+     * published to a public plugin registry.
+     */
     init {
         val experimentVersion = System.getenv(VERSION_ENV)
         val experimentDfVersion = System.getenv(DF_VERSION_ENV)
