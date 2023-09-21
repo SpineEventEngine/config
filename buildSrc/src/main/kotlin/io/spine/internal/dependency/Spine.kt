@@ -59,7 +59,7 @@ object Spine {
          *
          * @see <a href="https://github.com/SpineEventEngine/logging">spine-logging</a>
          */
-        const val logging = "2.0.0-SNAPSHOT.209"
+        const val logging = "2.0.0-SNAPSHOT.215"
 
         /**
          * The version of [Spine.testlib].
@@ -89,7 +89,7 @@ object Spine {
          *
          * @see <a href="https://github.com/SpineEventEngine/mc-java">spine-mc-java</a>
          */
-        const val mcJava = "2.0.0-SNAPSHOT.168"
+        const val mcJava = "2.0.0-SNAPSHOT.170"
 
         /**
          * The version of [Spine.baseTypes].
