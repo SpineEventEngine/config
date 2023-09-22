@@ -79,7 +79,7 @@ object ProtoData {
     val compiler
         get() = "$group:protodata-compiler:$version"
     val codegenJava
-        get() = "io.spine.protodata:protodata-codegen-java:$version"
+        get() = "$group:protodata-codegen-java:$version"
 
     /**
      * An env variable storing a custom [version].
