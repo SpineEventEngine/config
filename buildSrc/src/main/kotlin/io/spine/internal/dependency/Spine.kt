@@ -165,6 +165,7 @@ object Spine {
         const val version = ArtifactVersion.logging
         const val lib = "$group:spine-logging:$version"
         const val backend = "$group:spine-logging-backend:$version"
+        const val log4j2Backend = "$group:spine-logging-log4j2-backend:$version"
         const val context = "$group:spine-logging-context:$version"
         const val grpcContext = "$group:spine-logging-grpc-context:$version"
         const val floggerApi = "$group:spine-flogger-api:$version"
