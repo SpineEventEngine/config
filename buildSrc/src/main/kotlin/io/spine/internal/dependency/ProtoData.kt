@@ -33,8 +33,8 @@ package io.spine.internal.dependency
  * registry, set the `PROTODATA_VERSION` and/or the `PROTODATA_DF_VERSION` environment variables
  * and stop the Gradle daemons so that Gradle observes the env change:
  * ```
- * export PROTO_DATA_VERSION=0.43.0-local
- * export PROTO_DATA_DF_VERSION=0.41.0
+ * export PROTODATA_VERSION=0.43.0-local
+ * export PROTODATA_DF_VERSION=0.41.0
  *
  * ./gradle --stop
  * ./gradle build   # Conduct the intended checks.
