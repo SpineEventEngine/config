@@ -168,6 +168,11 @@ object Spine {
         const val log4j2Backend = "$group:spine-logging-log4j2-backend:$version"
         const val context = "$group:spine-logging-context:$version"
         const val grpcContext = "$group:spine-logging-grpc-context:$version"
+
+        @Deprecated(
+            message = "Please use `Logging.lib` instead.",
+            replaceWith = ReplaceWith("lib")
+        )
         const val floggerApi = "$group:spine-flogger-api:$version"
 
         @Deprecated(
