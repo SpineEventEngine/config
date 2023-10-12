@@ -164,10 +164,18 @@ object Spine {
     object Logging {
         const val version = ArtifactVersion.logging
         const val lib = "$group:spine-logging:$version"
-        const val backend = "$group:spine-logging-backend:$version"
+
         const val log4j2Backend = "$group:spine-logging-log4j2-backend:$version"
-        const val context = "$group:spine-logging-context:$version"
+        const val stdContext = "$group:spine-logging-std-context:$version"
         const val grpcContext = "$group:spine-logging-grpc-context:$version"
+        const val smokeTest = "$group:spine-logging-smoke-test:$version"
+
+        // Transitive dependencies.
+        // Make `public` and use them to force a version in a particular repository, if needed.
+        internal const val julBackend = "$group:spine-logging-jul-backend:$version"
+        internal const val middleware = "$group:spine-logging-middleware:$version"
+        internal const val platformGenerator = "$group:spine-logging-platform-generator:$version"
+        internal const val jvmDefaultPlatform = "$group:spine-logging-jvm-default-platform:$version"
 
         @Deprecated(
             message = "Please use `Logging.lib` instead.",
