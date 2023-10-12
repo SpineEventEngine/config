@@ -59,7 +59,7 @@ object Spine {
          *
          * @see <a href="https://github.com/SpineEventEngine/logging">spine-logging</a>
          */
-        const val logging = "2.0.0-SNAPSHOT.226"
+        const val logging = "2.0.0-SNAPSHOT.232"
 
         /**
          * The version of [Spine.testlib].
@@ -180,7 +180,6 @@ object Spine {
             replaceWith = ReplaceWith("grpcContext")
         )
         const val floggerGrpcContext = "$group:spine-flogger-grpc-context:$version"
-        const val smokeTest = "$group:spine-logging-smoke-test:$version"
     }
 
     /**
