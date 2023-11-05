@@ -171,11 +171,29 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
+
+    @Suppress(
+        "VulnerableLibrariesLocal", "RedundantSuppression" /*
+        `artifactregistry-auth-common` has transitive dependency on Gson and Apache `commons-codec`.
+
+        Gson from version `2.8.6` until `2.8.9` is vulnerable to Deserialization of Untrusted Data
+         (https://devhub.checkmarx.com/cve-details/CVE-2022-25647/).
+
+        Apache `commons-codec` before 1.13 is vulnerable to information exposure
+        (https://devhub.checkmarx.com/cve-details/Cxeb68d52e-5509/).
+
+        We use Gson `2.10.1`and we force it in `forceProductionDependencies()`.
+        We use `commons-code` with version `1.16.0`, forcing it in `forceProductionDependencies()`.
+
+        So, we should be safe with the current version `artifactregistry-auth-common` until
+        we migrate to a later version. */
+    )
     implementation(
         "com.google.cloud.artifactregistry:artifactregistry-auth-common:$googleAuthToolVersion"
     ) {
         exclude(group = "com.google.guava")
     }
+
     implementation("com.google.guava:guava:$guavaVersion")
     api("com.github.jk1:gradle-license-report:$licenseReportVersion")
     implementation("org.ajoberstar.grgit:grgit-core:${grGitVersion}")
