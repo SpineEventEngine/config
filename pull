@@ -124,6 +124,10 @@ rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/DependencyResolution.
 # 2023-07-30, remove outdated files.
 rm -f ../.lift.toml
 
+# 2023-11-24, remove `license-report.md` in favor of `dependencies.md`
+# See `config#498` for more.
+rm -f ../license-report.md
+
 echo "Updating Gradle 'buildSrc' scripts"
 cp -R buildSrc ..
 
