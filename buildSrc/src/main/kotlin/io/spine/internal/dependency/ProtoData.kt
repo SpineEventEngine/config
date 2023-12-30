@@ -29,7 +29,7 @@ package io.spine.internal.dependency
 /**
  * Dependencies on ProtoData modules.
  *
- * In order to use locally published ProtoData version instead of the version from a public plugin
+ * To use the locally published ProtoData version, instead of the version from a public plugin
  * registry, set the `PROTODATA_VERSION` and/or the `PROTODATA_DF_VERSION` environment variables
  * and stop the Gradle daemons so that Gradle observes the env change:
  * ```
@@ -65,7 +65,7 @@ object ProtoData {
      * The version of ProtoData dependencies.
      */
     val version: String
-    private const val fallbackVersion = "0.15.3"
+    private const val fallbackVersion = "0.15.4"
 
     /**
      * The distinct version of ProtoData used by other build tools.
@@ -74,19 +74,36 @@ object ProtoData {
      * transitional dependencies, this is the version used to build the project itself.
      */
     val dogfoodingVersion: String
-    private const val fallbackDfVersion = "0.15.3"
+    private const val fallbackDfVersion = "0.15.4"
 
     /**
      * The artifact for the ProtoData Gradle plugin.
      */
     val pluginLib: String
 
+    fun pluginLib(version: String): String =
+        "$group:gradle-plugin:$version"
+
+    fun api(version: String): String =
+        "$group:protodata-api:$version"
+
     val api
-        get() = "$group:protodata-api:$version"
+        get() = api(version)
+
     val compiler
         get() = "$group:protodata-compiler:$version"
+
+    val gradleApi
+        get() = "$group:protodata-gradle-api:$version"
+
+    val cliApi
+        get() = "$group:protodata-cli-api:$version"
+
+    fun codegenJava(version: String): String =
+        "$group:protodata-codegen-java:$version"
+
     val codegenJava
-        get() = "$group:protodata-codegen-java:$version"
+        get() = codegenJava(version)
 
     /**
      * An env variable storing a custom [version].
@@ -113,7 +130,7 @@ object ProtoData {
             version = experimentVersion ?: fallbackVersion
             dogfoodingVersion = experimentDfVersion ?: fallbackDfVersion
 
-            pluginLib = "${group}:gradle-plugin:$version"
+            pluginLib = pluginLib(version)
             println("""
 
                 ❗ Running an experiment with ProtoData. ❗
