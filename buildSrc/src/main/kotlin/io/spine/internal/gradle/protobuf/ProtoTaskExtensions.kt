@@ -127,6 +127,8 @@ fun GenerateProtoTask.setup() {
  * however, it is not possible to use this plugin (or its code)
  * in this repository due to cyclic dependencies.
  */
+@Suppress(
+    "TooGenericExceptionCaught" /* Handling all file-writing failures in the same way.*/)
 private fun GenerateProtoTask.setupDescriptorSetFileCreation() {
     // Tell `protoc` generate descriptor set file.
     // The name of the generated file reflects project's Maven coordinates.
