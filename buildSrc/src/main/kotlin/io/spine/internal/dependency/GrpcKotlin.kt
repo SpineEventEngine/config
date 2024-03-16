@@ -1,5 +1,5 @@
 /*
- * Copyright 2024, TeamDev. All rights reserved.
+ * Copyright 2022, TeamDev. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,17 +27,16 @@
 package io.spine.internal.dependency
 
 /**
- * Dependencies on Spine Validation SDK.
+ * gRPC-Kotlin/JVM.
  *
- * See [`SpineEventEngine/validation`](https://github.com/SpineEventEngine/validation/).
+ * @see <a href="https://github.com/grpc/grpc-kotlin">GitHub project</a>
  */
-@Suppress("unused", "ConstPropertyName")
-object Validation {
-    const val version = "2.0.0-SNAPSHOT.127"
-    const val group = "io.spine.validation"
-    const val runtime = "$group:spine-validation-java-runtime:$version"
-    const val java = "$group:spine-validation-java:$version"
-    const val javaBundle = "$group:spine-validation-java-bundle:$version"
-    const val model = "$group:spine-validation-model:$version"
-    const val config = "$group:spine-validation-configuration:$version"
+object GrpcKotlin {
+    const val version = "1.3.0"
+    const val stub = "io.grpc:grpc-kotlin-stub:$version"
+
+    object ProtocPlugin {
+        const val id = "grpckt"
+        const val artifact = "io.grpc:protoc-gen-grpc-kotlin:$version:jdk8@jar"
+    }
 }
