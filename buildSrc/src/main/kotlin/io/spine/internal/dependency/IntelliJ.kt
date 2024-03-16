@@ -65,6 +65,7 @@ object IntelliJ {
 
     object Jsp {
         private const val group = "com.jetbrains.intellij.jsp"
+        @Suppress("MemberNameEqualsClassName")
         const val jsp = "$group:jsp:$version"
     }
 
