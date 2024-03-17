@@ -1,5 +1,5 @@
 /*
- * Copyright 2022, TeamDev. All rights reserved.
+ * Copyright 2024, TeamDev. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ package io.spine.internal.dependency
  *
  * @see <a href="https://github.com/grpc/grpc-kotlin">GitHub project</a>
  */
+@Suppress("unused")
 object GrpcKotlin {
     const val version = "1.3.0"
     const val stub = "io.grpc:grpc-kotlin-stub:$version"
