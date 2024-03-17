@@ -33,9 +33,9 @@ package io.spine.internal.dependency
  */
 @Suppress("unused")
 object Coroutines {
-    public const val version = "1.6.4"
-    public const val jdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$version"
-    public const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version"
-    public const val bom = "org.jetbrains.kotlinx:kotlinx-coroutines-bom:$version"
-    public const val coreJvm = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$version"
+    const val version = "1.6.4"
+    const val jdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$version"
+    const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version"
+    const val bom = "org.jetbrains.kotlinx:kotlinx-coroutines-bom:$version"
+    const val coreJvm = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$version"
 }
