@@ -24,9 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.gradle.kotlin.dsl.maven
+@file:Suppress("unused")
+
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+import org.gradle.kotlin.dsl.maven
 
 val RepositoryHandler.intellijReleases: MavenArtifactRepository
     get() = maven("https://www.jetbrains.com/intellij-repository/releases")
