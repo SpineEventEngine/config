@@ -120,6 +120,7 @@ rm -f ../buildSrc/src/main/kotlin/java-module.gradle.kts
 rm -f ../buildSrc/src/main/kotlin/kotlin-jvm-module.gradle.kts
 rm -f ../buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts
 rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/DependencyResolution.kt
+rm -f ../buildSrc/src/main/kotlin/Repositories.kt
 
 # 2023-07-30, remove outdated files.
 rm -f ../.lift.toml
