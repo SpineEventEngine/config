@@ -143,6 +143,7 @@ fun TaskContainer.dokkaHtmlTask(): DokkaTask? = this.findByName("dokkaHtml") as 
  * Dokka can properly generate documentation for either Kotlin or Java depending on
  * the configuration, but not both.
  */
+@Suppress("unused")
 internal fun GradleDokkaSourceSetBuilder.onlyJavaSources(): FileCollection {
     return sourceRoots.filter(File::isJavaSourceDirectory)
 }
