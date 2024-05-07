@@ -1,5 +1,5 @@
 /*
- * Copyright 2023, TeamDev. All rights reserved.
+ * Copyright 2024, TeamDev. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import io.spine.internal.dependency.Dokka
 import io.spine.internal.dependency.ErrorProne
 import io.spine.internal.dependency.Guava
 import io.spine.internal.dependency.JUnit
+import io.spine.internal.dependency.Jacoco
 import io.spine.internal.dependency.JavaX
 import io.spine.internal.dependency.Kotest
 import io.spine.internal.dependency.Protobuf
@@ -119,7 +120,7 @@ fun Module.configureKotlin(javaVersion: JavaLanguageVersion) {
     }
 
     kover {
-        useJacoco()
+        useJacoco(version = Jacoco.version)
     }
 
     koverReport {
@@ -171,7 +172,8 @@ fun Module.forceConfigurations() {
                 force(
                     JUnit.bom,
                     JUnit.runner,
-                    Dokka.BasePlugin.lib
+                    Dokka.BasePlugin.lib,
+                    Spine.reflect
                 )
             }
         }
