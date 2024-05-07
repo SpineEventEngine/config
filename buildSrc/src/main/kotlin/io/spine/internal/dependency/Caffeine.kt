@@ -34,6 +34,7 @@ package io.spine.internal.dependency
  *
  * @see <a href="https://github.com/ben-manes/caffeine">Caffeine at GitHub</a>
  */
+@Suppress("unused")
 object Caffeine {
     private const val version = "3.0.5"
     const val lib = "com.github.ben-manes.caffeine:caffeine:$version"
