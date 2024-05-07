@@ -37,7 +37,6 @@ import io.spine.internal.gradle.sourceSets
 import java.io.File
 import java.util.*
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.Copy
