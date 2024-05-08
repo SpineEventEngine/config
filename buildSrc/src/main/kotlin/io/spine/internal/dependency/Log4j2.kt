@@ -1,5 +1,5 @@
 /*
- * Copyright 2023, TeamDev. All rights reserved.
+ * Copyright 2024, TeamDev. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,17 @@
 
 package io.spine.internal.dependency
 
-// https://github.com/Kotlin/kotlinx-kover
+/**
+ * An open-source logging framework.
+ *
+ * Spine uses its own [logging library][Spine.Logging], but also
+ * provides a backend implementation for [Log4j2]. This is why
+ * this dependency is needed.
+ *
+ * @see <a href="https://github.com/apache/logging-log4j2">Log4j2 releases at GitHub</a>
+ */
 @Suppress("unused", "ConstPropertyName")
-object Kover {
-    const val version = "0.7.6"
-    const val id = "org.jetbrains.kotlinx.kover"
-    const val classpath = "org.jetbrains.kotlinx:kover-gradle-plugin:$version"
+object Log4j2 {
+    private const val version = "2.20.0"
+    const val core = "org.apache.logging.log4j:log4j-core:$version"
 }
