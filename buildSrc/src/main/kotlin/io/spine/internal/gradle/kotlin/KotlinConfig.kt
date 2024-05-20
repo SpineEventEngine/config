@@ -51,7 +51,7 @@ fun KotlinJvmProjectExtension.applyJvmToolchain(version: String) =
 /**
  * Opts-in to experimental features that we use in our codebase.
  */
-@Suppress("unused")
+@Suppress("unused", "MagicNumber" /* Kotlin Compiler version. */)
 fun KotlinCompile.setFreeCompilerArgs() {
     // Avoid the "unsupported flag warning" for Kotlin compilers pre 1.9.20.
     // See: https://youtrack.jetbrains.com/issue/KT-61573
