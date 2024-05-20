@@ -53,18 +53,22 @@ fun KotlinJvmProjectExtension.applyJvmToolchain(version: String) =
  */
 @Suppress("unused")
 fun KotlinCompile.setFreeCompilerArgs() {
+    // Avoid the "unsupported flag warning" for Kotlin compilers pre 1.9.20.
+    // See: https://youtrack.jetbrains.com/issue/KT-61573
+    val expectActualClasses =
+        if (KotlinVersion.CURRENT.isAtLeast(1, 9, 20)) "-Xexpect-actual-classes" else ""
     kotlinOptions {
         freeCompilerArgs = listOf(
             "-Xskip-prerelease-check",
             "-Xjvm-default=all",
             "-Xinline-classes",
-            "-Xexpect-actual-classes",
+            expectActualClasses,
             "-opt-in=" +
                     "kotlin.contracts.ExperimentalContracts," +
                     "kotlin.io.path.ExperimentalPathApi," +
                     "kotlin.ExperimentalUnsignedTypes," +
                     "kotlin.ExperimentalStdlibApi," +
                     "kotlin.experimental.ExperimentalTypeInference",
-        )
+        ).filter { it.isNotBlank() }
     }
 }
