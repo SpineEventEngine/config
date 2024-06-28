@@ -27,20 +27,14 @@
 package io.spine.internal.dependency
 
 /**
- * Dependencies on ProtoTap plugins.
+ * Kotlin Symbol Processing API.
  *
- * See [`SpineEventEngine/ProtoTap`](https://github.com/SpineEventEngine/ProtoTap/).
+ * @see <a href="https://github.com/google/ksp">KSP GitHub repository</a>
  */
-@Suppress(
-    "unused" /* Some subprojects do not use ProtoData directly. */,
-    "ConstPropertyName" /* We use custom convention for artifact properties. */,
-    "MemberVisibilityCanBePrivate" /* The properties are used directly by other subprojects. */,
-)
-object ProtoTap {
-    const val group = "io.spine.tools"
-    const val version = "0.8.7"
-    const val gradlePluginId = "io.spine.prototap"
-    const val api = "$group:prototap-api:$version"
-    const val gradlePlugin = "$group:prototap-gradle-plugin:$version"
-    const val protocPlugin = "$group:prototap-protoc-plugin:$version"
+object Ksp {
+    /**
+     * The latest version compatible with Kotlin v1.8.22, which is bundled with Gradle 7.6.4.
+     */
+    const val version = "1.8.22-1.0.11"
+    const val id = "com.google.devtools.ksp"
 }

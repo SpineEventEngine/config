@@ -27,20 +27,12 @@
 package io.spine.internal.dependency
 
 /**
- * Dependencies on ProtoTap plugins.
+ * A Kotlin wrapper over [Caffeine].
  *
- * See [`SpineEventEngine/ProtoTap`](https://github.com/SpineEventEngine/ProtoTap/).
+ * @see <a href="https://github.com/sksamuel/aedile">Aedile at GitHub</a>
  */
-@Suppress(
-    "unused" /* Some subprojects do not use ProtoData directly. */,
-    "ConstPropertyName" /* We use custom convention for artifact properties. */,
-    "MemberVisibilityCanBePrivate" /* The properties are used directly by other subprojects. */,
-)
-object ProtoTap {
-    const val group = "io.spine.tools"
-    const val version = "0.8.7"
-    const val gradlePluginId = "io.spine.prototap"
-    const val api = "$group:prototap-api:$version"
-    const val gradlePlugin = "$group:prototap-gradle-plugin:$version"
-    const val protocPlugin = "$group:prototap-protoc-plugin:$version"
+@Suppress("unused")
+object Aedile {
+    private const val version = "1.3.1"
+    const val lib = "com.sksamuel.aedile:aedile-core:$version"
 }
