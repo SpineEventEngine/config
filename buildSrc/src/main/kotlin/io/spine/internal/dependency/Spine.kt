@@ -52,7 +52,7 @@ object Spine {
          *
          * @see <a href="https://github.com/SpineEventEngine/reflect">spine-reflect</a>
          */
-        const val reflect = "2.0.0-SNAPSHOT.184"
+        const val reflect = "2.0.0-SNAPSHOT.187"
 
         /**
          * The version of [Spine.Logging].
@@ -124,7 +124,7 @@ object Spine {
          *
          * @see <a href="https://github.com/SpineEventEngine/tool-base">spine-tool-base</a>
          */
-        const val toolBase = "2.0.0-SNAPSHOT.215"
+        const val toolBase = "2.0.0-SNAPSHOT.217"
 
         /**
          * The version of [Spine.javadocTools].
@@ -194,6 +194,8 @@ object Spine {
     object McJava {
         const val version = ArtifactVersion.mcJava
         const val pluginId = "io.spine.mc-java"
+        val base = base(version)
+        fun base(version: String): String = "$toolsGroup:spine-mc-java-base:$version"
         val pluginLib = pluginLib(version)
         fun pluginLib(version: String): String = "$toolsGroup:spine-mc-java-plugins:$version:all"
     }
