@@ -24,15 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.dependency
+package io.spine.internal.gradle.dokka
+
+import org.gradle.api.tasks.TaskContainer
+import org.jetbrains.dokka.gradle.DokkaTask
 
 /**
- * Helps optimize Gradle Builds by ensuring recommendations at build time.
- *
- * See [plugin site](https://runningcode.github.io/gradle-doctor) for features and usage.
+ * Finds the `dokkaHtml` Gradle task.
  */
-@Suppress("unused", "ConstPropertyName")
-object GradleDoctor {
-    const val version = "0.10.0"
-    const val pluginId = "com.osacky.doctor"
-}
+@Suppress("unused")
+fun TaskContainer.dokkaHtmlTask() = this.getByName("dokkaHtml") as DokkaTask
