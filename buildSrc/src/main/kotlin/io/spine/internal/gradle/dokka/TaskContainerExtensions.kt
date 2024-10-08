@@ -24,14 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.gradle.jvm.toolchain.JavaLanguageVersion
+package io.spine.internal.gradle.dokka
+
+import org.gradle.api.tasks.TaskContainer
+import org.jetbrains.dokka.gradle.DokkaTask
 
 /**
- * This object provides high-level constants, like the version of JVM, to be used
- * throughout the project.
+ * Finds the `dokkaHtml` Gradle task.
  */
-object BuildSettings {
-    private const val JVM_VERSION = 11
-    val javaVersion: JavaLanguageVersion = JavaLanguageVersion.of(JVM_VERSION)
-    const val REMOTE_DEBUG_PORT = 5566
-}
+@Suppress("unused")
+fun TaskContainer.dokkaHtmlTask() = this.getByName("dokkaHtml") as DokkaTask

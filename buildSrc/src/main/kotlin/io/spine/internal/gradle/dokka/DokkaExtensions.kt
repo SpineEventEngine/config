@@ -24,14 +24,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.gradle.jvm.toolchain.JavaLanguageVersion
+package io.spine.internal.gradle.dokka
+
+import java.io.File
+import org.gradle.api.file.FileCollection
+import org.jetbrains.dokka.gradle.GradleDokkaSourceSetBuilder
 
 /**
- * This object provides high-level constants, like the version of JVM, to be used
- * throughout the project.
+ * Returns only Java source roots out of all present in the source set.
+ *
+ * It is a helper method for generating documentation by Dokka only for Java code.
+ * It is helpful when both Java and Kotlin source files are present in a source set.
+ * Dokka can properly generate documentation for either Kotlin or Java depending on
+ * the configuration, but not both.
  */
-object BuildSettings {
-    private const val JVM_VERSION = 11
-    val javaVersion: JavaLanguageVersion = JavaLanguageVersion.of(JVM_VERSION)
-    const val REMOTE_DEBUG_PORT = 5566
+@Suppress("unused")
+internal fun GradleDokkaSourceSetBuilder.onlyJavaSources(): FileCollection {
+    return sourceRoots.filter(File::isJavaSourceDirectory)
+}
+
+private fun File.isJavaSourceDirectory(): Boolean {
+    return isDirectory && name == "java"
 }
