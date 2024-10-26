@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 #
-# Copyright 2023, TeamDev. All rights reserved.
+# Copyright 2024, TeamDev. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+# https://www.apache.org/licenses/LICENSE-2.0
 #
 # Redistribution and use in source and/or binary forms, with or without
 # modification, must retain the above copyright notice and the following
@@ -81,23 +81,21 @@ cp -a .github-workflows/. ../.github/workflows
 cp -a .github/workflows/. ../.github/workflows
 rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
 
-echo "Cleaning up GitHub workflows"
-# TODO:2022-11-15:yevhenii.nadtochii: Drop or update clean-up code below from time to time.
-rm -f ../.github/workflows/ensure-reports.updated.yml
+# echo "Cleaning up GitHub workflows"
+#rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
+#rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
 
-echo "Cleaning up Gradle 'buildSrc' scripts"
-# TODO:2022-11-02:yevhenii.nadtochii: Drop or update clean-up code below from time to time.
-rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
-rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/Scripts.kt
-rm -rf ../buildSrc/src/main/kotlin/io/spine/internal/gradle/test
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependencies/AutoCommon.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependencies/AutoService.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependencies/AutoValue.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/ProtoLocators.kt
-rm -f ../buildSrc/src/main/kotlin/TaskDependencies.kt
-rm -f ../buildSrc/src/main/kotlin/Dependencies.kt
-rm -f ../buildSrc/src/main/kotlin/PluginAccessors.kt
+# echo "Cleaning up Gradle 'buildSrc' scripts"
+#rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
+#rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
+
+echo "Cleaning up outdated dependency objects in 'buildSrc'"
+# 2024-10-26, remove outdated files.
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependency/McJava.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependency/ProtoData.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependency/ProtoTap.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependency/Spine.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependency/Validation.kt
 
 # 2023-04-13, remove outdated files.
 
