@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Redistribution and use in source and/or binary forms, with or without
  * modification, must retain the above copyright notice and the following
@@ -262,7 +262,9 @@ private fun GenerateProtoTask.dependOnProcessResourcesTask() {
  * Obtains the name of the `processResource` task for the given source set name.
  */
 private fun processResourceTaskName(sourceSetName: String): String {
-    val infix = if (sourceSetName == "main") "" else sourceSetName.capitalized()
+    val infix =
+        if (sourceSetName == "main") ""
+        else sourceSetName.capitalized()
     return "process${infix}Resources"
 }
 
