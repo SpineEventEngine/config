@@ -24,20 +24,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
+package io.spine.internal.dependency.spine
 
-plugins {
-    id("org.jetbrains.dokka") // Cannot use `Dokka` dependency object here yet.
-}
+/**
+ * Dependencies on Spine Validation SDK.
+ *
+ * See [`SpineEventEngine/validation`](https://github.com/SpineEventEngine/validation/).
+ */
+@Suppress("unused", "ConstPropertyName")
+object Validation {
+    /**
+     * The version of the Validation library artifacts.
+     */
+    const val version = "2.0.0-SNAPSHOT.160"
 
-dependencies {
-    useDokkaForKotlinAsJava()
-    useDokkaWithSpineExtensions()
-}
+    const val group = "io.spine.validation"
+    private const val prefix = "spine-validation"
 
-tasks.withType<AbstractDokkaLeafTask>().configureEach {
-    configureForJava()
-    onlyIf {
-        (it as AbstractDokkaLeafTask).isInPublishingGraph()
-    }
+    const val runtime = "$group:$prefix-java-runtime:$version"
+    const val java = "$group:$prefix-java:$version"
+
+    /** Obtains the artifact for the `java-bundle` artifact of the given version. */
+    fun javaBundle(version: String) = "$group:$prefix-java-bundle:$version"
+
+    val javaBundle = javaBundle(version)
+
+    const val model = "$group:$prefix-model:$version"
+    const val config = "$group:$prefix-configuration:$version"
 }

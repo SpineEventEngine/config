@@ -24,20 +24,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
+package io.spine.internal.dependency.spine
 
-plugins {
-    id("org.jetbrains.dokka") // Cannot use `Dokka` dependency object here yet.
-}
+/**
+ * Dependencies on the artifacts of the Spine Logging library.
+ *
+ * @see <a href="https://github.com/SpineEventEngine/logging">spine-logging</a>
+ */
+@Suppress("ConstPropertyName", "unused")
+object Logging {
+    const val version = "2.0.0-SNAPSHOT.240"
+    const val group = Spine.group
+    const val lib = "$group:spine-logging:$version"
+    const val libJvm = "$group:spine-logging-jvm:$version"
 
-dependencies {
-    useDokkaForKotlinAsJava()
-    useDokkaWithSpineExtensions()
-}
+    const val log4j2Backend = "$group:spine-logging-log4j2-backend:$version"
+    const val stdContext = "$group:spine-logging-std-context:$version"
+    const val grpcContext = "$group:spine-logging-grpc-context:$version"
+    const val smokeTest = "$group:spine-logging-smoke-test:$version"
 
-tasks.withType<AbstractDokkaLeafTask>().configureEach {
-    configureForJava()
-    onlyIf {
-        (it as AbstractDokkaLeafTask).isInPublishingGraph()
-    }
+    // Transitive dependencies.
+    // Make `public` and use them to force a version in a particular repository, if needed.
+    internal const val julBackend = "$group:spine-logging-jul-backend:$version"
+    internal const val middleware = "$group:spine-logging-middleware:$version"
+    internal const val platformGenerator = "$group:spine-logging-platform-generator:$version"
+    internal const val jvmDefaultPlatform = "$group:spine-logging-jvm-default-platform:$version"
 }

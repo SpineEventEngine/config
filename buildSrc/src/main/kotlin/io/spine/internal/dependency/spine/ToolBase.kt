@@ -24,23 +24,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.dependency
+package io.spine.internal.dependency.spine
 
 /**
- * Dependencies on ProtoTap plugins.
+ * Artifacts of the `tool-base` module.
  *
- * See [`SpineEventEngine/ProtoTap`](https://github.com/SpineEventEngine/ProtoTap/).
+ * @see <a href="https://github.com/SpineEventEngine/tool-base">spine-tool-base</a>
  */
-@Suppress(
-    "unused" /* Some subprojects do not use ProtoData directly. */,
-    "ConstPropertyName" /* We use custom convention for artifact properties. */,
-    "MemberVisibilityCanBePrivate" /* The properties are used directly by other subprojects. */,
-)
-object ProtoTap {
-    const val group = "io.spine.tools"
-    const val version = "0.8.7"
-    const val gradlePluginId = "io.spine.prototap"
-    const val api = "$group:prototap-api:$version"
-    const val gradlePlugin = "$group:prototap-gradle-plugin:$version"
-    const val protocPlugin = "$group:prototap-protoc-plugin:$version"
+@Suppress("ConstPropertyName", "unused")
+object ToolBase {
+    const val group = Spine.toolsGroup
+    const val version = "2.0.0-SNAPSHOT.232"
+
+    const val lib = "$group:spine-tool-base:$version"
+    const val pluginBase = "$group:spine-plugin-base:$version"
+    const val pluginTestlib = "$group:spine-plugin-testlib:$version"
+
+    const val intellijPlatformJava = "$group:intellij-platform-java:$version"
+
+    const val psiJava = "$group:spine-psi-java:$version"
 }
