@@ -24,23 +24,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.dependency.spine
+import org.gradle.configurationcache.extensions.capitalized
 
 /**
- * Artifacts of the `tool-base` module.
+ * This file provides extensions to `String` and `CharSequence` that wrap
+ * analogues from standard Kotlin runtime.
  *
- * @see <a href="https://github.com/SpineEventEngine/tool-base">spine-tool-base</a>
+ * It helps in switching between versions of Gradle which have different versions of
+ * the Kotlin runtime. Please see the bodies of the extension functions for details on
+ * switching the implementations depending on the Kotlin version at hand.
+ *
+ * Once we migrate to newer Gradle, these wrappers should be inlined with
+ * the subsequent removal of this source file.
  */
-@Suppress("ConstPropertyName", "unused")
-object ToolBase {
-    const val group = Spine.toolsGroup
-    const val version = "2.0.0-SNAPSHOT.233"
+@Suppress("unused")
+private const val ABOUT = ""
 
-    const val lib = "$group:spine-tool-base:$version"
-    const val pluginBase = "$group:spine-plugin-base:$version"
-    const val pluginTestlib = "$group:spine-plugin-testlib:$version"
+/**
+ * Makes the first character come in the title case.
+ */
+fun String.titleCaseFirstChar(): String {
+    // return replaceFirstChar { it.titlecase() }
+    // OR for earlier Kotlin versions:
+    //   1. add import of `org.gradle.configurationcache.extensions.capitalized`
+    //   2. call `capitalized()` instead of `replaceFirstChar` above.
+    return capitalized()
+}
 
-    const val intellijPlatformJava = "$group:intellij-platform-java:$version"
-
-    const val psiJava = "$group:spine-psi-java:$version"
+/**
+ * Converts this string to lowercase.
+ */
+fun String.lowercased(): String {
+    //    return lowercase()
+    // OR for earlier Kotlin versions call:
+    return toLowerCase()
 }
