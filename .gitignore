@@ -56,7 +56,6 @@
 # Generated source code
 **/generated/**
 
-
 # Gradle build files
 **/build/**
 
