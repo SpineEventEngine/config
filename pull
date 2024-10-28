@@ -89,6 +89,10 @@ rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only 
 #rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
 #rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
 
+# 2024-10-28
+echo "Removing old packages under 'buildSrc/src/main/kotin/'"
+rm -r ../buildSrc/src/main/kotlin/io/spine/internal/
+
 echo "Cleaning up outdated dependency objects in 'buildSrc'"
 # 2024-10-26, remove outdated files.
 rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependency/McJava.kt
