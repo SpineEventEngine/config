@@ -27,7 +27,7 @@
 package io.spine.gradle.report.coverage
 
 /**
- * The names of Gradle tasks involved into the JaCoCo reporting.
+ * The names of Gradle tasks involved in the JaCoCo reporting.
  */
 @Suppress("EnumEntryName", "EnumNaming") /* Dubbing the actual values in Gradle. */
 internal enum class TaskName {
