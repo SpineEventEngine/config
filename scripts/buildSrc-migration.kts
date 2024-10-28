@@ -74,6 +74,7 @@ private val libraries = buildMap {
     val new = "io.spine.dependency.lib"
 
     mv(old, new, "Aedile")
+    mv(old, new, "Clikt")
     mv(old, new, "ApacheHttp")
     mv(old, new, "AppEngine")
     mv(old, new, "Auto")
@@ -141,7 +142,6 @@ private val testDependencies = buildMap {
     val new = "io.spine.dependency.test"
 
     mv(old, new, "AssertK")
-    mv(old, new, "Clikt")
     mv(old, new, "Hamcrest")
     mv(old, new, "Jacoco")
     mv(old, new, "JUnit")
