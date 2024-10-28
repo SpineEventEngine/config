@@ -30,7 +30,7 @@ package io.spine.dependency.build
  * Dependencies on Checkstyle Java linter.
  *
  * @see <a href="https://checkstyle.sourceforge.io/">Checkstyle</a>
- * @see [io.spine.internal.gradle.checkstyle.CheckStyleConfig]
+ * @see [io.spine.gradle.checkstyle.CheckStyleConfig]
  */
 @Suppress("unused", "ConstPropertyName")
 object CheckStyle {

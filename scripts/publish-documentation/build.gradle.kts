@@ -1,11 +1,11 @@
 /*
- * Copyright 2023, TeamDev. All rights reserved.
+ * Copyright 2024, TeamDev. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Redistribution and use in source and/or binary forms, with or without
  * modification, must retain the above copyright notice and the following
@@ -26,14 +26,14 @@
 
 @file:Suppress("RemoveRedundantQualifierName") // To prevent IDEA replacing FQN imports.
 
-import io.spine.internal.gradle.applyStandard
-import io.spine.internal.gradle.javac.configureJavac
-import io.spine.internal.gradle.kotlin.applyJvmToolchain
-import io.spine.internal.gradle.kotlin.setFreeCompilerArgs
+import io.spine.gradle.applyStandard
+import io.spine.gradle.javac.configureJavac
+import io.spine.gradle.kotlin.applyJvmToolchain
+import io.spine.gradle.kotlin.setFreeCompilerArgs
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
-    io.spine.internal.gradle.doApplyStandard(repositories)
+    io.spine.gradle.doApplyStandard(repositories)
 }
 
 plugins {

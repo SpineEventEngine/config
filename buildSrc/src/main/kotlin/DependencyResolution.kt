@@ -24,33 +24,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import io.spine.dependency.local.Spine
 import io.spine.dependency.build.AnimalSniffer
+import io.spine.dependency.build.CheckerFramework
+import io.spine.dependency.build.Dokka
+import io.spine.dependency.build.ErrorProne
+import io.spine.dependency.build.FindBugs
 import io.spine.dependency.lib.Asm
 import io.spine.dependency.lib.AutoCommon
 import io.spine.dependency.lib.AutoService
 import io.spine.dependency.lib.AutoValue
-import io.spine.internal.dependency.CheckerFramework
 import io.spine.dependency.lib.CommonsCli
 import io.spine.dependency.lib.CommonsCodec
 import io.spine.dependency.lib.CommonsLogging
-import io.spine.internal.dependency.Dokka
-import io.spine.internal.dependency.ErrorProne
-import io.spine.dependency.build.FindBugs
 import io.spine.dependency.lib.Gson
-import io.spine.internal.dependency.Guava
-import io.spine.dependency.test.Hamcrest
+import io.spine.dependency.lib.Guava
 import io.spine.dependency.lib.J2ObjC
-import io.spine.internal.dependency.JUnit
-import io.spine.internal.dependency.Jackson
+import io.spine.dependency.lib.Jackson
 import io.spine.dependency.lib.JavaDiffUtils
-import io.spine.internal.dependency.Kotest
-import io.spine.internal.dependency.Kotlin
+import io.spine.dependency.lib.Kotlin
 import io.spine.dependency.lib.Okio
-import io.spine.dependency.test.OpenTest4J
 import io.spine.dependency.lib.Plexus
-import io.spine.internal.dependency.Protobuf
+import io.spine.dependency.lib.Protobuf
 import io.spine.dependency.lib.Slf4J
+import io.spine.dependency.local.Spine
+import io.spine.dependency.test.Hamcrest
+import io.spine.dependency.test.JUnit
+import io.spine.dependency.test.Kotest
+import io.spine.dependency.test.OpenTest4J
 import io.spine.dependency.test.Truth
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
