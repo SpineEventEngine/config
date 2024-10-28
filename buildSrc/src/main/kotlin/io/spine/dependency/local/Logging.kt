@@ -24,31 +24,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.dependency.spine
+package io.spine.dependency.local
 
 /**
- * Dependencies on Spine Validation SDK.
+ * Dependencies on the artifacts of the Spine Logging library.
  *
- * See [`SpineEventEngine/validation`](https://github.com/SpineEventEngine/validation/).
+ * @see <a href="https://github.com/SpineEventEngine/logging">spine-logging</a>
  */
-@Suppress("unused", "ConstPropertyName")
-object Validation {
-    /**
-     * The version of the Validation library artifacts.
-     */
-    const val version = "2.0.0-SNAPSHOT.160"
+@Suppress("ConstPropertyName", "unused")
+object Logging {
+    const val version = "2.0.0-SNAPSHOT.240"
+    const val group = Spine.group
+    const val lib = "$group:spine-logging:$version"
+    const val libJvm = "$group:spine-logging-jvm:$version"
 
-    const val group = "io.spine.validation"
-    private const val prefix = "spine-validation"
+    const val log4j2Backend = "$group:spine-logging-log4j2-backend:$version"
+    const val stdContext = "$group:spine-logging-std-context:$version"
+    const val grpcContext = "$group:spine-logging-grpc-context:$version"
+    const val smokeTest = "$group:spine-logging-smoke-test:$version"
 
-    const val runtime = "$group:$prefix-java-runtime:$version"
-    const val java = "$group:$prefix-java:$version"
-
-    /** Obtains the artifact for the `java-bundle` artifact of the given version. */
-    fun javaBundle(version: String) = "$group:$prefix-java-bundle:$version"
-
-    val javaBundle = javaBundle(version)
-
-    const val model = "$group:$prefix-model:$version"
-    const val config = "$group:$prefix-configuration:$version"
+    // Transitive dependencies.
+    // Make `public` and use them to force a version in a particular repository, if needed.
+    internal const val julBackend = "$group:spine-logging-jul-backend:$version"
+    internal const val middleware = "$group:spine-logging-middleware:$version"
+    internal const val platformGenerator = "$group:spine-logging-platform-generator:$version"
+    internal const val jvmDefaultPlatform = "$group:spine-logging-jvm-default-platform:$version"
 }

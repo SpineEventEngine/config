@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.dependency.spine
+package io.spine.dependency.local
 
 /**
  * Dependencies on smaller Spine modules.
@@ -62,21 +62,21 @@ object Spine {
 
     @Deprecated(
         message = "Please use top level `McJava` object instead.",
-        ReplaceWith("McJava", "io.spine.internal.dependency.spine.McJava")
+        ReplaceWith("McJava", "io.spine.dependency.local.McJava")
     )
-    val McJava = io.spine.internal.dependency.spine.McJava
+    val McJava = io.spine.dependency.local.McJava
 
     const val javadocFilter = "$toolsGroup:spine-javadoc-filter:${ArtifactVersion.javadocTools}"
 
     @Deprecated(
         message = "Please use top level `CoreJava.client` object instead.",
-        ReplaceWith("CoreJava.client", "io.spine.internal.dependency.spine.CoreJava")
+        ReplaceWith("CoreJava.client", "io.spine.dependency.local.CoreJava")
     )
     const val client = CoreJava.client
 
     @Deprecated(
         message = "Please use top level `CoreJava.server` object instead.",
-        ReplaceWith("CoreJava.server", "io.spine.internal.dependency.spine.CoreJava")
+        ReplaceWith("CoreJava.server", "io.spine.dependency.local.CoreJava")
     )
     const val server = CoreJava.server
 }

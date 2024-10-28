@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.dependency.spine
+package io.spine.dependency.local
 
 /**
  * Versions for published Spine SDK artifacts.

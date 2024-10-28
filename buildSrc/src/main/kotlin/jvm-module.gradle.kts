@@ -25,6 +25,8 @@
  */
 
 import BuildSettings.javaVersion
+import io.spine.dependency.local.Logging
+import io.spine.dependency.local.Spine
 import io.spine.internal.dependency.CheckerFramework
 import io.spine.internal.dependency.Dokka
 import io.spine.internal.dependency.ErrorProne
@@ -34,8 +36,6 @@ import io.spine.internal.dependency.Jacoco
 import io.spine.internal.dependency.JavaX
 import io.spine.internal.dependency.Kotest
 import io.spine.internal.dependency.Protobuf
-import io.spine.internal.dependency.spine.Logging
-import io.spine.internal.dependency.spine.Spine
 import io.spine.internal.gradle.checkstyle.CheckStyleConfig
 import io.spine.internal.gradle.github.pages.updateGitHubPages
 import io.spine.internal.gradle.javac.configureErrorProne

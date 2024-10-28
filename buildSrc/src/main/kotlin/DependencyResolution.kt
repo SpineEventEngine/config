@@ -24,6 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import io.spine.dependency.local.Spine
 import io.spine.internal.dependency.AnimalSniffer
 import io.spine.internal.dependency.Asm
 import io.spine.internal.dependency.AutoCommon
@@ -51,7 +52,6 @@ import io.spine.internal.dependency.Plexus
 import io.spine.internal.dependency.Protobuf
 import io.spine.internal.dependency.Slf4J
 import io.spine.internal.dependency.Truth
-import io.spine.internal.dependency.spine.Spine
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration

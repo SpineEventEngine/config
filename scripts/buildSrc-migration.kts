@@ -24,19 +24,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.dependency.spine
+private fun mv(oldPackage: String, newPackage: String, name: String): Pair<String, String> =
+    "$oldPackage.$name" to "$newPackage.$name"
 
-/**
- * Dependencies on `core-java` modules.
- *
- * See [`SpineEventEngine/core-java`](https://github.com/SpineEventEngine/core-java/).
- */
-@Suppress("ConstPropertyName", "unused")
-object CoreJava {
-    const val group = Spine.group
-    const val version = "2.0.0-SNAPSHOT.177"
-    const val core = "$group:spine-core:$version"
-    const val client = "$group:spine-client:$version"
-    const val server = "$group:spine-server:$version"
-    const val testUtilServer = "${Spine.toolsGroup}:spine-testutil-server:$version"
+private val localDependencies = buildMap<String, String> {
+    // The package we have local dependencies until mid-October '24.
+    val older = "io.spine.internal.dependency"
+    // The package we have for local dependencies after they moved recently.
+    val interim = "io.spine.internal.dependency.spine"
+    // New package.
+    val new = "io.spine.dependency.local"
+    
+    // Older `local` deps.
+    mv(older, new, "Logging")
+    mv(older, new, "McJava")
+    mv(older, new, "ProtoData")
+    mv(older, new, "ProtoTap")
+    mv(older, new, "Spine")
+    mv(older, new, "Validation")
+
+    // Interim `local` deps.
+     mv(interim, new, "ArtifactVersion")
+     mv(interim, new, "CoreJava")
+     mv(interim, new, "Logging")
+     mv(interim, new, "McJava")
+     mv(interim, new, "ProtoData")
+     mv(interim, new, "ProtoTap")
+     mv(interim, new, "Spine")
+     mv(interim, new, "ToolBase")
+     mv(interim, new, "Validation")
 }

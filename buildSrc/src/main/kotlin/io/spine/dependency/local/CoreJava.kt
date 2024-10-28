@@ -24,23 +24,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.dependency.spine
+package io.spine.dependency.local
 
 /**
- * Dependencies on ProtoTap plugins.
+ * Dependencies on `core-java` modules.
  *
- * See [`SpineEventEngine/ProtoTap`](https://github.com/SpineEventEngine/ProtoTap/).
+ * See [`SpineEventEngine/core-java`](https://github.com/SpineEventEngine/core-java/).
  */
-@Suppress(
-    "unused" /* Some subprojects do not use ProtoData directly. */,
-    "ConstPropertyName" /* We use custom convention for artifact properties. */,
-    "MemberVisibilityCanBePrivate" /* The properties are used directly by other subprojects. */,
-)
-object ProtoTap {
-    const val group = "io.spine.tools"
-    const val version = "0.8.7"
-    const val gradlePluginId = "io.spine.prototap"
-    const val api = "$group:prototap-api:$version"
-    const val gradlePlugin = "$group:prototap-gradle-plugin:$version"
-    const val protocPlugin = "$group:prototap-protoc-plugin:$version"
+@Suppress("ConstPropertyName", "unused")
+object CoreJava {
+    const val group = Spine.group
+    const val version = "2.0.0-SNAPSHOT.177"
+    const val core = "$group:spine-core:$version"
+    const val client = "$group:spine-client:$version"
+    const val server = "$group:spine-server:$version"
+    const val testUtilServer = "${Spine.toolsGroup}:spine-testutil-server:$version"
 }

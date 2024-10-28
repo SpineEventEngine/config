@@ -32,9 +32,9 @@ import io.spine.internal.dependency.Kotest
 import io.spine.internal.dependency.Kover
 import io.spine.internal.dependency.Ksp
 import io.spine.internal.dependency.Protobuf
-import io.spine.internal.dependency.spine.McJava
-import io.spine.internal.dependency.spine.ProtoData
-import io.spine.internal.dependency.spine.ProtoTap
+import io.spine.dependency.local.McJava
+import io.spine.dependency.local.ProtoData
+import io.spine.dependency.local.ProtoTap
 import io.spine.internal.gradle.standardToSpineSdk
 import org.gradle.api.Project
 import org.gradle.api.Task

@@ -26,8 +26,8 @@
 
 package io.spine.internal.gradle.javadoc
 
-import io.spine.internal.dependency.spine.ArtifactVersion
-import io.spine.internal.dependency.spine.Spine
+import io.spine.dependency.local.ArtifactVersion
+import io.spine.dependency.local.Spine
 import io.spine.internal.gradle.javadoc.ExcludeInternalDoclet.Companion.taskName
 import io.spine.internal.gradle.sourceSets
 import org.gradle.api.Project
