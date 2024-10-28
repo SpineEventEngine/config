@@ -27,10 +27,10 @@
 @file:Suppress("UnusedReceiverParameter", "unused", "TopLevelPropertyNaming", "ObjectPropertyName")
 
 import io.spine.internal.dependency.ErrorProne
-import io.spine.internal.dependency.GradleDoctor
+import io.spine.dependency.build.GradleDoctor
 import io.spine.internal.dependency.Kotest
 import io.spine.internal.dependency.Kover
-import io.spine.internal.dependency.Ksp
+import io.spine.dependency.build.Ksp
 import io.spine.internal.dependency.Protobuf
 import io.spine.dependency.local.McJava
 import io.spine.dependency.local.ProtoData

@@ -24,50 +24,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.gradle.checkstyle
-
-import io.spine.dependency.build.CheckStyle
-import org.gradle.api.Project
-import org.gradle.api.plugins.quality.Checkstyle
-import org.gradle.api.plugins.quality.CheckstyleExtension
-import org.gradle.api.plugins.quality.CheckstylePlugin
-import org.gradle.kotlin.dsl.the
+package io.spine.dependency.lib
 
 /**
- * Configures the Checkstyle plugin.
+ * A [high performance](https://github.com/ben-manes/caffeine/wiki/Benchmarks),
+ * [near optimal](https://github.com/ben-manes/caffeine/wiki/Efficiency) caching library.
  *
- * Usage:
- * ```
- *      CheckStyleConfig.applyTo(project)
- * ```
+ * This library is a transitive dependency for us via ErrorProne.
  *
- * Please note, the checks of the `test` sources are disabled.
- *
- * Also, this type is named in double-camel-case to avoid re-declaration due to a clash
- * with some Gradle-provided types.
+ * @see <a href="https://github.com/ben-manes/caffeine">Caffeine at GitHub</a>
  */
 @Suppress("unused")
-object CheckStyleConfig {
-
-    /**
-     * Applies the configuration to the passed [project].
-     */
-    fun applyTo(project: Project) {
-        project.apply {
-            plugin(CheckstylePlugin::class.java)
-        }
-
-        val configDir = project.rootDir.resolve("config/quality/")
-
-        with(project.the<CheckstyleExtension>()) {
-            toolVersion = CheckStyle.version
-            configDirectory.set(configDir)
-        }
-
-        project.afterEvaluate {
-            // Disables checking the test sources.
-            val checkstyleTest = project.tasks.findByName("checkstyleTest") as Checkstyle
-            checkstyleTest.enabled = false
-        }
-    }
+object Caffeine {
+    private const val version = "3.0.5"
+    const val lib = "com.github.ben-manes.caffeine:caffeine:$version"
 }

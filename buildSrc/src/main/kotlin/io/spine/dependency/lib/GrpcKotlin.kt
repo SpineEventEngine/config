@@ -24,50 +24,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.internal.gradle.checkstyle
-
-import io.spine.dependency.build.CheckStyle
-import org.gradle.api.Project
-import org.gradle.api.plugins.quality.Checkstyle
-import org.gradle.api.plugins.quality.CheckstyleExtension
-import org.gradle.api.plugins.quality.CheckstylePlugin
-import org.gradle.kotlin.dsl.the
+package io.spine.dependency.lib
 
 /**
- * Configures the Checkstyle plugin.
+ * gRPC-Kotlin/JVM.
  *
- * Usage:
- * ```
- *      CheckStyleConfig.applyTo(project)
- * ```
- *
- * Please note, the checks of the `test` sources are disabled.
- *
- * Also, this type is named in double-camel-case to avoid re-declaration due to a clash
- * with some Gradle-provided types.
+ * @see <a href="https://github.com/grpc/grpc-kotlin">GitHub project</a>
  */
 @Suppress("unused")
-object CheckStyleConfig {
+object GrpcKotlin {
+    const val version = "1.3.0"
+    const val stub = "io.grpc:grpc-kotlin-stub:$version"
 
-    /**
-     * Applies the configuration to the passed [project].
-     */
-    fun applyTo(project: Project) {
-        project.apply {
-            plugin(CheckstylePlugin::class.java)
-        }
-
-        val configDir = project.rootDir.resolve("config/quality/")
-
-        with(project.the<CheckstyleExtension>()) {
-            toolVersion = CheckStyle.version
-            configDirectory.set(configDir)
-        }
-
-        project.afterEvaluate {
-            // Disables checking the test sources.
-            val checkstyleTest = project.tasks.findByName("checkstyleTest") as Checkstyle
-            checkstyleTest.enabled = false
-        }
+    object ProtocPlugin {
+        const val id = "grpckt"
+        const val artifact = "io.grpc:protoc-gen-grpc-kotlin:$version:jdk8@jar"
     }
 }

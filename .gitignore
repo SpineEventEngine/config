@@ -56,6 +56,10 @@
 # Generated source code
 **/generated/**
 
+# Do not ignore `build` dependency objects under `buildSrc`.
+!/buildSrc/src/main/kotlin/io/spine/dependency/build/
+!buildSrc/src/main/kotlin/io/spine/dependency/build/
+
 # Gradle build files
 **/build/**
 
