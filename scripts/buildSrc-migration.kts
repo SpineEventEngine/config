@@ -26,43 +26,26 @@
 
 import java.io.File
 
-/*
- * Copyright 2024, TeamDev. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://www.apache.org/licenses/LICENSE-2.0
- *
- * Redistribution and use in source and/or binary forms, with or without
- * modification, must retain the above copyright notice and the following
- * disclaimer.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/**
+ * Creates a pair of old dependency name and a new one.
  */
+private fun MutableMap<String, String>.mv(
+    oldPackage: String,
+    newPackage: String,
+    name: String
+) = put("$oldPackage.$name", "$newPackage.$name")
 
-private fun mv(oldPackage: String, newPackage: String, name: String): Pair<String, String> =
-    "$oldPackage.$name" to "$newPackage.$name"
-
-private val localDependencies = buildMap<String, String> {
-    // The package we have local dependencies until mid-October '24.
+/**
+ * Dependency objects of Spine SDK modules.
+ */
+private val localDependencies = buildMap {
+    // The package we have local dependencies until late October '24.
     val older = "io.spine.internal.dependency"
     // The package we have for local dependencies after they moved recently.
     val interim = "io.spine.internal.dependency.spine"
     // New package.
     val new = "io.spine.dependency.local"
-    
+
     // Older `local` deps.
     mv(older, new, "Logging")
     mv(older, new, "McJava")
@@ -83,7 +66,10 @@ private val localDependencies = buildMap<String, String> {
      mv(interim, new, "Validation")
 }
 
-private val libraries = buildMap<String, String> {
+/**
+ * Dependencies on libraries we use.
+ */
+private val libraries = buildMap {
     val old = "io.spine.internal.dependency"
     val new = "io.spine.dependency.lib"
 
@@ -128,9 +114,9 @@ private val libraries = buildMap<String, String> {
 }
 
 /**
- * Build tools with the exception of [test] dependencies.
+ * Build tools with the exception of [testDependencies] dependencies.
  */
-private val buildTools = buildMap<String, String> {
+private val buildTools = buildMap {
     val old = "io.spine.internal.dependency"
     val new = "io.spine.dependency.build"
 
@@ -144,14 +130,15 @@ private val buildTools = buildMap<String, String> {
     mv(old, new, "Ksp")
     mv(old, new, "LicenseReport")
     mv(old, new, "OsDetector")
+    mv(old, new, "Pmd")
 }
 
 /**
  * Tools and libraries for testing.
  */
-private val test = buildMap<String, String> {
+private val testDependencies = buildMap {
     val old = "io.spine.internal.dependency"
-    val new = "io.spine.dependency.build"
+    val new = "io.spine.dependency.test"
 
     mv(old, new, "AssertK")
     mv(old, new, "Clikt")
@@ -166,17 +153,85 @@ private val test = buildMap<String, String> {
     mv(old, new, "Truth")
 }
 
-private val exclusions = setOf(
+/**
+ * Updated packages.
+ */
+private val packages = buildMap {
+    mv("io.spine.internal.gradle", "io.spine.gradle", "")
+    mv("io.spine.internal.markup", "io.spine.docs", "")
+}
+
+/**
+ * Directories to be excluded from the traversal.
+ */
+private val excludedDirs = setOf(
+    ".git",
     ".github",
     ".github-workflows",
     ".gradle",
+    ".idea",
     "build",
+    "gradle",
+    "quality",
     "BuildSpeed",
     "config"
 )
 
-fun applyReplacements() {
+/**
+ * Excludes top-level project directory names from the traversal.
+ */
+private val File.isExcluded: Boolean
+    get() = if (parent == ".")
+        name in excludedDirs
+    else false
+
+/**
+ * Extensions of files to be processed.
+ */
+private val extensions = arrayOf("kt", "kts")
+
+fun applyDependencyReplacements() {
     val projectRoot = File(".")
+    val allReplacements = localDependencies + libraries + buildTools + testDependencies + packages
     projectRoot.walk()
-        .onEnter { it.name !in exclusions }
+        .onEnter {
+            val enter = !it.isExcluded
+            if (enter) {
+                println("$it".removePrefix("./"))
+            }
+            enter
+        }
+        .filter { it.isFile && it.extension in extensions }
+        .forEach {
+            val outcome = it.applyDependencyReplacements(allReplacements)
+            if (outcome) {
+                println("  ${it.name} -> Modified.")
+            }
+        }
 }
+
+private fun File.applyDependencyReplacements(map: Map<String, String>): Boolean {
+    val lines = readText().lines()
+    var anythingReplaced = false
+    val result = StringBuilder()
+    lines.forEachIndexed { index, line ->
+        val key = map.keys.find { line.contains(it) }
+        if (key != null) {
+            val replaced = line.replace(key, map[key]!!)
+            result.append(replaced)
+            anythingReplaced = true
+        } else {
+            result.append(line)
+        }
+        if (index < lines.size - 1) {
+            result.append(System.lineSeparator())
+        }
+    }
+    if (anythingReplaced) {
+        writeText(result.toString())
+    }
+    return anythingReplaced
+}
+
+applyDependencyReplacements()
+
