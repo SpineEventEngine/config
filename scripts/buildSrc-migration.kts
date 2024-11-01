@@ -164,7 +164,7 @@ private val packages = buildMap {
 /**
  * Directories to be excluded from the traversal.
  */
-private val excludedDirs = setOf(
+private val excludedTopLevelDirs = setOf(
     ".git",
     ".github",
     ".github-workflows",
@@ -177,13 +177,24 @@ private val excludedDirs = setOf(
     "config"
 )
 
+private val excludedPaths = setOf(
+    "buildSrc/.gradle",
+    "buildSrc/build",
+    "scripts/publish-documentation/buildSrc",
+)
+
 /**
- * Excludes top-level project directory names from the traversal.
+ * Excludes from the traversal directories that should not be processed.
+ *
+ * 1. Top-level project directory with the names listed in [excludedTopLevelDirs].
+ * 2. `scripts/publish-documentation/buildSrc` directory, which is a symlink.
  */
 private val File.isExcluded: Boolean
-    get() = if (parent == ".")
-        name in excludedDirs
-    else false
+    get() = if (parent == ".") {
+        name in excludedTopLevelDirs
+    } else {
+        excludedPaths.any { path.contains(it) }
+    }
 
 /**
  * Extensions of files to be processed.
@@ -203,8 +214,8 @@ fun applyDependencyReplacements() {
         }
         .filter { it.isFile && it.extension in extensions }
         .forEach {
-            val outcome = it.applyDependencyReplacements(allReplacements)
-            if (outcome) {
+            val fileUpdated = it.applyDependencyReplacements(allReplacements)
+            if (fileUpdated) {
                 println("  ${it.name} -> Modified.")
             }
         }
@@ -233,4 +244,39 @@ private fun File.applyDependencyReplacements(map: Map<String, String>): Boolean 
     return anythingReplaced
 }
 
-applyDependencyReplacements()
+private fun fixNotIgnoringBuildDirs() {
+    val gitIgnore = File(".gitignore")
+    val text = gitIgnore.readText()
+    val nl = System.lineSeparator()
+
+    val buildDirectories = "!**/src/**/build/"
+    val includeBuildDirs = "$buildDirectories$nl"
+    val includeBuildDirFiles = "$buildDirectories**$nl"
+
+    if (text.contains(includeBuildDirFiles)) {
+        // Already processed.
+        return
+    }
+
+    val updatedText = if (text.contains(includeBuildDirs)) {
+        text.replace(
+            includeBuildDirs,
+            "$buildDirectories**$nl"
+        )
+    } else {
+        val ignoreFilesUnderBuild = "**/build/**$nl"
+        text.replace(
+            ignoreFilesUnderBuild,
+            "$ignoreFilesUnderBuild$includeBuildDirFiles"
+        )
+    }
+
+    gitIgnore.writeText(updatedText)
+}
+
+fun main() {
+    applyDependencyReplacements()
+    fixNotIgnoringBuildDirs()
+}
+
+main()
