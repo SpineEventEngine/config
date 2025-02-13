@@ -24,30 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.build
+package io.spine.dependency.lib
 
-/**
- * Kotlin Symbol Processing API.
- *
- * @see <a href="https://github.com/google/ksp">KSP GitHub repository</a>
- */
-@Suppress("ConstPropertyName")
-object Ksp {
-
-    /**
-     * The latest version compatible with Kotlin v1.8.22, which is bundled with Gradle 7.6.4.
-     *
-     * We need to stick to this version until we migrate to newer Gradle.
-     * Trying to use a newer version results in the following console output:
-     * ```
-     * ksp-1.9.24-1.0.20 is too new for kotlin-1.8.22. Please upgrade kotlin-gradle-plugin to 1.9.24.
-     * ```
-     *
-     * The version compatible with Kotlin v1.9.24 compiler is 1.9.24-1.0.20.
-     */
-    const val version = "1.8.22-1.0.11"
-    const val id = "com.google.devtools.ksp"
-    const val group = "com.google.devtools.ksp"
-    const val symbolProcessingApi = "$group:symbol-processing-api:$version"
-    const val symbolProcessing = "$group:symbol-processing:$version"
+// https://github.com/square/kotlinpoet
+@Suppress("unused", "ConstPropertyName")
+object KotlinPoet {
+    private const val version = "2.0.0"
+    const val lib = "com.squareup:kotlinpoet:$version"
+    const val ksp = "com.squareup:kotlinpoet-ksp:$version"
 }

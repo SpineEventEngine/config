@@ -24,30 +24,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.build
+package io.spine.dependency.test
 
 /**
- * Kotlin Symbol Processing API.
+ * A library for in-process compilation of Kotlin and Java code compilation.
  *
- * @see <a href="https://github.com/google/ksp">KSP GitHub repository</a>
+ * @see <a href="https://github.com/tschuchortdev/kotlin-compile-testing">GitHub repo</a>
  */
-@Suppress("ConstPropertyName")
-object Ksp {
-
-    /**
-     * The latest version compatible with Kotlin v1.8.22, which is bundled with Gradle 7.6.4.
-     *
-     * We need to stick to this version until we migrate to newer Gradle.
-     * Trying to use a newer version results in the following console output:
-     * ```
-     * ksp-1.9.24-1.0.20 is too new for kotlin-1.8.22. Please upgrade kotlin-gradle-plugin to 1.9.24.
-     * ```
-     *
-     * The version compatible with Kotlin v1.9.24 compiler is 1.9.24-1.0.20.
-     */
-    const val version = "1.8.22-1.0.11"
-    const val id = "com.google.devtools.ksp"
-    const val group = "com.google.devtools.ksp"
-    const val symbolProcessingApi = "$group:symbol-processing-api:$version"
-    const val symbolProcessing = "$group:symbol-processing:$version"
+@Suppress("unused", "ConstPropertyName")
+object KotlinCompileTesting {
+    private const val version = "1.5.0" // Compatible with Kotlin Compiler 1.8.22.
+    private const val group = "com.github.tschuchortdev"
+    const val lib = "$group:kotlin-compile-testing:$version"
+    const val libKsp = "$group:kotlin-compile-testing-ksp:$version"
 }
