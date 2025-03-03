@@ -74,7 +74,6 @@ function initialize() {
 initialize .gitattributes
 initialize .gitignore
 initialize .github
-initialize .java-version
 
 # Update existing workflows with more recent versions
 echo "Updating GitHub workflows"
