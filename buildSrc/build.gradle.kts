@@ -39,9 +39,6 @@ plugins {
 
     // https://github.com/jk1/Gradle-License-Report/releases
     id("com.github.jk1.dependency-license-report").version("2.7")
-
-    // https://github.com/johnrengelman/shadow/releases
-    id("com.github.johnrengelman.shadow").version("7.1.2")
 }
 
 repositories {
@@ -239,8 +236,4 @@ fun DependencyHandlerScope.dependOnAuthCommon() {
     ) {
         exclude(group = "com.google.guava")
     }
-}
-
-tasks.shadowJar {
-    setZip64(true)
 }
