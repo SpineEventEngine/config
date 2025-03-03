@@ -217,7 +217,7 @@ fun Project.dokkaJavaJar(): TaskProvider<Jar> = tasks.getOrCreate("dokkaJavaJar"
 fun Project.disableDocumentationTasks() {
     gradle.taskGraph.whenReady {
         tasks.forEach { task ->
-            val lowercaseName = task.name.lowercased()
+            val lowercaseName = task.name.lowercase()
             if (lowercaseName.contains("dokka") || lowercaseName.contains("javadoc")) {
                 task.enabled = false
             }
