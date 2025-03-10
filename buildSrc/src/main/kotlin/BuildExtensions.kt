@@ -212,7 +212,6 @@ fun Project.configureTaskDependencies() {
         compileKotlin.dependOn(kspKotlin)
         compileTestKotlin.dependOn("kspTestKotlin")
         "compileTestFixturesKotlin".dependOn("kspTestFixturesKotlin")
-        "dokkaKotlinJar".dependOn(dokkaJavadoc)
         "javadocJar".dependOn(dokkaHtml)
     }
 }

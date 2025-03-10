@@ -31,7 +31,8 @@
 #
 # Therefore, instructions below are superset of instructions required for all the projects.
 
-buildSrc/.kotlin/
+# Kotlin temp directories.
+**/.kotlin/**
 
 # IntelliJ IDEA modules and interim config files.
 *.iml
