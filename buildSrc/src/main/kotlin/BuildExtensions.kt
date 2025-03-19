@@ -225,15 +225,14 @@ fun Project.configureTaskDependencies() {
 val Project.productionModules: Iterable<Project>
     get() = rootProject.subprojects.filter { !it.name.contains("-tests") }
 
-
 /**
- * Sets the remote debug option for this task.
+ * Sets the remote debug option for this [JavaExec] task.
  *
  * The port number is [5566][BuildSettings.REMOTE_DEBUG_PORT].
  *
  * @param enabled If `true` the task will be suspended.
  */
-fun Task.remoteDebug(enabled: Boolean = true) { this as JavaExec
+fun JavaExec.remoteDebug(enabled: Boolean = true) {
     debugOptions {
         this@debugOptions.enabled.set(enabled)
         port.set(BuildSettings.REMOTE_DEBUG_PORT)
@@ -243,14 +242,24 @@ fun Task.remoteDebug(enabled: Boolean = true) { this as JavaExec
 }
 
 /**
- * Sets the remote debug option for the task with the given name.
+ * Sets the remote debug option for the task of [JavaExec] type with the given name.
  *
  * The port number is [5566][BuildSettings.REMOTE_DEBUG_PORT].
  *
  * @param enabled If `true` the task will be suspended.
+ * @throws IllegalStateException if the task with the given name is not found, or,
+ *  if the taks is not of [JavaExec] type.
  */
-public fun Project.setRemoteDebug(taskName: String, enabled: Boolean = true) =
-    tasks.findByName(taskName)?.remoteDebug(enabled)
+fun Project.setRemoteDebug(taskName: String, enabled: Boolean = true) {
+    val task = tasks.findByName(taskName)
+    check(task != null) {
+        "Could not find a task named `$taskName` in the project `$name`."
+    }
+    check(task is JavaExec) {
+        "The task `$taskName` is not of type `JavaExec`.`"
+    }
+    task.remoteDebug(enabled)
+}
 
 /**
  * Sets remote debug options for the `launchProtoData` task.
@@ -261,7 +270,6 @@ public fun Project.setRemoteDebug(taskName: String, enabled: Boolean = true) =
  */
 fun Project.protoDataRemoteDebug(enabled: Boolean = true) =
     setRemoteDebug("launchProtoData", enabled)
-
 
 /**
  * Sets remote debug options for the `launchTestProtoData` task.
@@ -282,4 +290,3 @@ fun Project.testProtoDataRemoteDebug(enabled: Boolean = true) =
  */
 fun Project.testFixturesProtoDataRemoteDebug(enabled: Boolean = true) =
     setRemoteDebug("launchTestFixturesProtoData", enabled)
-
