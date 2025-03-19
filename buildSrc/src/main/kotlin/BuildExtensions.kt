@@ -256,7 +256,7 @@ fun Project.setRemoteDebug(taskName: String, enabled: Boolean = true) {
         "Could not find a task named `$taskName` in the project `$name`."
     }
     check(task is JavaExec) {
-        "The task `$taskName` is not of type `JavaExec`.`"
+        "The task `$taskName` is not of type `JavaExec`."
     }
     task.remoteDebug(enabled)
 }
