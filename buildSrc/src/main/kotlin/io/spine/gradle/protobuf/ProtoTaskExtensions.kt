@@ -105,10 +105,12 @@ private fun GenerateProtoTask.generatedDir(language: String = ""): File {
 fun GenerateProtoTask.setup() {
     builtins.maybeCreate("kotlin")
     setupDescriptorSetFileCreation()
+    doFirst {
+        excludeProtocOutput()
+    }
     doLast {
         copyGeneratedFiles()
     }
-    excludeProtocOutput()
     setupKotlinCompile()
     dependOnProcessResourcesTask()
     makeDirsForIdeaModule()
