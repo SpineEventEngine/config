@@ -31,6 +31,12 @@
 #
 # Therefore, instructions below are superset of instructions required for all the projects.
 
+# `jenv` local configuration.
+.java-version
+
+# Internal tool directories.
+.fleet/
+
 # Kotlin temp directories.
 **/.kotlin/**
 
