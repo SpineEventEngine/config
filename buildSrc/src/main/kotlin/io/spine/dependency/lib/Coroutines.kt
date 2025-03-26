@@ -26,6 +26,8 @@
 
 package io.spine.dependency.lib
 
+import io.spine.dependency.lib.KotlinX.Coroutines
+
 /**
  * Kotlin Coroutines.
  * 
@@ -33,9 +35,13 @@ package io.spine.dependency.lib
  */
 @Suppress("unused")
 object Coroutines {
-    const val version = "1.6.4"
-    const val jdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$version"
-    const val core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version"
-    const val bom = "org.jetbrains.kotlinx:kotlinx-coroutines-bom:$version"
-    const val coreJvm = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$version"
+    const val group = "org.jetbrains.kotlinx"`
+    const val version = "1.10.1"
+    const val bom = "$group:kotlinx-coroutines-bom:${Coroutines.version}"
+    const val core = "$group:kotlinx-coroutines-core:${Coroutines.version}"
+    const val coreJvm = "$group:kotlinx-coroutines-core-jvm:${Coroutines.version}"
+    const val jdk8 = "$group:kotlinx-coroutines-jdk8:${Coroutines.version}"
+    const val debug = "$group:kotlinx-coroutines-debug:${Coroutines.version}"
+    const val test = "$group:kotlinx-coroutines-test:${Coroutines.version}"
+    const val testJvm = "$group:kotlinx-coroutines-test-jvm:${Coroutines.version}"
 }
