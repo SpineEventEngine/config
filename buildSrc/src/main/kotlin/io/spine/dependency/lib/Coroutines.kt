@@ -31,7 +31,7 @@ package io.spine.dependency.lib
  * 
  * @see <a href="https://github.com/Kotlin/kotlinx.coroutines">GitHub projecet</a>
  */
-@Suppress("unused")
+@Suppress("unused", "ConstPropertyName")
 object Coroutines {
     const val group = "org.jetbrains.kotlinx"
     const val version = "1.10.1"
