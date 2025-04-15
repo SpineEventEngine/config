@@ -130,10 +130,13 @@ private fun File.applyClassReplacement(map: Map<ClassName, ClassName>): Boolean 
 
     lines.forEachIndexed { index, line ->
 
-        fun StringBuilder.appendLine(l: String) {
+        fun StringBuilder.appendLine(l: String, replaced: Boolean = false) {
             append(l)
             if (index < lines.size - 1) {
                 result.append(nl)
+            }
+            if (replaced) {
+                anythingReplaced = true
             }
         }
 
@@ -144,8 +147,7 @@ private fun File.applyClassReplacement(map: Map<ClassName, ClassName>): Boolean 
         if (oldClassName != null) {
             val newClassName = map[oldClassName]!!
             val replaced = line.replace(oldClassName.qualifiedName, newClassName.qualifiedName)
-            result.appendLine(replaced)
-            anythingReplaced = true
+            result.appendLine(replaced, true)
             return@forEachIndexed
         }
 
@@ -161,8 +163,7 @@ private fun File.applyClassReplacement(map: Map<ClassName, ClassName>): Boolean 
                 return@forEachIndexed
             }
             val replaced = line.replace(oldClassName.asAnnotation, newClassName.asAnnotation)
-            result.appendLine(replaced)
-            anythingReplaced = true
+            result.appendLine(replaced, true)
             return@forEachIndexed
         }
 
