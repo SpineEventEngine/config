@@ -126,7 +126,16 @@ private fun File.applyClassReplacement(map: Map<ClassName, ClassName>): Boolean 
     val lines = readText().lines()
     var anythingReplaced = false
     val result = StringBuilder()
+
     lines.forEachIndexed { index, line ->
+
+        fun StringBuilder.appendLine(l: String) {
+            append(l)
+            if (index < lines.size - 1) {
+                result.append(nl)
+            }
+        }
+
         // Replace the fully-qualified name first.
         var oldClassName = map.keys.find {
             line.contains(it.qualifiedName)
@@ -134,7 +143,7 @@ private fun File.applyClassReplacement(map: Map<ClassName, ClassName>): Boolean 
         if (oldClassName != null) {
             val newClassName = map[oldClassName]!!
             val replaced = line.replace(oldClassName.qualifiedName, newClassName.qualifiedName)
-            result.append(replaced)
+            result.appendLine(replaced)
             anythingReplaced = true
             return@forEachIndexed
         }
@@ -147,21 +156,17 @@ private fun File.applyClassReplacement(map: Map<ClassName, ClassName>): Boolean 
             val newClassName = map[oldClassName]!!
             // Do nothing if the simple names are the same.
             if (oldClassName.simpleName == newClassName.simpleName) {
-                result.append(line)
+                result.appendLine(line)
                 return@forEachIndexed
             }
             val replaced = line.replace(oldClassName.simpleName, newClassName.simpleName)
-            result.append(replaced)
+            result.appendLine(replaced)
             anythingReplaced = true
             return@forEachIndexed
         }
 
         // Nothing was replaced.
-        result.append(line)
-
-        if (index < lines.size - 1) {
-            result.append(nl)
-        }
+        result.appendLine(line)
     }
     if (anythingReplaced) {
         writeText(result.toString())
