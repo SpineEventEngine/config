@@ -100,7 +100,6 @@ private val File.isExcluded: Boolean
  */
 private val extensions = arrayOf("java")
 
-@Suppress("Since15")
 private val nl = System.lineSeparator()
 
 fun applyClassReplacement() {
