@@ -24,34 +24,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.local
-
 /**
- * Dependencies on Spine Validation SDK.
+ * The documentation settings specific to this project.
  *
- * See [`SpineEventEngine/validation`](https://github.com/SpineEventEngine/validation/).
+ * @see <a href="https://kotlinlang.org/docs/dokka-gradle.html#source-link-configuration">
+ *     Dokka source link configuration</a>
  */
-@Suppress("ConstPropertyName", "unused")
-object Validation {
+@Suppress("ConstPropertyName")
+object DocumentationSettings {
+
     /**
-     * The version of the Validation library artifacts.
+     * Settings passed to Dokka for
+     * [sourceLink][[org.jetbrains.dokka.gradle.engine.parameters.DokkaSourceLinkSpec]
      */
-    const val version = "2.0.0-SNAPSHOT.312"
+    object SourceLink {
 
-    const val group = "io.spine.validation"
-    private const val prefix = "spine-validation"
+        /**
+         * The URL of the remote source code
+         * [location][org.jetbrains.dokka.gradle.engine.parameters.DokkaSourceLinkSpec.remoteUrl].
+         */
+        const val url: String = "https://github.com/SpineEventEngine/base/tree/master/src"
 
-    const val runtimeModule = "$group:$prefix-java-runtime"
-    const val runtime = "$runtimeModule:$version"
-    const val java = "$group:$prefix-java:$version"
+        /**
+         * The suffix used to append the source code line number to the URL.
+         *
+         * The suffix depends on the online code repository.
+         *
+         * @see <a href="https://kotlinlang.org/docs/dokka-gradle.html#fwor0d_534">
+         *     remoteLineSuffix</a>
+         */
+        const val lineSuffix: String = "#L"
+    }
 
-    const val javaBundleModule = "$group:$prefix-java-bundle"
 
-    /** Obtains the artifact for the `java-bundle` artifact of the given version. */
-    fun javaBundle(version: String) = "$javaBundleModule:$version"
-
-    val javaBundle = javaBundle(version)
-
-    const val model = "$group:$prefix-model:$version"
-    const val config = "$group:$prefix-configuration:$version"
 }

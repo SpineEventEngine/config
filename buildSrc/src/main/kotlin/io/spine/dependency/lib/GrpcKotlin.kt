@@ -33,7 +33,7 @@ package io.spine.dependency.lib
  */
 @Suppress("unused")
 object GrpcKotlin {
-    const val version = "1.3.0"
+    const val version = "1.4.2"
     const val stub = "io.grpc:grpc-kotlin-stub:$version"
 
     object ProtocPlugin {
