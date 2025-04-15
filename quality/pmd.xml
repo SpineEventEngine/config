@@ -39,12 +39,12 @@
     <!-- Best Practices       -->
     <rule ref="category/java/bestpractices.xml/AvoidReassigningParameters"/>
     <rule ref="category/java/bestpractices.xml/CheckResultSet"/>
-    <rule ref="category/java/bestpractices.xml/JUnitTestsShouldIncludeAssert"/>
+    <rule ref="category/java/bestpractices.xml/JUnitTestShouldIncludeAssert"/>
     <rule ref="category/java/bestpractices.xml/LiteralsFirstInComparisons"/>
     <rule ref="category/java/bestpractices.xml/OneDeclarationPerLine"/>
     <rule ref="category/java/bestpractices.xml/ReplaceHashtableWithMap"/>
     <rule ref="category/java/bestpractices.xml/ReplaceVectorWithList"/>
-    <rule ref="category/java/bestpractices.xml/SwitchStmtsShouldHaveDefault"/>
+    <rule ref="category/java/bestpractices.xml/NonExhaustiveSwitch"/>
     <rule ref="category/java/bestpractices.xml/UnusedFormalParameter"/>
     <rule ref="category/java/bestpractices.xml/UnusedLocalVariable"/>
     <rule ref="category/java/bestpractices.xml/UnusedPrivateField"/>

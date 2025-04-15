@@ -29,6 +29,7 @@ import io.spine.dependency.build.CheckerFramework
 import io.spine.dependency.build.Dokka
 import io.spine.dependency.build.ErrorProne
 import io.spine.dependency.build.FindBugs
+import io.spine.dependency.build.JSpecify
 import io.spine.dependency.lib.Asm
 import io.spine.dependency.lib.AutoCommon
 import io.spine.dependency.lib.AutoService
@@ -97,6 +98,7 @@ private fun ResolutionStrategy.forceProductionDependencies() {
         FindBugs.annotations,
         Gson.lib,
         Guava.lib,
+        JSpecify.annotations,
         Kotlin.reflect,
         Kotlin.stdLib,
         Kotlin.stdLibCommon,
@@ -145,8 +147,8 @@ private fun ResolutionStrategy.forceTransitiveDependencies() {
         Jackson.bom,
         Jackson.core,
         Jackson.databind,
-        Jackson.dataformatXml,
-        Jackson.dataformatYaml,
+        Jackson.DataFormat.xml,
+        Jackson.DataFormat.yaml,
         Jackson.moduleKotlin,
         JavaDiffUtils.lib,
         Kotlin.jetbrainsAnnotations,

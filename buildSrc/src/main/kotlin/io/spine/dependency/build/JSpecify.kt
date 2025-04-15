@@ -24,22 +24,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.lib
+package io.spine.dependency.build
 
 /**
- * Kotlin Coroutines.
- * 
- * @see <a href="https://github.com/Kotlin/kotlinx.coroutines">GitHub projecet</a>
+ * An artifact of well-specified annotations to power static analysis
+ * checks and JVM language interop. Developed by consensus of the partner
+ * organizations listed at [the project site](https://jspecify.org).
+ *
+ * @see <a href="https://github.com/jspecify/jspecify">JSpecify at GitHub</a>
  */
-@Suppress("unused", "ConstPropertyName")
-object Coroutines {
-    const val group = "org.jetbrains.kotlinx"
-    const val version = "1.10.2"
-    const val bom = "$group:kotlinx-coroutines-bom:$version"
-    const val core = "$group:kotlinx-coroutines-core:$version"
-    const val coreJvm = "$group:kotlinx-coroutines-core-jvm:$version"
-    const val jdk8 = "$group:kotlinx-coroutines-jdk8:$version"
-    const val debug = "$group:kotlinx-coroutines-debug:$version"
-    const val test = "$group:kotlinx-coroutines-test:$version"
-    const val testJvm = "$group:kotlinx-coroutines-test-jvm:$version"
+@Suppress("ConstPropertyName")
+object JSpecify {
+    const val version = "1.0.0"
+    const val annotations = "org.jspecify:jspecify:$version"
 }

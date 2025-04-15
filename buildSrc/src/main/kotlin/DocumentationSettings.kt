@@ -24,22 +24,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.lib
-
 /**
- * Kotlin Coroutines.
- * 
- * @see <a href="https://github.com/Kotlin/kotlinx.coroutines">GitHub projecet</a>
+ * The documentation settings specific to this project.
+ *
+ * @see <a href="https://kotlinlang.org/docs/dokka-gradle.html#source-link-configuration">
+ *     Dokka source link configuration</a>
  */
-@Suppress("unused", "ConstPropertyName")
-object Coroutines {
-    const val group = "org.jetbrains.kotlinx"
-    const val version = "1.10.2"
-    const val bom = "$group:kotlinx-coroutines-bom:$version"
-    const val core = "$group:kotlinx-coroutines-core:$version"
-    const val coreJvm = "$group:kotlinx-coroutines-core-jvm:$version"
-    const val jdk8 = "$group:kotlinx-coroutines-jdk8:$version"
-    const val debug = "$group:kotlinx-coroutines-debug:$version"
-    const val test = "$group:kotlinx-coroutines-test:$version"
-    const val testJvm = "$group:kotlinx-coroutines-test-jvm:$version"
+@Suppress("ConstPropertyName")
+object DocumentationSettings {
+
+    /**
+     * Settings passed to Dokka for
+     * [sourceLink][[org.jetbrains.dokka.gradle.engine.parameters.DokkaSourceLinkSpec]
+     */
+    object SourceLink {
+
+        /**
+         * The URL of the remote source code
+         * [location][org.jetbrains.dokka.gradle.engine.parameters.DokkaSourceLinkSpec.remoteUrl].
+         */
+        const val url: String = "https://github.com/SpineEventEngine/base/tree/master/src"
+
+        /**
+         * The suffix used to append the source code line number to the URL.
+         *
+         * The suffix depends on the online code repository.
+         *
+         * @see <a href="https://kotlinlang.org/docs/dokka-gradle.html#fwor0d_534">
+         *     remoteLineSuffix</a>
+         */
+        const val lineSuffix: String = "#L"
+    }
 }
