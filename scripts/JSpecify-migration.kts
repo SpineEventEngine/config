@@ -57,7 +57,7 @@ private val annotations = buildMap {
     )
     migrate(
         "org.checkerframework.checker.nullness.qual.NonNull",
-        "org.jspecify.annotations.NotNull"
+        "org.jspecify.annotations.NonNull"
     )
 }
 
