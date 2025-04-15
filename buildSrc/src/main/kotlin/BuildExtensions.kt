@@ -221,7 +221,7 @@ fun Project.configureTaskDependencies() {
 }
 
 /**
- * Obtains all modules names of which do not have `"-tests"` as the suffix.
+ * Obtains all modules that do not haveg names ending with the "-tests"` suffix.
  *
  * By convention, such modules are for integration tests and should be treated differently.
  */
