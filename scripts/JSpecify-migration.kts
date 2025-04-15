@@ -28,6 +28,7 @@ import java.io.File
 
 private data class ClassName(val qualifiedName: String) {
     val simpleName: String = qualifiedName.substringAfterLast(".")
+    val asAnnotation = "@$simpleName"
 }
 
 /**
@@ -148,9 +149,9 @@ private fun File.applyClassReplacement(map: Map<ClassName, ClassName>): Boolean 
             return@forEachIndexed
         }
 
-        // See if we need to replace the simple name.
+        // See if we need to replace the simple annotation name.
         oldClassName = map.keys.find {
-            line.contains(it.simpleName)
+            line.contains(it.asAnnotation)
         }
         if (oldClassName != null) {
             val newClassName = map[oldClassName]!!
@@ -159,7 +160,7 @@ private fun File.applyClassReplacement(map: Map<ClassName, ClassName>): Boolean 
                 result.appendLine(line)
                 return@forEachIndexed
             }
-            val replaced = line.replace(oldClassName.simpleName, newClassName.simpleName)
+            val replaced = line.replace(oldClassName.asAnnotation, newClassName.asAnnotation)
             result.appendLine(replaced)
             anythingReplaced = true
             return@forEachIndexed
