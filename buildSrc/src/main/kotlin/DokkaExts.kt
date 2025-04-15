@@ -151,6 +151,7 @@ fun DokkaExtension.configureForKotlin(project: Project, sourceLinkRemoteUrl: Str
 /**
  * Configures this [DokkaTask] to accept only Java files.
  */
+@Suppress("unused")
 fun DokkaExtension.configureForJava(project: Project, sourceLinkRemoteUrl: String) {
     configureFor(project, "java", sourceLinkRemoteUrl)
 }
