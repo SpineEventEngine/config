@@ -48,15 +48,15 @@ private val annotations = buildMap {
         "org.jspecify.annotations.NullMarked"
     )
     migrate(
-        "import javax.annotation.Nullable",
+        "javax.annotation.Nullable",
         "org.jspecify.annotations.Nullable"
     )
     migrate(
-        "import org.checkerframework.checker.nullness.qual.Nullable",
+        "org.checkerframework.checker.nullness.qual.Nullable",
         "org.jspecify.annotations.Nullable"
     )
     migrate(
-        "import org.checkerframework.checker.nullness.qual.NonNull",
+        "org.checkerframework.checker.nullness.qual.NonNull",
         "org.jspecify.annotations.NotNull"
     )
 }
