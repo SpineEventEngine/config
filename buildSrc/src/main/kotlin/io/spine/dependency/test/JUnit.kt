@@ -47,9 +47,7 @@ object JUnit {
     )
     const val bom = "org.junit:junit-bom:$version"
 
-    @Deprecated(message = "Please use `engine` instead.", replaceWith = ReplaceWith("engine"))
-    const val runner = "org.junit.jupiter:junit-jupiter-engine:$version"
-
+    const val runner = "org.junit.jupiter:junit-jupiter-runner:$version"
     const val engine = "org.junit.jupiter:junit-jupiter-engine:$version"
     const val launcher = "org.junit.jupiter:junit-jupiter-launcher:$version"
     const val params = "org.junit.jupiter:junit-jupiter-params:$version"
