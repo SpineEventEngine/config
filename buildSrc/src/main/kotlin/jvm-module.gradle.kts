@@ -103,14 +103,17 @@ fun Module.configureKotlin(javaVersion: JavaLanguageVersion) {
         }
     }
 
-    kover {
-        useJacoco(version = Jacoco.version)
+    rootProject.dependencies {
+        kover(this)
     }
 
-    koverReport {
-        defaults {
-            xml {
-                onCheck = true
+    kover {
+        useJacoco(version = Jacoco.version)
+        reports {
+            total {
+                xml {
+                    onCheck = true
+                }
             }
         }
     }
