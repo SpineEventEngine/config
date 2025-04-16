@@ -80,6 +80,9 @@ private val excludedTopLevelDirs = setOf(
 private val excludedPaths = setOf(
     "buildSrc/.gradle",
     "buildSrc/build",
+    "tmp/",
+    "/build/",
+    "/generated/",
     "scripts/publish-documentation/buildSrc",
 )
 
