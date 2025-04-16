@@ -29,7 +29,7 @@ package io.spine.dependency.test
 // https://junit.org/junit5/
 @Suppress("unused", "ConstPropertyName")
 object JUnit {
-    const val version = "5.13.0-M2"
+    const val version = "5.11.4"
     private const val legacyVersion = "4.13.1"
 
     // https://github.com/apiguardian-team/apiguardian
@@ -56,7 +56,7 @@ object JUnit {
 
     object Platform {
         // https://junit.org/junit5/
-        const val version = "1.13.0-M2"
+        const val version = "1.11.4"
         internal const val group = "org.junit.platform"
         const val commons = "$group:junit-platform-commons:$version"
         const val launcher = "$group:junit-platform-launcher:$version"
