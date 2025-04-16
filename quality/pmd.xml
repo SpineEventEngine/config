@@ -39,7 +39,7 @@
     <!-- Best Practices       -->
     <rule ref="category/java/bestpractices.xml/AvoidReassigningParameters"/>
     <rule ref="category/java/bestpractices.xml/CheckResultSet"/>
-    <rule ref="category/java/bestpractices.xml/JUnitTestShouldIncludeAssert"/>
+    <rule ref="category/java/bestpractices.xml/UnitTestShouldIncludeAssert"/>
     <rule ref="category/java/bestpractices.xml/LiteralsFirstInComparisons"/>
     <rule ref="category/java/bestpractices.xml/OneDeclarationPerLine"/>
     <rule ref="category/java/bestpractices.xml/ReplaceHashtableWithMap"/>

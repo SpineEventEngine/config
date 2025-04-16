@@ -24,19 +24,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.local
+@file:Suppress("unused")
+
+package io.spine.dependency.build
 
 /**
- * Spine Base module.
+ * The Gradle plugin for publishing Gradle plugins to the Gradle Plugin Portal.
  *
- * @see <a href="https://github.com/SpineEventEngine/base">spine-base</a>
+ * @see <a href="https://plugins.gradle.org/plugin/com.gradle.plugin-publish">
+ *     The plugin page at the Portal</a>
+ * @see <a href="https://plugins.gradle.org/docs/publish-plugin">Publishing Rules</a>
  */
 @Suppress("ConstPropertyName")
-object Base {
-    const val version = "2.0.0-SNAPSHOT.311"
-    const val versionForBuildScript = "2.0.0-SNAPSHOT.311"
-    const val group = Spine.group
-    const val artifact = "spine-base"
-    const val lib = "$group:$artifact:$version"
-    const val libForBuildScript = "$group:$artifact:$versionForBuildScript"
+object PluginPublishPlugin {
+    const val version = "1.3.1"
+    const val id = "com.gradle.plugin-publish"
 }
