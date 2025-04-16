@@ -77,6 +77,9 @@ private val excludedTopLevelDirs = setOf(
     "config"
 )
 
+/**
+ * The paths excluded from the traversal at all levels.
+ */
 private val excludedPaths = setOf(
     "buildSrc/.gradle",
     "buildSrc/build",
