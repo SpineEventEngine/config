@@ -140,6 +140,11 @@ private fun TaskContainer.getOrCreatePublishTask(): TaskProvider<Task> =
         register(PUBLISH_TASK)
     }
 
+@Suppress(
+    /* Several types of exceptions may be thrown,
+       and Kotlin does not have a multi-catch support yet. */
+    "TooGenericExceptionCaught"
+)
 private fun TaskContainer.registerCheckCredentialsTask(
     destinations: Set<Repository>,
 ): TaskProvider<Task> {
@@ -157,7 +162,7 @@ private fun TaskContainer.registerCheckCredentialsTask(
         val toConfigure = replace(checkCredentials)
         toConfigure.doLastCredentialsCheck(destinations)
         return named(checkCredentials)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         return register(checkCredentials) { doLastCredentialsCheck(destinations) }
     }
 }
