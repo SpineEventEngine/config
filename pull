@@ -89,32 +89,15 @@ rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only 
 #rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
 #rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
 
+# 2025-04-16 — Overwrite `gradle.properties` to support Dokka transition mode.
+cp -a gradle.properties ..
+
+# 2025-04-16 — Overwrite `.gitignore` to propagate recent changes
+cp -a .gitignore ..
+
 # 2024-10-28
 echo "Removing old packages under 'buildSrc/src/main/kotin/'"
 rm -r ../buildSrc/src/main/kotlin/io/spine/internal/
-
-echo "Cleaning up outdated dependency objects in 'buildSrc'"
-# 2024-10-26, remove outdated files.
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependency/McJava.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependency/ProtoData.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependency/ProtoTap.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependency/Spine.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/dependency/Validation.kt
-
-# 2023-04-13, remove outdated files.
-
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/Artifacts.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/dokka/DokkaExtensions.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/dokka/TaskContainerExtensions.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/publish/DokkaJar.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/publish/ProtoJar.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/publish/TestJar.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/publish/PublishingConfig.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/publish/Tasks.kt
-
-# 2023-05-20, remove outdated files.
-
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/publish/DependencyResolution.kt
 
 # 2023-07-12, remove outdated files.
 
@@ -131,7 +114,7 @@ rm -f ../.lift.toml
 # See `config#498` for more.
 rm -f ../license-report.md
 
-echo "Updating Gradle 'buildSrc' scripts"
+echo "Updating Gradle 'buildSrc'"
 cp -R buildSrc ..
 
 echo "Updating Gradle Wrapper"

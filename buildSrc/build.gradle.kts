@@ -53,7 +53,7 @@ repositories {
  * Please keep this value in sync with [io.spine.dependency.lib.Jackson.version].
  * It is not a requirement but would be good in terms of consistency.
  */
-val jacksonVersion = "2.15.3"
+val jacksonVersion = "2.18.3"
 
 /**
  * The version of Google Artifact Registry used by `buildSrc`.
@@ -83,7 +83,7 @@ val kotlinVersion = "2.1.20"
  * Always use the same version as the one specified in [io.spine.dependency.lib.Guava].
  * Otherwise, when testing Gradle plugins, clashes may occur.
  */
-val guavaVersion = "32.1.3-jre"
+val guavaVersion = "33.4.8-jre"
 
 /**
  * The version of ErrorProne Gradle plugin.
@@ -130,7 +130,7 @@ val kotestJvmPluginVersion = "0.4.10"
 /**
  * @see [io.spine.dependency.test.Kover]
  */
-val koverVersion = "0.7.2"
+val koverVersion = "0.9.1"
 
 /**
  * The version of the Shadow Plugin.
