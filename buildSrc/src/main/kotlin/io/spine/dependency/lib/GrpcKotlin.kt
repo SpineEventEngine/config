@@ -39,6 +39,6 @@ object GrpcKotlin {
     object ProtocPlugin {
         const val id = "grpckt"
         // https://central.sonatype.com/artifact/io.grpc/protoc-gen-grpc-kotlin
-        const val artifact = "io.grpc:protoc-gen-grpc-kotlin:$version"
+        const val artifact = "io.grpc:protoc-gen-grpc-kotlin:$version:jdk8@jar"
     }
 }
