@@ -51,7 +51,6 @@
 
 # Do not ignore the following IDEA settings
 !.idea/misc.xml
-!.idea/kotlinc.xml
 !.idea/codeStyleSettings.xml
 !.idea/codeStyles/
 !.idea/copyright/
@@ -64,13 +63,14 @@
 
 # Generated source code
 **/generated/**
+**/*.pb.dart
+**/*.pbenum.dart
+**/*.pbserver.dart
+**/*.pbjson.dart
 
 # Gradle build files
 **/build/**
 !**/src/**/build/**
-
-# Do not ignore `build` dependency objects under `buildSrc`.
-!**/buildSrc/src/main/kotlin/io/spine/dependency/build/**
 
 # Build files produced by the IDE
 **/out/**
@@ -89,9 +89,6 @@ gradle-app.setting
 
 # Spine internal directory for storing intermediate artifacts
 **/.spine/**
-
-# Spine model compiler auto-generated resources
-/tools/gradle-plugins/model-compiler/src/main/resources/spine-protoc.gradle
 
 # Login details to Maven repository.
 # Each workstation should have developer's login defined in this file.

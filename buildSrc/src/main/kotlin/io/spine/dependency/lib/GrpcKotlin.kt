@@ -33,11 +33,12 @@ package io.spine.dependency.lib
  */
 @Suppress("unused")
 object GrpcKotlin {
-    const val version = "1.4.2"
+    const val version = "1.4.1"
     const val stub = "io.grpc:grpc-kotlin-stub:$version"
 
     object ProtocPlugin {
         const val id = "grpckt"
-        const val artifact = "io.grpc:protoc-gen-grpc-kotlin:$version:jdk8@jar"
+        // https://central.sonatype.com/artifact/io.grpc/protoc-gen-grpc-kotlin
+        const val artifact = "io.grpc:protoc-gen-grpc-kotlin:$version"
     }
 }
