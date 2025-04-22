@@ -91,11 +91,12 @@ import productionModules
  *     modules = productionModuleNames
  *       .minus("my-custom-module")
  *       .toSet()
- *     // ...
  *
  *     modulesWithCustomPublishing = setOf(
  *         "my-custom-module"
  *     )
+ *
+ *     // ...
  * }
  * ```
  * 2. Arrange the custom publishing in the `my-custom-module` project.
