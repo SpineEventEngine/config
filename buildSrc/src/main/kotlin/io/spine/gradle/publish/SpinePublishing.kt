@@ -28,8 +28,6 @@
 
 package io.spine.gradle.publish
 
-import productionModules
-import productionModuleNames
 import dokkaJavaJar
 import dokkaKotlinJar
 import io.spine.gradle.Repository
@@ -38,6 +36,8 @@ import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.findByType
+import productionModuleNames
+import productionModules
 
 /**
  * Configures [SpinePublishing] extension.
@@ -92,6 +92,10 @@ import org.gradle.kotlin.dsl.findByType
  *       .minus("my-custom-module")
  *       .toSet()
  *     // ...
+ *
+ *     modulesWithCustomPublishing = setOf(
+ *         "my-custom-module"
+ *     )
  * }
  * ```
  * 2. Arrange the custom publishing in the `my-custom-module` project.
