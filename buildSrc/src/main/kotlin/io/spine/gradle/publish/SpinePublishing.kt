@@ -409,8 +409,8 @@ open class SpinePublishing(private val project: Project) {
      * Let's suppose they are declared in a module's build file. It is a common practice.
      * But publishing of the module is configured from a root project's build file.
      * By the time when we need to specify them, we just don't know them.
-     * As the result, we have to use [Project.afterEvaluate] in order to guarantee that a module
-     * will be configured by the time we configure publishing for it.
+     * As the result, we have to use [Project.afterEvaluate] in order to guarantee that
+     * the module will be configured by the time we configure publishing for it.
      */
     private fun Project.setUpPublishing(jarFlags: JarFlags) {
         val customPublishing = modulesWithCustomPublishing.contains(name) || customPublishing
