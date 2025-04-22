@@ -36,7 +36,7 @@ import org.gradle.api.publish.maven.MavenPublication
  *
  * Such publications should be treated differently than [StandardJavaPublicationHandler],
  * which is <em>created</em> for a module. Instead, since the publications are already declared,
- * this class only [assigns maven coordinates][copyProjectAttributes].
+ * this class only [assigns Maven coordinates][copyProjectAttributes].
  *
  * A module which declares custom publications must be specified in
  * the [SpinePublishing.modulesWithCustomPublishing] property.
