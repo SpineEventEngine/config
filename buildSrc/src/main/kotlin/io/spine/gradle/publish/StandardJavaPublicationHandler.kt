@@ -87,11 +87,12 @@ internal class StandardJavaPublicationHandler(
      *
      * @see <a href="https://maven.apache.org/pom.html">Maven – POM Reference</a>
      * @see <a href="https://docs.gradle.org/current/userguide/publishing_gradle_module_metadata.html">
-     *      Understanding Gradle Module Metadata</a>
+     *   Understanding Gradle Module Metadata</a>
      */
     private fun MavenPublication.specifyArtifacts(jars: Set<TaskProvider<Jar>>) {
 
-        /* "java" component provides a jar with compilation output of "main" source set.
+        /*
+           "java" component provides a jar with compilation output of "main" source set.
            It is NOT defined as another `Jar` task intentionally. Doing that will leave the
            publication without correct ".pom" and ".module" metadata files generated.
         */
@@ -100,8 +101,9 @@ internal class StandardJavaPublicationHandler(
             from(it)
         }
 
-        /* Other artifacts are represented by `Jar` tasks. Those artifacts don't bring any other
-           metadata in comparison with `Component` (such as dependencies notation).
+        /*
+           Other artifacts are represented by `Jar` tasks. Those artifacts do not bring any other
+           metadata in comparison with `Component` (such as the `dependencies` notation).
          */
         jars.forEach {
             artifact(it)
