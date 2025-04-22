@@ -24,29 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.lib
+package io.spine.dependency.kotlinx
 
-/**
- * Kotlin Coroutines.
- *
- * @see <a href="https://github.com/Kotlin/kotlinx.coroutines">GitHub projecet</a>
- */
-@Suppress("unused", "ConstPropertyName")
-@Deprecated(
-    message = "Please use `Coroutines` from the `io.spine.dependency.kotlinx` package",
-    replaceWith = ReplaceWith(
-        expression = "Coroutines",
-        imports = ["io.spine.dependency.kotlinx.Coroutines"]
-    )
-)
-object Coroutines {
+@Suppress("ConstPropertyName") // https://bit.ly/kotlin-prop-names
+object KotlinX {
     const val group = "org.jetbrains.kotlinx"
-    const val version = io.spine.dependency.kotlinx.Coroutines.version
-    const val bom = "$group:kotlinx-coroutines-bom:$version"
-    const val core = "$group:kotlinx-coroutines-core:$version"
-    const val coreJvm = "$group:kotlinx-coroutines-core-jvm:$version"
-    const val jdk8 = "$group:kotlinx-coroutines-jdk8:$version"
-    const val debug = "$group:kotlinx-coroutines-debug:$version"
-    const val test = "$group:kotlinx-coroutines-test:$version"
-    const val testJvm = "$group:kotlinx-coroutines-test-jvm:$version"
 }
