@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+echo "Updating IDEA configuration"
+cp -R .idea ..
+
+echo "Updating Contributor's Guide"
+cp CONTRIBUTING.md ..
+
+echo "Updating Contributor Covenant"
+cp CODE_OF_CONDUCT.md ..
+
+echo "Updating Codecov settings"
+cp .codecov.yml ..
+
+# Copies the file or directory passed as the first parameter to the upper directory,
+# only if such a file or directory does not exist there.
+function initialize() {
+  if [ ! -e ../"$1" ]; then
+      echo "Creating $1"
+      cp -R "$1" ..
+  fi
+}
+
+initialize .gitattributes
+initialize .gitignore
+initialize .github
+
+# Update existing workflows with more recent versions
+echo "Updating GitHub workflows"
+cp -a .github-workflows/. ../.github/workflows
+cp -a .github/workflows/. ../.github/workflows
+rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
+
+# echo "Cleaning up GitHub workflows"
+#rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
+#rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
+
+# echo "Cleaning up Gradle 'buildSrc' scripts"
+#rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
+#rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
+
+# 2025-04-22 Remove the refactored file to avoid "duplicated declarations" error.
+rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/publish/Publications.kt
+
+# 2025-04-16 — Overwrite `gradle.properties` to support Dokka transition mode.
+cp -a gradle.properties ..
+
+# 2025-04-16 — Overwrite `.gitignore` to propagate recent changes
+cp -a .gitignore ..
+
+# 2024-10-28
+echo "Removing old packages under 'buildSrc/src/main/kotin/'"
+rm -r ../buildSrc/src/main/kotlin/io/spine/internal/
+
+# 2023-07-12, remove outdated files.
+
+rm -f ../buildSrc/src/main/kotlin/java-module.gradle.kts
+rm -f ../buildSrc/src/main/kotlin/kotlin-jvm-module.gradle.kts
+rm -f ../buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts
+rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/DependencyResolution.kt
+rm -f ../buildSrc/src/main/kotlin/Repositories.kt
+
+# 2023-07-30, remove outdated files.
+rm -f ../.lift.toml
+
+# 2023-11-24, remove `license-report.md` in favor of `dependencies.md`
+# See `config#498` for more.
+rm -f ../license-report.md
+
+echo "Updating Gradle 'buildSrc'"
+cp -R buildSrc ..
+
+echo "Updating Gradle Wrapper"
+cp -R ./gradle ..
+cp gradlew ..
+cp gradlew.bat ..
+
+cd ..
+
+echo "Adding 'buildSrc' sources to Git..."
+git add ./buildSrc/src
