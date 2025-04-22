@@ -9,6 +9,7 @@
 *.xml text
 *.css text
 *.scss text
+*.svg text
 *.js text
 *.properties text
 *.rtf text
@@ -23,6 +24,10 @@ LICENSE text
 
 # Java sources
 *.java text
+
+# Kotlin sources
+*.kt text
+*.kts text
 
 # Python sources
 *.py text
