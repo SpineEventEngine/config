@@ -13,6 +13,19 @@
 #
 ################################################################################
 
+# Update the module with reference to the latest version.
+# In this state there is no current branch.
+git submodule update
+
+# Make the `config` dir current.
+cd ./config || { echo "Error: 'config' directory is missing."; exit 1; }
+
+# Set the current branch to `master`.
+git checkout master
+
+echo "Pulling changes from remote repo"
+git pull
+
 # Handle file operations related to the migration from the previous version(s).
 source migrate
 
