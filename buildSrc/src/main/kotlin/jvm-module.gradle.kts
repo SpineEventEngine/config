@@ -34,9 +34,7 @@ import io.spine.dependency.lib.Protobuf
 import io.spine.dependency.local.Logging
 import io.spine.dependency.local.Reflect
 import io.spine.dependency.local.TestLib
-import io.spine.dependency.test.JUnit
 import io.spine.dependency.test.Jacoco
-import io.spine.dependency.test.Kotest
 import io.spine.gradle.checkstyle.CheckStyleConfig
 import io.spine.gradle.github.pages.updateGitHubPages
 import io.spine.gradle.javac.configureErrorProne
@@ -141,16 +139,7 @@ fun Module.addDependencies() = dependencies {
 
     implementation(Logging.lib)
 
-    testImplementation(Guava.testLib)
-    testImplementation(JUnit.runner)
-    testImplementation(JUnit.pioneer)
-    JUnit.api.forEach { testImplementation(it) }
-
     testImplementation(TestLib.lib)
-    testImplementation(Kotest.frameworkEngine)
-    testImplementation(Kotest.datatest)
-    testImplementation(Kotest.runnerJUnit5Jvm)
-    testImplementation(JUnit.runner)
 }
 
 fun Module.forceConfigurations() {
@@ -160,8 +149,6 @@ fun Module.forceConfigurations() {
         all {
             resolutionStrategy {
                 force(
-                    JUnit.bom,
-                    JUnit.runner,
                     Dokka.BasePlugin.lib,
                     Reflect.lib,
                 )
