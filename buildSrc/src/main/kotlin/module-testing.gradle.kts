@@ -27,6 +27,7 @@
 import io.spine.dependency.lib.Guava
 import io.spine.dependency.local.TestLib
 import io.spine.dependency.test.JUnit
+import io.spine.dependency.test.JUnit.Jupiter
 import io.spine.dependency.test.Kotest
 import io.spine.dependency.test.Truth
 import io.spine.gradle.testing.configureLogging
@@ -44,7 +45,7 @@ project.run {
 dependencies {
     forceJunitPlatform()
 
-    testImplementation(JUnit.Jupiter.api)
+    testImplementation(Jupiter.api)
     testImplementation(JUnit.pioneer)
 
     testImplementation(Guava.testLib)
@@ -53,14 +54,14 @@ dependencies {
     testImplementation(Kotest.assertions)
     testImplementation(Kotest.datatest)
 
-    testRuntimeOnly(JUnit.Jupiter.engine)
+    testRuntimeOnly(Jupiter.engine)
 }
 
 /**
  * Forces the version of [JUnit] platform and its dependencies via [JUnit.bom].
  */
 private fun DependencyHandlerScope.forceJunitPlatform() {
-    testImplementation(platform(JUnit.bom))
+    testImplementation(enforcedPlatform(JUnit.bom))
 }
 
 typealias Module = Project
