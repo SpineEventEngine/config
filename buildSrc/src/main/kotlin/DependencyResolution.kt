@@ -97,11 +97,6 @@ private fun ResolutionStrategy.forceProductionDependencies() {
         Gson.lib,
         Guava.lib,
         JSpecify.annotations,
-        Kotlin.reflect,
-        Kotlin.stdLib,
-        Kotlin.stdLibCommon,
-        Kotlin.stdLibJdk7,
-        Kotlin.stdLibJdk8,
         Protobuf.GradlePlugin.lib,
         Protobuf.libs,
         Slf4J.lib

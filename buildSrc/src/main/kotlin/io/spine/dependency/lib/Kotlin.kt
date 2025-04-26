@@ -52,28 +52,30 @@ object Kotlin {
      */
     private const val annotationsVersion = "26.0.2"
 
-    private const val group = "org.jetbrains.kotlin"
+    const val group = "org.jetbrains.kotlin"
 
-    const val scriptRuntime = "$group:kotlin-script-runtime:$runtimeVersion"
-    const val stdLib       = "$group:kotlin-stdlib:$runtimeVersion"
-    const val stdLibCommon = "$group:kotlin-stdlib-common:$runtimeVersion"
+    const val bom = "$group:kotlin-bom:$runtimeVersion"
 
-    const val toolingCore = "$group:kotlin-tooling-core:$runtimeVersion"
+    const val scriptRuntime = "$group:kotlin-script-runtime"
+    const val stdLib       = "$group:kotlin-stdlib"
+    const val stdLibCommon = "$group:kotlin-stdlib-common"
+
+    const val toolingCore = "$group:kotlin-tooling-core"
 
     @Deprecated("Please use `stdLib` instead.")
-    const val stdLibJdk7   = "$group:kotlin-stdlib-jdk7:$runtimeVersion"
+    const val stdLibJdk7   = "$group:kotlin-stdlib-jdk7"
 
     @Deprecated("Please use `stdLib` instead.")
-    const val stdLibJdk8   = "$group:kotlin-stdlib-jdk8:$runtimeVersion"
+    const val stdLibJdk8   = "$group:kotlin-stdlib-jdk8"
 
-    const val reflect    = "$group:kotlin-reflect:$runtimeVersion"
-    const val testJUnit5 = "$group:kotlin-test-junit5:$runtimeVersion"
+    const val reflect    = "$group:kotlin-reflect"
+    const val testJUnit5 = "$group:kotlin-test-junit5"
 
     @Deprecated(message = "Please use `GradlePlugin.api` instead.", ReplaceWith("GradlePlugin.api"))
-    const val gradlePluginApi = "$group:kotlin-gradle-plugin-api:$runtimeVersion"
+    const val gradlePluginApi = "$group:kotlin-gradle-plugin-api"
 
     @Deprecated(message = "Please use `GradlePlugin.lib` instead.", ReplaceWith("GradlePlugin.lib"))
-    const val gradlePluginLib = "$group:kotlin-gradle-plugin:$runtimeVersion"
+    const val gradlePluginLib = "$group:kotlin-gradle-plugin"
 
     const val jetbrainsAnnotations = "org.jetbrains:annotations:$annotationsVersion"
 

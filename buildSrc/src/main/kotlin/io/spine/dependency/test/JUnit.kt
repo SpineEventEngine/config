@@ -76,6 +76,8 @@ object JUnit {
         const val api = "$group:$infix-api"
         const val params = "$group:$infix-params"
         const val engine = "$group:$infix-engine"
+
+        const val apiArtifact = "$api:$version"
     }
 
     object Platform {
