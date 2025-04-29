@@ -26,6 +26,13 @@
 
 package io.spine.dependency.local
 
+import io.spine.dependency.local.ProtoData.DF_VERSION_ENV
+import io.spine.dependency.local.ProtoData.VERSION_ENV
+import io.spine.dependency.local.ProtoData.dogfoodingVersion
+import io.spine.dependency.local.ProtoData.pluginLib
+import io.spine.dependency.local.ProtoData.version
+
+
 /**
  * Dependencies on ProtoData modules.
  *
@@ -72,7 +79,7 @@ object ProtoData {
      * The version of ProtoData dependencies.
      */
     val version: String
-    private const val fallbackVersion = "0.93.12"
+    private const val fallbackVersion = "0.93.13"
 
     /**
      * The distinct version of ProtoData used by other build tools.

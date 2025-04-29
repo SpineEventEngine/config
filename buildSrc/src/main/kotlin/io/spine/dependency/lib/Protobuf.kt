@@ -26,6 +26,9 @@
 
 package io.spine.dependency.lib
 
+import io.spine.dependency.lib.Protobuf.GradlePlugin.id
+
+
 // https://github.com/protocolbuffers/protobuf
 @Suppress(
     "MemberVisibilityCanBePrivate" /* used directly from the outside */,
@@ -33,7 +36,7 @@ package io.spine.dependency.lib
 )
 object Protobuf {
     const val group = "com.google.protobuf"
-    const val version = "4.30.2"
+    const val version = "3.25.7"
 
     /**
      * The Java library with Protobuf data types.
