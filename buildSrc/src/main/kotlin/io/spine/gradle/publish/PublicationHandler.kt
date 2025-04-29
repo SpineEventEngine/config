@@ -27,12 +27,14 @@
 package io.spine.gradle.publish
 
 import LicenseSettings
-import io.spine.gradle.repo.Repository
 import io.spine.gradle.isSnapshot
+import io.spine.gradle.repo.Repository
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.api.invocation.BuildInvocationDetails
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.support.serviceOf
 
 /**
  * The name of the Maven Publishing Gradle plugin.
@@ -171,9 +173,25 @@ internal sealed class PublicationHandler(
     abstract class HandlerFactory<H : PublicationHandler> {
 
         /**
-         * Maps a project path to the associated handler, if available.
+         * Maps a project path suffixed with build start time to the associated publication handler.
+         *
+         * The suffix after the project path is needed to create a new handler
+         * for each build. We do not use Guava or other cache expecting the small amount
+         * of memory consumption of each publication handler.
          */
         private val handlers = mutableMapOf<String, H>()
+
+        /**
+         * Computes the key for a publication handler taking the [project] and
+         * its build start time.
+         */
+        private fun createKey(project: Project): String {
+            val buildService = project.gradle.serviceOf<BuildInvocationDetails>()
+            val buildStartedMillis = buildService.buildStartedTime
+            val localTime = java.time.Instant.ofEpochMilli(buildStartedMillis)
+            val key = "${project.path}-at-$localTime"
+            return key
+        }
 
         /**
          * Obtains an instance of [PublicationHandler] for the given project.
@@ -186,11 +204,11 @@ internal sealed class PublicationHandler(
          */
         fun serving(project: Project, destinations: Set<Repository>, vararg params: Any): H {
             synchronized(handlers) {
-                val path = project.path
-                var handler = handlers[path]
+                val key = createKey(project)
+                var handler = handlers[key]
                 if (handler == null) {
                     handler = create(project, destinations, *params)
-                    handlers[path] = handler
+                    handlers[key] = handler
                 } else {
                     handler.publishTo(destinations)
                 }
