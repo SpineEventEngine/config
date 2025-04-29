@@ -105,7 +105,7 @@ fun Module.configureKotlin(javaVersion: JavaLanguageVersion) {
     // https://github.com/Kotlin/kotlinx-kover?tab=readme-ov-file#to-create-report-combining-coverage-info-from-different-gradle-projects
     // https://github.com/Kotlin/kotlinx-kover/blob/main/kover-gradle-plugin/examples/jvm/merged/build.gradle.kts
     rootProject.dependencies {
-        kover(this)
+        kover(this@configureKotlin)
     }
 
     kover {
