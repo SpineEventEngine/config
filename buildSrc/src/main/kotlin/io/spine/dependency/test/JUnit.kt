@@ -41,6 +41,9 @@ object JUnit {
      *     testImplementation(enforcedPlatform(JUnit.bom))
      * }
      * ```
+     * The version of JUnit is forced automatically by
+     * the [BomsPlugin][io.spine.dependency.boms.BomsPlugin]
+     * when it is applied to the project.
      */
     const val bom = "org.junit:junit-bom:$version"
 

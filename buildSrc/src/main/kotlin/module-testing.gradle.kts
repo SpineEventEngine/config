@@ -33,6 +33,18 @@ import io.spine.dependency.test.Truth
 import io.spine.gradle.testing.configureLogging
 import io.spine.gradle.testing.registerTestTasks
 
+/**
+ * This convention plugin applies test dependencies and configures test-related tasks.
+ *
+ * The version of the [JUnit] platform must be applied via the [BomsPlugin][io.spine.dependency.boms.BomsPlugin]:
+ *
+ * ```kotlin
+ * apply<BomsPlugin>()
+ * ```
+ */
+@Suppress("unused")
+private val about = ""
+
 plugins {
     `java-library`
 }
@@ -46,6 +58,7 @@ dependencies {
     forceJunitPlatform()
 
     testImplementation(Jupiter.api)
+    testImplementation(Jupiter.params)
     testImplementation(JUnit.pioneer)
 
     testImplementation(Guava.testLib)
