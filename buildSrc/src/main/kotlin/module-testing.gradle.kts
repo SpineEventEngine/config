@@ -60,7 +60,6 @@ dependencies {
     testImplementation(Jupiter.api)
     testImplementation(Jupiter.params)
     testImplementation(JUnit.pioneer)
-    testImplementation(Jupiter.params)
 
     testImplementation(Guava.testLib)
 
