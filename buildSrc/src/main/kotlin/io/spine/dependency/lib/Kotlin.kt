@@ -57,16 +57,30 @@ object Kotlin {
     const val bom = "$group:kotlin-bom:$runtimeVersion"
 
     const val scriptRuntime = "$group:kotlin-script-runtime"
-    const val stdLib       = "$group:kotlin-stdlib"
-    const val stdLibCommon = "$group:kotlin-stdlib-common"
+
+    object StdLib {
+        private const val infix = "kotlin-stdlib"
+        const val itself = "$group:$infix"
+        const val common = "$group:$infix-common"
+        const val jdk7 = "$group:$infix-jdk7"
+        const val jdk8 = "$group:$infix-jdk8"
+
+        val artefacts = setOf(itself, common, jdk7, jdk8).map { "$it:$runtimeVersion" }
+    }
+
+    @Deprecated("Please use `StdLib.itself` instead.", ReplaceWith("StdLib.itself"))
+    const val stdLib       = StdLib.itself
+
+    @Deprecated("Please use `StdLib.common` instead.", ReplaceWith("StdLib.common"))
+    const val stdLibCommon = StdLib.common
+
+    @Deprecated("Please use `StdLib.jdk7` instead.", ReplaceWith("StdLib.jdk7"))
+    const val stdLibJdk7   = StdLib.jdk7
+
+    @Deprecated("Please use `StdLib.jdk8` instead.")
+    const val stdLibJdk8   = StdLib.jdk8
 
     const val toolingCore = "$group:kotlin-tooling-core"
-
-    @Deprecated("Please use `stdLib` instead.")
-    const val stdLibJdk7   = "$group:kotlin-stdlib-jdk7"
-
-    @Deprecated("Please use `stdLib` instead.")
-    const val stdLibJdk8   = "$group:kotlin-stdlib-jdk8"
 
     const val reflect    = "$group:kotlin-reflect"
     const val testJUnit5 = "$group:kotlin-test-junit5"

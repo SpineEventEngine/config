@@ -85,6 +85,9 @@ fun NamedDomainObjectContainer<Configuration>.forceVersions() {
 
 private fun ResolutionStrategy.forceProductionDependencies() {
     @Suppress("DEPRECATION") // Force versions of SLF4J and Kotlin libs.
+    Protobuf.libs.forEach {
+        force(it)
+    }
     force(
         AnimalSniffer.lib,
         AutoCommon.lib,
