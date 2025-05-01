@@ -51,7 +51,7 @@ import org.gradle.api.artifacts.Configuration
  *  In addition to forcing BOM-based dependencies,
  *  the plugin [forces][org.gradle.api.artifacts.ResolutionStrategy.force] the versions
  *  of [Kotlin.StdLib.artifacts] for all configurations because even through Kotlin
- *  artefacts are forced with BOM, the `variants` in the dependencies cannot be
+ *  artifacts are forced with BOM, the `variants` in the dependencies cannot be
  *  picked by Gradle.
  *
  *  Run Gradle with the [INFO][org.gradle.api.logging.Logger.isInfoEnabled] logging level

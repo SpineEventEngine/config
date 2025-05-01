@@ -85,7 +85,7 @@ object Kotlin {
     const val testJUnit5 = "$group:kotlin-test-junit5"
 
     /**
-     * The artefacts that do not belong to [StdLib].
+     * The artifacts that do not belong to [StdLib].
      */
     val artifacts = listOf(reflect, testJUnit5).map { "$it:$runtimeVersion" }
 
