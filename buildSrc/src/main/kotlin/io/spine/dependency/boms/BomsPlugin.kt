@@ -109,13 +109,13 @@ class BomsPlugin : Plugin<Project>  {
 
             all {
                 resolutionStrategy {
-                    fun forceWithLogging(artefact: String) {
-                        force(artefact)
-                        log { "Forced the version of `$artefact` in " + this@all.diagSuffix() }
+                    fun forceWithLogging(artifact: String) {
+                        force(artifact)
+                        log { "Forced the version of `$artifact` in " + this@all.diagSuffix() }
                     }
 
-                    fun forceAll(artefacts: Iterable<String>) = artefacts.forEach { artefact ->
-                        forceWithLogging(artefact)
+                    fun forceAll(artifacts: Iterable<String>) = artifacts.forEach { artifact ->
+                        forceWithLogging(artifact)
                     }
 
                     // The versions for Kotlin are resolved above correctly.
