@@ -46,5 +46,5 @@ object Coroutines {
     const val test = "$group:$infix-test"
     const val testJvm = "$group:$infix-test-jvm"
 
-    val artefacts = listOf(core, coreJvm, jdk8, debug, test, testJvm).map { "$it:$version"}
+    val artifacts = listOf(core, coreJvm, jdk8, debug, test, testJvm).map { "$it:$version"}
 }

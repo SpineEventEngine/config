@@ -50,7 +50,7 @@ import org.gradle.api.artifacts.Configuration
  *
  *  In addition to forcing BOM-based dependencies,
  *  the plugin [forces][org.gradle.api.artifacts.ResolutionStrategy.force] the versions
- *  of [Kotlin.StdLib.artefacts] for all configurations because even through Kotlin
+ *  of [Kotlin.StdLib.artifacts] for all configurations because even through Kotlin
  *  artefacts are forced with BOM, the `variants` in the dependencies cannot be
  *  picked by Gradle.
  *
@@ -109,21 +109,23 @@ class BomsPlugin : Plugin<Project>  {
 
             all {
                 resolutionStrategy {
-                    fun forceWithLoggign(artefact: String) {
+                    fun forceWithLogging(artefact: String) {
                         force(artefact)
                         log { "Forced the version of `$artefact` in " + this@all.diagSuffix() }
                     }
+
                     fun forceAll(artefacts: Iterable<String>) = artefacts.forEach { artefact ->
-                        forceWithLoggign(artefact)
+                        forceWithLogging(artefact)
                     }
 
-                    // The versions for Kotlin are resoled above correctly.
-                    // But that does not guarantees that Gradle picks up a correct `variant`.
+                    // The versions for Kotlin are resolved above correctly.
+                    // But that does not guarantee that Gradle picks up a correct `variant`.
                     if (!isDetekt) {
                         forceAll(Kotlin.artefacts)
-                        forceAll(Kotlin.StdLib.artefacts)
-                        forceAll(Coroutines.artefacts)
-                    }                }
+                        forceAll(Kotlin.StdLib.artifacts)
+                        forceAll(Coroutines.artifacts)
+                    }
+                }
             }
         }
     }
@@ -161,7 +163,7 @@ private fun isTestConfig(name: String) =
  * Tells if the configuration with the given [name] supports forcing
  * versions via the BOM mechanism.
  *
- * Not all configurations supports forcing via BOM. E.g., the configurations created
+ * Not all configurations support forcing via BOM. E.g., the configurations created
  * by Protobuf Gradle Plugin such as `compileProtoPath` or `extractIncludeProto` do
  * not pick up versions of dependencies set via `enforcedPlatform(myBom)`.
  */
@@ -170,4 +172,3 @@ private fun supportsBom(name: String) =
 
 private val Configuration.isDetekt: Boolean
     get() = name.contains("detekt", ignoreCase = true)
-
