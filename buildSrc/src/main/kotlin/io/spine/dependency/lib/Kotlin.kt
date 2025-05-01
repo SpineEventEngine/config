@@ -87,7 +87,7 @@ object Kotlin {
     /**
      * The artefacts that do not belong to [StdLib].
      */
-    val artefacts = listOf(reflect, testJUnit5).map { "$it:$runtimeVersion" }
+    val artifacts = listOf(reflect, testJUnit5).map { "$it:$runtimeVersion" }
 
     @Deprecated(message = "Please use `GradlePlugin.api` instead.", ReplaceWith("GradlePlugin.api"))
     const val gradlePluginApi = "$group:kotlin-gradle-plugin-api"

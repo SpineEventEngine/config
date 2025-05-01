@@ -121,7 +121,7 @@ class BomsPlugin : Plugin<Project>  {
                     // The versions for Kotlin are resolved above correctly.
                     // But that does not guarantee that Gradle picks up a correct `variant`.
                     if (!isDetekt) {
-                        forceAll(Kotlin.artefacts)
+                        forceAll(Kotlin.artifacts)
                         forceAll(Kotlin.StdLib.artifacts)
                         forceAll(Coroutines.artifacts)
                     }
