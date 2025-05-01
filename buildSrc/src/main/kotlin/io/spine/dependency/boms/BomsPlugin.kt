@@ -150,7 +150,7 @@ private fun Project.log(message: () -> String) {
 
 private fun isCompilationConfig(name: String) =
     name.contains("compile", ignoreCase = true) &&
-            // `comileProtoPath` or `compileTestProtoPath`.
+            // `compileProtoPath` or `compileTestProtoPath`.
             !name.contains("ProtoPath", ignoreCase = true)
 
 private fun isKspConfig(name: String) =
