@@ -32,7 +32,6 @@ import io.spine.dependency.local.ProtoData.dogfoodingVersion
 import io.spine.dependency.local.ProtoData.pluginLib
 import io.spine.dependency.local.ProtoData.version
 
-
 /**
  * Dependencies on ProtoData modules.
  *
