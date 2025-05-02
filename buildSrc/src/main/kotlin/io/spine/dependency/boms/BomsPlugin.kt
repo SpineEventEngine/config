@@ -26,11 +26,13 @@
 
 package io.spine.dependency.boms
 
+import io.gitlab.arturbosch.detekt.getSupportedKotlinVersion
 import io.spine.dependency.kotlinx.Coroutines
 import io.spine.dependency.lib.Kotlin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ConfigurationContainer
 
 /**
  * The plugin which forces versions of platforms declared in the [Boms] object.
@@ -82,55 +84,25 @@ class BomsPlugin : Plugin<Project>  {
                 applyBoms(project, Boms.core + Boms.testing)
             }
 
-            fun Configuration.diagSuffix(): String =
-                "the configuration `$name` in the project: `${project.path}`."
-
             matching { !supportsBom(it.name) }.all {
                 resolutionStrategy.eachDependency {
                     if (requested.group == Kotlin.group) {
                         val kotlinVersion = Kotlin.runtimeVersion
                         useVersion(kotlinVersion)
-                        log { "Forced Kotlin version `$kotlinVersion` in " + this@all.diagSuffix() }
+                        val suffix = this@all.diagSuffix(project)
+                        log { "Forced Kotlin version `$kotlinVersion` in $suffix" }
                     }
                 }
             }
 
-            matching { it.isDetekt }
-                .configureEach {
-                    resolutionStrategy.eachDependency {
-                        if (requested.group == Kotlin.group) {
-                            val supportedVersion =
-                                io.gitlab.arturbosch.detekt.getSupportedKotlinVersion()
-                            useVersion(supportedVersion)
-                            because("Force Kotlin version in Detekt configurations.")
-                        }
-                    }
-                }
-
-            all {
-                resolutionStrategy {
-                    fun forceWithLogging(artifact: String) {
-                        force(artifact)
-                        log { "Forced the version of `$artifact` in " + this@all.diagSuffix() }
-                    }
-
-                    fun forceAll(artifacts: Iterable<String>) = artifacts.forEach { artifact ->
-                        forceWithLogging(artifact)
-                    }
-
-                    // The versions for Kotlin are resolved above correctly.
-                    // But that does not guarantee that Gradle picks up a correct `variant`.
-                    if (!isDetekt) {
-                        forceAll(Kotlin.artifacts)
-                        forceAll(Kotlin.StdLib.artifacts)
-                        forceAll(Coroutines.artifacts)
-                    }
-                }
-            }
+            selectKotlinCompilerForDetekt()
+            project.forceArtifacts()
         }
     }
-
 }
+
+private fun Configuration.diagSuffix(project: Project): String =
+    "the configuration `$name` in the project: `${project.path}`."
 
 private fun Configuration.applyBoms(project: Project, boms: List<String>) {
     boms.forEach { bom ->
@@ -141,6 +113,22 @@ private fun Configuration.applyBoms(project: Project, boms: List<String>) {
         }
     }
 }
+
+private val Configuration.isDetekt: Boolean
+    get() = name.contains("detekt", ignoreCase = true)
+
+@Suppress("UnstableApiUsage") // `io.gitlab.arturbosch.detekt.getSupportedKotlinVersion`
+private fun ConfigurationContainer.selectKotlinCompilerForDetekt() =
+    matching { it.isDetekt }
+        .configureEach {
+            resolutionStrategy.eachDependency {
+                if (requested.group == Kotlin.group) {
+                    val supportedVersion = getSupportedKotlinVersion()
+                    useVersion(supportedVersion)
+                    because("Force Kotlin version $supportedVersion in Detekt configurations.")
+                }
+            }
+        }
 
 private fun Project.log(message: () -> String) {
     if (logger.isInfoEnabled) {
@@ -170,5 +158,34 @@ private fun isTestConfig(name: String) =
 private fun supportsBom(name: String) =
     (isCompilationConfig(name) || isKspConfig(name) || isTestConfig(name))
 
-private val Configuration.isDetekt: Boolean
-    get() = name.contains("detekt", ignoreCase = true)
+/**
+ * Forces the versions of the artifacts that are even being correctly selected by BOMs
+ * are not guaranteed to be handled correctly when Gradle picks up a `variant`.
+ *
+ * The function forces the versions for all configurations but [detekt][isDetekt], because
+ * it requires a compatible version of the Kotlin compiler.
+ *
+ * @see Kotlin.artifacts
+ * @see Kotlin.StdLib.artifacts
+ * @see Coroutines.artifacts
+ * @see selectKotlinCompilerForDetekt
+ */
+private fun Project.forceArtifacts() =
+    configurations.all {
+        resolutionStrategy {
+            fun forceWithLogging(artifact: String) {
+                force(artifact)
+                log { "Forced the version of `$artifact` in " + this@all.diagSuffix(project) }
+            }
+
+            fun forceAll(artifacts: Iterable<String>) = artifacts.forEach { artifact ->
+                forceWithLogging(artifact)
+            }
+
+            if (!isDetekt) {
+                forceAll(Kotlin.artifacts)
+                forceAll(Kotlin.StdLib.artifacts)
+                forceAll(Coroutines.artifacts)
+            }
+        }
+    }
