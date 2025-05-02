@@ -39,6 +39,9 @@ rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only 
 #rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
 #rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
 
+# 2025-05-02 Remove the refactored file.
+rm -f ../buildSrc/src/main/kotin/io/spine/gradle/javadoc/TaskContainerExtensions.kt
+
 # 2025-04-25 Remove the refactored files moved to subpackages
 rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/Repositories.kt
 rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/RepoSlug.kt
