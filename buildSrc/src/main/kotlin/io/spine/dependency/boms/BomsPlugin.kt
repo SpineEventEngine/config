@@ -101,7 +101,7 @@ class BomsPlugin : Plugin<Project>  {
     }
 }
 
-fun Configuration.diagSuffix(project: Project): String =
+private fun Configuration.diagSuffix(project: Project): String =
     "the configuration `$name` in the project: `${project.path}`."
 
 private fun Configuration.applyBoms(project: Project, boms: List<String>) {
