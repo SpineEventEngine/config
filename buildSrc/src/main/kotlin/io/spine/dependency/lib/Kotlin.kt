@@ -65,7 +65,7 @@ object Kotlin {
         const val jdk7 = "$group:$infix-jdk7"
         const val jdk8 = "$group:$infix-jdk8"
 
-        val artefacts = setOf(itself, common, jdk7, jdk8).map { "$it:$runtimeVersion" }
+        val artifacts = setOf(itself, common, jdk7, jdk8).map { "$it:$runtimeVersion" }
     }
 
     @Deprecated("Please use `StdLib.itself` instead.", ReplaceWith("StdLib.itself"))
@@ -81,9 +81,13 @@ object Kotlin {
     const val stdLibJdk8   = StdLib.jdk8
 
     const val toolingCore = "$group:kotlin-tooling-core"
-
     const val reflect    = "$group:kotlin-reflect"
     const val testJUnit5 = "$group:kotlin-test-junit5"
+
+    /**
+     * The artifacts that do not belong to [StdLib].
+     */
+    val artifacts = listOf(reflect, testJUnit5).map { "$it:$runtimeVersion" }
 
     @Deprecated(message = "Please use `GradlePlugin.api` instead.", ReplaceWith("GradlePlugin.api"))
     const val gradlePluginApi = "$group:kotlin-gradle-plugin-api"
@@ -94,7 +98,7 @@ object Kotlin {
     const val jetbrainsAnnotations = "org.jetbrains:annotations:$annotationsVersion"
 
     object Compiler {
-        const val embeddable = "$group:kotlin-compiler-embeddable:$runtimeVersion"
+        const val embeddable = "$group:kotlin-compiler-embeddable:$embeddedVersion"
     }
 
     object GradlePlugin {
