@@ -27,8 +27,10 @@
 package io.spine.dependency.boms
 
 import io.gitlab.arturbosch.detekt.getSupportedKotlinVersion
+import io.spine.dependency.DependencyWithBom
 import io.spine.dependency.kotlinx.Coroutines
 import io.spine.dependency.lib.Kotlin
+import io.spine.dependency.test.JUnit
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
@@ -104,12 +106,14 @@ class BomsPlugin : Plugin<Project>  {
 private fun Configuration.diagSuffix(project: Project): String =
     "the configuration `$name` in the project: `${project.path}`."
 
-private fun Configuration.applyBoms(project: Project, boms: List<String>) {
-    boms.forEach { bom ->
+private fun Configuration.applyBoms(project: Project, deps: List<DependencyWithBom>) {
+    deps.forEach { dep ->
         withDependencies {
-            val platform = project.dependencies.platform(bom)
+            val platform = project.dependencies.platform(dep.bom)
             addLater(project.provider { platform })
-            project.log { "Applied BOM: `$bom` to the configuration: `${this@applyBoms.name}`." }
+            project.log {
+                "Applied BOM: `${dep.bom}` to the configuration: `${this@applyBoms.name}`."
+            }
         }
     }
 }
@@ -178,7 +182,7 @@ private fun Project.forceArtifacts() =
                 log { "Forced the version of `$artifact` in " + this@all.diagSuffix(project) }
             }
 
-            fun forceAll(artifacts: Iterable<String>) = artifacts.forEach { artifact ->
+            fun forceAll(artifacts: Map<String, String>) = artifacts.values.forEach { artifact ->
                 forceWithLogging(artifact)
             }
 
@@ -186,6 +190,9 @@ private fun Project.forceArtifacts() =
                 forceAll(Kotlin.artifacts)
                 forceAll(Kotlin.StdLib.artifacts)
                 forceAll(Coroutines.artifacts)
+                forceAll(JUnit.Jupiter.artifacts) /*
+                    for configurations like `testFixturesCompileProtoPath`.
+                 */
             }
         }
     }
