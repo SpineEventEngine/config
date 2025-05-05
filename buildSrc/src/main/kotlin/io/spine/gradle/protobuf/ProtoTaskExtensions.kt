@@ -24,10 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+@file:Suppress("unused", "UnusedReceiverParameter") //
+
 package io.spine.gradle.protobuf
 
 import com.google.protobuf.gradle.GenerateProtoTask
-import com.google.protobuf.gradle.ProtobufExtension
 import io.spine.gradle.sourceSets
 import java.io.File
 import java.nio.file.Files
@@ -105,10 +106,12 @@ private fun GenerateProtoTask.generatedDir(language: String = ""): File {
 fun GenerateProtoTask.setup() {
     builtins.maybeCreate("kotlin")
     setupDescriptorSetFileCreation()
+    doFirst {
+        excludeProtocOutput()
+    }
     doLast {
         copyGeneratedFiles()
     }
-    excludeProtocOutput()
     setupKotlinCompile()
     dependOnProcessResourcesTask()
     makeDirsForIdeaModule()
