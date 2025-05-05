@@ -102,8 +102,8 @@ object JUnit : DependencyWithBom() {
         /**
          * The version of the platform is defined by JUnit BOM.
          *
-         * So when we use JUnit as a platform, this property should be picked
-         * up for the dependencies automatically.
+         * So when we use JUnit as a platform, this property should be picked up
+         * for the dependencies automatically.
          */
         override val version: String = "1.12.2"
         override val group = "org.junit.platform"
