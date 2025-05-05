@@ -29,7 +29,7 @@ package io.spine.dependency.lib
 import io.spine.dependency.DependencyWithBom
 
 // https://github.com/grpc/grpc-java
-@Suppress("unused", "ConstPropertyName")
+@Suppress("unused")
 object Grpc : DependencyWithBom() {
 
     override val version = "1.72.0"

@@ -31,7 +31,7 @@ import io.spine.dependency.DependencyWithBom
 
 // https://github.com/JetBrains/kotlin
 // https://github.com/Kotlin
-@Suppress("unused", "ConstPropertyName")
+@Suppress("unused")
 object Kotlin : DependencyWithBom() {
 
     /**
