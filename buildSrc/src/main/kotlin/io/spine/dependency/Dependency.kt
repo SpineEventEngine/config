@@ -114,5 +114,3 @@ private fun ResolutionStrategy.forceWithLogging(
     force(artifact)
     project.log { "Forced the version of `$artifact` in " + configuration.diagSuffix(project) }
 }
-
-
