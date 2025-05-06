@@ -342,6 +342,9 @@ val Project.protobufExtension: ProtobufExtension?
  *
  * The directory is fixed to be `$buildDir/generated/source/proto` in versions pre v0.9.5
  * and cannot be changed by the settings of the plugin.
+ * In the v0.9.5 the path was changed to
+ * [`$buildDir/generated/sources/proto`](https://github.com/google/protobuf-gradle-plugin/releases/tag/v0.9.5).
+ *
  * Even though [ProtobufExtension] has a property
  * [generatedFilesBaseDir][ProtobufExtension.getGeneratedFilesBaseDir], which is supposed
  * to be used for this purpose, it is declared with `@PackageScope` (again in earlier versions)
