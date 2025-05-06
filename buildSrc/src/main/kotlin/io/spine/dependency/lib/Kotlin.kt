@@ -49,7 +49,7 @@ object Kotlin : DependencyWithBom() {
      * This is the version of
      * [Kotlin embedded into Gradle](https://docs.gradle.org/current/userguide/compatibility.html#kotlin).
      */
-    const val embeddedVersion = "2.0.21"
+    const val embeddedVersion = "2.1.20"
 
     /**
      * The version of the JetBrains annotations library, which is a transitive
@@ -59,7 +59,7 @@ object Kotlin : DependencyWithBom() {
      */
     private const val annotationsVersion = "26.0.2"
 
-    val scriptRuntime = "$group:kotlin-script-runtime"
+    val scriptRuntime = "$group:kotlin-script-runtime:$runtimeVersion"
 
     object StdLib : Dependency() {
         override val version = runtimeVersion

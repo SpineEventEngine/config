@@ -28,9 +28,11 @@ package io.spine.dependency.boms
 
 import io.gitlab.arturbosch.detekt.getSupportedKotlinVersion
 import io.spine.dependency.DependencyWithBom
+import io.spine.dependency.diagSuffix
 import io.spine.dependency.kotlinx.Coroutines
 import io.spine.dependency.lib.Kotlin
 import io.spine.dependency.test.JUnit
+import io.spine.gradle.log
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
@@ -103,9 +105,6 @@ class BomsPlugin : Plugin<Project>  {
     }
 }
 
-private fun Configuration.diagSuffix(project: Project): String =
-    "the configuration `$name` in the project: `${project.path}`."
-
 private fun Configuration.applyBoms(project: Project, deps: List<DependencyWithBom>) {
     deps.forEach { dep ->
         withDependencies {
@@ -133,12 +132,6 @@ private fun ConfigurationContainer.selectKotlinCompilerForDetekt() =
                 }
             }
         }
-
-private fun Project.log(message: () -> String) {
-    if (logger.isInfoEnabled) {
-        logger.info(message.invoke())
-    }
-}
 
 private fun isCompilationConfig(name: String) =
     name.contains("compile", ignoreCase = true) &&
@@ -177,20 +170,14 @@ private fun supportsBom(name: String) =
 private fun Project.forceArtifacts() =
     configurations.all {
         resolutionStrategy {
-            fun forceWithLogging(artifact: String) {
-                force(artifact)
-                log { "Forced the version of `$artifact` in " + this@all.diagSuffix(project) }
-            }
-
-            fun forceAll(artifacts: Map<String, String>) = artifacts.values.forEach { artifact ->
-                forceWithLogging(artifact)
-            }
-
             if (!isDetekt) {
-                forceAll(Kotlin.artifacts)
-                forceAll(Kotlin.StdLib.artifacts)
-                forceAll(Coroutines.artifacts)
-                forceAll(JUnit.Jupiter.artifacts) /*
+                val rs = this@resolutionStrategy
+                val project = this@forceArtifacts
+                val cfg = this@all
+                Kotlin.forceArtifacts(project, cfg, rs)
+                Kotlin.StdLib.forceArtifacts(project, cfg, rs)
+                Coroutines.forceArtifacts(project, cfg, rs)
+                JUnit.Jupiter.forceArtifacts(project, cfg, rs) /*
                     for configurations like `testFixturesCompileProtoPath`.
                  */
             }

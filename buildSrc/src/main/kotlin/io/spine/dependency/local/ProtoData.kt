@@ -26,12 +26,6 @@
 
 package io.spine.dependency.local
 
-import io.spine.dependency.local.ProtoData.DF_VERSION_ENV
-import io.spine.dependency.local.ProtoData.VERSION_ENV
-import io.spine.dependency.local.ProtoData.dogfoodingVersion
-import io.spine.dependency.local.ProtoData.pluginLib
-import io.spine.dependency.local.ProtoData.version
-
 /**
  * Dependencies on ProtoData modules.
  *
