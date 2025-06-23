@@ -118,6 +118,43 @@ Tagging PRs helps the team:
 ### Naming convention for variables
 - Prefer simple nouns over composite nouns. E.g., `user` is better than `userAccount`.
 
+### Naming Guidelines
+
+#### Avoid using type names in variable names 
+| DO                                 | DON'T                                        |
+|------------------------------------|----------------------------------------------|
+| `val user = getUser()`             | `val userObject = getUser()`                 |
+| `val items = getItems()`           | `val itemList = getItems()`                  | 
+| `val gradleWrapper: IvyDependency` | `val gradleWrapperDependency: IvyDependency` |
+
+#### Avoid duplication of strings in the code
+- Use constants in companion objects instead.
+- If a string contains Kotlin interpolation, it should be a property instead.
+
+#### Prefer generic parameters over explicit variable types
+| DO                                      | DON'T                                               |
+|-----------------------------------------|-----------------------------------------------------|
+| `val list = mutableList<Deppendency>()` | `val list: MutableList<Dependency> = mutableList()` |
+
+### Code Formatting Guidelines
+- Start parameter descriptions with a capital letter.
+- In-line code fragments are always surrounded with back ticks. E.g., `code`.
+- File and directory names are code and should be formatted as such.
+- Block code fragments in documentation and diagnostic messages must be surrounded
+  with code fences (```).
+- Code fences that are part of the code come with extra backtick:
+  ```text
+     Here's how you put the nested code fences:
+     ````kotlin
+     // Nested code example.
+     ````
+  ```
+- Descriptions of parameters, properties, and exceptions in KDoc must be terminated with a comma.
+- When creating `.md` files wrap the text so that it is not wider than 80 characters.
+- Put periods at the end of sentences.
+- Do not put periods if a line of text is a fragment.
+- Avoid in-place comments in the code unless specifically asked.
+
 ### Safety Rules Checklist
 - ✅ Ensure all generated code compiles and passes static analysis.
 - ❌ Avoid unnecessary reflection or unsafe code (e.g., `!!` in Kotlin).
@@ -249,7 +286,7 @@ version.gradle.kts # Declares the project version.
 - Avoid generating blocking calls inside coroutines.
 
 ---
-   
+
 ## ⚙️ Refactoring Guidelines
 - Do not replace Kotest assertions with standard Kotlin's Built-In Test Assertions.
 
@@ -283,6 +320,16 @@ These goals guide how agents (ChatGPT, Codex) are used in this project to:
 - Provide language-aware guidance on Kotlin/Java idioms.
 - Lower the barrier to onboarding new contributors.
 - Enable collaborative, explainable, and auditable development with AI.
+
+---
+
+## 📋 Common Tasks
+
+- **Adding a new dependency**: Update relevant files in `buildSrc` directory.
+- **Creating a new module**: Follow existing module structure patterns.
+- **Documentation**: Use KDoc style for public and internal APIs.
+- **Testing**: Create comprehensive tests using Kotest assertions.
+
 --- 
 
 ## 👋 Welcome, Agents!
