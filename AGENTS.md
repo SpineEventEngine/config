@@ -74,150 +74,70 @@ Tagging PRs helps the team:
 
 ## 🧾 Coding guidelines for Agents
 
-### General Guidelines
+### Core Principles
+
 - Adhere to [Spine Event Engine Documentation][spine-docs] for coding style.
+- Generate code that compiles cleanly and passes static analysis.
+- Respect existing architecture, naming conventions, and project structure.
 - Write clear, incremental commits with descriptive messages.
 - Include automated tests for any code change that alters functionality.
-- Avoid in-place comments in code unless specifically requested.
 
-### Naming Conventions
+### Kotlin Best Practices
 
 #### ✅ Prefer
-- **Simple nouns** over composite nouns (`user` > `userAccount`).
-- **Generic parameters** over explicit variable types:
-
-| DO                                      | DON'T                                               |
-|-----------------------------------------|-----------------------------------------------------|
-| `val list = mutableList<Dependency>()`  | `val list: MutableList<Dependency> = mutableList()` |
+- **Kotlin idioms** over Java-style approaches:
+  - Extension functions
+  - `when` expressions 
+  - Smart casts
+  - Data classes and sealed classes
+  - Immutable data structures
+- **Simple nouns** over composite nouns (`user` > `userAccount`)  
+- **Generic parameters** over explicit variable types (`val list = mutableList<Dependency>()`)  
+- **Java interop annotations** only when needed (`@file:JvmName`, `@JvmStatic`)
+- **Kotlin DSL** for Gradle files
 
 #### ❌ Avoid
-- **String duplication**: Use constants in companion objects,
-  or properties for interpolated strings where appropriate.
+- Mutable data structures
+- Java-style verbosity (builders with setters)
+- Redundant null checks (`?.let` misuse)
+- Using `!!` unless clearly justified
+- Type names in variable names (`userObject`, `itemList`)
+- String duplication (use constants in companion objects)
+- Mixing Groovy and Kotlin DSLs in build logic
+- Reflection unless specifically requested
 
- - Using **type names** in variable names:
+### Documentation & Comments
 
-  | DO                                 | DON'T                                        |
-  |------------------------------------|----------------------------------------------|
-  | `val user = getUser()`             | `val userObject = getUser()`                 |
-  | `val items = getItems()`           | `val itemList = getItems()`                  | 
-  | `val gradleWrapper: IvyDependency` | `val gradleWrapperDependency: IvyDependency` |
-
-
-### KDoc and Commenting
-- Write concise and clear KDoc descriptions for all public and internal APIs.
-- Use the following style for parameter descriptions:
-  - Begin descriptions with uppercase letters.
-  - Terminate them with commas.
-- Format blocks of code in documentation with fences:
+#### KDoc Style
+- Write concise descriptions for all public and internal APIs
+- Start parameter descriptions with capital letters
+- End parameter descriptions with commas
+- Use inline code with backticks for code references (`example`)
+- Format code blocks with fences and language identifiers:
   ```kotlin
-  // Example:
-  override fun toString(): String {
-      return "Example"
+  // Example code
+  fun example() {
+      // Implementation
   }
   ```
 
-- Avoid inline comments in the production code unless necessary.
-- Inline comments are helpful in tests.
-
-#### Formatting
-- Wrap `.md` text to **80 characters** for readability.
-- Use proper punctuation:
-  - Periods at the end of full sentences.
-  - No periods for text fragments or bullet points.
-- Inline code fragments must always be encapsulated with backticks (`example`).
-
-### ✅ Preferred
-
-1. Kotlin idioms are **preferred** over Java-style approaches, including:
-   - Extension functions
-   - `when` expressions
-   - Smart casts
-   - Data classes
-   - Sealed classes
-
-2. Immutable data structures. 
-
-3. Apply **Java interop** only when needed (e.g., using annotations or legacy libraries).
-
-4. Use **Kotlin DSL** when modifying or generating Gradle files.
-
-5. Generate code that **compiles cleanly** and **passes static analysis**.
-
-6. Respect **existing architecture**, naming conventions, and project structure.
-
-7. Use `@file:JvmName`, `@JvmStatic`, etc., where appropriate.
-
-### ❌ Avoid
-
-- Mutable data structures
-- Java-style verbosity (e.g., builders with setters)
-- Redundant null checks (`?.let` misuse)
-- Using `!!` unless clearly justified
-- Mixing Groovy and Kotlin DSLs in build logic
-- Using reflection unless requested
-
-### General guidance
-- Adhere to the [Spine Event Engine Documentation][spine-docs]
-  for coding style and contribution procedures. 
-
-- The conventions on the [Spine Event Engine Documentation][spine-docs]
-  page and other pages in this Wiki area **take precedence over** standard Kotlin or
-  Java conventions.
-
-- Write clear, incremental commits with descriptive messages.
-- Include automated tests for any code change that alters functionality.
-- Keep pull requests focused and small.
-
-### Naming convention for variables
-- Prefer simple nouns over composite nouns. E.g., `user` is better than `userAccount`.
-
-### Naming Guidelines
-
-#### Avoid using type names in variable names
-
-| DO                                 | DON'T                                        |
-|------------------------------------|----------------------------------------------|
-| `val user = getUser()`             | `val userObject = getUser()`                 |
-| `val items = getItems()`           | `val itemList = getItems()`                  | 
-| `val gradleWrapper: IvyDependency` | `val gradleWrapperDependency: IvyDependency` |
-
-#### Avoid duplication of strings in the code
-- Use constants in companion objects instead.
-- If a string contains Kotlin interpolation, it should be a property instead.
-
-#### Prefer generic parameters over explicit variable types
-
-| DO                                      | DON'T                                               |
-|-----------------------------------------|-----------------------------------------------------|
-| `val list = mutableList<Deppendency>()` | `val list: MutableList<Dependency> = mutableList()` |
-
-### Code Formatting Guidelines
-- Start parameter descriptions with a capital letter.
-- In-line code fragments are always surrounded with back ticks. E.g., `code`.
-- File and directory names are code and should be formatted as such.
-- Block code fragments in documentation and diagnostic messages must be surrounded
-  with code fences (```).
-- Code fences that are part of the code come with extra backtick:
-  ```text
-     Here's how you put the nested code fences:
-     ````kotlin
-     // Nested code example.
-     ````
-  ```
-- Descriptions of parameters, properties, and exceptions in KDoc must be terminated with a comma.
-- When creating `.md` files wrap the text so that it is not wider than 80 characters.
-
-#### Using periods in the texts
-- Put periods at the end of sentences.
-- Do not put periods if a line of text is a fragment.
-
 #### Commenting Guidelines
-- Avoid in-place comments in the code unless specifically asked.
+- Avoid inline comments in production code unless necessary
+- Inline comments are helpful in tests
+- When using TODO comments, follow the format on [dedicated page][todo-comments]
+- File and directory names should be formatted as code
 
-### Safety Rules Checklist
-- ✅ Ensure all generated code compiles and passes static analysis.
-- ❌ Avoid unnecessary reflection or unsafe code (e.g., `!!` in Kotlin).
-- ✅ Do not auto-update external dependencies unless explicitly allowed.
+#### Text Formatting
+- Wrap `.md` text to 80 characters for readability
+- Use periods at the end of complete sentences only
+- No periods for bullet points or fragments
+
+### Safety Rules
+- ✅ All code must compile and pass static analysis
+- ❌ Never use reflection or unsafe code without explicit approval
+- ✅ Do not auto-update external dependencies
+- ❌ No analytics or telemetry code
+- ❌ No blocking calls inside coroutines
 
 ---
 ## Version policy
