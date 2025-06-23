@@ -1,17 +1,18 @@
 ## Table of Contents
-1. [🧠 Purpose](#-purpose)
-2. [🛠️ Project overview](#-project-overview)
-3. [🤖 Agent responsibilities](#-agent-responsibilities)
-4. [🧾 Coding guidelines for Agents](#-coding-guidelines-for-agents)
+## Table of Contents
+1. [Purpose](#-purpose)
+2. [Project overview](#-project-overview)
+3. [Agent responsibilities](#-agent-responsibilities)
+4. [Coding guidelines for Agents](#-coding-guidelines-for-agents)
 5. [Running builds](#running-builds)
 6. [Version policy](#version-policy)
-7. [📁 Project structure expectations](#-project-structure-expectations)
-8. [📄 Documentation tasks](#-documentation-tasks)
-9. [🧪 Testing](#-testing)
-10. [🚨 Safety rules for Agents](#-safety-rules-for-agents)
-11. [💬 Interaction tips – key to effective collaboration!](#-interaction-tips--key-to-effective-collaboration)
-12. [🧭 LLM Goals](#-llm-goals)
-13. [👋 Welcome, Agents!](#-welcome-agents)
+7. [Project structure expectations](#-project-structure-expectations)
+8. [Documentation tasks](#-documentation-tasks)
+9. [Testing](#-testing)
+10. [Safety rules for Agents](#-safety-rules-for-agents)
+11. [Interaction tips – key to effective collaboration!](#-interaction-tips--key-to-effective-collaboration)
+12. [LLM Goals](#-llm-goals)
+13. [Welcome, Agents!](#-welcome-agents)
 
 ## 🧠 Purpose
 
@@ -59,7 +60,7 @@ with AI to maintain a high-quality codebase.
 
 ### Tagging pull request messages
 
-While crafting GitHub PR messages, tag agent roles as needed:
+Use PR tags for clarity:
 ```text
 feat(chatgpt): Updated README with clearer KDoc examples
 fix(codex): Completed missing `when` branches in tests
@@ -151,8 +152,12 @@ Tagging PRs helps the team:
   ```
 - Descriptions of parameters, properties, and exceptions in KDoc must be terminated with a comma.
 - When creating `.md` files wrap the text so that it is not wider than 80 characters.
+
+#### Using periods in the texts
 - Put periods at the end of sentences.
 - Do not put periods if a line of text is a fragment.
+
+#### Commenting Guildeines
 - Avoid in-place comments in the code unless specifically asked.
 
 ### Safety Rules Checklist
@@ -164,39 +169,25 @@ Tagging PRs helps the team:
 ## Version policy
 
 ### We use semver
-The version number of the project is kept in the file named `version.gradle.kts` which resides
-in the root of the project.
+The version of the project is kept in the `version.gradle.kts` file in the root of the project.
 
 The version numbers in these files follow the conventions of
-[Semantic Versioning 2.0.0][semver].
+[Semantic Versioning 2.0.0](https://semver.org/).
 
-### Increment a patch version for each pull request
+IMPORTANT: ALWAYS increment the version when a new branch is created.
 
-1. Open the `version.gradle.kts` file in the root directory.
-
-2. Increment the **last number** of the version. Retain zero-padding if applicable:
+### Quick Checklist for Versioning
+1. Increment the patch version in `version.gradle.kts`.
+   Retain zero-padding if applicable:
     - Example: `"2.0.0-SNAPSHOT.009"` → `"2.0.0-SNAPSHOT.010"`
-
-3. Commit the `version.gradle.kts` file in a separate commit with the comment of the following
-   format:
-    ```text
-    Bump version -> `$newVersion`
-    ```
-    where `$newVersion` is the version number without quotes. For example:
-    ```text
-    Bump version -> `2.0.0-SNAPSHOT.010`
-    ```
-4. Run `./gradlew clean build`
-
-5. Commit updated files `pom.xml` and `dependencies.md` with the following comment: 
+2. Commit the version bump separately with this comment:
    ```text
-   Update dependency reports.
-   ```
+   Bump version → `$newVersion`
+   ``` 
+3. Rebuild using `./gradlew clean build`.
+4. Update `pom.xml`, `dependencies.md` and commit changes with: `Update dependency reports`
 
-### What happens if you forget to increment the version?
-
-Build failure! A GitHub workflow checks for correct version increments.
-
+Remember: PRs without version bumps will fail CI (conflict resolution detailed above).
 
 ### Resolving conflicts in `version.gradle.kts`
 A branch conflict over the version number should be resolved as described below.
@@ -250,12 +241,15 @@ version.gradle.kts # Declares the project version.
 
 ## 📄 Documentation tasks
 
-- Generate and update **KDoc** for `public` and `internal` APIs.
-  Remember to focus on structure for readability.
-
 - Suggest better **names** and **abstractions**.
 
 - Help format inline comments and design rationale.
+
+#### Documentation Checklist
+1. Ensure all public and internal APIs have KDoc examples.
+2. Add in-line code blocks for clarity.
+3. Use `TODO` comments with agent names for unresolved logic sections:
+    - Example: `// TODO(chatgpt): Refactor `EventStore` for better CQRS compliance.`
 
 ---
 
@@ -339,6 +333,5 @@ These goals guide how agents (ChatGPT, Codex) are used in this project to:
 
 <!-- External links -->
 [spine-docs]: https://github.com/SpineEventEngine/documentation/wiki
-[semver]: https://semver.org/
 [kotest-assertions]: https://kotest.io/docs/assertions/assertions.html
 [todo-comments]: https://github.com/SpineEventEngine/documentation/wiki/TODO-comments
