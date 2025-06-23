@@ -74,6 +74,52 @@ Tagging PRs helps the team:
 
 ## 🧾 Coding guidelines for Agents
 
+### General coding and formatting guidelines
+
+#### General Guidelines
+- Adhere to [Spine Event Engine Documentation][spine-docs] for coding style.
+- Write clear, incremental commits with descriptive messages.
+- Include automated tests for any code change that alters functionality.
+- Avoid in-place comments in code unless specifically requested.
+
+#### Naming Conventions
+- Prefer **simple nouns** over composite nouns (`user` > `userAccount`).
+- Avoid using **type names** in variable names:
+  | DO                                 | DON'T                                        |
+  |------------------------------------|----------------------------------------------|
+  | `val user = getUser()`             | `val userObject = getUser()`                 |
+  | `val items = getItems()`           | `val itemList = getItems()`                  | 
+  | `val gradleWrapper: IvyDependency` | `val gradleWrapperDependency: IvyDependency` |
+
+- Avoid **string duplication**: Use constants in companion objects,
+  or properties for interpolated strings where appropriate.
+- Prefer **generic parameters** over explicit variable types:
+  | DO                                      | DON'T                                               |
+  |-----------------------------------------|-----------------------------------------------------|
+  | `val list = mutableList<Dependency>()`  | `val list: MutableList<Dependency> = mutableList()` |
+
+#### KDoc and Commenting
+- Write concise and clear KDoc descriptions for all public and internal APIs.
+- Use the following style for parameter descriptions:
+  - Begin descriptions with uppercase letters.
+  - Terminate them with commas.
+- Format blocks of code in documentation with fences:
+  ```kotlin
+  // Example:
+  override fun toString(): String {
+      return "Example"
+  }
+  ```
+
+- Avoid inline comments unless necessary.
+
+#### Formatting
+- Wrap `.md` text to **80 characters** for readability.
+- Use proper punctuation:
+  - Periods at the end of full sentences.
+  - No periods for text fragments or bullet points.
+- Inline code fragments must always be encapsulated with backticks (`example`).
+
 ### ✅ Preferred
 
 1. Kotlin idioms are **preferred** over Java-style approaches, including:
