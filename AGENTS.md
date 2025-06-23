@@ -142,6 +142,9 @@ Tagging PRs helps the team:
 ---
 ## Version policy
 
+<details>
+<summary>Click to expand versioning guidelines</summary>
+
 ### We use semver
 The version of the project is kept in the `version.gradle.kts` file in the root of the project.
 
@@ -169,9 +172,14 @@ A branch conflict over the version number should be resolved as described below.
    the current branch stays.
  * If the merged branch has the number which is greater or equal to that of the current branch,
    the number should be increased by one.
+
+</details>
 ---
 
 ## Running builds
+
+<details>
+<summary>Click to expand build instructions</summary>
 
 1. When modifying code, run:
    ```bash
@@ -188,6 +196,8 @@ A branch conflict over the version number should be resolved as described below.
    ./gradlew dokka
    ```
    Documentation-only changes do not require running tests!
+
+</details>
 ---
 
 ## 📁 Project structure expectations
@@ -220,6 +230,9 @@ version.gradle.kts # Declares the project version.
 
 ## 📄 Documentation tasks
 
+<details>
+<summary>Click to expand documentation guidelines</summary>
+
 - Suggest better **names** and **abstractions**.
 
 #### Documentation Checklist
@@ -227,6 +240,8 @@ version.gradle.kts # Declares the project version.
 2. Add in-line code blocks for clarity.
 3. Use `TODO` comments with agent names for unresolved logic sections:
     - Example: `// TODO(chatgpt): Refactor `EventStore` for better CQRS compliance.`
+
+</details>
 
 ---
 
@@ -259,11 +274,20 @@ version.gradle.kts # Declares the project version.
 ---
 
 ## ⚙️ Refactoring Guidelines
+
+<details>
+<summary>Click to expand refactoring guidelines</summary>
+
 - Do not replace Kotest assertions with standard Kotlin's Built-In Test Assertions.
+
+</details>
 
 ---
 
 ## 💬 Interaction tips – key to effective collaboration!
+
+<details>
+<summary>Click to expand collaboration guidelines</summary>
 
 - Human programmers may use inline comments to guide agents:
   ```kotlin
@@ -282,6 +306,8 @@ version.gradle.kts # Declares the project version.
 - When agents or humans add TODO comments, they **must** follow the format described on
   the [dedicated page][todo-comments].
 
+</details>
+
 ---
 
 ## 🧭 LLM Goals
@@ -296,10 +322,15 @@ These goals guide how agents (ChatGPT, Codex) are used in this project to:
 
 ## 📋 Common Tasks
 
+<details>
+<summary>Click to expand common task instructions</summary>
+
 - **Adding a new dependency**: Update relevant files in `buildSrc` directory.
 - **Creating a new module**: Follow existing module structure patterns.
 - **Documentation**: Use KDoc style for public and internal APIs.
 - **Testing**: Create comprehensive tests using Kotest assertions.
+
+</details>
 
 --- 
 
