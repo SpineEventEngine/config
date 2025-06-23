@@ -74,31 +74,36 @@ Tagging PRs helps the team:
 
 ## 🧾 Coding guidelines for Agents
 
-### General coding and formatting guidelines
-
-#### General Guidelines
+### General Guidelines
 - Adhere to [Spine Event Engine Documentation][spine-docs] for coding style.
 - Write clear, incremental commits with descriptive messages.
 - Include automated tests for any code change that alters functionality.
 - Avoid in-place comments in code unless specifically requested.
 
-#### Naming Conventions
-- Prefer **simple nouns** over composite nouns (`user` > `userAccount`).
-- Avoid using **type names** in variable names:
+### Naming Conventions
+
+#### ✅ Prefer
+- **Simple nouns** over composite nouns (`user` > `userAccount`).
+- **Generic parameters** over explicit variable types:
+
+| DO                                      | DON'T                                               |
+|-----------------------------------------|-----------------------------------------------------|
+| `val list = mutableList<Dependency>()`  | `val list: MutableList<Dependency> = mutableList()` |
+
+#### ❌ Avoid
+- **String duplication**: Use constants in companion objects,
+  or properties for interpolated strings where appropriate.
+
+ - Using **type names** in variable names:
+
   | DO                                 | DON'T                                        |
   |------------------------------------|----------------------------------------------|
   | `val user = getUser()`             | `val userObject = getUser()`                 |
   | `val items = getItems()`           | `val itemList = getItems()`                  | 
   | `val gradleWrapper: IvyDependency` | `val gradleWrapperDependency: IvyDependency` |
 
-- Avoid **string duplication**: Use constants in companion objects,
-  or properties for interpolated strings where appropriate.
-- Prefer **generic parameters** over explicit variable types:
-  | DO                                      | DON'T                                               |
-  |-----------------------------------------|-----------------------------------------------------|
-  | `val list = mutableList<Dependency>()`  | `val list: MutableList<Dependency> = mutableList()` |
 
-#### KDoc and Commenting
+### KDoc and Commenting
 - Write concise and clear KDoc descriptions for all public and internal APIs.
 - Use the following style for parameter descriptions:
   - Begin descriptions with uppercase letters.
@@ -111,7 +116,8 @@ Tagging PRs helps the team:
   }
   ```
 
-- Avoid inline comments unless necessary.
+- Avoid inline comments in the production code unless necessary.
+- Inline comments are helpful in tests.
 
 #### Formatting
 - Wrap `.md` text to **80 characters** for readability.
@@ -167,7 +173,8 @@ Tagging PRs helps the team:
 
 ### Naming Guidelines
 
-#### Avoid using type names in variable names 
+#### Avoid using type names in variable names
+
 | DO                                 | DON'T                                        |
 |------------------------------------|----------------------------------------------|
 | `val user = getUser()`             | `val userObject = getUser()`                 |
@@ -179,6 +186,7 @@ Tagging PRs helps the team:
 - If a string contains Kotlin interpolation, it should be a property instead.
 
 #### Prefer generic parameters over explicit variable types
+
 | DO                                      | DON'T                                               |
 |-----------------------------------------|-----------------------------------------------------|
 | `val list = mutableList<Deppendency>()` | `val list: MutableList<Dependency> = mutableList()` |
@@ -203,7 +211,7 @@ Tagging PRs helps the team:
 - Put periods at the end of sentences.
 - Do not put periods if a line of text is a fragment.
 
-#### Commenting Guildeines
+#### Commenting Guidelines
 - Avoid in-place comments in the code unless specifically asked.
 
 ### Safety Rules Checklist
@@ -264,6 +272,9 @@ A branch conflict over the version number should be resolved as described below.
 
 ## 📁 Project structure expectations
 
+<details>
+<summary>Click to expand project structure details</summary>
+
 ```yaml
 .github
 buildSrc/
@@ -283,13 +294,13 @@ README.md # Project overview
 AGENTS.md # LLM agent instructions (this file)
 version.gradle.kts # Declares the project version. 
 ```
+
+</details>
 ---
 
 ## 📄 Documentation tasks
 
 - Suggest better **names** and **abstractions**.
-
-- Help format inline comments and design rationale.
 
 #### Documentation Checklist
 1. Ensure all public and internal APIs have KDoc examples.
