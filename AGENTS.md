@@ -1,8 +1,22 @@
-## Table of Contents
+
+## 📝 Quick Reference Card
+
+```
+🔑 Key Information:
+- Kotlin/Java project with CQRS architecture
+- Use ChatGPT for documentation, Codex for code generation, GPT-4o for complex analysis
+- Follow coding guidelines in Spine Event Engine docs
+- Always include tests with code changes
+- Version bump required for all PRs
+```
+
 ## Table of Contents
 1. [Purpose](#-purpose)
 2. [Project overview](#-project-overview)
 3. [Agent responsibilities](#-agent-responsibilities)
+   - [Agent Collaboration Workflow](#agent-collaboration-workflow)
+   - [Tagging pull request messages](#tagging-pull-request-messages)
+   - [Selecting the Right Agent](#selecting-the-right-agent)
 4. [Coding guidelines for Agents](#-coding-guidelines-for-agents)
 5. [Running builds](#running-builds)
 6. [Version policy](#version-policy)
@@ -10,9 +24,13 @@
 8. [Documentation tasks](#-documentation-tasks)
 9. [Testing](#-testing)
 10. [Safety rules for Agents](#-safety-rules-for-agents)
-11. [Interaction tips – key to effective collaboration!](#-interaction-tips--key-to-effective-collaboration)
-12. [LLM Goals](#-llm-goals)
-13. [Welcome, Agents!](#-welcome-agents)
+11. [Refactoring Guidelines](#️-refactoring-guidelines)
+12. [Interaction tips – key to effective collaboration!](#-interaction-tips--key-to-effective-collaboration)
+13. [LLM Goals](#-llm-goals)
+    - [Problem-Solving Framework](#problem-solving-framework-for-complex-tasks)
+    - [GPT-4o Advanced Capabilities](#-gpt-4o-advanced-capabilities)
+14. [Common Tasks](#-common-tasks)
+15. [Welcome, Agents!](#-welcome-agents)
 
 ## 🧠 Purpose
 
@@ -381,6 +399,40 @@ When faced with complex tasks, follow this framework:
 
 *This framework helps maintain consistency across contributions from different agents.*
 
+### 🚀 GPT-4o Advanced Capabilities
+
+GPT-4o excels at these high-value tasks in our CQRS architecture:
+
+1. **Architecture-Level Insights**
+   - Suggesting architectural improvements in CQRS pattern implementation
+   - Identifying cross-cutting concerns between command and query sides
+   - Optimizing event flow and state propagation
+
+2. **Advanced Kotlin Refactoring**
+   - Converting imperative code to idiomatic Kotlin (sequences, extensions, etc.)
+   - Applying context receivers and other Kotlin 1.6+ features
+   - Optimizing coroutine patterns and structured concurrency
+
+3. **Testing Intelligence**
+   - Identifying missing property-based test scenarios
+   - Suggesting event sequence combinations that could cause race conditions
+   - Creating comprehensive test fixtures for complex domain objects
+
+#### Example Prompts for GPT-4o
+
+Leverage GPT-4o's advanced capabilities with prompts like these:
+
+```text
+# Architecture Analysis
+"Analyze this CommandHandler implementation and suggest improvements to better align with CQRS principles, especially considering event sourcing implications."
+
+# Kotlin Refactoring
+"Refactor this Java-style code to use more idiomatic Kotlin patterns. Pay special attention to immutability, extension functions, and DSL opportunities."
+
+# Test Enhancement 
+"Review this test suite for our event processing pipeline and suggest additional test scenarios focusing on concurrent event handling edge cases."
+```
+
 ---
 
 ## 📋 Common Tasks
@@ -401,31 +453,6 @@ When faced with complex tasks, follow this framework:
  - You are here to help.
  - Stay consistent, stay clear, and help this Kotlin/Java codebase become more robust,
    elegant, and maintainable.
-
- ## 🌟 Real-World Examples
-
- <details>
- <summary>Click to see examples of excellent agent contributions</summary>
-
- ### Documentation Example (ChatGPT)
-
- Problem: Explain our event sourcing implementation.
-
- Solution: Added clear documentation with visual diagrams explaining event flow, persistence, and projection rebuilding.
-
- ### Code Completion Example (Codex)
-
- Problem: Complete missing command handlers for user management.
-
- Solution: Generated idiomatic Kotlin implementations with proper error handling and validation.
-
- ### Architecture Analysis Example (GPT-4o)
-
- Problem: Optimize query side performance.
-
- Solution: Analyzed bottlenecks and implemented view model caching with invalidation based on event types.
-
- </details>
 
 <!-- External links -->
 [spine-docs]: https://github.com/SpineEventEngine/documentation/wiki
