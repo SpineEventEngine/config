@@ -16,6 +16,10 @@
 
 ## 🧠 Purpose
 
+> **EXECUTIVE SUMMARY**: This guide outlines how AI agents (ChatGPT, Codex, GPT-4o)
+> collaborate on our Kotlin/Java CQRS project. It defines responsibilities, coding standards,
+> and workflows to maintain high code quality and architectural integrity.
+
 This document explains how to use **ChatGPT** and **Codex** effectively in this Kotlin/Java project.
 
 It outlines:
@@ -48,14 +52,32 @@ with AI to maintain a high-quality codebase.
 
 ## 🤖 Agent responsibilities
 
-| Task/Feature                      | Primary Agent | Supporting Agent | Notes                                      |
-|-----------------------------------|---------------|------------------|--------------------------------------------|
-| Writing documentation (like KDoc) | ChatGPT       | Codex            | Use for readable, structured docs.         |
-| Explaining APIs and architecture  | ChatGPT       | -                | Great for clarity in team workflows.       |
-| Code generation (e.g., tests)     | Codex         | ChatGPT          | Codex produces quick scaffolding.          |
-| Code refactoring suggestions      | ChatGPT       | Codex            | Use ChatGPT for design-level improvements. |
-| Completing functions or classes   | Codex         | -                | Codex is better for direct completions.    |
-| Debugging and test suggestions    | ChatGPT       | Codex            | ChatGPT suggests missing scenarios.        |
+| Task/Feature                      | Primary Agent | Supporting Agent | Notes                                       |
+|-----------------------------------|---------------|------------------|---------------------------------------------|
+| Writing documentation (like KDoc) | ChatGPT       | Codex            | Use for readable, structured docs.          |
+| Explaining APIs and architecture  | ChatGPT       | -                | Great for clarity in team workflows.        |
+| Code generation (e.g., tests)     | Codex         | ChatGPT          | Codex produces quick scaffolding.           |
+| Code refactoring suggestions      | ChatGPT       | Codex            | Use ChatGPT for design-level improvements.  |
+| Completing functions or classes   | Codex         | -                | Codex is better for direct completions.     |
+| Debugging and test suggestions    | ChatGPT       | Codex            | ChatGPT suggests missing scenarios.         |
+| Advanced architecture analysis    | GPT-4o        | -                | Best for complex CQRS pattern optimization. |
+| Kotlin idiom optimization         | GPT-4o        | Codex            | Leverages latest language features.         |
+
+### Agent Collaboration Workflow
+
+```mermaid
+graph TD
+    A[Human Developer] -->|Request task| B{Task Type?}
+    B -->|Documentation| C[ChatGPT]
+    B -->|Code Generation| D[Codex]
+    B -->|Architecture Analysis| E[GPT-4o]
+    C -->|Produce Documentation| F[Review & Merge]
+    D -->|Generate Code| F
+    E -->|Optimize & Refactor| F
+    F -->|Iterate if needed| A
+```
+
+*Note: The diagram shows the typical workflow and which agent to use for different task types.*
 
 
 ### Tagging pull request messages
@@ -64,12 +86,40 @@ Use PR tags for clarity:
 ```text
 feat(chatgpt): Updated README with clearer KDoc examples
 fix(codex): Completed missing `when` branches in tests
+perf(gpt-4o): Optimized event processing pipeline
 ```
 #### Why tag pull requests?
 Tagging PRs helps the team:
   - Track which agent contributed to specific changes.
   - Understand whether a PR needs extra human review based on the agent's role.
   - Make decisions about multi-agent collaboration in reviews.
+
+### Selecting the Right Agent
+
+<details>
+<summary>Click to expand decision tree for agent selection</summary>
+
+```
+Is the task primarily documentation or explanation?
+├── Yes → Use ChatGPT
+└── No → Continue
+
+Is the task primarily generating boilerplate code or tests?
+├── Yes → Use Codex
+└── No → Continue
+
+Does the task involve complex architectural decisions or advanced Kotlin features?
+├── Yes → Use GPT-4o
+└── No → Use ChatGPT for analysis, then Codex for implementation
+```
+
+**Task Examples by Agent:**
+
+- **ChatGPT**: Documentation, conceptual explanations, architectural insights
+- **Codex**: Code generation, test scaffolding, completing partially written code
+- **GPT-4o**: Advanced architectural patterns, Kotlin idiom optimization, complex refactoring
+
+</details>
 ---
 
 ## 🧾 Coding guidelines for Agents
@@ -318,6 +368,19 @@ These goals guide how agents (ChatGPT, Codex) are used in this project to:
 - Lower the barrier to onboarding new contributors.
 - Enable collaborative, explainable, and auditable development with AI.
 
+### Problem-Solving Framework for Complex Tasks
+
+When faced with complex tasks, follow this framework:
+
+1. **Decompose**: Break down the problem into smaller, manageable parts
+2. **Analyze**: Understand the architectural implications of each part
+3. **Pattern-Match**: Identify established patterns that apply
+4. **Implement**: Write code that follows project conventions
+5. **Test**: Ensure comprehensive test coverage
+6. **Document**: Provide clear explanations of your solution
+
+*This framework helps maintain consistency across contributions from different agents.*
+
 ---
 
 ## 📋 Common Tasks
@@ -338,6 +401,31 @@ These goals guide how agents (ChatGPT, Codex) are used in this project to:
  - You are here to help.
  - Stay consistent, stay clear, and help this Kotlin/Java codebase become more robust,
    elegant, and maintainable.
+
+ ## 🌟 Real-World Examples
+
+ <details>
+ <summary>Click to see examples of excellent agent contributions</summary>
+
+ ### Documentation Example (ChatGPT)
+
+ Problem: Explain our event sourcing implementation.
+
+ Solution: Added clear documentation with visual diagrams explaining event flow, persistence, and projection rebuilding.
+
+ ### Code Completion Example (Codex)
+
+ Problem: Complete missing command handlers for user management.
+
+ Solution: Generated idiomatic Kotlin implementations with proper error handling and validation.
+
+ ### Architecture Analysis Example (GPT-4o)
+
+ Problem: Optimize query side performance.
+
+ Solution: Analyzed bottlenecks and implemented view model caching with invalidation based on event types.
+
+ </details>
 
 <!-- External links -->
 [spine-docs]: https://github.com/SpineEventEngine/documentation/wiki
