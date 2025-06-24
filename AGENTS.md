@@ -13,9 +13,9 @@
 1. [Purpose](#-purpose)
 2. [Project overview](#-project-overview)
 3. [Agent responsibilities](#-agent-responsibilities)
-   - [Agent Collaboration Workflow](#agent-collaboration-workflow)
+   - [Agent collaboration workflow](#agent-collaboration-workflow)
    - [Tagging pull request messages](#tagging-pull-request-messages)
-   - [Selecting the Right Agent](#selecting-the-right-agent)
+   - [Selecting the right Agent](#selecting-the-right-agent)
 4. [Coding guidelines for Agents](#-coding-guidelines-for-agents)
 5. [Running builds](#running-builds)
 6. [Version policy](#version-policy)
@@ -23,18 +23,18 @@
 8. [Documentation tasks](#-documentation-tasks)
 9. [Testing](#-testing)
 10. [Safety rules for Agents](#-safety-rules-for-agents)
-11. [Refactoring Guidelines](#️-refactoring-guidelines)
+11. [Refactoring guidelines](#-refactoring-guidelines)
 12. [Interaction tips – key to effective collaboration!](#-interaction-tips--key-to-effective-collaboration)
-13. [LLM Goals](#-llm-goals)
-    - [Problem-Solving Framework](#problem-solving-framework-for-complex-tasks)
-    - [GPT-4o Advanced Capabilities](#-gpt-4o-advanced-capabilities)
-14. [Common Tasks](#-common-tasks)
+13. [LLM goals](#-llm-goals)
+    - [Problem-solving framework](#problem-solving-framework-for-complex-tasks)
+    - [GPT-4o advanced capabilities](#-gpt-4o-advanced-capabilities)
+14. [Common tasks](#-common-tasks)
 15. [Welcome, Agents!](#-welcome-agents)
 
 ## 🧠 Purpose
 
 > **EXECUTIVE SUMMARY**: This guide outlines how AI agents (ChatGPT, Codex, GPT-4o)
-> collaborate on our Kotlin/Java CQRS project. It defines responsibilities, coding standards,
+> collaborate on our Kotlin/Java project. It defines responsibilities, coding standards,
 > and workflows to maintain high code quality and architectural integrity.
 
 This document explains how to use **ChatGPT** and **Codex** effectively in this Kotlin/Java project.
@@ -49,7 +49,7 @@ Whether you are a developer, tester, or contributor, this guide will help you co
 with AI to maintain a high-quality codebase.
 
 ### Terminology
-- **LLM**: Refers to the general category of language models (e.g., ChatGPT, Codex, Claude).
+- **LLM**: Refers to the general category of language models (e.g., ChatGPT, Codex, Claude, Junie).
 - **Agents**: A broader term for LLMs collaborating on this project. 
 - Use specific names (**ChatGPT**, **Codex**) when they excel at different tasks 
   (e.g., scaffolding versus explanation).
@@ -80,7 +80,7 @@ with AI to maintain a high-quality codebase.
 | Advanced architecture analysis    | GPT-4o        | -                | Best for complex CQRS pattern optimization. |
 | Kotlin idiom optimization         | GPT-4o        | Codex            | Leverages latest language features.         |
 
-### Agent Collaboration Workflow
+### Agent collaboration workflow
 
 ```mermaid
 graph TD
@@ -111,10 +111,10 @@ Tagging PRs helps the team:
   - Understand whether a PR needs extra human review based on the agent's role.
   - Make decisions about multi-agent collaboration in reviews.
 
-### Selecting the Right Agent
+### Selecting the right Agent
 
 <details>
-<summary>Click to expand decision tree for agent selection</summary>
+<summary>Click to expand the decision tree for agent selection</summary>
 
 ```
 Is the task primarily documentation or explanation?
@@ -130,18 +130,19 @@ Does the task involve complex architectural decisions or advanced Kotlin feature
 └── No → Use ChatGPT for analysis, then Codex for implementation
 ```
 
-**Task Examples by Agent:**
+**Task examples by Agent:**
 
 - **ChatGPT**: Documentation, conceptual explanations, architectural insights
 - **Codex**: Code generation, test scaffolding, completing partially written code
 - **GPT-4o**: Advanced architectural patterns, Kotlin idiom optimization, complex refactoring
 
 </details>
+
 ---
 
 ## 🧾 Coding guidelines for Agents
 
-### Core Principles
+### Core principles
 
 - Adhere to [Spine Event Engine Documentation][spine-docs] for coding style.
 - Generate code that compiles cleanly and passes static analysis.
@@ -149,7 +150,7 @@ Does the task involve complex architectural decisions or advanced Kotlin feature
 - Write clear, incremental commits with descriptive messages.
 - Include automated tests for any code change that alters functionality.
 
-### Kotlin Best Practices
+### Kotlin best practices
 
 #### ✅ Prefer
 - **Kotlin idioms** over Java-style approaches:
@@ -173,13 +174,13 @@ Does the task involve complex architectural decisions or advanced Kotlin feature
 - Mixing Groovy and Kotlin DSLs in build logic
 - Reflection unless specifically requested
 
-### Documentation & Comments
+### Documentation & comments
 
-#### KDoc Style
-- Write concise descriptions for all public and internal APIs
-- Start parameter descriptions with capital letters
-- End parameter descriptions with commas
-- Use inline code with backticks for code references (`example`)
+#### KDoc style
+- Write concise descriptions for all public and internal APIs.
+- Start parameter descriptions with capital letters.
+- End parameter descriptions with commas.
+- Use inline code with backticks for code references (`example`).
 - Format code blocks with fences and language identifiers:
   ```kotlin
   // Example code
@@ -188,25 +189,39 @@ Does the task involve complex architectural decisions or advanced Kotlin feature
   }
   ```
 
-#### Commenting Guidelines
-- Avoid inline comments in production code unless necessary
-- Inline comments are helpful in tests
-- When using TODO comments, follow the format on [dedicated page][todo-comments]
-- File and directory names should be formatted as code
+#### Commenting guidelines
+- Avoid inline comments in production code unless necessary.
+- Inline comments are helpful in tests.
+- When using TODO comments, follow the format on [dedicated page][todo-comments].
+- File and directory names should be formatted as code.
 
-#### Text Formatting
-- Wrap `.md` text to 80 characters for readability
-- Use periods at the end of complete sentences only
-- No periods for bullet points or fragments
+#### Tex width
+- Wrap `.md` text to 80 characters for readability.
+- Wrap KDoc comments at 75 characters. 
 
-### Safety Rules
-- ✅ All code must compile and pass static analysis
-- ❌ Never use reflection or unsafe code without explicit approval
-- ✅ Do not auto-update external dependencies
-- ❌ No analytics or telemetry code
-- ❌ No blocking calls inside coroutines
+#### Using periods
+- Use periods at the end of complete sentences.
+- Use no periods for short bullets.
+- Use periods for full or multi-clause bullets.
+- Use no periods for fragments.
+- Be consistent within the list!
+
+### Text formatting
+ - ✅ Remove double empty lines in the code.
+ - ✅ Remove trailing space characters in the code.
 
 ---
+
+## Safety rules
+
+- ✅ All code must compile and pass static analysis.
+- ✅ Do not auto-update external dependencies.
+- ❌ Never use reflection or unsafe code without explicit approval.
+- ❌ No analytics or telemetry code.
+- ❌ No blocking calls inside coroutines.
+
+---
+
 ## Version policy
 
 <details>
@@ -220,7 +235,7 @@ The version numbers in these files follow the conventions of
 
 IMPORTANT: ALWAYS increment the version when a new branch is created.
 
-### Quick Checklist for Versioning
+### Quick checklist for versioning
 1. Increment the patch version in `version.gradle.kts`.
    Retain zero-padding if applicable:
     - Example: `"2.0.0-SNAPSHOT.009"` → `"2.0.0-SNAPSHOT.010"`
@@ -302,7 +317,7 @@ version.gradle.kts # Declares the project version.
 
 - Suggest better **names** and **abstractions**.
 
-#### Documentation Checklist
+#### Documentation checklist
 1. Ensure all public and internal APIs have KDoc examples.
 2. Add in-line code blocks for clarity.
 3. Use `TODO` comments with agent names for unresolved logic sections:
@@ -340,7 +355,7 @@ version.gradle.kts # Declares the project version.
 
 ---
 
-## ⚙️ Refactoring Guidelines
+## ⚙️ Refactoring guidelines
 
 <details>
 <summary>Click to expand refactoring guidelines</summary>
@@ -377,7 +392,7 @@ version.gradle.kts # Declares the project version.
 
 ---
 
-## 🧭 LLM Goals
+## 🧭 LLM goals
 
 These goals guide how agents (ChatGPT, Codex) are used in this project to:
 - Help developers move faster without sacrificing code quality.
@@ -385,7 +400,7 @@ These goals guide how agents (ChatGPT, Codex) are used in this project to:
 - Lower the barrier to onboarding new contributors.
 - Enable collaborative, explainable, and auditable development with AI.
 
-### Problem-Solving Framework for Complex Tasks
+### Problem-solving framework for complex tasks
 
 When faced with complex tasks, follow this framework:
 
@@ -398,43 +413,43 @@ When faced with complex tasks, follow this framework:
 
 *This framework helps maintain consistency across contributions from different agents.*
 
-### 🚀 GPT-4o Advanced Capabilities
+### 🚀 GPT-4o advanced capabilities
 
 GPT-4o excels at these high-value tasks in our CQRS architecture:
 
-1. **Architecture-Level Insights**
+1. **Architecture-level insights**
    - Suggesting architectural improvements in CQRS pattern implementation
    - Identifying cross-cutting concerns between command and query sides
    - Optimizing event flow and state propagation
 
-2. **Advanced Kotlin Refactoring**
+2. **Advanced Kotlin refactoring**
    - Converting imperative code to idiomatic Kotlin (sequences, extensions, etc.)
    - Applying context receivers and other Kotlin 1.6+ features
    - Optimizing coroutine patterns and structured concurrency
 
-3. **Testing Intelligence**
+3. **Testing intelligence**
    - Identifying missing property-based test scenarios
    - Suggesting event sequence combinations that could cause race conditions
    - Creating comprehensive test fixtures for complex domain objects
 
-#### Example Prompts for GPT-4o
+#### Example prompts for GPT-4o
 
 Leverage GPT-4o's advanced capabilities with prompts like these:
 
 ```text
-# Architecture Analysis
+# Architecture analysis
 "Analyze this CommandHandler implementation and suggest improvements to better align with CQRS principles, especially considering event sourcing implications."
 
-# Kotlin Refactoring
+# Kotlin refactoring
 "Refactor this Java-style code to use more idiomatic Kotlin patterns. Pay special attention to immutability, extension functions, and DSL opportunities."
 
-# Test Enhancement 
+# Test enhancement
 "Review this test suite for our event processing pipeline and suggest additional test scenarios focusing on concurrent event handling edge cases."
 ```
 
 ---
 
-## 📋 Common Tasks
+## 📋 Common tasks
 
 <details>
 <summary>Click to expand common task instructions</summary>

@@ -31,6 +31,9 @@
 #
 # Therefore, instructions below are superset of instructions required for all the projects.
 
+# Temporary output of AI agents.
+.output
+
 # `jenv` local configuration.
 .java-version
 

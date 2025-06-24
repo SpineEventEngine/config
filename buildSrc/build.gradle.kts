@@ -24,8 +24,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 /**
  * This script uses two declarations of the constant [licenseReportVersion] because
  * currently there is no way to define a constant _before_ a build script of `buildSrc`.
@@ -152,16 +150,6 @@ configurations.all {
             "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinEmbeddedVersion",
             "org.jetbrains.kotlin:kotlin-reflect:$kotlinEmbeddedVersion"
         )
-    }
-}
-
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 
