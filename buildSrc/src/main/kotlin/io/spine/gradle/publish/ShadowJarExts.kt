@@ -35,7 +35,6 @@ fun ShadowJar.handleMergingServiceFiles() {
     ServiceFiles.all.forEach {
         mergeServiceFiles(it)
     }
-
 }
 
 @Suppress("ConstPropertyName")
