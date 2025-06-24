@@ -4,26 +4,26 @@ The code of this repository should be added to a target project as a Git submodu
 
 ## Adding a submodule to your project
 
-To add a sub-module:
+To add a submodule:
 ```bash
 git submodule add https://github.com/SpineEventEngine/config config
 ``` 
 This will only add a submodule with the reference to the repository.
 
-In order to get the actual code for the `config` submodule, run the following command:
+To get the actual code for the `config` submodule, run the following command:
 ```bash
 git submodule update --init --recursive
 ```
 
-## Updating project with new configuration
+## Updating the project with a new configuration
 
 Run the following command from the root of your project:
 ```bash
 ./config/pull
 ```
 
-It will get the latest code from the remote repo, and then copy shared files into the root of your
-project. The following files will be copied:
+It will get the latest code from the remote repo and then copy the shared files into your project.
+The following files will be copied:
  
  * `.idea` - a directory with shared IntelliJ IDEA settings
  * `.codecov.yml`
@@ -35,7 +35,7 @@ project. The following files will be copied:
 
 When changing the configuration (e.g. a version of a dependency, or adding a build script plugin),
 it may be worth testing that the change does not break dependant projects. `ConfigTester` allows
-to automate this process. This tool serves to probe the Spine repositories for compatibility with
+ automating this process. This tool serves to probe the Spine repositories for compatibility with
 the local changes in the `config` repository. The usage looks like this:
 
 ```kotlin
@@ -59,10 +59,14 @@ ConfigTester(config, tasks, tempFolder)
     .registerUnder("buildDependants")
 ```
 
-The [`build.gradle.kts`](./build.gradle.kts) is already tuned to test changes against [`base`][base],
-[`base-types`][base-types], and [`core-java`][core-java]. This takes slightly over half an hour,
-depending on the local configuration. If you need to change the list of repositories, please
-update `addRepo()` calls to `ConifigTester`.
+The [`build.gradle.kts`](./build.gradle.kts) is already tuned to test changes
+against these projects: 
+ * [`base`][base],
+ * [`base-types`][base-types], and
+ * [`core-java`][core-java].
+
+This takes slightly over half an hour, depending on the local configuration.
+If you need to change the list of repositories, please update `addRepo()` calls to `ConifigTester`.
 
 The command to start the build process is:
 ```bash
