@@ -176,10 +176,10 @@ Does the task involve complex architectural decisions or advanced Kotlin feature
 ### Documentation & comments
 
 #### KDoc style
-- Write concise descriptions for all public and internal APIs
-- Start parameter descriptions with capital letters
-- End parameter descriptions with commas
-- Use inline code with backticks for code references (`example`)
+- Write concise descriptions for all public and internal APIs.
+- Start parameter descriptions with capital letters.
+- End parameter descriptions with commas.
+- Use inline code with backticks for code references (`example`).
 - Format code blocks with fences and language identifiers:
   ```kotlin
   // Example code
@@ -189,22 +189,28 @@ Does the task involve complex architectural decisions or advanced Kotlin feature
   ```
 
 #### Commenting guidelines
-- Avoid inline comments in production code unless necessary
-- Inline comments are helpful in tests
-- When using TODO comments, follow the format on [dedicated page][todo-comments]
-- File and directory names should be formatted as code
+- Avoid inline comments in production code unless necessary.
+- Inline comments are helpful in tests.
+- When using TODO comments, follow the format on [dedicated page][todo-comments].
+- File and directory names should be formatted as code.
 
-#### Text formatting
-- Wrap `.md` text to 80 characters for readability
-- Use periods at the end of complete sentences only
-- No periods for bullet points or fragments
+#### Tex width
+- Wrap `.md` text to 80 characters for readability.
+- Wrap KDoc comments at 75 characters. 
+
+#### Using periods
+- Use periods at the end of complete sentences.
+- Use no periods for short bullets.
+- Use periods for full or multi-clause bullets.
+- Use no periods for fragments.
+- Be consistent within the list!
 
 ### Safety rules
-- ✅ All code must compile and pass static analysis
-- ❌ Never use reflection or unsafe code without explicit approval
-- ✅ Do not auto-update external dependencies
-- ❌ No analytics or telemetry code
-- ❌ No blocking calls inside coroutines
+- ✅ All code must compile and pass static analysis.
+- ✅ Do not auto-update external dependencies.
+- ❌ Never use reflection or unsafe code without explicit approval.
+- ❌ No analytics or telemetry code.
+- ❌ No blocking calls inside coroutines.
 
 ---
 ## Version policy
