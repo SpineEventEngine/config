@@ -137,6 +137,7 @@ Does the task involve complex architectural decisions or advanced Kotlin feature
 - **GPT-4o**: Advanced architectural patterns, Kotlin idiom optimization, complex refactoring
 
 </details>
+
 ---
 
 ## 🧾 Coding guidelines for Agents
@@ -205,7 +206,14 @@ Does the task involve complex architectural decisions or advanced Kotlin feature
 - Use no periods for fragments.
 - Be consistent within the list!
 
-### Safety rules
+### Text formatting
+ - ✅ Remove double empty lines in the code.
+ - ✅ Remove trailing space characters in the code.
+
+---
+
+## Safety rules
+
 - ✅ All code must compile and pass static analysis.
 - ✅ Do not auto-update external dependencies.
 - ❌ Never use reflection or unsafe code without explicit approval.
@@ -213,6 +221,7 @@ Does the task involve complex architectural decisions or advanced Kotlin feature
 - ❌ No blocking calls inside coroutines.
 
 ---
+
 ## Version policy
 
 <details>
