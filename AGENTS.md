@@ -233,8 +233,6 @@ The version of the project is kept in the `version.gradle.kts` file in the root 
 The version numbers in these files follow the conventions of
 [Semantic Versioning 2.0.0](https://semver.org/).
 
-IMPORTANT: ALWAYS increment the version when a new branch is created.
-
 ### Quick checklist for versioning
 1. Increment the patch version in `version.gradle.kts`.
    Retain zero-padding if applicable:
@@ -255,6 +253,9 @@ A branch conflict over the version number should be resolved as described below.
  * If the merged branch has the number which is greater or equal to that of the current branch,
    the number should be increased by one.
 
+### When to bump the version?
+ - When a new branch is created.
+ 
 </details>
 ---
 
