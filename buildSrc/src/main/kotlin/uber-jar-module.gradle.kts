@@ -93,6 +93,7 @@ tasks.shadowJar {
 /**
  * Exclude unwanted directories.
  */
+@Suppress("LongMethod")
 private fun ShadowJar.excludeFiles() {
     exclude(
         /*
