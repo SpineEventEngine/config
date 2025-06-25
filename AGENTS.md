@@ -204,6 +204,7 @@ Does the task involve complex architectural decisions or advanced Kotlin feature
 - Use no periods for short bullets.
 - Use periods for full or multi-clause bullets.
 - Use no periods for fragments.
+- Use no periods in titles and headers.
 - Be consistent within the list!
 
 ### Text formatting
