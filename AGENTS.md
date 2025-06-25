@@ -37,7 +37,7 @@
 > collaborate on our Kotlin/Java project. It defines responsibilities, coding standards,
 > and workflows to maintain high code quality and architectural integrity.
 
-This document explains how to use **ChatGPT** and **Codex** effectively in this Kotlin/Java project.
+This document explains how to use **ChatGPT** and **Codex** in this Kotlin/Java project.
 
 It outlines:
 
@@ -45,7 +45,7 @@ It outlines:
 - Coding and architectural guidelines agents must follow.
 - Instructions for creating and testing agent-generated outputs.
 
-Whether you are a developer, tester, or contributor, this guide will help you collaborate
+Whether you are a developer, tester, or contributor, this guide helps you collaborate
 with AI to maintain a high-quality codebase.
 
 ### Terminology
