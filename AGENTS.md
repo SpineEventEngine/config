@@ -201,10 +201,12 @@ Does the task involve complex architectural decisions or advanced Kotlin feature
 
 #### Using periods
 - Use periods at the end of complete sentences.
-- Use no periods for short bullets.
 - Use periods for full or multi-clause bullets.
-- Use no periods for fragments.
-- Use no periods in titles and headers.
+- Use NO periods for short bullets.
+- Use NO periods for fragments.
+- Use NO periods in titles and headers.
+- Use NO periods in parameter descriptions in Javadoc.
+- DO USE periods in parameter and property descriptions in KDoc.
 - Be consistent within the list!
 
 ### Text formatting
@@ -256,7 +258,7 @@ A branch conflict over the version number should be resolved as described below.
 
 ### When to bump the version?
  - When a new branch is created.
- 
+
 </details>
 ---
 
