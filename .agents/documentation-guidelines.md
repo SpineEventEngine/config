@@ -9,7 +9,7 @@
 ## KDoc style
 - Write concise descriptions for all public and internal APIs.
 - Start parameter descriptions with capital letters.
-- End parameter descriptions with commas.
+- End parameter descriptions with periods.
 - Use inline code with backticks for code references (`example`).
 - Format code blocks with fences and language identifiers:
   ```kotlin
