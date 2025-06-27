@@ -12,7 +12,8 @@ cp CODE_OF_CONDUCT.md ..
 echo "Updating Codecov settings"
 cp .codecov.yml ..
 
-echo "Updating 'AGENTS.md'"
+
+echo "Updating \\\`AGENTS.md\\\`"
 cp AGENTS.md ..
 
 echo "Updating Junie guidelines"
@@ -21,7 +22,7 @@ if [ -d ".junie" ]; then
     cp -R .junie ..
 fi
 
-echo "Updating '.agents' directory"
+echo "Updating \\\`.agents\\\` directory"
 rm -rf ../.agents
 if [ -d ".agents" ]; then
     cp -R .agents ..
@@ -71,7 +72,7 @@ cp -a gradle.properties ..
 cp -a .gitignore ..
 
 # 2024-10-28
-echo "Removing old packages under 'buildSrc/src/main/kotin/'"
+echo "Removing old packages under \\\`buildSrc/src/main/kotin/\\\`"
 rm -r ../buildSrc/src/main/kotlin/io/spine/internal/
 
 # 2023-07-12, remove outdated files.
@@ -89,7 +90,7 @@ rm -f ../.lift.toml
 # See `config#498` for more.
 rm -f ../license-report.md
 
-echo "Updating Gradle 'buildSrc'"
+echo "Updating Gradle \\\`buildSrc\\\`"
 cp -R buildSrc ..
 
 echo "Updating Gradle Wrapper"
@@ -99,5 +100,5 @@ cp gradlew.bat ..
 
 cd ..
 
-echo "Adding 'buildSrc' sources to Git..."
+echo "Adding \\\`buildSrc\\\` sources to Git..."
 git add ./buildSrc/src
