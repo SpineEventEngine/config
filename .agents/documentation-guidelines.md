@@ -1,5 +1,11 @@
 # Documentation & comments
 
+## Commenting guidelines
+- Avoid inline comments in production code unless necessary.
+- Inline comments are helpful in tests.
+- When using TODO comments, follow the format on the [dedicated page][todo-comments].
+- File and directory names should be formatted as code.
+
 ## KDoc style
 - Write concise descriptions for all public and internal APIs.
 - Start parameter descriptions with capital letters.
@@ -13,15 +19,19 @@
   }
   ```
 
-## Commenting guidelines
-- Avoid inline comments in production code unless necessary.
-- Inline comments are helpful in tests.
-- When using TODO comments, follow the format on [dedicated page][todo-comments].
-- File and directory names should be formatted as code.
+### External links in `@see` tag
 
-## Tex width
-- Wrap `.md` text to 80 characters for readability.
-- Wrap KDoc comments at 75 characters. 
+- The `@see` tag is for [referencing API elements](https://kotlinlang.org/docs/kotlin-doc.html#see-identifier).
+- External links are [not officially supported](https://github.com/Kotlin/dokka/issues/518).
+- External links CAN be added when migrating from Javadoc.
+- Format is:
+  ```kotlin
+  /**
+   * Documentation text.
+   *
+   * @see <a href="https://my.site.com/my-page.html">Link title</a>
+   */
+  ```
 
 ## Using periods
 - Use periods at the end of complete sentences.
