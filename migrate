@@ -18,7 +18,7 @@ cp AGENTS.md ..
 echo "Updating Junie guidelines"
 rm -rf ../.junie
 if [ -d ".junie" ]; then
-    cp -R .agents ..
+    cp -R .junie ..
 fi
 
 echo "Updating '.agents' directory"
