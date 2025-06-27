@@ -56,7 +56,7 @@ rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only 
 #rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
 
 # 2025-05-02 Remove the refactored file.
-rm -f ../buildSrc/src/main/kotin/io/spine/gradle/javadoc/TaskContainerExtensions.kt
+rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/javadoc/TaskContainerExtensions.kt
 
 # 2025-04-25 Remove the refactored files moved to subpackages
 rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/Repositories.kt
@@ -72,7 +72,7 @@ cp -a gradle.properties ..
 cp -a .gitignore ..
 
 # 2024-10-28
-echo "Removing old packages under \\\`buildSrc/src/main/kotin/\\\`"
+echo "Removing old packages under \\\`buildSrc/src/main/kotlin/\\\`"
 rm -r ../buildSrc/src/main/kotlin/io/spine/internal/
 
 # 2023-07-12, remove outdated files.
