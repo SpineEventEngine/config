@@ -8,7 +8,7 @@
 2. If Protobuf (`.proto`) files are modified run:
    ```bash
    ./gradlew clean build
-   ````
+   ```
 
 3. Documentation-only changes in Kotlin or Java sources run:
    ```bash
