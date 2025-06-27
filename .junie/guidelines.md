@@ -1,6 +1,6 @@
-## Guidelines for Junie and AI Agent from JetBrains
+# Guidelines for Junie and AI Agent from JetBrains
 
-Read the `AGENTS.md` file at the root of the project to understand:
+Read the `../.agents/_TOC.md` file at the root of the project to understand:
  - the agent responsibilities,
  - project overview, 
  - coding guidelines, 
