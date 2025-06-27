@@ -55,7 +55,6 @@ internal constructor(
      */
     fun writeTo(file: File) {
         val out = StringWriter()
-
         writeStart(out)
         writeBlocks(
             out,
@@ -66,8 +65,9 @@ internal constructor(
         )
         PomFormatting.writeEnd(out)
 
-        fileWriter.write(out.toString())
-        fileWriter.close()
+        FileWriter(file).use {
+            it.write(out.toString())
+        }
     }
 
     /**
