@@ -54,7 +54,6 @@ internal constructor(
      * @param file a file to write `pom.xml` contents to.
      */
     fun writeTo(file: File) {
-        val fileWriter = FileWriter(file)
         val out = StringWriter()
 
         writeStart(out)
