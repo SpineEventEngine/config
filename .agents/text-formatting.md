@@ -6,7 +6,7 @@
 
 ### KDoc formatting tasks
 - Wrap at 75 characters.
-- Wrap parameter and property comments with leading two spaces `  ` after new line.
+- Wrap tag description text with two leading spaces `  ` after new line.
 
 ## Using periods
 
