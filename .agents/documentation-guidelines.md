@@ -33,6 +33,10 @@
    */
   ```
 
+### KDoc tasks
+- Remove `<p>` tags in the line with text: `"<p>This"` -> `"This"`.
+- Replace `<p>` with empty line if the tag is the only text in the line.
+
 ## Using periods
 - Use periods at the end of complete sentences.
 - Use periods for full or multi-clause bullets.
