@@ -14,4 +14,5 @@
    ```bash
    ./gradlew dokka
    ```
-   Documentation-only changes do not require running tests!
+   
+4. Documentation-only changes do not require running tests!
