@@ -50,7 +50,7 @@ class Cli(private val workingFolder: File) {
     /**
      * Executes the given terminal command and retrieves the command output.
      *
-     * <p>[Executes][Runtime.exec] the given `String array as a CLI command.
+     * [Executes][Runtime.exec] the given `String` array as a CLI command.
      *
      * If the execution is successful, returns the command output.
      * Throws an {@link IllegalStateException} otherwise.
