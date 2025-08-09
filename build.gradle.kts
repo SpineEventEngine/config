@@ -35,6 +35,6 @@ repositories {
 }
 
 detekt {
-    config.setFrom("quality/detekt-config.yml")
+    config.setFrom("buildSrc/quality/detekt-config.yml")
     source.setFrom("buildSrc/src/main/kotlin")
 }
