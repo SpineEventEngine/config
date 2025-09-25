@@ -52,4 +52,10 @@ object ToolBase {
 
     const val jvmTools = "$group:jvm-tools:$version"
     const val jvmToolPlugins = "$group:jvm-tool-all-plugins:$version"
+
+    object JavadocFilter {
+        const val group = ToolBase.group
+        const val version = "2.0.0-SNAPSHOT.75"
+        const val artifact = "$group:spine-javadoc-filter:$version"
+    }
 }

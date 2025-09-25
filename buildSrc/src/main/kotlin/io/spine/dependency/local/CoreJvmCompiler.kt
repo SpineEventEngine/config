@@ -26,37 +26,40 @@
 
 package io.spine.dependency.local
 
-import io.spine.dependency.local.McJava.dogfoodingVersion
-import io.spine.dependency.local.McJava.version
-
+import io.spine.dependency.local.CoreJvmCompiler.dogfoodingVersion
+import io.spine.dependency.local.CoreJvmCompiler.version
 
 /**
- * Dependencies on Spine Model Compiler for Java.
+ * Dependencies on the CoreJvm Compiler artifacts.
  *
- * See [mc-java](https://github.com/SpineEventEngine/mc-java).
+ * See [mc-java](https://github.com/SpineEventEngine/core-jvm-compiler).
  */
 @Suppress(
     "MemberVisibilityCanBePrivate" /* `pluginLib()` is used by subprojects. */,
     "ConstPropertyName",
     "unused"
 )
-object McJava {
+object CoreJvmCompiler {
+
+    /**
+     * The Compiler belongs to the `tools` group.
+     */
     const val group = Spine.toolsGroup
 
     /**
      * The version used to in the build classpath.
      */
-    const val dogfoodingVersion = "2.0.0-SNAPSHOT.320"
+    const val dogfoodingVersion = "2.0.0-SNAPSHOT.006"
 
     /**
      * The version to be used for integration tests.
      */
-    const val version = "2.0.0-SNAPSHOT.320"
+    const val version = "2.0.0-SNAPSHOT.006"
 
     /**
      * The ID of the Gradle plugin.
      */
-    const val pluginId = "io.spine.mc-java"
+    const val pluginId = "io.spine.core-jvm"
 
     /**
      * The library with the [dogfoodingVersion].
@@ -66,18 +69,18 @@ object McJava {
     /**
      * The library with the given [version].
      */
-    fun pluginLib(version: String): String = "$group:spine-mc-java-plugins:$version:all"
+    fun pluginLib(version: String): String = "$group:core-jvm-plugins:$version:all"
 
     /** The artifact reference for forcing in configurations. */
-    const val pluginsArtifact: String = "$group:spine-mc-java-plugins:$version"
+    const val pluginsArtifact: String = "$group:core-jvm-plugins:$version"
 
     /**
-     * The `mc-java-base` artifact with the [version].
+     * The `core-jvm-base` artifact with the [version].
      */
     val base = base(version)
 
     /**
      * The `mc-java-base` artifact with the given [version].
      */
-    fun base(version: String): String = "$group:spine-mc-java-base:$version"
+    fun base(version: String): String = "$group:core-jvm-base:$version"
 }
