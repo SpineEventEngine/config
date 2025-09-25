@@ -34,7 +34,7 @@ package io.spine.dependency.local
 @Suppress("ConstPropertyName", "unused")
 object ToolBase {
     const val group = Spine.toolsGroup
-    const val version = "2.0.0-SNAPSHOT.341"
+    const val version = "2.0.0-SNAPSHOT.355"
 
     const val lib = "$group:tool-base:$version"
     const val pluginBase = "$group:plugin-base:$version"
@@ -52,4 +52,10 @@ object ToolBase {
 
     const val jvmTools = "$group:jvm-tools:$version"
     const val jvmToolPlugins = "$group:jvm-tool-all-plugins:$version"
+
+    object JavadocFilter {
+        const val group = ToolBase.group
+        const val version = "2.0.0-SNAPSHOT.75"
+        const val artifact = "$group:spine-javadoc-filter:$version"
+    }
 }
