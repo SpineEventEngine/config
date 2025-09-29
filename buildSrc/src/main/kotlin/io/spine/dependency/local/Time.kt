@@ -31,12 +31,12 @@ package io.spine.dependency.local
  *
  * @see <a href="https://github.com/SpineEventEngine/time">spine-time</a>
  */
-@Suppress("ConstPropertyName", "unused")
+@Suppress("ConstPropertyName")
 object Time {
     const val version = "2.0.0-SNAPSHOT.203"
     const val group = Spine.group
     const val artifact = "spine-time"
     const val lib = "$group:$artifact:$version"
 
-    const val testLib = "${Spine.toolsGroup}:spine-time-testlib:$version"
+    const val testLib = "${ToolBase.group}:spine-time-testlib:$version"
 }
