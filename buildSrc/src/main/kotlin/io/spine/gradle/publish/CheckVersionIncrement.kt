@@ -85,7 +85,7 @@ open class CheckVersionIncrement : DefaultTask() {
     }
 
     private fun fetch(repository: String, artifact: String): MavenMetadata? {
-        val url = URI("$repository/$artifact").toURL()
+        val url = URI.create("$repository/$artifact").toURL()
         return MavenMetadata.fetchAndParse(url)
     }
 

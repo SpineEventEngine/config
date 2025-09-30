@@ -77,7 +77,7 @@ object CoreJvmCompiler {
     val base = base(version)
 
     /**
-     * The `mc-java-base` artifact with the given [version].
+     * The `core-jvm-base` artifact with the given [version].
      */
     fun base(version: String): String = "$group:core-jvm-base:$version"
 }
