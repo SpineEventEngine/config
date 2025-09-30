@@ -26,10 +26,6 @@
 
 package io.spine.dependency.local
 
-import io.spine.dependency.local.McJava.dogfoodingVersion
-import io.spine.dependency.local.McJava.version
-
-
 /**
  * Dependencies on Spine Model Compiler for Java.
  *
