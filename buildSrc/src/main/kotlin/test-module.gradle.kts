@@ -39,12 +39,13 @@ dependencies {
     ).forEach {
         testFixturesImplementation(it)?.because(
             """
-            We do not apply CoreJvm Compiler Gradle plugin which adds the `implementation` dependency on
-            Validation runtime automatically (see `Project.configureValidation()` function in 
-            `ProtoDataConfigPlugin.kt`).
+            We do not apply CoreJvm Compiler Gradle plugin which adds
+            the `implementation` dependency on Validation runtime automatically 
+            (see `Project.configureValidation()` function in `CompilerConfigPlugin.kt`).
             
-            In this test module we use vanilla `protoc` (via ProtoTap) and then run codegen
-            using ProtoData pipeline and ProtoData plugins of the module under the test.
+            In a test module we use vanilla `protoc` (via ProtoTap) and then run codegen
+            using the Spine Compiler `Pipeline` and the plugins of the module under the test.
+
             Because of this we need to add the dependencies above explicitly for the
             generated code of test fixtures to compile.                
             """.trimIndent()
