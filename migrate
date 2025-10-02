@@ -12,9 +12,11 @@ cp CODE_OF_CONDUCT.md ..
 echo "Updating Codecov settings"
 cp .codecov.yml ..
 
-
 echo "Updating \\\`AGENTS.md\\\`"
 cp AGENTS.md ..
+
+echo "Updating \\\`CLAUDE.md\\\`"
+cp CLAUDE.md ..
 
 echo "Updating Junie guidelines"
 rm -rf ../.junie
@@ -47,13 +49,8 @@ cp -a .github-workflows/. ../.github/workflows
 cp -a .github/workflows/. ../.github/workflows
 rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
 
-# echo "Cleaning up GitHub workflows"
-#rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
-#rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
-
-# echo "Cleaning up Gradle 'buildSrc' scripts"
-#rm -f ../buildSrc/src/main/kotlin/force-jacoco.gradle.kts
-#rm -f ../buildSrc/src/main/kotlin/deps-between-tasks.kt
+# 2025-10-01 Remove renamed `CoreJava.kt`
+rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/CoreJava.kt
 
 # 2025-05-02 Remove the refactored file.
 rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/javadoc/TaskContainerExtensions.kt
