@@ -70,7 +70,7 @@ object Compiler {
      * The version of ProtoData dependencies.
      */
     val version: String
-    private const val fallbackVersion = "2.0.0-SNAPSHOT.017"
+    private const val fallbackVersion = "2.0.0-SNAPSHOT.021"
 
     /**
      * The distinct version of ProtoData used by other build tools.
@@ -79,7 +79,7 @@ object Compiler {
      * transitional dependencies, this is the version used to build the project itself.
      */
     val dogfoodingVersion: String
-    private const val fallbackDfVersion = "2.0.0-SNAPSHOT.017"
+    private const val fallbackDfVersion = "2.0.0-SNAPSHOT.021"
 
     /**
      * The artifact for the ProtoData Gradle plugin.
@@ -161,10 +161,10 @@ object Compiler {
                 -----------------------------------------
                     Regular version     = v$version
                     Dogfooding version  = v$dogfoodingVersion
-                
+
                     The Compiler Gradle plugin can now be loaded from Maven Local.
-                    
-                    To reset the versions, erase the `$$VERSION_ENV` and `$$DF_VERSION_ENV` environment variables. 
+
+                    To reset the versions, erase the `$$VERSION_ENV` and `$$DF_VERSION_ENV` environment variables.
 
             """.trimIndent())
         } else {
