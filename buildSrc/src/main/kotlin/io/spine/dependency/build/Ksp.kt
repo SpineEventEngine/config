@@ -39,6 +39,7 @@ object Ksp : Dependency() {
     override val group = "com.google.devtools.ksp"
 
     const val id = "com.google.devtools.ksp"
+    const val gradlePluginArtifactName = "com.google.devtools.ksp.gradle.plugin"
 
     val symbolProcessingApi = "$group:symbol-processing-api"
     val symbolProcessing = "$group:symbol-processing"
