@@ -26,6 +26,10 @@
 
 package io.spine.dependency.local
 
+import io.spine.dependency.local.CoreJvmCompiler.dogfoodingVersion
+import io.spine.dependency.local.CoreJvmCompiler.version
+
+
 /**
  * Dependencies on the CoreJvm Compiler artifacts.
  *
@@ -61,7 +65,7 @@ object CoreJvmCompiler {
     /**
      * The library with the [dogfoodingVersion].
      */
-    val pluginLib = pluginLib(dogfoodingVersion)
+    val pluginLib = pluginLibNew(dogfoodingVersion)
 
     /**
      * The library with the given [version].
