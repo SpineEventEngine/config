@@ -37,7 +37,7 @@ package io.spine.dependency.local
     "unused"
 )
 object McJava {
-    const val group = ToolBase.group
+    const val group = Spine.toolsGroup
 
     /**
      * The version used to in the build classpath.

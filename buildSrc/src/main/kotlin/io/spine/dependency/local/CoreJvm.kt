@@ -37,7 +37,7 @@ typealias CoreJava = CoreJvm
 @Suppress("ConstPropertyName", "unused")
 object CoreJvm {
     const val group = Spine.group
-    const val version = "2.0.0-SNAPSHOT.330"
+    const val version = "2.0.0-SNAPSHOT.332"
 
     const val coreArtifact = "spine-core"
     const val clientArtifact = "spine-client"
@@ -47,5 +47,10 @@ object CoreJvm {
     const val client = "$group:$clientArtifact:$version"
     const val server = "$group:$serverArtifact:$version"
 
-    const val testUtilServer = "${ToolBase.group}:spine-testutil-server:$version"
+    @Deprecated("Use `serverTestLib` instead.", ReplaceWith("serverTestLib"))
+    const val testUtilServer = "${Spine.toolsGroup}:spine-server-testlib:$version"
+
+    const val coreTestLib = "${Spine.toolsGroup}:spine-core-testlib:$version"
+    const val clientTestLib = "${Spine.toolsGroup}:spine-client-testlib:$version"
+    const val serverTestLib = "${Spine.toolsGroup}:spine-server-testlib:$version"
 }
