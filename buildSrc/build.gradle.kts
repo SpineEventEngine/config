@@ -75,7 +75,7 @@ val grGitVersion = "4.1.1"
  * This version may change from the [version of Kotlin][io.spine.dependency.lib.Kotlin.version]
  * used by the project.
  */
-val kotlinEmbeddedVersion = "2.1.21"
+val kotlinEmbeddedVersion = "2.2.20"
 
 /**
  * The version of Guava used in `buildSrc`.
@@ -144,7 +144,7 @@ val koverVersion = "0.9.1"
  *
  * @see <a href="https://github.com/GradleUp/shadow">Shadow Plugin releases</a>
  */
-val shadowVersion = "8.3.6"
+val shadowVersion = "9.2.2"
 
 configurations.all {
     resolutionStrategy {
