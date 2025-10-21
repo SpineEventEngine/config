@@ -58,7 +58,7 @@ abstract class Dependency {
     /**
      * The [modules] given with the [version].
      */
-    final val artifacts: Map<String, String> by lazy {
+    val artifacts: Map<String, String> by lazy {
         modules.associateWith { "$it:$version" }
     }
 
