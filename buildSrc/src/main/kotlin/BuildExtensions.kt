@@ -164,7 +164,7 @@ val PluginDependenciesSpec.kover: PluginDependencySpec
     get() = id(Kover.id).version(Kover.version)
 
 val PluginDependenciesSpec.ksp: PluginDependencySpec
-    get() = id(Ksp.id).version(Ksp.version)
+    get() = id(Ksp.id).version(Ksp.dogfoodingVersion)
 
 val PluginDependenciesSpec.`plugin-publish`: PluginDependencySpec
     get() = id(PluginPublishPlugin.id).version(PluginPublishPlugin.version)
