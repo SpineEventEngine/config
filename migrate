@@ -92,7 +92,24 @@ rm -f ../.lift.toml
 rm -f ../license-report.md
 
 echo "Updating Gradle \\\`buildSrc\\\`"
+
+# Preserve an existing project's `module.gradle.kts` (do not overwrite it).
+DEST_MODULE="../buildSrc/src/main/kotlin/module.gradle.kts"
+PRESERVE_TMP=""
+if [ -f "$DEST_MODULE" ]; then
+  echo "Preserving existing \\\`module.gradle.kts\\\`"
+  PRESERVE_TMP=$(mktemp)
+  cp -a "$DEST_MODULE" "$PRESERVE_TMP"
+fi
+
 cp -R buildSrc ..
+
+# Restore preserved `module.gradle.kts`, if any.
+if [ -n "$PRESERVE_TMP" ] && [ -f "$PRESERVE_TMP" ]; then
+  echo "Restoring existing \\\`module.gradle.kts\\\`"
+  cp -a "$PRESERVE_TMP" "$DEST_MODULE"
+  rm -f "$PRESERVE_TMP"
+fi
 
 echo "Updating Gradle Wrapper"
 cp -R ./gradle ..
