@@ -28,4 +28,4 @@
 // defined by a project to which `config` is applied.
 //
 // The reason for having this file is that it is referenced as
-// a plugin in `uper-jar-module.gradle.kts`
+// a plugin in `uber-jar-module.gradle.kts`
