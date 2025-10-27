@@ -24,23 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.local
-
-/**
- * Dependencies on ProtoTap plugins.
- *
- * See [`SpineEventEngine/ProtoTap`](https://github.com/SpineEventEngine/ProtoTap/).
- */
-@Suppress(
-    "unused" /* Some subprojects do not use ProtoData directly. */,
-    "ConstPropertyName" /* We use custom convention for artifact properties. */,
-    "MemberVisibilityCanBePrivate" /* The properties are used directly by other subprojects. */,
-)
-object ProtoTap {
-    const val group = "io.spine.tools"
-    const val version = "0.14.0"
-    const val gradlePluginId = "io.spine.prototap"
-    const val api = "$group:prototap-api:$version"
-    const val gradlePlugin = "$group:prototap-gradle-plugin:$version"
-    const val protocPlugin = "$group:prototap-protoc-plugin:$version"
-}
+// This is a template file for an actual script which should be
+// defined by a project to which `config` is applied.
+//
+// The reason for having this file is that it is referenced as
+// a plugin in `uber-jar-module.gradle.kts`
