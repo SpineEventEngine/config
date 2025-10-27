@@ -49,6 +49,9 @@ cp -a .github-workflows/. ../.github/workflows
 cp -a .github/workflows/. ../.github/workflows
 rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
 
+# 2025-10-27 Remove `VersionWriter.kt`
+rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/VersionWriter.kt
+
 # 2025-10-01 Remove renamed `CoreJava.kt`
 rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/CoreJava.kt
 
