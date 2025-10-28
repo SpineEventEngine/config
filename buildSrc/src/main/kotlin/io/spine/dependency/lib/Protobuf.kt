@@ -28,7 +28,6 @@ package io.spine.dependency.lib
 
 import io.spine.dependency.lib.Protobuf.GradlePlugin.id
 
-
 // https://github.com/protocolbuffers/protobuf
 @Suppress(
     "MemberVisibilityCanBePrivate" /* used directly from the outside */,
