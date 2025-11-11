@@ -49,6 +49,10 @@ cp -a .github-workflows/. ../.github/workflows
 cp -a .github/workflows/. ../.github/workflows
 rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
 
+# 2025-11-11 Remove the older `detect-analysis.yml` workflow.
+# See: https://github.com/SpineEventEngine/config/issues/434
+rm -f ../.github/workflows/detect-analysis.yml
+
 # 2025-10-28 Remove `ArtifactVersion.kt` and `Text.kt`.
 rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/ArtifactVersion.kt
 rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/Text.kt
