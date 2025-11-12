@@ -49,7 +49,7 @@ cp -a .github-workflows/. ../.github/workflows
 cp -a .github/workflows/. ../.github/workflows
 rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
 
-# 2025-11-11 Remove the older `detect-analysis.yml` workflow.
+# 2025-11-11 Remove the older `detekt-analysis.yml` workflow.
 # See: https://github.com/SpineEventEngine/config/issues/434
 rm -f ../.github/workflows/detekt-analysis.yml
 
