@@ -49,6 +49,10 @@ cp -a .github-workflows/. ../.github/workflows
 cp -a .github/workflows/. ../.github/workflows
 rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
 
+# 2025-11-17 Remove old Dokka configuration scripts.
+rm -f ../buildSrc/src/main/kotlin/dokka-for-kotlin.gradle.kts
+rm -f ../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts
+
 # 2025-11-17 Remove duplicated Dokka-related extensions.
 rm -r ../buildSrc/src/main/kotlin/io/spine/gradle/dokka/
 
