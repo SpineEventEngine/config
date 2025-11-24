@@ -49,6 +49,16 @@ cp -a .github-workflows/. ../.github/workflows
 cp -a .github/workflows/. ../.github/workflows
 rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
 
+# 2025-11-20 Remove renamed `Runtime.kt` file.
+rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/Runtime.kt
+
+# 2025-11-17 Remove old Dokka configuration scripts.
+rm -f ../buildSrc/src/main/kotlin/dokka-for-kotlin.gradle.kts
+rm -f ../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts
+
+# 2025-11-17 Remove duplicated Dokka-related extensions.
+rm -r ../buildSrc/src/main/kotlin/io/spine/gradle/dokka/
+
 # 2025-11-11 Remove the older `detekt-analysis.yml` workflow.
 # See: https://github.com/SpineEventEngine/config/issues/434
 rm -f ../.github/workflows/detekt-analysis.yml
