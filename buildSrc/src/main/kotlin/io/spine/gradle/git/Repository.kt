@@ -28,6 +28,7 @@ package io.spine.gradle.git
 
 import io.spine.gradle.Cli
 import io.spine.gradle.fs.LazyTempPath
+import org.gradle.api.logging.Logger
 
 /**
  * Interacts with a real Git repository.
@@ -52,7 +53,8 @@ import io.spine.gradle.fs.LazyTempPath
 class Repository private constructor(
     private val sshUrl: String,
     private var user: UserInfo,
-    private var currentBranch: String
+    private var currentBranch: String,
+    private val logger: Logger
 ) : AutoCloseable {
 
     /**
@@ -71,8 +73,10 @@ class Repository private constructor(
      * Executes a command in the [location].
      */
     private fun repoExecute(vararg command: String): String {
-        System.err.println("[Repository] Executing command: " +
-                "`${command.toList().joinToString(" ")}`.")
+        if (logger.isInfoEnabled) {
+            val msg = "[Repository] Executing command: `${command.toList().joinToString(" ")}`."
+            logger.info(msg)
+        }
         return Cli(location.toFile()).execute(*command)
     }
 
@@ -147,10 +151,15 @@ class Repository private constructor(
          *
          * @throws IllegalArgumentException if SSH URL is an empty string.
          */
-        fun clone(sshUrl: String, user: UserInfo, branch: String = Branch.master): Repository {
+        fun clone(
+            sshUrl: String,
+            user: UserInfo,
+            branch: String = Branch.master,
+            logger: Logger
+        ): Repository {
             require(sshUrl.isNotBlank()) { "SSH URL cannot be an empty string." }
 
-            val repo = Repository(sshUrl, user, branch)
+            val repo = Repository(sshUrl, user, branch, logger)
             repo.clone()
             repo.configureUser(user)
 

@@ -41,9 +41,9 @@ import org.gradle.api.logging.Logger
 fun Task.updateGhPages(project: Project) {
     val plugin = project.plugins.getPlugin(UpdateGitHubPages::class.java)
 
-    SshKey(plugin.rootFolder, project.logger).register()
+    SshKey(plugin.rootFolder, logger).register()
 
-    val repository = Repository.forPublishingDocumentation()
+    val repository = Repository.forPublishingDocumentation(logger)
 
     val updateJavadocFormat =
         UpdateJavadocFormat(project, plugin.javadocOutputFolder, repository, logger)
