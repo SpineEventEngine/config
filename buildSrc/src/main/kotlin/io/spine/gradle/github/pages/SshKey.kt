@@ -33,8 +33,14 @@ import org.gradle.api.logging.Logger
 
 /**
  * Registers the SSH key for further operations with GitHub Pages.
+ *
+ * @property rootProjectFolder The folder of the project for which we build the documentation.
+ * @property logger The logger for placing diagnostic messages of this class.
  */
-internal class SshKey(private val rootProjectFolder: File, private val logger: Logger) {
+internal class SshKey(
+    private val rootProjectFolder: File,
+    private val logger: Logger
+) {
 
     private fun log(message: () -> String) {
         if (logger.isInfoEnabled) {
