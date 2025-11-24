@@ -24,28 +24,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.jetbrains.dokka.gradle.DokkaTaskPartial
+import org.jetbrains.dokka.gradle.tasks.DokkaBaseTask
 
 plugins {
     id("org.jetbrains.dokka") // Cannot use `Dokka` dependency object here yet.
+    id("org.jetbrains.dokka-javadoc")
 }
 
 dependencies {
-    useDokkaForKotlinAsJava()
     useDokkaWithSpineExtensions()
+}
+
+tasks.withType<DokkaBaseTask>().configureEach {
+    onlyIf {
+        isInPublishingGraph()
+    }
 }
 
 afterEvaluate {
     dokka {
         configureForKotlin(
             project,
-            DocumentationSettings.SourceLink.url
+            DocumentationSettings.SourceLink.url(project)
         )
     }
-}
-
-tasks.withType<DokkaTaskPartial>().configureEach {
-    onlyIf {
-        isInPublishingGraph()
+    val kspKotlin = tasks.findByName("kspKotlin")
+    kspKotlin?.let {
+        tasks.withType<DokkaBaseTask>().configureEach {
+            dependsOn(kspKotlin)
+        }
     }
 }
