@@ -201,7 +201,7 @@ fun TaskContainer.dokkaJavadocTask(): Task? = this.findByName("dokkaGeneratePubl
  *
  * The output of this task is a `jar` archive. The archive contains the Dokka output, generated upon
  * Kotlin sources from `main` source set. Requires Dokka to be configured in the target project by
- * applying `dokka-for-kotlin` plugin.
+ * applying `dokka-setup` plugin.
  */
 fun Project.htmlDocsJar(): TaskProvider<Jar> = tasks.getOrCreate("htmlDocsJar") {
     archiveClassifier.set("html-docs")
