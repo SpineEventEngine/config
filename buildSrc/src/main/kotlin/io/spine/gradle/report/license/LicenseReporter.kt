@@ -31,8 +31,6 @@ import com.github.jk1.license.LicenseReportExtension.ALL
 import com.github.jk1.license.LicenseReportPlugin
 import io.spine.gradle.applyPlugin
 import io.spine.gradle.getTask
-import io.spine.gradle.report.license.LicenseReporter.generateReportIn
-import io.spine.gradle.report.license.LicenseReporter.mergeAllReports
 import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.Task
