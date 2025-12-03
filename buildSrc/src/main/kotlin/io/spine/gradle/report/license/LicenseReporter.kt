@@ -31,6 +31,8 @@ import com.github.jk1.license.LicenseReportExtension.ALL
 import com.github.jk1.license.LicenseReportPlugin
 import io.spine.gradle.applyPlugin
 import io.spine.gradle.getTask
+import io.spine.gradle.report.license.LicenseReporter.generateReportIn
+import io.spine.gradle.report.license.LicenseReporter.mergeAllReports
 import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -156,7 +158,7 @@ object LicenseReporter {
                 val buildDir = it.layout.buildDirectory.asFile.get()
                 "$buildDir/${Paths.relativePath}/${Paths.outputFilename}"
             }.filter { File(it).exists() }
-        println("Merging the license reports from the all projects.")
+        println("Merging the license reports from all projects.")
         val mergedContent = paths.joinToString("\n\n\n") { (File(it)).readText() }
         val output = File("${rootProject.rootDir}/${Paths.outputFilename}")
         output.writeText(mergedContent)
