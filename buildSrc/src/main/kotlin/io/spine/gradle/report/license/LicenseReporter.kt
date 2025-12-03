@@ -151,10 +151,11 @@ object LicenseReporter {
         sourceProjects: Iterable<Project>,
         rootProject: Project
     ) {
-        val paths = sourceProjects.map {
-            val buildDir = it.layout.buildDirectory.asFile.get()
-            "$buildDir/${Paths.relativePath}/${Paths.outputFilename}"
-        }
+        val paths = sourceProjects
+            .map {
+                val buildDir = it.layout.buildDirectory.asFile.get()
+                "$buildDir/${Paths.relativePath}/${Paths.outputFilename}"
+            }.filter { File(it).exists() }
         println("Merging the license reports from the all projects.")
         val mergedContent = paths.joinToString("\n\n\n") { (File(it)).readText() }
         val output = File("${rootProject.rootDir}/${Paths.outputFilename}")
