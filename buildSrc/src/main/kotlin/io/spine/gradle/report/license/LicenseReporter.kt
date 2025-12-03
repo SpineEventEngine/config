@@ -157,7 +157,13 @@ object LicenseReporter {
             .map {
                 val buildDir = it.layout.buildDirectory.asFile.get()
                 "$buildDir/${Paths.relativePath}/${Paths.outputFilename}"
-            }.filter { File(it).exists() }
+            }.filter {
+                val exists = File(it).exists()
+                if (!exists) {
+                    rootProject.logger.debug("License report file not found: $it")
+                }
+                exists
+            }
         println("Merging the license reports from all projects.")
         val mergedContent = paths.joinToString("\n\n\n") { (File(it)).readText() }
         val output = File("${rootProject.rootDir}/${Paths.outputFilename}")
