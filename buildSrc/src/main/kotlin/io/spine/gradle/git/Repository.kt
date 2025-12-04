@@ -197,6 +197,7 @@ class Repository private constructor(
  * @param block the operation to execute
  * @return the result of the successful operation execution
  */
+@Suppress("TooGenericExceptionCaught", "LongParameterList")
 private fun <T> withRetries(
     times: Int = 3,
     initialDelay: Long = 100,      // ms
