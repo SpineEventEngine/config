@@ -70,7 +70,7 @@ object Compiler {
      * The version of the Compiler dependencies.
      */
     val version: String
-    private const val fallbackVersion = "2.0.0-SNAPSHOT.034"
+    private const val fallbackVersion = "2.0.0-SNAPSHOT.035"
 
     /**
      * The distinct version of the Compiler used by other build tools.
@@ -79,7 +79,7 @@ object Compiler {
      * transitive dependencies, this is the version used to build the project itself.
      */
     val dogfoodingVersion: String
-    private const val fallbackDfVersion = "2.0.0-SNAPSHOT.030"
+    private const val fallbackDfVersion = "2.0.0-SNAPSHOT.035"
 
     /**
      * The artifact for the Compiler Gradle plugin.
