@@ -132,7 +132,19 @@ object Compiler : Dependency() {
         get() = "$group:compiler-testlib:$version"
 
     override val modules: List<String>
-        get() = listOf(api, backend, params, protocPlugin, gradleApi, cliApi, jvm, fatCli, testlib)
+        get() = listOf(
+            api,
+            backend,
+            params,
+            protocPlugin,
+            gradleApi,
+            cliApi,
+            jvm,
+            fatCli,
+            testlib
+        ).map {
+            it.split(":").let { (group, artifact) -> "$group:$artifact" }
+        }
 
     /**
      * An env variable storing a custom [version].
