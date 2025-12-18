@@ -322,6 +322,7 @@ internal fun Project.artifacts(jarFlags: JarFlags): Set<TaskProvider<Jar>> {
 /**
  * Adds the source code and documentation JARs to the publication.
  */
+@Suppress("unused")
 fun MavenPublication.addSourceAndDocJars(project: Project) {
     val tasks = mutableSetOf<TaskProvider<Jar>>()
     tasks.add(project.sourcesJar())
