@@ -36,7 +36,7 @@ object Validation {
     /**
      * The version of the Validation library artifacts.
      */
-    const val version = "2.0.0-SNAPSHOT.375"
+    const val version = "2.0.0-SNAPSHOT.378"
 
     /**
      * The last version of Validation compatible with ProtoData.
@@ -65,5 +65,5 @@ object Validation {
     const val model = "$group:$prefix-model:$version"
 
     const val configModule = "$group:$prefix-configuration"
-    const val configuration = "$configModule:$version"
+    const val context = "$group:$prefix-context:$version"
 }
