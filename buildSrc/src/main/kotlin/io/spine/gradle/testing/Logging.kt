@@ -79,6 +79,13 @@ fun Test.configureLogging() {
                 logger.lifecycle(result.summary())
             }
         }
+
+        override fun beforeSuite(suite: TestDescriptor?) = Unit
+        override fun beforeTest(testDescriptor: TestDescriptor?) = Unit
+        override fun afterTest(
+            testDescriptor: TestDescriptor?,
+            result: TestResult?
+        ) = Unit
     }
 
     addTestListener(listener)
