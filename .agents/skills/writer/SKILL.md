@@ -1,6 +1,11 @@
 ---
 name: writer
-description: Write, edit, and restructure user-facing and developer-facing documentation. Use when asked to create/update docs such as `README.md`, `docs/**`, and other Markdown documentation; when drafting tutorials, guides, troubleshooting pages, or migration notes; and when improving inline API documentation (KDoc) and examples.
+description: >
+  Write, edit, and restructure user-facing and developer-facing documentation.
+  Use when asked to create/update docs such as `README.md`, `docs/**`, and
+  other Markdown documentation; 
+  when drafting tutorials, guides, troubleshooting pages, or migration notes; and
+  when improving inline API documentation (KDoc) and examples.
 ---
 
 # Write documentation (repo-specific)
