@@ -26,9 +26,10 @@
 
 package io.spine.gradle.docs
 
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import java.io.File
 import org.gradle.testfixtures.ProjectBuilder
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -64,8 +65,8 @@ class UpdatePluginVersionTest {
         task.get().update()
 
         val updatedContent = buildFile.readText()
-        assertTrue(updatedContent.contains("""id("io.spine.validation") version "2.0.0-TEST""""))
-        assertTrue(updatedContent.contains("""id("other-plugin") version "0.1.0""""))
+        updatedContent shouldContain """id("io.spine.validation") version "2.0.0-TEST""""
+        updatedContent shouldContain """id("other-plugin") version "0.1.0""""
     }
 
     @Test
@@ -90,8 +91,8 @@ class UpdatePluginVersionTest {
         task.get().update()
 
         val updatedContent = buildFile.readText()
-        assertTrue(updatedContent.contains("""kotlin("jvm") version "2.2.21"""))
-        assertTrue(updatedContent.contains("""id("io.spine.validation") version "2.0.0-TEST"""))
+        updatedContent shouldContain """kotlin("jvm") version "2.2.21""""
+        updatedContent shouldContain """id("io.spine.validation") version "2.0.0-TEST""""
     }
 
     @Test
@@ -112,6 +113,6 @@ class UpdatePluginVersionTest {
         task.get().update()
 
         val updatedContent = buildFile.readText()
-        assertTrue(updatedContent.contains("""id("io.spine.validation") version "2.0.0-TEST""""))
+        updatedContent shouldContain """id("io.spine.validation") version "2.0.0-TEST""""
     }
 }

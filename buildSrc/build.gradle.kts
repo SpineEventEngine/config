@@ -195,6 +195,7 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("io.kotest:kotest-assertions-core:6.0.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
