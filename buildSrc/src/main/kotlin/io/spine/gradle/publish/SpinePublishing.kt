@@ -29,6 +29,7 @@
 package io.spine.gradle.publish
 
 import io.spine.gradle.repo.Repository
+import java.util.Locale
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.kotlin.dsl.apply
@@ -145,9 +146,10 @@ import org.gradle.kotlin.dsl.findByType
  * @see [artifacts]
  * @see SpinePublishing
  */
-fun Project.spinePublishing(block: SpinePublishing.() -> Unit) {
+fun Project.spinePublishing(block: SpinePublishing.() -> Unit): SpinePublishing {
     apply<MavenPublishPlugin>()
     val name = SpinePublishing::class.java.simpleName
+        .replaceFirstChar { it.lowercase(Locale.getDefault()) }
     val extension = with(extensions) {
         findByType<SpinePublishing>() ?: create(name, project)
     }
@@ -155,6 +157,7 @@ fun Project.spinePublishing(block: SpinePublishing.() -> Unit) {
         block()
         configured()
     }
+    return extension
 }
 
 /**

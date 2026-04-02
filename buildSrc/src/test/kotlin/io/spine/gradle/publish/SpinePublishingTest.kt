@@ -47,7 +47,7 @@ class SpinePublishingTest {
     @BeforeEach
     fun setUp() {
         project = ProjectBuilder.builder().build()
-        extension = project.extensions.create("spinePublishing", project)
+        extension = project.spinePublishing { }
     }
 
     @Nested
@@ -89,7 +89,7 @@ class SpinePublishingTest {
         }
 
         @Test
-        fun `without prefix for tool projects if NONE is specified`() {
+        fun `without prefix for tool projects if 'NONE' is specified`() {
             extension.toolArtifactPrefix = "NONE"
             val toolProject = ProjectBuilder.builder()
                 .withParent(project)
@@ -119,7 +119,7 @@ class SpinePublishingTest {
     inner class `validate configuration` {
 
         @Test
-        fun `ensuring testJar inclusions are published`() {
+        fun `ensuring 'testJar' inclusions are published`() {
             extension.modules = setOf("pub-module")
             extension.testJar {
                 inclusions = setOf("non-pub-module")
@@ -132,7 +132,7 @@ class SpinePublishingTest {
         }
 
         @Test
-        fun `ensuring customPublishing is not misused with modules`() {
+        fun `ensuring 'customPublishing' is not misused with modules`() {
             extension.modules = setOf("some-module")
             extension.customPublishing = true
 
@@ -150,7 +150,7 @@ class SpinePublishingTest {
                 .withName("sub")
                 .build()
 
-            // Root project already has 'spinePublishing' extension created in 'setUp'.
+            // Root project already has the 'spinePublishing' extension created in 'setUp'.
             // Let's use it instead of creating a second one with a different name.
             extension.modules = setOf("sub")
 
@@ -167,7 +167,7 @@ class SpinePublishingTest {
     }
 
     @Nested
-    inner class `identify projectsToPublish` {
+    inner class `identify 'projectsToPublish'` {
 
         @Test
         fun `as the project itself if no modules are specified`() {
@@ -205,11 +205,15 @@ class SpinePublishingTest {
     }
 
     @Nested
-    inner class `resolve publishTo repositories` {
+    inner class `resolve 'publishTo' repositories` {
 
         @Test
         fun `from the extension itself if destinations are initialized`() {
-            val repo = Repository("test-repo", "https://example.com/release", "https://example.com/snapshot")
+            val repo = Repository(
+                "test-repo",
+                "https://example.com/release",
+                "https://example.com/snapshot"
+            )
             extension.destinations = setOf(repo)
 
             val repos = project.invokePublishTo(extension)
@@ -219,7 +223,11 @@ class SpinePublishingTest {
 
         @Test
         fun `from the parent project if not specified locally`() {
-            val repo = Repository("parent-repo", "https://example.com/release", "https://example.com/snapshot")
+            val repo = Repository(
+                "parent-repo",
+                "https://example.com/release",
+                "https://example.com/snapshot"
+            )
             // Root project has its extension named 'spinePublishing' from setUp.
             extension.destinations = setOf(repo)
 
