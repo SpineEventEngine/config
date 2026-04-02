@@ -90,6 +90,7 @@ abstract class UpdatePluginVersion : DefaultTask() {
             }
     }
 
+    @Suppress("MemberNameEqualsClassName")
     private fun updatePluginVersion(file: File, id: String, version: String) {
         val content = file.readText()
         // Regex to match: id("plugin-id") version "version-number"
