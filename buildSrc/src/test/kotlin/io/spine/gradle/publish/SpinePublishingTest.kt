@@ -36,9 +36,11 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.create
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
+@DisplayName("`SpinePublishing` should")
 class SpinePublishingTest {
 
     private lateinit var project: Project
