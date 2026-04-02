@@ -53,7 +53,7 @@ class SpinePublishingTest {
     }
 
     @Nested
-    inner class `calculate artifactId` {
+    inner class `calculate 'artifactId'` {
 
         @Test
         fun `with default prefix for non-tool projects`() {
