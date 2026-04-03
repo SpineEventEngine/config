@@ -40,11 +40,12 @@ import io.spine.dependency.Dependency
 )
 object Time : Dependency() {
     override val group = Spine.group
-    override val version = "2.0.0-SNAPSHOT.234"
+    override val version = "2.0.0-SNAPSHOT.235"
     private const val infix = "spine-time"
 
     fun lib(version: String): String = "$group:$infix:$version"
     val lib get() = lib(version)
+    const val libArtifact: String = infix
 
     fun javaExtensions(version: String): String = "$group:$infix-java:$version"
     val javaExtensions get() = javaExtensions(version)
