@@ -141,6 +141,20 @@ val koverVersion = "0.9.1"
  */
 val shadowVersion = "9.2.2"
 
+/**
+ * The version of JUnit used to test the build scripts.
+ *
+ * @see [io.spine.dependency.test.JUnit]
+ */
+val junitVersion = "6.0.3"
+
+/**
+ * The version of Kotest used to test the build scripts.
+ *
+ * @see [io.spine.dependency.test.Kotest]
+ */
+val kotestVersion = "6.1.10"
+
 configurations.all {
     resolutionStrategy {
         force(
@@ -193,9 +207,9 @@ dependencies {
         implementation(it)
     }
 
-    testImplementation(platform("org.junit:junit-bom:5.11.4"))
+    testImplementation(platform("org.junit:junit-bom:$junitVersion"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("io.kotest:kotest-assertions-core:6.0.4")
+    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
