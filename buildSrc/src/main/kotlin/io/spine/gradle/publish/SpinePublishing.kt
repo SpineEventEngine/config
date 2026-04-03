@@ -415,18 +415,23 @@ open class SpinePublishing(private val project: Project) {
      * @see toolArtifactPrefix
      */
     fun artifactId(project: Project): String {
-        if (project.isTool) {
+        val result = if (project.isTool) {
             check(!toolArtifactPrefix.isEmpty()) {
                 "Artifact prefix cannot be empty for tool modules. " +
                         "Please set the `toolArtifactPrefix` property in `spinePublishing`. " +
                         "Use `\"NONE\"` to have an empty prefix for tool modules."
             }
             val prefix =
-                if (toolArtifactPrefix == NONE_PREFIX) { "" }
-                else { toolArtifactPrefix }
-            return "$prefix${project.name}"
+                if (toolArtifactPrefix == NONE_PREFIX) {
+                    ""
+                } else {
+                    toolArtifactPrefix
+                }
+            "$prefix${project.name}"
+        } else {
+            "$artifactPrefix${project.name}"
         }
-        return "$artifactPrefix${project.name}"
+        return result
     }
 
     private val Project.isTool: Boolean
