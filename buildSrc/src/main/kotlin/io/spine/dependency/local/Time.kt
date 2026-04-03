@@ -45,6 +45,7 @@ object Time : Dependency() {
 
     fun lib(version: String): String = "$group:$infix:$version"
     val lib get() = lib(version)
+    const val libArtifact: String = infix
 
     fun javaExtensions(version: String): String = "$group:$infix-java:$version"
     val javaExtensions get() = javaExtensions(version)
