@@ -30,7 +30,7 @@ package io.spine.gradle.publish
 
 import io.spine.dependency.local.Spine
 import io.spine.gradle.repo.Repository
-import java.util.*
+import java.util.Locale
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.kotlin.dsl.apply
