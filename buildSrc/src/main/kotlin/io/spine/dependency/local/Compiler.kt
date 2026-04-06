@@ -27,6 +27,11 @@
 package io.spine.dependency.local
 
 import io.spine.dependency.Dependency
+import io.spine.dependency.local.Compiler.DF_VERSION_ENV
+import io.spine.dependency.local.Compiler.VERSION_ENV
+import io.spine.dependency.local.Compiler.dogfoodingVersion
+import io.spine.dependency.local.Compiler.pluginLib
+import io.spine.dependency.local.Compiler.version
 
 /**
  * Dependencies on the Spine Compiler modules.
@@ -72,7 +77,7 @@ object Compiler : Dependency() {
      * The version of the Compiler dependencies.
      */
     override val version: String
-    private const val fallbackVersion = "2.0.0-SNAPSHOT.041"
+    private const val fallbackVersion = "2.0.0-SNAPSHOT.042"
 
     /**
      * The distinct version of the Compiler used by other build tools.
@@ -81,7 +86,7 @@ object Compiler : Dependency() {
      * transitive dependencies, this is the version used to build the project itself.
      */
     val dogfoodingVersion: String
-    private const val fallbackDfVersion = "2.0.0-SNAPSHOT.041"
+    private const val fallbackDfVersion = "2.0.0-SNAPSHOT.042"
 
     /**
      * The artifact for the Compiler Gradle plugin.
