@@ -49,6 +49,10 @@ cp -a .github-workflows/. ../.github/workflows
 cp -a .github/workflows/. ../.github/workflows
 rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
 
+# 2026-04-06 Remove `LicenseReport.kt` as the dependency object is not used.
+# We use the `LicenseReportPlugin` class via the dependency in `buildSrc/build.gradle.kts`.
+rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/build/LicenseReport.kt
+
 # 2025-11-20 Remove renamed `Runtime.kt` file.
 rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/Runtime.kt
 

@@ -65,7 +65,12 @@ val jacksonVersion = "2.18.3"
  */
 val googleAuthToolVersion = "2.1.5"
 
-val licenseReportVersion = "2.7"
+/**
+ * Generates reports about the licenses of the dependencies for a Gradle project.
+ *
+ * https://github.com/jk1/Gradle-License-Report
+ */
+val licenseReportVersion = "3.1.2"
 
 val grGitVersion = "4.1.1"
 
