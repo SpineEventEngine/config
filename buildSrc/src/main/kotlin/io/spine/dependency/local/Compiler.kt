@@ -60,7 +60,7 @@ import io.spine.dependency.Dependency
 )
 object Compiler : Dependency() {
     const val pluginGroup = Spine.group
-    override val group = "io.spine.tools"
+    override val group = Spine.toolsGroup
     const val pluginId = "io.spine.compiler"
 
     /**

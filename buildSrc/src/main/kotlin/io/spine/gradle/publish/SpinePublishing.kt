@@ -28,8 +28,9 @@
 
 package io.spine.gradle.publish
 
+import io.spine.dependency.local.Spine
 import io.spine.gradle.repo.Repository
-import java.util.Locale
+import java.util.*
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.kotlin.dsl.apply
@@ -435,7 +436,7 @@ open class SpinePublishing(private val project: Project) {
     }
 
     private val Project.isTool: Boolean
-        get() = group == "io.spine.tools"
+        get() = group == Spine.toolsGroup
 
     /**
      * Ensures that all modules, marked as included into [testJar] publishing,
