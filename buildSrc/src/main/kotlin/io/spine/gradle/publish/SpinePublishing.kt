@@ -149,10 +149,8 @@ import org.gradle.kotlin.dsl.findByType
  */
 fun Project.spinePublishing(block: SpinePublishing.() -> Unit): SpinePublishing {
     apply<MavenPublishPlugin>()
-    val name = SpinePublishing::class.java.simpleName
-        .replaceFirstChar { it.lowercase(Locale.getDefault()) }
     val extension = with(extensions) {
-        findByType<SpinePublishing>() ?: create(name, project)
+        findByType<SpinePublishing>() ?: create(SpinePublishing.extensionName, project)
     }
     extension.run {
         block()
@@ -192,6 +190,12 @@ open class SpinePublishing(private val project: Project) {
          * to a tool module's artifact ID.
          */
         const val NONE_PREFIX = "NONE"
+
+        /**
+         * The name of the extension registered in a Gradle project.
+         */
+        public val extensionName: String = SpinePublishing::class.java.simpleName
+            .replaceFirstChar { it.lowercase(Locale.ROOT) }
     }
 
     private val testJar = TestJar()
@@ -346,13 +350,14 @@ open class SpinePublishing(private val project: Project) {
      *
      * @see modules
      */
-    private fun projectsToPublish(): Collection<Project> {
+    fun projectsToPublish(): Set<Project> {
         if (project.subprojects.isEmpty()) {
             return setOf(project)
         }
         return modules.union(modulesWithCustomPublishing)
             .map { name -> project.project(name) }
             .ifEmpty { setOf(project) }
+            .toSet()
     }
 
     /**
