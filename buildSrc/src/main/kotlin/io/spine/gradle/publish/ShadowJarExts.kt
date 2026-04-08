@@ -62,6 +62,11 @@ private object ServiceFiles {
     private const val messageValidators = "$servicesDir/io.spine.validation.MessageValidator"
 
     /**
+     * Comparator providers provided by the libraries.
+     */
+    private const val comparatorProviders = "$servicesDir/io.spine.compare.ComparatorProvider"
+
+    /**
      * KSP symbol processor provider.
      */
     private const val kspSymbolProcessorProviders =
@@ -80,6 +85,7 @@ private object ServiceFiles {
         descriptorSetReferences,
         optionProviders,
         messageValidators,
+        comparatorProviders,
         kspSymbolProcessorProviders,
         commandRoutingSetupClasses,
         eventRoutingSetupClasses,
