@@ -27,14 +27,46 @@
 package io.spine.gradle.publish
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.file.DuplicatesStrategy
+
+/**
+ * Configures a `ShadowJar` task for Spine SDK publishing.
+ */
+@Suppress("unused")
+fun ShadowJar.setup() {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE  // Required for service-file merging.
+    handleMergingServiceFiles()
+    deduplicateEntries()
+}
 
 /**
  * Calls [ShadowJar.mergeServiceFiles] for the files we use in the Spine SDK.
  */
-@Suppress("unused")
-fun ShadowJar.handleMergingServiceFiles() {
+private fun ShadowJar.handleMergingServiceFiles() {
     ServiceFiles.all.forEach {
         append(it)
+    }
+}
+
+/**
+ * Installs a first-copy-wins exclusion predicate for all JAR entries except those
+ * registered for merging by [handleMergingServiceFiles].
+ *
+ * Shadow's [org.gradle.api.file.DuplicatesStrategy.INCLUDE] must remain on the task so
+ * that every copy of a merged file reaches its
+ * [AppendingTransformer][com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer].
+ * All other entries — `.class` files, settings JSONs, Kotlin module descriptors,
+ * Maven metadata, etc. — are deduplicated here to suppress duplicate-entry warnings
+ * and keep the fat JAR size minimal.
+ */
+private fun ShadowJar.deduplicateEntries() {
+    val mergePaths = ServiceFiles.all
+    val seenPaths = mutableSetOf<String>()
+    doFirst { seenPaths.clear() }
+    eachFile {
+        if (path !in mergePaths && !seenPaths.add(path)) {
+            exclude()
+        }
     }
 }
 
@@ -81,7 +113,7 @@ private object ServiceFiles {
     private const val eventRoutingSetupClasses = "$routeSetupPrefix.EventRoutingSetup"
     private const val stateRoutingSetupClasses = "$routeSetupPrefix.StateRoutingSetup"
 
-    val all = arrayOf(
+    val all = setOf(
         descriptorSetReferences,
         optionProviders,
         messageValidators,
