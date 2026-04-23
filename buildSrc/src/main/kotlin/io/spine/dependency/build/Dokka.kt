@@ -26,6 +26,7 @@
 
 package io.spine.dependency.build
 
+import io.spine.dependency.build.Dokka.GradlePlugin.id
 import io.spine.dependency.local.Spine
 
 // https://github.com/Kotlin/dokka
@@ -37,7 +38,7 @@ object Dokka {
      * When changing the version, also change the version used in the
      * `buildSrc/build.gradle.kts`.
      */
-    const val version = "2.1.0"
+    const val version = "2.2.0"
 
     object GradlePlugin {
         const val id = "org.jetbrains.dokka"
