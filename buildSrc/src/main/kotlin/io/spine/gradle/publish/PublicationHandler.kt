@@ -158,11 +158,18 @@ sealed class PublicationHandler(
         // the `project.name` with the platform suffix of a KMM distribution.
         artifactId = if (artifactId.startsWith(project.name)) {
             val platformSuffix = artifactId.removePrefix(project.name)
-            project.artifactId + platformSuffix
+            val replacedId = project.artifactId + platformSuffix
+            project.logger.info(
+                "The project `${project.name}` got modified artifact: `$replacedId`."
+            )
+            replacedId
         } else {
-            // This is unlikely case of `artifactId` being set to something unrelated.
-            // We overwrite it with our calculated ID.
-            project.artifactId
+            project.logger.info(
+                "The `artifactId` for the project `${project.name}` stays: `$artifactId`."
+            )
+            // This is an unlikely case of `artifactId` being set to something unrelated
+            // to the project name. Let's keep it as is.
+            artifactId
         }
         version = project.version.toString()
         pom.description.set(project.description)
