@@ -26,6 +26,7 @@
 
 package io.spine.gradle.publish
 
+import DocumentationSettings
 import LicenseSettings
 import io.spine.gradle.artifactId
 import io.spine.gradle.isSnapshot
@@ -152,8 +153,17 @@ sealed class PublicationHandler(
      */
     protected fun MavenPublication.copyProjectAttributes() {
         groupId = project.group.toString()
-        val platformSuffix = artifactId.removePrefix(project.name)
-        artifactId = project.artifactId + platformSuffix
+        // Add the proper prefix to the `artifactId`.
+        // The default `artifactId` is either `project.name` or
+        // the `project.name` with the platform suffix of a KMM distribution.
+        artifactId = if (artifactId.startsWith(project.name)) {
+            val platformSuffix = artifactId.removePrefix(project.name)
+            project.artifactId + platformSuffix
+        } else {
+            // This is unlikely case of `artifactId` being set to something unrelated.
+            // We overwrite it with our calculated ID.
+            project.artifactId
+        }
         version = project.version.toString()
         pom.description.set(project.description)
         pom.inceptionYear.set(InceptionYear.value)
@@ -161,7 +171,9 @@ sealed class PublicationHandler(
             license {
                 name.set(LicenseSettings.name)
                 url.set(LicenseSettings.url)
-                distribution.set(LicenseSettings.url)
+                // It's either `"repo"` or `"manual"`.
+                // https://maven.apache.org/ref/3.9.15/maven-model/apidocs/org/apache/maven/model/License.html?utm_source=chatgpt.com#setDistribution(java.lang.String)
+                distribution.set("repo")
             }
         }
         pom.scm {
