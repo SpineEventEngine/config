@@ -179,7 +179,7 @@ sealed class PublicationHandler(
                 name.set(LicenseSettings.name)
                 url.set(LicenseSettings.url)
                 // It's either `"repo"` or `"manual"`.
-                // https://maven.apache.org/ref/3.9.15/maven-model/apidocs/org/apache/maven/model/License.html?utm_source=chatgpt.com#setDistribution(java.lang.String)
+                // https://maven.apache.org/ref/3.9.15/maven-model/apidocs/org/apache/maven/model/License.html#setDistribution(java.lang.String)
                 distribution.set("repo")
             }
         }
