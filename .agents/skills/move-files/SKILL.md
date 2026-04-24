@@ -10,58 +10,105 @@ description: >
 
 # Move Files
 
+## Complexity Classifier
+
+Classify the request before doing broad inspection:
+
+- `SIMPLE`: one or a few file moves/renames within the same module/package
+  intent, no destination conflicts, no module/build layout changes.
+- `STRUCTURAL`: package relocations, source-set reshuffles, many-file
+  reorganizations, module moves, or cross-module moves.
+- `RISKY`: destination exists, merge/overwrite ambiguity, case-only rename on
+  case-insensitive filesystems, incomplete mapping, or unclear user intent.
+
+Use this class to choose the workflow depth and token budget.
+
 ## Workflow
 
 Use this skill to move files without losing history, overwriting user work, or
 leaving broken references behind.
 
-1. Understand the requested move.
-   - Identify each source path and destination path.
-   - Identify whether the task is a simple move, a rename, a package/module
-     relocation, or a directory reorganization.
-   - If multiple files are moving, write down the source-to-destination mapping
-     before editing.
+### Fast Path (`SIMPLE`)
 
-2. Inspect the current tree.
+1. Preflight (minimal).
+   - Identify source-to-destination mapping.
+   - Run `git status --short` first and treat existing changes as user-owned.
+   - Confirm each source exists.
+   - Confirm destination does not exist.
+2. Move.
+   - Prefer `git mv` for tracked files inside the same repository.
+   - Use filesystem moves only for untracked files or outside git control.
+3. Repair only affected references.
+   - Run targeted searches for exact old path/name/package tokens.
+   - Update only concrete hits in nearby module/files first.
+4. Verify by delta.
+   - Re-run targeted checks for old tokens.
+   - Run `git status --short` and confirm expected move-only delta.
+
+### Full Path (`STRUCTURAL` and `RISKY`)
+
+1. Understand and map.
+   - Identify each source path and destination path.
+   - Determine move type: rename, package/module relocation, or reorganization.
+   - For multiple files, write down the source-to-destination mapping before
+     editing.
+2. Inspect current tree and boundaries.
    - Run `git status --short` first and treat existing changes as user-owned.
    - Confirm each source exists and whether it is tracked.
-   - Confirm each destination does not already exist unless the user explicitly
-     requested a merge or overwrite.
-   - Use `rg --files` or targeted directory listings to understand neighboring
-     naming and placement conventions.
-
+   - Confirm each destination does not already exist unless explicitly approved.
+   - Inspect neighboring naming and placement conventions.
 3. Find references before moving.
    - Search for old paths, filenames, package names, module names, resource
-     paths, and documentation links with `rg`.
+     paths, and docs links.
    - Check build files such as `settings.gradle.kts`, `build.gradle.kts`, and
-     `buildSrc` when moving modules, source sets, generated fixtures, or tests.
-   - For Kotlin and Java files, check package declarations and imports. Update
-     package declarations only when the move changes the intended package.
-
-4. Move the files.
+     `buildSrc` for module/source-set/test moves.
+   - For Kotlin and Java, update package declarations only when intended package
+     changes.
+4. Move files safely.
    - Prefer `git mv` for tracked files inside the same repository.
-   - Use normal filesystem moves only for untracked files, generated artifacts,
-     or moves outside git control.
+   - Use filesystem moves only for untracked files, generated artifacts, or
+     outside git control.
    - Create destination parent directories before moving.
-   - For case-only renames on case-insensitive filesystems, move through a
-     temporary intermediate name.
-   - Do not overwrite, delete, or merge existing destination content unless the
-     user explicitly asked for that exact operation.
-
-5. Repair references.
+   - For case-only renames on case-insensitive filesystems, move via temporary
+     intermediate name.
+   - Do not overwrite/delete/merge destination content unless explicitly asked.
+5. Repair references comprehensively.
    - Update imports, package declarations, build includes, docs links, resource
-     paths, test fixtures, sample paths, and scripts that mention the old path.
-   - Prefer precise edits over broad replacements. Inspect each search hit when
-     the old name is generic.
-   - Re-run `rg` for old paths and names until only intentional references
-     remain.
-
-6. Verify the result.
-   - Run `git status --short` and confirm the changed files match the requested
+     paths, test fixtures, sample paths, and scripts mentioning old paths.
+   - Prefer precise edits over broad replacements.
+6. Verify result.
+   - Run `git status --short` and confirm changed files match the requested
      move.
-   - Run focused tests, compilation, documentation checks, or repository build
-     tasks appropriate to the files moved.
+   - Run focused validation relevant to moved files.
    - If validation cannot be run, state exactly what was not run and why.
+
+## Escalation Rules
+
+- Start reference search in the smallest relevant scope:
+  affected directory -> affected module -> repository-wide.
+- Escalate only if lower-scope checks leave unresolved references.
+- Stop and ask the user before continuing when:
+  - destination already exists and merge/overwrite intent is unclear,
+  - source-to-destination mapping is incomplete/ambiguous,
+  - move implies semantic package/module intent not specified by user.
+- If uncertainty remains after escalation, report uncertainty explicitly and
+  avoid destructive actions.
+
+## Token Budget Guidance
+
+- Prefer targeted checks over broad repository scans.
+- Use exact tokens (full old path/name/package) before fuzzy searches.
+- Avoid repeating the same search once checks are clean.
+- Keep intermediate status concise unless user requests detail.
+
+## Compact Result Schema
+
+Report with compact sections:
+
+- `Moved[]`: `source -> destination`
+- `UpdatedRefs[]`: key references/metadata changed
+- `Verification[]`: checks run and outcomes
+- `Risks[]`: intentional stale refs, unresolved ambiguity, or follow-ups
 
 ## Repo-Specific Notes
 
