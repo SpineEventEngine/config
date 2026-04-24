@@ -10,16 +10,15 @@ description: >
 ## Workflow
 
 1. Preflight.
-   - Run `git status --short`; treat existing changes as user-owned.
+   - Run `git status --short`.
    - Map each `source -> destination`.
-   - Confirm sources exist and destinations do not, unless merge/overwrite was
-     explicit.
    - Classify scope: simple same-module moves stay targeted; package, module, or
      cross-module moves need broader inspection.
+   - Ask before ambiguous mappings, destination conflicts, or unclear semantic
+     package/module changes.
 
 2. Search before moving.
-   - Search exact old paths, filenames, package/module names, resource paths, and
-     docs links.
+   - Search all old identifiers: paths, names, resource refs, doc links.
    - For Gradle/module/source-set moves, check `settings.gradle.kts`,
      `build.gradle.kts`, and `buildSrc`.
    - For Kotlin/Java, update package declarations only when package intent
@@ -30,12 +29,9 @@ description: >
    - Use filesystem moves only for untracked/generated/out-of-git files.
    - Create parent directories first.
    - For case-only renames, move through a temporary name.
-   - Ask before ambiguous mappings, destination conflicts, or unclear semantic
-     package/module changes.
 
 4. Repair references.
-   - Update imports, package declarations, build metadata, docs links, resource
-     paths, fixtures, samples, and scripts.
+   - Update all references: imports, build metadata, docs, resources, and scripts.
    - Start search scope narrow: affected directory, then module, then repo-wide.
    - Prefer precise edits; avoid broad replacements on generic names.
 
@@ -46,8 +42,7 @@ description: >
 
 ## Repo Notes
 
-Follow `.agents/project-structure-expectations.md` for module/source-set/test
-moves. Prefer `src/main/kotlin` and `src/test/kotlin` unless the module differs.
+Follow `.agents/project-structure-expectations.md` for module/source-set/test moves.
 
 ## Report
 
