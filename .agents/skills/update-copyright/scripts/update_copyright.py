@@ -199,11 +199,14 @@ def tracked_files(root: Path) -> list[Path]:
             if path.is_file() and not is_excluded(path.relative_to(root))
         ]
 
-    return [
-        Path(item)
-        for item in result.stdout.decode("utf-8").split("\0")
-        if item
-    ]
+    paths = []
+    for item in result.stdout.decode("utf-8").split("\0"):
+        if not item:
+            continue
+        path = Path(item)
+        if (root / path).is_file():
+            paths.append(path)
+    return paths
 
 
 def expand_requested_paths(root: Path, requested: list[str]) -> list[Path]:
@@ -328,6 +331,9 @@ def update_file(root: Path, path: Path, notice: str, dry_run: bool) -> bool:
 
     try:
         text = absolute.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        print(f"Skipping missing file: {path}", file=sys.stderr)
+        return False
     except UnicodeDecodeError:
         print(f"Skipping non-UTF-8 file: {path}", file=sys.stderr)
         return False
