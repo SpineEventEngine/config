@@ -218,6 +218,11 @@ def expand_requested_paths(root: Path, requested: list[str]) -> list[Path]:
             path = (root / item).resolve()
             if not path.exists():
                 raise FileNotFoundError(f"Path does not exist: {item}")
+            if not path.is_relative_to(root):
+                raise ValueError(
+                    f"Path is outside the repository root: {item!r} "
+                    f"(resolved to {path}, root is {root})"
+                )
             if path.is_dir():
                 for child in path.rglob("*"):
                     if child.is_file():
@@ -355,7 +360,11 @@ def main() -> int:
     args = parse_args()
     root = args.root.resolve()
     notice, profile_path = load_notice(root, args.year)
-    paths = expand_requested_paths(root, args.paths)
+    try:
+        paths = expand_requested_paths(root, args.paths)
+    except (FileNotFoundError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     dry_run = args.dry_run or args.check
 
     changed = [
