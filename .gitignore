@@ -130,3 +130,7 @@ pubspec.lock
 /tmp
 
 .gradle-test-kit/
+
+# Python cache
+__pycache__/
+*.pyc
