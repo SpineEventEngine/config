@@ -1,9 +1,8 @@
 ---
 name: move-files
 description: >
-  Move or rename files/directories safely in a repo. Use for relocating source,
-  test, doc, asset, module, package, or folder paths; preserve history, update
-  references/build metadata, and verify stale paths are gone.
+  Move or rename any files/directories in a repo: preserve history, update all
+  references and build metadata, verify no stale paths remain.
 ---
 
 # Move Files
