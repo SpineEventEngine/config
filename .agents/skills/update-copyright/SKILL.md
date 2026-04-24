@@ -13,3 +13,4 @@ description: >
 1. Scope: explicit files/dirs from the user, or all tracked source files if none given.
 2. No explicit paths → run with `--dry-run` first, then without.
 3. Relay stdout (notice source, file count, changed paths) to the user.
+4. Never add a copyright header to a file that does not already have one.
