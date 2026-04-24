@@ -275,20 +275,20 @@ def strip_leading_blank_lines(text: str) -> str:
     return re.sub(r"^(?:[ \t]*\r?\n)+", "", text)
 
 
-def strip_existing_header(text: str, style: str) -> str:
+def strip_existing_header(text: str, style: str) -> tuple[str, bool]:
     if style == "block" and text.startswith("/*"):
         close = text.find("*/")
         if close != -1:
             candidate = text[: close + 2]
             if is_copyright_header(candidate):
-                return strip_leading_blank_lines(text[close + 2 :])
+                return strip_leading_blank_lines(text[close + 2 :]), True
 
     if style == "xml" and text.startswith("<!--"):
         close = text.find("-->")
         if close != -1:
             candidate = text[: close + 3]
             if is_copyright_header(candidate):
-                return strip_leading_blank_lines(text[close + 3 :])
+                return strip_leading_blank_lines(text[close + 3 :]), True
 
     if style == "hash":
         lines = text.splitlines(keepends=True)
@@ -301,9 +301,9 @@ def strip_existing_header(text: str, style: str) -> str:
             break
         candidate = text[:end]
         if candidate and is_copyright_header(candidate):
-            return strip_leading_blank_lines(text[end:])
+            return strip_leading_blank_lines(text[end:]), True
 
-    return text
+    return text, False
 
 
 def is_copyright_header(text: str) -> bool:
@@ -314,12 +314,15 @@ def is_copyright_header(text: str) -> bool:
 
 
 def updated_text(text: str, notice: str, style: str) -> str:
+    original = text
     bom = "\ufeff" if text.startswith("\ufeff") else ""
     if bom:
         text = text[1:]
     newline = newline_for(text)
     prefix, body = split_leading_directive(text, style, newline)
-    body = strip_existing_header(body, style)
+    body, had_header = strip_existing_header(body, style)
+    if not had_header:
+        return original
     return bom + prefix + build_header(notice, style, newline) + body
 
 
