@@ -33,7 +33,7 @@ fi
 echo "Updating \\\`.claude\\\` directory"
 rm -rf ../.claude
 if [ -d ".claude" ]; then
-    cp -R .claude ..
+    cp -a .claude ..
 fi
 
 # Copies the file or directory passed as the first parameter to the upper directory,
