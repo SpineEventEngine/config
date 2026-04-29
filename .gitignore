@@ -39,6 +39,7 @@
 
 # Internal tool directories.
 .fleet/
+.junie/memory/
 
 # Kotlin temp directories.
 **/.kotlin/
