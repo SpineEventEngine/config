@@ -26,7 +26,6 @@
 
 package io.spine.dependency.build
 
-import io.spine.dependency.build.Dokka.GradlePlugin.id
 import io.spine.dependency.local.Spine
 
 // https://github.com/Kotlin/dokka

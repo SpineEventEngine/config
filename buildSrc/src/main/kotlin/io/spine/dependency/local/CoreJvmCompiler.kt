@@ -26,6 +26,9 @@
 
 package io.spine.dependency.local
 
+import io.spine.dependency.local.CoreJvmCompiler.dogfoodingVersion
+
+
 /**
  * Dependencies on the CoreJvm Compiler artifacts.
  *
@@ -46,7 +49,7 @@ object CoreJvmCompiler {
     /**
      * The version used to in the build classpath.
      */
-    const val dogfoodingVersion = "2.0.0-SNAPSHOT.062"
+    const val dogfoodingVersion = "2.0.0-SNAPSHOT.063"
 
     /**
      * The version to be used for integration tests.
