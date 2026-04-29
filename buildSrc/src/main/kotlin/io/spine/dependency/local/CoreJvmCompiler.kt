@@ -26,9 +26,6 @@
 
 package io.spine.dependency.local
 
-import io.spine.dependency.local.CoreJvmCompiler.dogfoodingVersion
-
-
 /**
  * Dependencies on the CoreJvm Compiler artifacts.
  *
