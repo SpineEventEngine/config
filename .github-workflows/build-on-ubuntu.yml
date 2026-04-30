@@ -1,10 +1,9 @@
-name: Build under Ubuntu
+name: Build on Ubuntu
 
 on: push
 
 jobs:
   build:
-    name: Build under Ubuntu
     runs-on: ubuntu-latest
 
     steps:

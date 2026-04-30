@@ -8,8 +8,7 @@ on:
       - '**'
 
 jobs:
-  build:
-    name: Ensure license reports updated
+  check:
     runs-on: ubuntu-latest
 
     steps:
