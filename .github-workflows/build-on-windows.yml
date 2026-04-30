@@ -1,10 +1,9 @@
-name: Build under Windows
+name: Build on Windows
 
 on: pull_request
 
 jobs:
   build:
-    name: Build under Windows
     runs-on: windows-latest
 
     steps:

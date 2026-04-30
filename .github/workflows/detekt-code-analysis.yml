@@ -3,8 +3,7 @@ name: Run Detekt code analysis
 on: push
 
 jobs:
-  build:
-    name: Run Detekt code analysis
+  detekt:
     runs-on: ubuntu-latest
 
     steps:

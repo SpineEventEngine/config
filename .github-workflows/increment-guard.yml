@@ -9,8 +9,7 @@ on:
       - '**'
 
 jobs:
-  build:
-    name: Check version increment
+  check:
     runs-on: ubuntu-latest
 
     steps:
