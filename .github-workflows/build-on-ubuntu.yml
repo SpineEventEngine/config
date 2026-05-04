@@ -1,9 +1,10 @@
-name: Build on Ubuntu
+name: Ubuntu CI
 
 on: push
 
 jobs:
   build:
+    name: Build on Ubuntu
     runs-on: ubuntu-latest
 
     steps:
