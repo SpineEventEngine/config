@@ -1,9 +1,10 @@
-name: Run Detekt code analysis
+name: detekt code analysis
 
 on: push
 
 jobs:
   detekt:
+    name: Run detekt
     runs-on: ubuntu-latest
 
     steps:
