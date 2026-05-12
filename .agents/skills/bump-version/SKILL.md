@@ -77,34 +77,6 @@ PRs without a version bump fail CI.
    Bump version -> `2.0.0-SNAPSHOT.183`
    ```
 
-   When the commit bumps a named dependency rather than the current project's
-   own version, replace `version` with the dependency's display name — the
-   Kotlin `object` name from `buildSrc/src/main/kotlin/io/spine/dependency/local/*.kt`
-   (`Time`, `Validation`, `Logging`, ...). Compound names use the spaced form
-   seen in recent commits (e.g. `CoreJvm Compiler`, `Shadow plugin`). When in
-   doubt, check the prevailing form: `git log --format=%s --grep='^Bump '`.
-
-   ```text
-   Bump Time -> `2.0.0-SNAPSHOT.238`
-   ```
-
-   The arrow style and backticks are the same.
-
-   When a single commit bumps **multiple dependencies**, the `-> \`<version>\``
-   tail is omitted because no single version applies. Use one of:
-
-   ```text
-   Bump Time and Validation
-   Bump local dependencies
-   ```
-
-   Name the dependencies when there are two or three; use the canonical
-   generic form `Bump local dependencies` (the prevailing form in repo
-   history) when more are touched. Confirm against current usage with
-   `git log --format=%s --grep='^Bump '` before inventing a new variant.
-   Prefer one bump-per-dependency when feasible so the arrow form (and its
-   CI-relevant version) is preserved.
-
 3. Rebuild to verify the bump and regenerate dependency reports:
 
    ```bash
@@ -144,16 +116,16 @@ Resolve as follows:
 ## Validate
 
 - `./gradlew clean build` succeeds after the bump.
-- The bump commit's subject matches the convention. Locate it without assuming
-  it is `HEAD` (a "Update dependency reports" commit may sit on top), and
-  scope to commits introduced on the current branch. Set `BASE` to the
-  branch this PR will merge into — typically `master`, but a release line
-  such as `1.5.x` for a patch release:
+- The bump commit's subject matches the convention. It may not be `HEAD`
+  (a "Update dependency reports" commit can sit on top), so scope to commits
+  introduced on the current branch. Set `BASE` to the branch this PR will
+  merge into — typically `master`, or a release line such as `1.5.x` for a
+  patch release:
 
   ```bash
   BASE=master
   git fetch --quiet origin "$BASE"
-  git log --format=%s "$(git merge-base HEAD origin/$BASE)..HEAD" | grep '^Bump '
+  git log --format=%s "$(git merge-base HEAD origin/$BASE)..HEAD" | grep '^Bump version '
   ```
 
   The `git fetch` step guards against false negatives in fresh clones,
