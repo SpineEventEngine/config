@@ -10,7 +10,7 @@ description: >
 
 # Bump the project version
 
-The authoritative policy is [Spine SDK Versioning][wiki-versioning]. In this
+The authoritative policy is [Spine SDK Versioning][version-policy]. In this
 repo, CI runs `io.spine.gradle.publish.CheckVersionIncrement` through
 `IncrementGuard`; it fails if the current project version already exists in the
 Maven repository. It does not compare git branches or inspect commit subjects.
@@ -46,7 +46,7 @@ Maven repository. It does not compare git branches or inspect commit subjects.
    strictly greater than the current value: `.187` -> `.190`, and `.180` ->
    `.190`.
 
-   For release-line work, follow the wiki policy: urgent fixes bump `PATCH`;
+   For release-line work, follow the [policy][version-policy]: urgent fixes bump `PATCH`;
    feature work or significant fixes bump `MINOR` and reset `PATCH` to `0`.
 
 3. Commit only the `version.gradle.kts` change with this subject:
@@ -100,4 +100,4 @@ Do not require a completely clean worktree if unrelated user changes are
 present. Instead, make sure no uncommitted changes were created by the version
 bump or report regeneration.
 
-[wiki-versioning]: https://github.com/SpineEventEngine/documentation/wiki/Versioning
+[version-policy]: https://github.com/SpineEventEngine/documentation/wiki/Versioning
