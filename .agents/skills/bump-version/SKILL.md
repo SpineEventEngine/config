@@ -4,134 +4,100 @@ description: >
   Bump the project version in `version.gradle.kts` following the Spine SDK
   versioning policy. Use when starting a new branch, before opening a PR, or
   when CI rejects a branch for a missing/insufficient version increment. Covers
-  version-number selection, the commit-message convention, the post-bump
-  rebuild, dependency-report updates, and conflict resolution against the base
-  branch.
+  locating the published version value, choosing the increment, committing the
+  bump, rebuilding reports, and resolving version conflicts.
 ---
 
 # Bump the project version
 
-The authoritative versioning policy is
-[Spine SDK Versioning][wiki-versioning]. This skill encodes the parts of that
-policy that affect day-to-day work in this repo. CI enforces the bump via
-`io.spine.gradle.publish.CheckVersionIncrement` (applied through
-`IncrementGuard`): it fetches the project's Maven metadata and fails if the
-current version already exists in the repository. It does **not** diff
-against `master` or any git branch — the gate is "this version must not
-already be published" — and it does not inspect the commit subject.
+The authoritative policy is [Spine SDK Versioning][wiki-versioning]. In this
+repo, CI runs `io.spine.gradle.publish.CheckVersionIncrement` through
+`IncrementGuard`; it fails if the current project version already exists in the
+Maven repository. It does not compare git branches or inspect commit subjects.
 
-## Version format
+## Checklist
 
-Versions live in `version.gradle.kts` at the project root, for example:
+1. Locate `version.gradle.kts` and update the value that feeds
+   `versionToPublish`.
 
-```kotlin
-val versionToPublish: String by extra("2.0.0-SNAPSHOT.182")
-```
+   The published version may be a literal:
 
-Spine uses Semantic Versioning with extensions:
+   ```kotlin
+   val versionToPublish: String by extra("2.0.0-SNAPSHOT.182")
+   ```
 
-- **Snapshot:** `MAJOR.MINOR.PATCH-SNAPSHOT.NUMBER` during active development.
-  The trailing `NUMBER` is the per-PR counter.
-- **Release:** standard semver, such as `1.5.0`.
-- **Patch release:** issued only when an urgent fix is needed against a
-  released minor; bumps the `PATCH` digit (e.g. `1.5.0` → `1.5.1`).
-- **Flavor:** suffixes like `-jdk8` denote a specific build flavor.
+   Or it may come from another variable:
 
-Preserve zero-padding on the snapshot `NUMBER` when it is present:
-`2.0.0-SNAPSHOT.009` → `2.0.0-SNAPSHOT.010`.
+   ```kotlin
+   val compilerVersion: String by extra("2.0.0-SNAPSHOT.043")
+   val versionToPublish by extra(compilerVersion)
+   ```
 
-## When to bump
+   In the second case, update the source value (`compilerVersion` here), not
+   only the `versionToPublish` alias.
 
-Every code advancement must move the version forward. Which component moves
-depends on the release line:
+2. Choose the increment.
 
-- **Snapshot line (active development):** bump the snapshot `NUMBER` on every
-  PR. This is the normal day-to-day case.
-- **Released minor needing an urgent fix:** bump the `PATCH` digit and cut a
-  patch release.
-- **Feature or significant bug fix on a released line:** bump the `MINOR`
-  digit.
+   For the normal snapshot-line PR, increment the trailing snapshot number by
+   one: `2.0.0-SNAPSHOT.182` -> `2.0.0-SNAPSHOT.183`. Preserve existing
+   zero-padding: `2.0.0-SNAPSHOT.009` -> `2.0.0-SNAPSHOT.010`.
 
-Also bump when starting a new branch so the branch starts ahead of `master`.
-PRs without a version bump fail CI.
+   For a breaking snapshot-line PR, advance to the next multiple of 10 that is
+   strictly greater than the current value: `.187` -> `.190`, and `.180` ->
+   `.190`.
 
-## How to bump
+   For release-line work, follow the wiki policy: urgent fixes bump `PATCH`;
+   feature work or significant fixes bump `MINOR` and reset `PATCH` to `0`.
 
-1. Increment the version in `version.gradle.kts`. Pick the component that
-   matches the release line (see "When to bump"):
-   - **Snapshot PR (default):** `+1` on the snapshot `NUMBER`
-     (e.g. `2.0.0-SNAPSHOT.182` → `2.0.0-SNAPSHOT.183`). Preserve zero-padding
-     (see "Version format").
-   - **Snapshot PR with a breaking change:** advance `NUMBER` to the next
-     multiple of 10 **strictly greater than** the current value (`.187` →
-     `.190`, and also `.180` → `.190` — never stay at the same value).
-     Rounding signals "this PR is significant" to downstream readers.
-   - **Feature/significant fix on a released line:** `+1` on `MINOR`, reset
-     `PATCH` to `0` (e.g. `1.5.3` → `1.6.0`).
-   - **Urgent fix on a released minor:** `+1` on `PATCH`
-     (e.g. `1.5.0` → `1.5.1`).
-2. Commit the version bump as a **separate commit**, with this subject (ASCII
-   arrow `->`, backticked version):
+3. Commit only the `version.gradle.kts` change with this subject:
 
    ```text
    Bump version -> `2.0.0-SNAPSHOT.183`
    ```
 
-3. Rebuild to verify the bump and regenerate dependency reports:
+4. Run the build to verify the bump and regenerate reports:
 
    ```bash
    ./gradlew clean build
    ```
 
-   `build` finalizes `generatePom` and `mergeAllLicenseReports`, so `pom.xml`
-   and `dependencies.md` are regenerated automatically when they are produced
-   by this repo's build.
+   Repos using this config commonly finalize `generatePom` and
+   `mergeAllLicenseReports` after `build`, which updates `pom.xml` and
+   `dependencies.md` when those reports are configured.
 
-4. If `./gradlew clean build` produced changes to `pom.xml` and/or
-   `dependencies.md`, stage **whichever of the two changed** and commit them
-   as a second commit:
+5. If `pom.xml`, `dependencies.md`, or `license-report.md` changed, commit
+   those generated files separately:
 
    ```text
    Update dependency reports
    ```
 
-   If neither file changed, skip this step — do not create an empty commit.
+   If the PR has the "License Reports" workflow, make sure the branch modifies
+   `pom.xml` and either `dependencies.md` or `license-report.md`.
 
-## Resolving conflicts in `version.gradle.kts`
+6. Validate the branch state.
 
-Use these roles to disambiguate during a merge:
+   ```bash
+   BASE=master
+   git fetch --quiet origin "$BASE"
+   RANGE="$(git merge-base HEAD origin/$BASE)..HEAD"
+   git log --format=%s "$RANGE" | grep '^Bump version ->'
+   git diff --name-only "$RANGE" -- version.gradle.kts | grep '^version.gradle.kts$'
+   ```
 
-- **base branch:** the branch being merged in (typically `master`).
-- **feature branch:** the branch currently checked out (the one with the open
-  PR).
+   Use the actual merge target for `BASE` when it is not `master`.
 
-Resolve as follows:
+## Conflict Rule
 
-- If the base branch's number is **less than** the feature branch's, keep the
-  feature branch's version unchanged.
-- If the base branch's number is **greater than or equal to** the feature
-  branch's, set the feature branch's number to `base + 1` (or apply the
-  rounding rule from "How to bump" for a breaking change).
+When merging a base branch into a feature branch:
 
-## Validate
+- If the base branch version is lower, keep the feature branch version.
+- If the base branch version is greater than or equal to the feature branch
+  version, set the feature branch version to `base + 1`, or apply the breaking
+  change rounding rule.
 
-- `./gradlew clean build` succeeds after the bump.
-- The bump commit's subject matches the convention. It may not be `HEAD`
-  (a "Update dependency reports" commit can sit on top), so scope to commits
-  introduced on the current branch. Set `BASE` to the branch this PR will
-  merge into — typically `master`, or a release line such as `1.5.x` for a
-  patch release:
-
-  ```bash
-  BASE=master
-  git fetch --quiet origin "$BASE"
-  git log --format=%s "$(git merge-base HEAD origin/$BASE)..HEAD" | grep '^Bump version '
-  ```
-
-  The `git fetch` step guards against false negatives in fresh clones,
-  worktrees, or CI checkouts where `origin/$BASE` may not exist locally yet.
-
-- If dependency reports were regenerated, the commit immediately following the
-  bump has subject `Update dependency reports`, and `git status` is clean.
+Do not require a completely clean worktree if unrelated user changes are
+present. Instead, make sure no uncommitted changes were created by the version
+bump or report regeneration.
 
 [wiki-versioning]: https://github.com/SpineEventEngine/documentation/wiki/Versioning
