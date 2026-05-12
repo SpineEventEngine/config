@@ -14,8 +14,11 @@ description: >
 The authoritative versioning policy is
 [Spine SDK Versioning][wiki-versioning]. This skill encodes the parts of that
 policy that affect day-to-day work in this repo. CI enforces the bump via
-`io.spine.internal.gradle.publish.CheckVersionIncrement`, which inspects the
-version number — not the commit subject.
+`io.spine.gradle.publish.CheckVersionIncrement` (applied through
+`IncrementGuard`): it fetches the project's Maven metadata and fails if the
+current version already exists in the repository. It does **not** diff
+against `master` or any git branch — the gate is "this version must not
+already be published" — and it does not inspect the commit subject.
 
 ## Version format
 
