@@ -166,7 +166,6 @@ object LicenseReporter {
         println("Merging the license reports from all projects.")
         val mergedContent = paths.joinToString("\n\n\n") { (File(it)).readText() }
         val output = Paths.outputFile(rootProject.rootDir, Paths.outputFilename)
-        rootProject.delete(Paths.legacyOutputFile(rootProject.rootDir, Paths.outputFilename))
         output.parentFile.mkdirs()
         output.writeText(mergedContent)
     }

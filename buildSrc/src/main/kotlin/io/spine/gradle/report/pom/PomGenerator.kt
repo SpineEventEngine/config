@@ -85,10 +85,6 @@ object PomGenerator {
         val task = project.tasks.register("generatePom") {
             doLast {
                 val pomFile = Paths.outputFile(project.rootDir, pomFilename)
-                project.delete(
-                    pomFile,
-                    Paths.legacyOutputFile(project.rootDir, pomFilename)
-                )
                 pomFile.parentFile.mkdirs()
 
                 val projectData = project.metadata()
