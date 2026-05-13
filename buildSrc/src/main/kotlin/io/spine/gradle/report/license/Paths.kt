@@ -29,7 +29,8 @@ package io.spine.gradle.report.license
 import java.io.File
 
 /**
- * Filesystem paths used by [LicenseReporter].
+ * Filesystem paths used by [LicenseReporter] and
+ * [PomGenerator][io.spine.gradle.report.pom.PomGenerator].
  */
 internal object Paths {
 
@@ -59,10 +60,4 @@ internal object Paths {
      */
     internal fun outputFile(rootDirectory: File, filename: String): File =
         rootDirectory.resolve(outputDirectory).resolve(filename)
-
-    /**
-     * Obtains a legacy root-level dependency report file.
-     */
-    internal fun legacyOutputFile(rootDirectory: File, filename: String): File =
-        rootDirectory.resolve(filename)
 }
