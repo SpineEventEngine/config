@@ -10,14 +10,23 @@ description: >
 
 # Bump the project version
 
-The authoritative policy is [Spine SDK Versioning][wiki-versioning]. In this
-repo, CI runs `io.spine.gradle.publish.CheckVersionIncrement` through
-`IncrementGuard`; it fails if the current project version already exists in the
-Maven repository. It does not compare git branches or inspect commit subjects.
+The authoritative policy is [Spine SDK Versioning][version-policy]. In this
+skill's target repository, CI runs the `Version Guard` workflow, which invokes
+`checkVersionIncrement` through `IncrementGuard`. The task fails if the current
+project version already exists in the Maven repository. It does not compare git
+branches or inspect commit subjects; the checks below are agent-side guardrails.
 
 ## Checklist
 
-1. Locate `version.gradle.kts` and update the value that feeds
+1. Work from the target repository root.
+
+   Confirm `version.gradle.kts` exists before editing. If it is absent, stop and
+   report that this skill does not apply to the current checkout.
+
+   Inspect `git status --short` before changing files. Preserve unrelated user
+   changes and stage only the version/report files this workflow owns.
+
+2. Locate `version.gradle.kts` and update the value that feeds
    `versionToPublish`.
 
    The published version may be a literal:
@@ -36,7 +45,7 @@ Maven repository. It does not compare git branches or inspect commit subjects.
    In the second case, update the source value (`compilerVersion` here), not
    only the `versionToPublish` alias.
 
-2. Choose the increment.
+3. Choose the increment.
 
    For the normal snapshot-line PR, increment the trailing snapshot number by
    one: `2.0.0-SNAPSHOT.182` -> `2.0.0-SNAPSHOT.183`. Preserve existing
@@ -46,36 +55,40 @@ Maven repository. It does not compare git branches or inspect commit subjects.
    strictly greater than the current value: `.187` -> `.190`, and `.180` ->
    `.190`.
 
-   For release-line work, follow the wiki policy: urgent fixes bump `PATCH`;
+   For release-line work, follow the [policy][version-policy]: urgent fixes bump `PATCH`;
    feature work or significant fixes bump `MINOR` and reset `PATCH` to `0`.
 
-3. Commit only the `version.gradle.kts` change with this subject:
+4. Commit only the `version.gradle.kts` change with this subject:
 
    ```text
    Bump version -> `2.0.0-SNAPSHOT.183`
    ```
 
-4. Run the build to verify the bump and regenerate reports:
+   Use the actual new version in the subject. Do not include unrelated files in
+   this commit.
+
+5. Run the build to verify the bump and regenerate reports:
 
    ```bash
    ./gradlew clean build
    ```
 
    Repos using this config commonly finalize `generatePom` and
-   `mergeAllLicenseReports` after `build`, which updates `pom.xml` and
-   `dependencies.md` when those reports are configured.
+   `mergeAllLicenseReports` after `build`, which updates
+   `docs/dependencies/pom.xml` and `docs/dependencies/dependencies.md` when
+   those reports are configured.
 
-5. If `pom.xml`, `dependencies.md`, or `license-report.md` changed, commit
-   those generated files separately:
+6. If `docs/dependencies/pom.xml` or `docs/dependencies/dependencies.md` changed,
+   commit those generated files separately:
 
    ```text
    Update dependency reports
    ```
 
-   If the PR has the "License Reports" workflow, make sure the branch modifies
-   `pom.xml` and either `dependencies.md` or `license-report.md`.
+   If the PR has the `License Reports` workflow, make sure the branch modifies
+   `docs/dependencies/pom.xml` and `docs/dependencies/dependencies.md`.
 
-6. Validate the branch state.
+7. Validate the branch state.
 
    ```bash
    BASE=master
@@ -86,6 +99,8 @@ Maven repository. It does not compare git branches or inspect commit subjects.
    ```
 
    Use the actual merge target for `BASE` when it is not `master`.
+   Also confirm `git status --short` has no uncommitted changes created by the
+   version bump or report regeneration.
 
 ## Conflict Rule
 
@@ -100,4 +115,4 @@ Do not require a completely clean worktree if unrelated user changes are
 present. Instead, make sure no uncommitted changes were created by the version
 bump or report regeneration.
 
-[wiki-versioning]: https://github.com/SpineEventEngine/documentation/wiki/Versioning
+[version-policy]: https://github.com/SpineEventEngine/documentation/wiki/Versioning

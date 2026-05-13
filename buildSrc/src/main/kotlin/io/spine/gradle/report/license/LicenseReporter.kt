@@ -1,5 +1,5 @@
 /*
- * Copyright 2025, TeamDev. All rights reserved.
+ * Copyright 2026, TeamDev. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import org.gradle.kotlin.dsl.the
  *
  * Transitive dependencies are included.
  *
- * The output file is placed to the root folder of the root Gradle project.
+ * The output file is placed under `docs/dependencies` of the root Gradle project.
  *
  * Usage:
  *
@@ -146,7 +146,7 @@ object LicenseReporter {
 
     /**
      * Merges the license reports from all [sourceProjects] into a single file under
-     * the [rootProject]'s root directory.
+     * the [rootProject]'s dependency report directory.
      */
     private fun mergeReports(
         sourceProjects: Iterable<Project>,
@@ -165,7 +165,8 @@ object LicenseReporter {
             }
         println("Merging the license reports from all projects.")
         val mergedContent = paths.joinToString("\n\n\n") { (File(it)).readText() }
-        val output = File("${rootProject.rootDir}/${Paths.outputFilename}")
+        val output = Paths.outputFile(rootProject.rootDir, Paths.outputFilename)
+        output.parentFile.mkdirs()
         output.writeText(mergedContent)
     }
 }
