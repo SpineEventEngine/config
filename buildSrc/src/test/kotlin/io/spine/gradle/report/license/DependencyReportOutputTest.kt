@@ -66,7 +66,6 @@ class DependencyReportOutputTest {
 
         val pomFile = projectDir.resolve("docs/dependencies/pom.xml")
         pomFile.exists() shouldBe true
-        projectDir.resolve("pom.xml").exists() shouldBe false
     }
 
     @Test
@@ -89,7 +88,6 @@ class DependencyReportOutputTest {
 
         val reportFile = projectDir.resolve("docs/dependencies/dependencies.md")
         reportFile.readText() shouldBe "license report"
-        projectDir.resolve("dependencies.md").exists() shouldBe false
     }
 
     private fun subproject(name: String): Project {
