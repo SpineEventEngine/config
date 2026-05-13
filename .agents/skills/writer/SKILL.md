@@ -49,6 +49,15 @@ description: >
 
 - Follow `.agents/documentation-guidelines.md` and `.agents/documentation-tasks.md`.
 - Use fenced code blocks for commands and examples; format file/dir names as code.
+- When referencing a documentation page or section in body prose, use typographic
+  double quotation marks only if the visible reference text is the actual page or
+  section title, such as the “Getting started” page or the “Troubleshooting”
+  section. The title normally starts with a capital letter. Do not add these
+  quotes around generic or descriptive links such as “this page”, “the next
+  section”, “declaring constraints”, or `4.3`, even if they point to a page or
+  section. Do not add these quotes in “What’s next” sections or navigation
+  elements. Keep file paths, identifiers, frontmatter values, navigation labels,
+  and Markdown link labels in their expected syntax.
 - In Markdown files, prefer footnote-style reference links for external `https://`
   targets instead of inline links. Write readable body text like
   `[label][short-id]`, then place the URL definition near the end of the file,
