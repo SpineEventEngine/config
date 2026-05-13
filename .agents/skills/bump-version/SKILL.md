@@ -62,18 +62,20 @@ Maven repository. It does not compare git branches or inspect commit subjects.
    ```
 
    Repos using this config commonly finalize `generatePom` and
-   `mergeAllLicenseReports` after `build`, which updates `pom.xml` and
-   `dependencies.md` when those reports are configured.
+   `mergeAllLicenseReports` after `build`, which updates
+   `docs/dependencies/pom.xml` and `docs/dependencies/dependencies.md` when
+   those reports are configured.
 
-5. If `pom.xml`, `dependencies.md`, or `license-report.md` changed, commit
-   those generated files separately:
+5. If `docs/dependencies/pom.xml`, `docs/dependencies/dependencies.md`, or
+   `docs/dependencies/license-report.md` changed, commit those generated files separately:
 
    ```text
    Update dependency reports
    ```
 
    If the PR has the "License Reports" workflow, make sure the branch modifies
-   `pom.xml` and either `dependencies.md` or `license-report.md`.
+   `docs/dependencies/pom.xml` and either `docs/dependencies/dependencies.md`
+   or `docs/dependencies/license-report.md`.
 
 6. Validate the branch state.
 
