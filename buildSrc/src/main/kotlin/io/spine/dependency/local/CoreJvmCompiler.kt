@@ -44,7 +44,7 @@ object CoreJvmCompiler {
     const val group = Spine.toolsGroup
 
     /**
-     * The version used to in the build classpath.
+     * The version used in the build classpath.
      */
     const val dogfoodingVersion = "2.0.0-SNAPSHOT.063"
 
