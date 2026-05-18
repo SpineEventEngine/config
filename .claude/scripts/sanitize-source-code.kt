@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# PostToolUse hook: enforce the formatting rules from .agents/coding-guidelines.md
-# on Kotlin/Java sources after Edit/Write/MultiEdit:
+# PostToolUse hook: enforce the source-code formatting rules from
+# .agents/coding-guidelines.md after Edit/Write/MultiEdit:
 #   - strip trailing whitespace
 #   - replace 2+ consecutive blank lines with a single blank line
 #
@@ -17,7 +17,7 @@ file=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')
 [ ! -f "$file" ] && exit 0
 
 case "$file" in
-  *.kt|*.kts|*.java) ;;
+  *.java|*.kt|*.kts) ;;
   *) exit 0 ;;
 esac
 
