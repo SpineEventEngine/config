@@ -127,7 +127,9 @@ metadata, not in GitHub's latest-release redirect.
   - `https://europe-maven.pkg.dev/spine-event-engine/snapshots`
 - Build the metadata URL as
   `<repo>/<groupPath>/<artifact>/maven-metadata.xml`, where `groupPath` is the
-  Maven group with dots replaced by slashes.
+  Maven group after first resolving symbolic aliases used in dependency files
+  (for example, `Spine.group` -> `io.spine` and `Spine.toolsGroup` ->
+  `io.spine.tools`) and then replacing dots with slashes.
 - Read `<versioning><versions><version>...` entries. For `local/`, do not
   reject `SNAPSHOT`, RC, milestone, alpha, beta, EAP, pre, or dev versions.
 - If both release and snapshot repositories have candidates, compare all of
