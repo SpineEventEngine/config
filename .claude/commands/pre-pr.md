@@ -1,7 +1,7 @@
 ---
 description: Run the pre-PR checklist (version bump, build, reviewers) and write a sentinel so `gh pr create` is unblocked.
 argument-hint: "[base-ref]"
-allowed-tools: Read, Write, Grep, Glob, Bash(./gradlew:*), Bash(git diff:*), Bash(git log:*), Bash(git status:*), Bash(git rev-parse:*), Bash(git ls-files:*), Bash(git show:*), Bash(date:*)
+allowed-tools: Read, Write, Grep, Glob, Agent, Bash(./gradlew:*), Bash(git diff:*), Bash(git log:*), Bash(git status:*), Bash(git rev-parse:*), Bash(git ls-files:*), Bash(git show:*), Bash(date:*)
 ---
 
 Follow the `pre-pr` skill exactly:
