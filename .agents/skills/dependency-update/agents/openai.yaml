@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dependency Update"
+  short_description: "Refresh external dependency versions to their latest non-snapshot release"
+  default_prompt: "Use $dependency-update to walk every dependency object under buildSrc/src/main/kotlin/io/spine/dependency/, find the latest released (non-snapshot, non-pre-release) version for each, and update the version constants in place. Use the URL referenced in each file as the source of truth; fall back to Maven Central and back-fill the URL when no comment is present."

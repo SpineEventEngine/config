@@ -14,3 +14,8 @@
 12. [Refactoring guidelines](refactoring-guidelines.md)
 13. [Common tasks](common-tasks.md)
 14. [Java to Kotlin conversion](skills/java-to-kotlin/SKILL.md)
+15. [Dependency update](skills/dependency-update/SKILL.md)
+16. [Documentation review](skills/review-docs/SKILL.md)
+17. [Pre-PR checklist](skills/pre-pr/SKILL.md)
+18. [Kotlin code review](skills/kotlin-review/SKILL.md)
+19. [Dependency audit](skills/dependency-audit/SKILL.md)

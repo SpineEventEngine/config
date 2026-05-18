@@ -24,12 +24,33 @@ Run the following command from the root of your project:
 
 It will get the latest code from the remote repo and then copy the shared files into your project.
 The following files will be copied:
- 
- * `.idea` - a directory with shared IntelliJ IDEA settings
+
+ * `.idea` — shared IntelliJ IDEA settings.
  * `.codecov.yml`
- * `.gitattributes`
- * `.gitignore`
- * `buildSrc` — a folder containing the common build-time code, in Kotlin.
+ * `.gitattributes` and `.gitignore` (created on first run if absent; `.gitignore` is overwritten on update).
+ * `.github` — created on first run if absent. GitHub workflows from `.github-workflows/` are then merged into `.github/workflows/` on every update.
+ * `buildSrc` — common build-time code, in Kotlin. `module.gradle.kts` in the consuming repo is preserved.
+ * `gradle/`, `gradlew`, `gradlew.bat` — the Gradle Wrapper.
+ * `gradle.properties` — overwritten on update.
+ * `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`.
+
+### AI agent configuration
+
+The `pull` script also propagates AI-agent configuration into the consuming project:
+
+ * `AGENTS.md` and `CLAUDE.md` — entry points that direct any agent to `.agents/_TOC.md`.
+ * `.agents/` — coding guidelines, safety rules, testing policy, project structure expectations,
+   and per-task skill definitions under `.agents/skills/<skill-name>/SKILL.md`.
+ * `.claude/` — Claude Code configuration:
+    * `settings.json` — permission allowlist tuned for the Gradle/Git workflow.
+    * `commands/*.md` — slash commands such as `/bump-version`, `/java-to-kotlin`,
+      `/update-copyright`. Each wraps the corresponding skill in `.agents/skills/`.
+    * `agents/*.md` — subagents (e.g. `kotlin-reviewer`).
+    * `skills` — symlink to `../.agents/skills` so Claude Code picks up the same skills.
+ * `.junie/` — JetBrains Junie guidelines, if present.
+
+The single source of truth for each workflow is its `SKILL.md` in `.agents/skills/`; slash
+commands and subagents are thin wrappers that point Claude Code at those files.
  
 ## Checking updated configuration
 
