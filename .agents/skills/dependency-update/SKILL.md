@@ -2,26 +2,34 @@
 name: dependency-update
 description: >
   Walk every dependency declaration under
-  `buildSrc/src/main/kotlin/io/spine/dependency/`, discover the latest released
-  (non-snapshot, non-pre-release) version of each artifact from the URL hinted
-  in its file (or from Maven Central if no URL is present), and update the
-  `version` constant in place. Use when asked to refresh dependency versions,
-  bump libraries, run a dependency audit, or "see what's stale".
+  `buildSrc/src/main/kotlin/io/spine/dependency/`, discover the latest accepted
+  version of each artifact from the URL hinted in its file (or from Maven
+  metadata if no URL is present), and update the `version` constant in place.
+  External dependency scopes accept only released versions; the `local` scope
+  also accepts snapshots and pre-releases published from sibling Spine repos.
+  Use when asked to refresh dependency versions, bump libraries, run a
+  dependency audit, or "see what's stale".
 ---
 
-# Update external dependencies
+# Update dependencies
 
 ## Goal
 
 Bring every dependency object under
-`buildSrc/src/main/kotlin/io/spine/dependency/` to its latest **released**
-version. Snapshots, release candidates, milestones, alpha/beta, EAP, and
-`-dev` builds are **excluded**.
+`buildSrc/src/main/kotlin/io/spine/dependency/` to its latest accepted version.
+For every scope except `local/`, that means the latest **released** version:
+snapshots, release candidates, milestones, alpha/beta, EAP, and `-dev` builds
+are **excluded**.
+
+`local/` is the deliberate exception. It holds Spine SDK dependencies published
+from sibling Spine repositories, and it may move to newer snapshots or
+pre-releases such as `2.0.0-SNAPSHOT.388` or `2.1.0-RC1`.
 
 The authoritative version source for each artifact is the web page already
-referenced in its file. When the file has no URL, Maven Central is the
-fallback — and the discovered Maven Central URL is **added back to the file**
-as a line comment so the next run has a hint.
+referenced in its file. When the file has no URL, use the Maven metadata
+fallback described below. For non-`local/` artifacts, a discovered Maven
+Central URL is **added back to the file** as a line comment so the next run has
+a hint.
 
 ## Inputs
 
@@ -65,26 +73,36 @@ Extract:
 - `group` — the Maven group.
 - `module` artifact names — each `const val foo = "$group:foo:$version"` line
   contributes one artifact name. Use the first one to query Maven Central if
-  needed.
+  needed for non-`local/` artifacts, or Spine SDK Maven repositories for
+  `local/` artifacts.
 - `versionUrl` — a URL hint. Look in this order:
   1. Line comments above the object: `^//\s*(https?://\S+)`.
   2. KDoc `@see <a href="(https?://[^"]+)">…</a>` inside the object's KDoc.
   3. Plain `@see https?://…` inside the KDoc.
-  4. If none: leave `versionUrl` empty and use the Maven Central fallback below.
+  4. If none: leave `versionUrl` empty and use the Maven metadata fallback
+     below.
 
 Skip files that contain only abstract base classes or helpers (`Dependency.kt`,
 `DependencyWithBom.kt`, `BomsPlugin.kt`, anything without a concrete artifact
 declaration).
 
-### 2. Find the latest released version
+### 2. Find the latest accepted version
 
-The discovery rule depends on the URL shape.
+The discovery rule depends on the URL shape. For files under
+`dependency/local/`, check the Spine SDK Maven metadata before GitHub, even
+when the file has a GitHub URL; snapshots are usually visible in Maven
+metadata, not in GitHub's latest-release redirect.
 
 **A. GitHub repository URL** (`https://github.com/<owner>/<repo>`):
 
-- Resolve `https://github.com/<owner>/<repo>/releases/latest`. GitHub redirects
-  to the latest non-prerelease tag. Read the redirected location or the
-  rendered HTML to extract the tag.
+- Outside `local/`, resolve
+  `https://github.com/<owner>/<repo>/releases/latest`. GitHub redirects to the
+  latest non-prerelease tag. Read the redirected location or the rendered HTML
+  to extract the tag.
+- In `local/`, do **not** rely on `/releases/latest`, because it hides
+  pre-releases. Use GitHub releases and tags only after checking Spine SDK
+  Maven metadata. When you do use GitHub, include pre-release entries and keep
+  version-like tags that match the artifact.
 - Tags often have a `v` prefix. Strip it.
 - If the repo publishes per-component tags (e.g.
   `kotlinx-coroutines-1.10.2`), prefer the tag whose name matches the
@@ -96,28 +114,55 @@ The discovery rule depends on the URL shape.
 
 - Hit Maven Central's REST API:
   `https://search.maven.org/solrsearch/select?q=g:<group>+AND+a:<artifact>&rows=20&core=gav`
-- Filter the `response.docs[].v` values by the pre-release rule (below).
+- Outside `local/`, filter the `response.docs[].v` values by the pre-release
+  rule (below).
+- In `local/`, keep snapshots and pre-releases in the candidate list.
 - Take the highest by semver comparison.
 
-**C. Project homepage** (e.g. `https://kotest.io/`, `https://junit.org/`,
+**C. Spine SDK Maven repositories for `local/` artifacts**:
+
+- For files under `dependency/local/`, query Maven metadata in the current
+  Spine SDK Artifact Registry repositories before falling back elsewhere:
+  - `https://europe-maven.pkg.dev/spine-event-engine/releases`
+  - `https://europe-maven.pkg.dev/spine-event-engine/snapshots`
+- Build the metadata URL as
+  `<repo>/<groupPath>/<artifact>/maven-metadata.xml`, where `groupPath` is the
+  Maven group after first resolving symbolic aliases used in dependency files
+  (for example, `Spine.group` -> `io.spine` and `Spine.toolsGroup` ->
+  `io.spine.tools`) and then replacing dots with slashes.
+- Read `<versioning><versions><version>...` entries. For `local/`, do not
+  reject `SNAPSHOT`, RC, milestone, alpha, beta, EAP, pre, or dev versions.
+- If both release and snapshot repositories have candidates, compare all of
+  them together and take the highest version.
+
+**D. Project homepage** (e.g. `https://kotest.io/`, `https://junit.org/`,
 `https://www.detekt.dev/`):
 
 - Try to find a "latest release" or "download" link on the page. If the page
-  is a thin landing page with no usable version data, fall through to D.
+  is a thin landing page with no usable version data, fall through to E.
 
-**D. No URL or unusable URL — Maven Central fallback**:
+**E. No URL or unusable URL — Maven metadata fallback**:
 
-- Query Maven Central as in B using the file's `group` and the first module
-  artifact name (the part after `$group:`).
-- If the query returns results, **also insert a line comment**
+- Outside `local/`, query Maven Central as in B using the file's `group` and
+  the first module artifact name (the part after `$group:`).
+- In `local/`, query the Spine SDK Maven metadata first. Use Maven Central only
+  if the artifact is absent from those repositories.
+- If a non-`local/` Maven Central fallback query returns results, **also insert
+  a line comment**
   `// https://search.maven.org/artifact/<group>/<artifact>` above the object
   declaration (after any existing copyright header). This back-fills the URL
   hint for next time. Match the existing comment style (one line, no trailing
   punctuation).
-- If Maven Central has no result, leave the file untouched and add it to the
-  `Manual review` section of the final report.
+- If all fallback queries have no result, leave the file untouched and add it
+  to the `Manual review` section of the final report.
 
-### 3. Filter pre-releases
+### 3. Filter pre-releases outside `local/`
+
+Apply this filter only to files outside `dependency/local/`.
+
+For `local/` files, snapshots and pre-releases are accepted candidates. Do not
+put them in `Filtered pre-releases`; put them in the `local/` confirmation
+section of the final report instead.
 
 Reject any version string matching, case-insensitively:
 
@@ -135,10 +180,10 @@ Reject any version string matching, case-insensitively:
     \.M\d+$
 
 Apply the regex to the **suffix after the numeric version**. The version
-`2.0.0-SNAPSHOT.182` used by Spine itself is a snapshot and must be rejected
-as a target — but the same file's `version.gradle.kts` may legitimately hold
-such a value. This skill only edits dependency files, never `version.gradle.kts`
-(that belongs to the `bump-version` skill).
+`2.0.0-SNAPSHOT.182` is a snapshot and must be rejected as a target outside
+`local/`, but it is valid for `local/` dependency objects. This skill only
+edits dependency files, never `version.gradle.kts` (that belongs to the
+`bump-version` skill).
 
 ### 4. Compare versions
 
@@ -172,11 +217,14 @@ Only update when `latest > current`. Equal or lower → no change.
 ### 6. Watch for `local/` artifacts
 
 `local/` holds Spine SDK dependencies (Base, CoreJvm, ModelCompiler, …) that
-are published from sibling Spine repos. Apply the same rule (latest released,
-no snapshots), but **flag every `local/` update in the report** so the user
-can decide whether to bump the SDK in lockstep with the rest of the project.
-Spine SDK artifacts often need to move together; one-off bumps can cause
-runtime ABI mismatches.
+are published from sibling Spine repos. This scope accepts snapshots and
+pre-releases because these artifacts often advance through internal snapshot
+builds before a stable SDK release.
+
+Still **flag every `local/` update in the report**, and note whether the target
+is a release, snapshot, or pre-release. The user can then decide whether to
+bump the SDK in lockstep with the rest of the project. Spine SDK artifacts
+often need to move together; one-off bumps can cause runtime ABI mismatches.
 
 ## Report
 
@@ -184,12 +232,12 @@ When the run completes, emit a Markdown report with these sections:
 
 - **Updated** — table of `file | objectName | old → new | source URL`.
 - **Already current** — file/object pairs whose version was already the
-  newest non-prerelease.
-- **Skipped (no URL, Maven Central empty)** — manual review needed.
+  newest accepted version.
+- **Skipped (no URL, metadata empty)** — manual review needed.
 - **Filtered pre-releases** — newer versions found but rejected because they
-  were RC/SNAPSHOT/alpha/etc. Useful signal.
-- **`local/` bumps to confirm** — every `local/` change called out
-  separately.
+  were RC/SNAPSHOT/alpha/etc. Applies only outside `local/`.
+- **`local/` bumps to confirm** — every `local/` change called out separately,
+  including snapshot and pre-release targets.
 
 End with the suggested next steps:
 
