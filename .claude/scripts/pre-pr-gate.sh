@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
-# PreToolUse hook: block `gh pr create` unless the /pre-pr checklist has
-# successfully run for the current HEAD.
+# PreToolUse hook: block `gh pr create` unless /pre-pr has successfully run
+# for the current HEAD. The hook is intentionally unaware of the repository's
+# versioning or build system; the /pre-pr skill decides which checks apply.
 #
 # Input: hook JSON on stdin (tool_name, tool_input.command).
 # Exit:  0 to allow, 2 to block (stderr is surfaced to Claude).
@@ -39,8 +40,9 @@ if [ ! -f "$sentinel" ]; then
   block <<EOF
 'gh pr create' blocked: pre-PR checks have not run on this clone.
 
-Run /pre-pr first. It runs the build, version-bump check, and the
-configured reviewers, then writes $sentinel on success.
+Run /pre-pr first. It runs the applicable build/check command, applies the
+version gate only when this repository has a root version.gradle.kts, dispatches
+the configured reviewers, then writes $sentinel on success.
 EOF
 fi
 

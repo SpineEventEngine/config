@@ -9,7 +9,7 @@ Follow the `kotlin-review` skill exactly:
 
 - Skill: `.agents/skills/kotlin-review/SKILL.md`
 - The skill owns the procedure, the checks (Kotlin idioms, safety rules,
-  testing policy, version bump), and the output format
+  testing policy, version-gate applicability), and the output format
   (Must fix / Should fix / Nits + one-line verdict).
 - Stay in scope: code only. If a documentation issue surfaces, note it
   briefly as a Nit pointing at the `review-docs` agent.

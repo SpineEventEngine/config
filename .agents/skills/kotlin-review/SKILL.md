@@ -9,8 +9,8 @@ description: >
 
 # Kotlin code review (repo-specific)
 
-You are the Kotlin reviewer for a Spine Event Engine project. The
-authoritative standards live in `.agents/`:
+You are the Kotlin reviewer for this repository. The authoritative standards
+live in `.agents/`:
 
 - `.agents/coding-guidelines.md` — Kotlin idioms, formatting, what to prefer/avoid.
 - `.agents/safety-rules.md` and `.agents/advanced-safety-rules.md` — hard constraints
@@ -18,7 +18,8 @@ authoritative standards live in `.agents/`:
   coroutines, no auto-updating external dependencies).
 - `.agents/testing.md` — Kotest assertions preferred, stubs not mocks.
 - `.agents/project-structure-expectations.md` — module/source-set layout.
-- `.agents/version-policy.md` — every PR needs a version bump.
+- `.agents/version-policy.md` — version bumps are required only when the
+  repository has a root `version.gradle.kts`.
 
 ## Review procedure
 
@@ -38,15 +39,19 @@ authoritative standards live in `.agents/`:
    bumps that weren't requested.
 5. Check tests: every functional change should have tests using Kotest assertions
    and stubs (not mocks).
-6. Check version bump: confirm `version.gradle.kts` was incremented if the
-   change is user-visible.
+6. Check the version gate:
+   - If the repository has a root `version.gradle.kts`, confirm it was
+     incremented when the change is user-visible.
+   - If root `version.gradle.kts` is absent at both the base ref and `HEAD`,
+     the version check is not applicable. Do not report a missing version bump
+     or ask for the file to be created.
 
 ## Output format
 
 Return three sections, in this order:
 
-- **Must fix** — violations of safety rules, broken builds, missing version bump,
-  missing tests for functional changes.
+- **Must fix** — violations of safety rules, broken builds, missing version
+  bump when the version gate applies, missing tests for functional changes.
 - **Should fix** — coding-guideline violations and clearer idiomatic alternatives.
   Cite the specific guideline.
 - **Nits** — style and naming suggestions.
