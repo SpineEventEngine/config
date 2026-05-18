@@ -10,9 +10,9 @@ Follow the `pre-pr` skill exactly:
 - Base ref: $ARGUMENTS (treat empty as `master`).
 - Dispatch the reviewers as Claude subagents in parallel — send a single
   message with multiple Agent tool uses:
-  - `kotlin-reviewer` when `.kt|.kts|.java` files changed.
+  - `kotlin-review` when `.kt|.kts|.java` files changed.
   - `review-docs` when `.md` files or KDoc inside sources changed.
-  - `dependency-auditor` when any file under
+  - `dependency-audit` when any file under
     `buildSrc/src/main/kotlin/io/spine/dependency/` changed.
 - Each reviewer is read-only; do not pass it edit tools.
 - On any reviewer returning `REQUEST CHANGES`, treat the overall result

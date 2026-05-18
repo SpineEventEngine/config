@@ -3,8 +3,8 @@ name: pre-pr
 description: >
   Run the pre-PR checklist for this repo: confirm `version.gradle.kts` was
   bumped, run the right Gradle build per `.agents/running-builds.md`, and
-  invoke the configured reviewers (`kotlin-reviewer`, `review-docs`,
-  `dependency-auditor`) against the branch diff. On success, write a
+  invoke the configured reviewers (`kotlin-review`, `review-docs`,
+  `dependency-audit`) against the branch diff. On success, write a
   sentinel file at `.git/pre-pr.ok` so the `gh pr create` hook can verify
   the checklist ran for the current HEAD. Use before opening a PR, or
   when CI rejected a branch and you want a fast local repro.
@@ -23,8 +23,8 @@ The authoritative standards live in `.agents/`:
   `clean build`, or `dokka`) based on what changed.
 - `.agents/safety-rules.md` and `.agents/advanced-safety-rules.md` — hard
   constraints checked by the reviewers.
-- The reviewer skills/agents themselves: `kotlin-reviewer` (Claude agent),
-  `review-docs` (skill + Claude agent), `dependency-auditor` (Claude agent).
+- The reviewer skills/agents themselves: `kotlin-review` (Claude agent),
+  `review-docs` (skill + Claude agent), `dependency-audit` (Claude agent).
 
 ## Procedure
 
@@ -65,9 +65,9 @@ failure, stop and write a `FAIL` sentinel.
 
 Dispatch the relevant reviewers concurrently and collect their verdicts:
 
-- Always: `kotlin-reviewer` (if **code** changed) and `review-docs` (if
+- Always: `kotlin-review` (if **code** changed) and `review-docs` (if
   **docs** or KDoc changed).
-- If **deps** changed: `dependency-auditor`.
+- If **deps** changed: `dependency-audit`.
 
 Each reviewer is read-only and emits a Must-fix / Should-fix / Nits
 report plus a one-line verdict (`APPROVE`, `APPROVE WITH CHANGES`, or
