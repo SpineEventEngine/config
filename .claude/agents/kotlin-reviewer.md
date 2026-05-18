@@ -29,7 +29,7 @@ standards live in `.agents/`:
    - No type names in variable names.
    - No string duplication — use companion-object constants.
    - No mixing Groovy/Kotlin DSL in build logic.
-   - No double empty lines; no trailing whitespace.
+   - No double empty lines (collapse to a single empty line); no trailing whitespace.
 4. Check safety rules: reflection, telemetry, blocking-in-coroutines, dependency
    bumps that weren't requested.
 5. Check tests: every functional change should have tests using Kotest assertions
