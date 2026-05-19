@@ -83,7 +83,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/sanitize-source-code"
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/sanitize-source-code.sh"
           }
         ]
       }
