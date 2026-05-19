@@ -250,9 +250,7 @@ End with the suggested next steps:
    `/bump-version` to perform the increment.
 3. Run `./gradlew build` (or `./gradlew clean build` if `.proto` files
    participate).
-4. If any `local/` artifacts moved, run `./gradlew buildDependants` (the
-   `ConfigTester` task) to confirm downstream repos still build.
-5. Commit. The conventional message is
+4. Commit. The conventional message is
    `chore(deps): refresh external versions` (or a more specific subject if
    the diff is small).
 
