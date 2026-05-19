@@ -25,7 +25,8 @@ description: >
      changes.
 
 3. Move safely.
-   - Prefer `git mv` for tracked files in the repo.
+   - Always use `git mv` for tracked files in the repo. If sandboxing blocks
+     it, request approval; do not use delete/create as a fallback.
    - Use filesystem moves only for untracked/generated/out-of-git files.
    - Create parent directories first.
    - For case-only renames, move through a temporary name.
