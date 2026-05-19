@@ -52,9 +52,8 @@ description: >
 
 ## Final step: ensure the version is bumped
 
-Replacing a Java source with a Kotlin source is a publishable change. After
-the conversion is verified, invoke `/version-bumped` so the branch carries a
-strictly greater `version.gradle.kts` than the base ref before any
-`./gradlew build` (which may transitively `publishToMavenLocal` and
-overwrite the previously published snapshot consumer repos depend on). The
-skill is a no-op when a bump already happened earlier on the branch.
+After the conversion is verified, invoke `/version-bumped` so the branch
+carries a strictly greater `version.gradle.kts` than the base ref before
+any `./gradlew build` (which may transitively `publishToMavenLocal` and
+overwrite the previously published snapshot consumer repos depend on).
+The skill is a no-op when a bump already happened earlier on the branch.

@@ -75,10 +75,10 @@ if [ "$rc" -ne 1 ]; then
 fi
 
 cat >&2 <<EOF
-'./gradlew' blocked: branch has publishable changes but version.gradle.kts
-is not bumped vs the base. Publishing would overwrite the Maven Local
-artifact at the base version, which integration tests in consumer repos
-may rely on.
+'./gradlew' blocked: branch differs from the base ref but
+version.gradle.kts is not bumped. Publishing would overwrite the Maven
+Local artifact at the base version, which integration tests in consumer
+repos may rely on.
 
 Run /version-bumped to auto-recover (it invokes /bump-version and re-runs
 the check), or /bump-version directly.

@@ -118,8 +118,8 @@ Always check that page at task time. Do not rely on remembered Gradle versions.
 
 8. Ensure `version.gradle.kts` is bumped.
 
-   The Gradle wrapper update is a publishable change. Before this branch can
-   be built or published locally, the project version must be strictly
-   greater than the version on the base ref. Invoke `/version-bumped` —
-   it is a no-op if a bump has already happened earlier on the branch, and
-   otherwise calls `/bump-version` to perform the increment.
+   Before this branch can be built or published locally, the project
+   version must be strictly greater than the version on the base ref.
+   Invoke `/version-bumped` — it is a no-op if a bump has already
+   happened earlier on the branch, and otherwise calls `/bump-version`
+   to perform the increment.

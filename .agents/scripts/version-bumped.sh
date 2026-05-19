@@ -1,42 +1,34 @@
 #!/usr/bin/env bash
 #
-# Layer-1 version-bump check (deterministic, no agent reasoning).
-#
-# Verifies that a feature branch which contains publishable changes also
-# bumps `version.gradle.kts` strictly above the value on the base ref.
-# Prevents accidental Maven Local overwrites that would break integration
-# tests in consuming repos.
+# Verifies that a feature branch which differs from the base ref also
+# bumps `version.gradle.kts` strictly above the base version. Mirrors the
+# universal "every branch advances the version" policy: a branch with any
+# changes is a candidate for publishing — sometimes the only change is the
+# bump itself, used to retry a publish that failed because Maven
+# repositories were overloaded.
 #
 # Exit codes:
-#   0 — OK to publish:
-#         * repo has no root `version.gradle.kts` (not a versioned project), OR
-#         * branch has no publishable changes vs the base ref, OR
-#         * working-tree version is strictly greater than base version.
-#   1 — Block: branch has publishable changes but the version is unchanged
-#         or decreased. A pointer to `/bump-version` is printed to stderr.
+#   0 — OK: repo has no root `version.gradle.kts`, OR branch has no diff
+#       vs base, OR working-tree version is strictly greater than base
+#       version.
+#   1 — Block: branch differs from base but version is unchanged or
+#       decreased. Stderr points to `/bump-version`.
 #   2 — Configuration error (bad base ref, parse failure). Stderr explains.
 #
 # Inputs (env, all optional):
-#   VERSION_BUMPED_BASE   Base ref to compare against. Default: master, then
-#                         main if master is absent. Caller may pass a remote
-#                         ref like `origin/master` to force a fetch-aware
-#                         comparison.
-#   VERSION_BUMPED_QUIET  When `1`, suppress the "OK" line on stdout. The
-#                         publish-version-gate hook sets this.
+#   VERSION_BUMPED_BASE   Base ref to compare against. Default: master,
+#                         then main if master is absent.
+#   VERSION_BUMPED_QUIET  When `1`, suppress the "OK" line on stdout.
+#                         The publish-version-gate hook sets this.
 #
 # Notes:
-#   * Scope: this check guards against overwriting Maven Local artifacts
-#     during day-to-day work. "Publishable" here means "can change a
-#     published artifact's bytes" — source, buildSrc, gradle wrapper.
-#     Pure docs, agent configs, and hook scripts are excluded because
-#     rebuilding them produces identical bytes for the same version.
-#     `docs/dependencies/**` is treated as publishable because those
-#     reports are regenerated as part of a version-bump cycle.
-#   * Stricter rule at PR time: CI's `checkVersionIncrement` fails any
-#     PR in a versioned repo whose version did not advance, regardless
-#     of what changed. `/pre-pr` step 2 enforces that stricter rule
-#     locally before PR creation.
-#   * The working tree is included in the changed-files set so the gate
+#   * Companion to the Gradle task `checkVersionIncrement` (see
+#     `buildSrc/.../publish/CheckVersionIncrement.kt`). The Gradle task
+#     asks "is this version already in remote Maven metadata?" — this
+#     script asks the simpler local question "has this branch advanced
+#     the version vs base?". The two checks are complementary; neither
+#     subsumes the other.
+#   * The working tree is included in the change-detection so the gate
 #     reflects what `./gradlew build` would actually publish.
 #
 set -eu
@@ -85,42 +77,13 @@ merge_base=$(git merge-base HEAD "$base" 2>/dev/null) || {
   exit 2
 }
 
-# --- Collect changed files (committed + working tree + untracked) --------
+# --- Detect any branch divergence vs base (committed/worktree/untracked) -
 committed=$(git diff --name-only "$merge_base"..HEAD 2>/dev/null || true)
 worktree=$(git diff --name-only HEAD 2>/dev/null || true)
 untracked=$(git ls-files --others --exclude-standard 2>/dev/null || true)
-changed=$(printf '%s\n%s\n%s\n' "$committed" "$worktree" "$untracked" | sed '/^$/d' | sort -u)
 
-# --- Publishable classifier ----------------------------------------------
-is_publishable() {
-  case "$1" in
-    # Dependency reports ride with publish cycles — publishable.
-    docs/dependencies/*) return 0 ;;
-    # Non-publishable: documentation, agent config, hooks, CI, top-level dotfiles.
-    *.md|docs/*|.agents/*|.claude/*|.github/*|LICENSE|.gitignore|.gitattributes|.editorconfig)
-      return 1 ;;
-    # Source-shaped and build-shaped paths.
-    *.kt|*.kts|*.java|*.proto) return 0 ;;
-    buildSrc/*) return 0 ;;
-    gradle/wrapper/*|gradlew|gradlew.bat) return 0 ;;
-    # Default to publishable — safer than letting an unknown path through.
-    *) return 0 ;;
-  esac
-}
-
-publishable_count=0
-if [ -n "$changed" ]; then
-  while IFS= read -r f; do
-    if is_publishable "$f"; then
-      publishable_count=$((publishable_count + 1))
-    fi
-  done <<EOF
-$changed
-EOF
-fi
-
-if [ "$publishable_count" -eq 0 ]; then
-  [ "${VERSION_BUMPED_QUIET:-0}" = "1" ] || echo "version-bumped: no publishable changes vs $base"
+if [ -z "$committed" ] && [ -z "$worktree" ] && [ -z "$untracked" ]; then
+  [ "${VERSION_BUMPED_QUIET:-0}" = "1" ] || echo "version-bumped: no changes vs $base"
   exit 0
 fi
 
@@ -188,12 +151,12 @@ else
 fi
 
 if [ "$cmp" = "greater" ]; then
-  [ "${VERSION_BUMPED_QUIET:-0}" = "1" ] || echo "version-bumped: OK ($base_version -> $head_version, $publishable_count publishable file(s))"
+  [ "${VERSION_BUMPED_QUIET:-0}" = "1" ] || echo "version-bumped: OK ($base_version -> $head_version)"
   exit 0
 fi
 
 cat >&2 <<EOF
-version-bumped: BLOCK — $publishable_count publishable file(s) changed vs $base
+version-bumped: BLOCK — branch differs from $base
   but $version_file is $cmp ($base_version vs $head_version).
 
   Publishing now would overwrite the Maven Local artifact at

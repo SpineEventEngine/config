@@ -242,12 +242,11 @@ When the run completes, emit a Markdown report with these sections:
 End with the suggested next steps:
 
 1. Review the diff (`git diff buildSrc/src/main/kotlin/io/spine/dependency/`).
-2. Invoke `/version-bumped`. Dependency edits under `buildSrc/` are a
-   publishable change, so the project version must be strictly greater
-   than the version on the base ref before any `./gradlew build` (which
-   may transitively `publishToMavenLocal`). The skill is a no-op when
-   a bump already happened earlier on the branch and otherwise calls
-   `/bump-version` to perform the increment.
+2. Invoke `/version-bumped`. Every feature branch must advance
+   `version.gradle.kts` strictly above the base before any
+   `./gradlew build` (which may transitively `publishToMavenLocal`). The
+   skill is a no-op when a bump already happened earlier on the branch
+   and otherwise calls `/bump-version` to perform the increment.
 3. Run `./gradlew build` (or `./gradlew clean build` if `.proto` files
    participate).
 4. Commit. Match the shape of the actual change:

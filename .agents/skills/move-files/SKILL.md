@@ -40,16 +40,12 @@ description: >
    - Run `git status --short` and confirm the delta matches the move.
    - Run focused validation for moved files, or state what could not run.
 
-6. Ensure the version is bumped (conditional).
-   - If any moved/renamed file is publishable (Kotlin/Java/proto sources,
-     `buildSrc/**`, `gradle/wrapper/**`, `gradlew*`, or `version.gradle.kts`
-     itself), invoke `/version-bumped` so the branch carries a strictly
-     greater `version.gradle.kts` before any `./gradlew build` (which can
-     transitively `publishToMavenLocal` and overwrite consumer-facing
-     snapshots). The skill is a no-op if a bump already happened earlier
-     on the branch.
-   - For docs-only or agent-config-only moves, skip this step;
-     `/version-bumped` would correctly report no publishable diff.
+6. Ensure the version is bumped.
+   Invoke `/version-bumped` so the branch carries a strictly greater
+   `version.gradle.kts` than the base ref before any `./gradlew build`
+   (which can transitively `publishToMavenLocal` and overwrite
+   consumer-facing snapshots). The skill is a no-op if a bump already
+   happened earlier on the branch.
 
 ## Repo Notes
 
