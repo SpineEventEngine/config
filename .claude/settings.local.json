@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Skill(pre-pr)",
-      "Skill(pre-pr:*)"
+      "Skill(pre-pr:*)",
+      "Bash(.agents/scripts/version-bumped.sh)",
+      "Bash(echo \"exit=$?\")"
     ]
   }
 }
