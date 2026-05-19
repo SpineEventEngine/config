@@ -10,8 +10,8 @@
 
 ## Workflow Rules
 
-- Always start non-trivial tasks (3+ steps, architecture, refactoring) in Plan mode.
-- Write detailed plan to `.agents/tasks/todo.md` before coding.
+- Always start non-trivial tasks (3+ steps, architecture, refactoring, lengthy docs) in Plan mode.
+- Write the plan to `.agents/tasks/<slug>.md` before coding. See `.agents/tasks/README.md` for format and lifecycle.
 - If something goes wrong — STOP and re-plan immediately.
 - Use subagents liberally for research, verification, and parallel work.
 - One focused task per subagent.
@@ -49,11 +49,12 @@ Ruthlessly iterate until mistakes stop repeating.
 
 ## Task Flow
 
-1. Plan → `.agents/tasks/todo.md`
-2. Show plan before implementing.
-3. Execute + track progress.
+1. Draft plan → `.agents/tasks/<slug>.md` (see README there).
+2. Show plan (`ExitPlanMode`) before implementing.
+3. Execute + track progress (file at checkpoints, `TaskCreate` for live status).
 4. Verify + summarize changes.
-5. Update memory.
+5. Update memory if lessons emerged.
+6. Delete the task file on merge to master.
 
 ## Final Rule
 
