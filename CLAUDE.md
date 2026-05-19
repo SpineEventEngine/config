@@ -16,12 +16,21 @@
 - Use subagents liberally for research, verification, and parallel work.
 - One focused task per subagent.
 
-## Self-Improvement Loop
+## Memory
 
-- After any correction: update `.agents/tasks/lessons.md` (or this file) with the rule.
-- Review relevant lessons at the start of every session.
-- Ruthlessly iterate until mistakes stop repeating.
-- Keep this file short (<120 lines / ~2.5k tokens).
+Two stores, split by audience:
+
+- **Team-shared memory** lives in `.agents/memory/` (checked into git). Use it
+  for feedback rules, durable project rationale, and external system pointers.
+  See `.agents/memory/README.md` for layout and write protocol.
+- **Per-developer memory** lives in the built-in auto-memory dir. Use it for
+  personal preferences, ephemeral project state, and per-machine resources.
+
+Litmus test: *would a teammate benefit from this next month?* → repo.
+Otherwise → auto-memory.
+
+Review `.agents/memory/MEMORY.md` at the start of every session.
+Ruthlessly iterate until mistakes stop repeating.
 
 ## Verification & Quality
 
@@ -44,8 +53,9 @@
 2. Show plan before implementing.
 3. Execute + track progress.
 4. Verify + summarize changes.
-5. Update lessons.
+5. Update memory.
 
 ## Final Rule
 
-This is living team memory. Update it regularly and keep it concise.
+This is living team memory. Update it regularly and keep it concise
+(<120 lines / ~2.5k tokens).
