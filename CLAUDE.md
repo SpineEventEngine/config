@@ -5,8 +5,8 @@
 - Quick-reference baseline: `.agents/quick-reference-card.md` — always read this first.
 - For specific tasks (code review, PR prep, dependency updates, docs, etc.): discover and use
   skills from `.agents/skills/`.
-- Full standards reference: `.agents/_TOC.md` — consult when a skill doesn't cover the needed
-  context.
+- Full standards reference: `.agents/_TOC.md` — consult when a skill
+  doesn't cover the needed context.
 
 ## Workflow Rules
 
