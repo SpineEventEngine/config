@@ -25,10 +25,17 @@
 #                         publish-version-gate hook sets this.
 #
 # Notes:
-#   * "Publishable" = anything that can change a published artifact. Docs,
-#     agent configs, hook scripts, and GitHub workflows are non-publishable.
-#     `docs/dependencies/**` is publishable because those reports are
-#     regenerated as part of a version-bump cycle.
+#   * Scope: this check guards against overwriting Maven Local artifacts
+#     during day-to-day work. "Publishable" here means "can change a
+#     published artifact's bytes" — source, buildSrc, gradle wrapper.
+#     Pure docs, agent configs, and hook scripts are excluded because
+#     rebuilding them produces identical bytes for the same version.
+#     `docs/dependencies/**` is treated as publishable because those
+#     reports are regenerated as part of a version-bump cycle.
+#   * Stricter rule at PR time: CI's `checkVersionIncrement` fails any
+#     PR in a versioned repo whose version did not advance, regardless
+#     of what changed. `/pre-pr` step 2 enforces that stricter rule
+#     locally before PR creation.
 #   * The working tree is included in the changed-files set so the gate
 #     reflects what `./gradlew build` would actually publish.
 #
