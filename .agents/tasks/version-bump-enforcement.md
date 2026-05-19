@@ -22,7 +22,7 @@ published snapshots that integration tests rely on.
 - `.agents/skills/pre-pr/SKILL.md` already gates the version on PR creation
   via `.git/pre-pr.ok` (step 2). We want the same gate to fire earlier,
   during day-to-day work, not only at PR time.
-- `.claude/scripts/protect-version-file.sh` already blocks direct edits to
+- `.agents/scripts/protect-version-file.sh` already blocks direct edits to
   `version.gradle.kts`; the canonical bump path is `/bump-version`.
 
 ## Plan
@@ -32,7 +32,7 @@ published snapshots that integration tests rely on.
       check. Returns 0 if (no `version.gradle.kts`) OR (no publishable
       diff vs base) OR (HEAD version > base version). Returns 1 with a
       stderr pointer to `/bump-version` otherwise.
-- [x] Write `.claude/scripts/publish-version-gate.sh` — PreToolUse hook
+- [x] Write `.agents/scripts/publish-version-gate.sh` — PreToolUse hook
       on `Bash`. Triggers on any `./gradlew … build|publish|
       publishToMavenLocal` invocation (broad-and-safe per user
       decision). Runs Layer 1; on failure, blocks the gradle command.

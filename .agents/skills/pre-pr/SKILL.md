@@ -133,7 +133,7 @@ reviewers=<comma-separated reviewer names that were invoked>
 version=<old->new, introduced:<new>, or "not-applicable">
 ```
 
-The `gh pr create` hook (`.claude/scripts/pre-pr-gate.sh`) checks this
+The `gh pr create` hook (`.agents/scripts/pre-pr-gate.sh`) checks this
 file's `head=` and `status=` fields. Extra fields are allowed. The sentinel is
 invalidated automatically when HEAD advances — the hook compares the recorded
 `head=` against the current HEAD SHA.

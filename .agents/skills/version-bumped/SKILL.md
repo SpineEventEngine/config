@@ -18,7 +18,7 @@ This skill is the agent-facing wrapper around
 and, if it fails, invokes `/bump-version` and re-runs to confirm.
 
 The same logic is enforced as a hook
-(`.claude/scripts/publish-version-gate.sh`) that fires before any
+(`.agents/scripts/publish-version-gate.sh`) that fires before any
 `./gradlew … (build|publish|publishToMavenLocal)` invocation, so even
 direct gradle calls cannot bypass it. This skill exists for the
 cooperative path — other skills calling it before they finish, so the
@@ -95,5 +95,5 @@ complementary — neither subsumes the other.
 - `.agents/skills/pre-pr/SKILL.md` — uses the same check at PR time
   (step 2).
 - `.agents/skills/version-bumped/scripts/version-bumped.sh` — the deterministic check.
-- `.claude/scripts/publish-version-gate.sh` — the hook that enforces the
+- `.agents/scripts/publish-version-gate.sh` — the hook that enforces the
   rule on `./gradlew` invocations.
