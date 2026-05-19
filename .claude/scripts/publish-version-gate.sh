@@ -49,7 +49,7 @@ done < <(printf '%s' "$cmd" | tr ';&|' '\n\n\n')
 [ "$block_needed" -eq 0 ] && exit 0
 
 repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
-script="$repo_root/.agents/scripts/version-bumped.sh"
+script="$repo_root/.agents/skills/version-bumped/scripts/version-bumped.sh"
 
 # If the helper is missing (e.g. partial clone), don't pretend we gated.
 if [ ! -x "$script" ]; then
@@ -83,7 +83,7 @@ repos may rely on.
 Run /version-bumped to auto-recover (it invokes /bump-version and re-runs
 the check), or /bump-version directly.
 
-Underlying check (.agents/scripts/version-bumped.sh) reported:
+Underlying check (.agents/skills/version-bumped/scripts/version-bumped.sh) reported:
 $err_payload
 EOF
 exit 2

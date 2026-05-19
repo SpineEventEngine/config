@@ -28,7 +28,7 @@ published snapshots that integration tests rely on.
 ## Plan
 
 - [x] Draft this task plan and create TaskCreate items mirroring the steps
-- [x] Write `.agents/scripts/version-bumped.sh` — deterministic Layer-1
+- [x] Write `.agents/skills/version-bumped/scripts/version-bumped.sh` — deterministic Layer-1
       check. Returns 0 if (no `version.gradle.kts`) OR (no publishable
       diff vs base) OR (HEAD version > base version). Returns 1 with a
       stderr pointer to `/bump-version` otherwise.

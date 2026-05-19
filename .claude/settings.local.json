@@ -3,7 +3,7 @@
     "allow": [
       "Skill(pre-pr)",
       "Skill(pre-pr:*)",
-      "Bash(.agents/scripts/version-bumped.sh)",
+      "Bash(.agents/skills/version-bumped/scripts/version-bumped.sh)",
       "Bash(echo \"exit=$?\")"
     ]
   }

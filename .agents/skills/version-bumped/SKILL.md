@@ -13,7 +13,7 @@ description: >
 # Ensure version is bumped
 
 This skill is the agent-facing wrapper around
-`.agents/scripts/version-bumped.sh`. The script is the source of truth for
+`.agents/skills/version-bumped/scripts/version-bumped.sh`. The script is the source of truth for
 "has this branch advanced the version vs base?"; this skill just runs it
 and, if it fails, invokes `/bump-version` and re-runs to confirm.
 
@@ -43,7 +43,7 @@ the version must advance.
 1. Run the deterministic check:
 
    ```bash
-   .agents/scripts/version-bumped.sh
+   .agents/skills/version-bumped/scripts/version-bumped.sh
    ```
 
    Honor `VERSION_BUMPED_BASE` if the user has set a non-default base ref
@@ -94,6 +94,6 @@ complementary — neither subsumes the other.
 - `.agents/skills/bump-version/SKILL.md` — the bump procedure itself.
 - `.agents/skills/pre-pr/SKILL.md` — uses the same check at PR time
   (step 2).
-- `.agents/scripts/version-bumped.sh` — the deterministic check.
+- `.agents/skills/version-bumped/scripts/version-bumped.sh` — the deterministic check.
 - `.claude/scripts/publish-version-gate.sh` — the hook that enforces the
   rule on `./gradlew` invocations.
