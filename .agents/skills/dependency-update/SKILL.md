@@ -250,9 +250,11 @@ End with the suggested next steps:
    `/bump-version` to perform the increment.
 3. Run `./gradlew build` (or `./gradlew clean build` if `.proto` files
    participate).
-4. Commit. The conventional message is
-   `chore(deps): refresh external versions` (or a more specific subject if
-   the diff is small).
+4. Commit. Match the shape of the actual change:
+   - Single `local/` bump (most common): `` Bump Spine Base -> `2.0.0-SNAPSHOT.190` ``
+   - Coordinated external set: `Bump Protobuf and gRPC` (one commit;
+     mention both).
+   - Bulk external refresh (rare): `Refresh external dependencies`.
 
 ## Safety
 
