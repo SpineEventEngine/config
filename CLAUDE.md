@@ -10,7 +10,7 @@
 
 ## Workflow Rules
 
-- Always start non-trivial tasks (3+ steps, architecture, refactoring, lengthy docs) in Plan mode.
+- Use Plan mode (`EnterPlanMode`) for architecture, refactoring, multi-file changes, or lengthy documentation.
 - Write the plan to `.agents/tasks/<slug>.md` before coding. See `.agents/tasks/README.md` for format and lifecycle.
 - If something goes wrong — STOP and re-plan immediately.
 - One focused task per subagent.
