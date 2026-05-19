@@ -13,7 +13,6 @@
 - Always start non-trivial tasks (3+ steps, architecture, refactoring, lengthy docs) in Plan mode.
 - Write the plan to `.agents/tasks/<slug>.md` before coding. See `.agents/tasks/README.md` for format and lifecycle.
 - If something goes wrong — STOP and re-plan immediately.
-- Use subagents liberally for research, verification, and parallel work.
 - One focused task per subagent.
 
 ## Memory
