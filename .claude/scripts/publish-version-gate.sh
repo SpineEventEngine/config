@@ -32,8 +32,12 @@ risky_segment() {
   # Must start with a gradlew invocation.
   printf '%s' "$seg" | grep -qE '^[[:space:]]*\.?/?(config/)?gradlew([[:space:]]|$)' || return 1
   # Must mention a publish-risky task. `build` is risky because it can
-  # finalize publishToMavenLocal in this config.
-  printf '%s' "$seg" | grep -qE '(^|[[:space:]]):?(build|publish|publishToMavenLocal|publishAllPublicationsToMavenLocal)([[:space:]]|$)'
+  # finalize publishToMavenLocal in this config. The leading
+  # `(:[A-Za-z0-9_.-]+)*:?` covers qualified task paths
+  # (e.g. `:module:build`, `:a:b:publishToMavenLocal`) and a single
+  # leading-colon form (`:publishMavenJavaPublicationToMavenLocal`).
+  # `publish[^[:space:]]*` then catches every publish-task variant.
+  printf '%s' "$seg" | grep -qE '(^|[[:space:]])(:[A-Za-z0-9_.-]+)*:?(build|publish[^[:space:]]*|publishToMavenLocal|publishAllPublicationsToMavenLocal)([[:space:]]|$)'
 }
 
 block_needed=0
