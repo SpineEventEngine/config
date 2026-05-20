@@ -242,13 +242,18 @@ When the run completes, emit a Markdown report with these sections:
 End with the suggested next steps:
 
 1. Review the diff (`git diff buildSrc/src/main/kotlin/io/spine/dependency/`).
-2. Run `./gradlew build` (or `./gradlew clean build` if `.proto` files
+2. Invoke `/version-bumped`. Every feature branch must advance
+   `version.gradle.kts` strictly above the base before any
+   `./gradlew build` (which may transitively `publishToMavenLocal`). The
+   skill is a no-op when a bump already happened earlier on the branch
+   and otherwise calls `/bump-version` to perform the increment.
+3. Run `./gradlew build` (or `./gradlew clean build` if `.proto` files
    participate).
-3. If any `local/` artifacts moved, run `./gradlew buildDependants` (the
-   `ConfigTester` task) to confirm downstream repos still build.
-4. Commit. The conventional message is
-   `chore(deps): refresh external versions` (or a more specific subject if
-   the diff is small).
+4. Commit. Match the shape of the actual change:
+   - Single `local/` bump (most common): `` Bump Spine Base -> `2.0.0-SNAPSHOT.190` ``
+   - Coordinated external set: `Bump Protobuf and gRPC` (one commit;
+     mention both).
+   - Bulk external refresh (rare): `Refresh external dependencies`.
 
 ## Safety
 
