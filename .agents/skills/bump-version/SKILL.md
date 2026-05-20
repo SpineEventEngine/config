@@ -16,6 +16,23 @@ skill's target repository, CI runs the `Version Guard` workflow, which invokes
 project version already exists in the Maven repository. It does not compare git
 branches or inspect commit subjects; the checks below are agent-side guardrails.
 
+## Commit authorization
+
+This skill is authorized to run `git commit` **exactly once** per invocation,
+under these constraints:
+
+- Stage only `version.gradle.kts`. Any other modified files are out of scope
+  for this skill's commit and must remain unstaged.
+- Use the exact subject `` Bump version -> `<new>` `` (see step 4 of the
+  Checklist) with the actual new version value substituted.
+- No `git push`, `git tag`, `git rebase`, `git commit --amend`, or any other
+  history-writing operation. Those require a separate authorization
+  (`.agents/safety-rules.md` → *Commits and history-writing*).
+
+If the bump cannot be performed cleanly (no diff to commit, conflicting
+staged files, build failures preceding the commit), report and stop — do not
+create the commit.
+
 ## Checklist
 
 1. Work from the target repository root.
