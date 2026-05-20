@@ -31,6 +31,10 @@
           {
             "type": "command",
             "command": "\"$(git rev-parse --show-toplevel)/.agents/scripts/sanitize-source-code.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$(git rev-parse --show-toplevel)/.agents/scripts/update-copyright.sh\""
           }
         ]
       }
