@@ -39,17 +39,35 @@ Each file declares a Kotlin `object` extending `Dependency` or `DependencyWithBo
 
 ## How to run an audit
 
-1. **Scope the diff.**
-   - Run `git diff --stat <base>...HEAD -- 'buildSrc/src/main/kotlin/io/spine/dependency/**'`
-     (or `--staged` if the user is mid-commit) and read the file list.
-   - If the diff is empty, ask the user which files to audit.
+1. **Fetch the full diff once.** Run
+   `git diff <base>...HEAD -- 'buildSrc/src/main/kotlin/io/spine/dependency/**'`
+   (or `--staged` if the user is mid-commit). The unified diff already
+   contains the old and new lines you need for version-sanity and BOM
+   checks — do not call `--stat` first and then re-read each file. If the
+   diff is empty, ask the user which files to audit.
 
-2. **Read each changed file fully.** Don't trust the hunk in isolation —
-   `version` constants are often referenced elsewhere in the same file (e.g.
-   `runtimeVersion` reused as `embeddedVersion`).
+2. **Lean on the diff; `Read` on demand.** Version, BOM, copyright, and
+   deprecation deltas are all visible in the unified diff. Only `Read` a
+   file when (a) it is newly added, or (b) a hunk references a
+   `version`/`group` constant defined outside the hunk and you need
+   surrounding context. **Budget:** if more than 5 files changed, do not
+   `Read` individual files — work from the diff and use targeted `Grep`
+   for cross-cutting questions.
 
-3. **Run the checks below in order. Stop the audit and surface a finding the
-   moment any check fails.**
+3. **Batch independent work into one turn.** Issue the version-sanity (A),
+   convention-drift (D), and cross-cutting (E) tool calls *in parallel*
+   within a single response. Collect every finding and emit the report
+   once — **do not stop at the first failure**.
+
+4. **Batch greps.** For deprecation/caller checks (C) and snapshot-pin
+   checks (A), build one ripgrep over the union of symbols instead of one
+   command per symbol. Examples:
+   - `rg -n '\b(name1|name2|name3)\b' --type kt` to find callers of any
+     removed `const val`.
+   - `rg -L 'Copyright \(c\) 2026' <changed-files>` to flag every stale
+     header in one call.
+   - `rg -n '<lib>:<oldVersion>' --type kt --type gradle` once per
+     library to check for hardcoded pins.
 
 ## Checks
 
