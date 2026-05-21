@@ -14,6 +14,10 @@
 - Write the plan to `.agents/tasks/<slug>.md` before coding. See `.agents/tasks/README.md` for format and lifecycle.
 - If something goes wrong — STOP and re-plan immediately.
 - One focused task per subagent.
+- **Never `git commit`, `git push`, `git tag`, or otherwise rewrite git history** unless
+  the active skill's `SKILL.md` has a `## Commit authorization` section, or the *current* user
+  prompt explicitly tells you to. Authorization does not carry over between turns.
+  See `.agents/safety-rules.md` → *Commits and history-writing*.
 
 ## Memory
 
