@@ -49,8 +49,13 @@ workspace_root() {
     fi
     local pointer="$scripts_dir/.workspace-root"
     if [ -f "$pointer" ]; then
-        local custom
-        custom="$(head -n 1 "$pointer" | tr -d '[:space:]')"
+        # Read the first line verbatim. `IFS=` keeps internal spaces
+        # (paths like `/Users/me/Spine Workspace` must survive intact);
+        # `read -r` strips the trailing newline. Strip a stray CR for
+        # Windows-style line endings.
+        local custom=""
+        IFS= read -r custom < "$pointer" 2>/dev/null || true
+        custom="${custom%$'\r'}"
         if [ -n "$custom" ] && [ -d "$custom" ]; then
             printf '%s\n' "$custom"
             return 0

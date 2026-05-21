@@ -23,8 +23,10 @@
 #   update-sibling <absolute-path>          # acts on that path directly
 #
 # Output:
-#   stdout: empty (action has no return value).
-#   stderr: progress and git output.
+#   stdout: exactly one stable token on success (`pulled`, `up-to-date`,
+#           or `skipped-branch` — see Exit codes). Empty on any failure
+#           path so callers cannot misread an error as a result.
+#   stderr: human-facing diagnostics, including git's own pull output.
 #
 # Exit codes:
 #   0  — succeeded; stdout token names the outcome:
@@ -38,12 +40,6 @@
 #   5  — default branch has no upstream tracking; refused.
 #   6  — `git pull --ff-only` failed (divergence, conflict, network, etc.).
 #   64 — usage error (no/too many args).
-#
-# Output:
-#   stdout: exactly one stable token on success (see above). Empty on
-#           any failure path so callers cannot misread an error as a
-#           result.
-#   stderr: human-facing diagnostics, including git's own pull output.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"

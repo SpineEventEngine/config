@@ -139,7 +139,8 @@ Manual pruning only. Nothing runs on a timer.
 
 - **Bash 3.2 compatible** — macOS ships 3.2 by default.
 - **No external dependencies** beyond `bash`, coreutils, `grep`,
-  `sed`, `awk`, `unzip`, `find`.
+  `sed`, `awk`, `unzip`, `find`, and `git` (used only by
+  `update-sibling`).
 - **stdout** is always the answer; **stderr** is diagnostics. Mix
   them only by piping.
 - Scripts source `lib/common.sh` after setting
