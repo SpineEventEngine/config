@@ -11,11 +11,15 @@
 # Codex `apply_patch` passes the patch text in `tool_input.command`.
 # Exit:  0 always (post-tool-use; never block).
 #
-set -eu
+set -u
+
+# Required tools — silently no-op if either is missing so the hook never blocks.
+command -v jq >/dev/null 2>&1 || exit 0
+command -v python3 >/dev/null 2>&1 || exit 0
 
 input=$(cat)
-file=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')
-command=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
+file=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null || true)
+command=$(printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null || true)
 
 root="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 script="$root/.agents/skills/update-copyright/scripts/update_copyright.py"
