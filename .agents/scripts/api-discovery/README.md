@@ -31,6 +31,7 @@ This package replaces that pattern with two cheap reads:
 ├── lib/common.sh       # shared bash helpers
 ├── discover            # main entry — resolve a coordinate to a path
 ├── extract-sources     # one-shot JAR extraction (race-safe)
+├── update-sibling      # `git pull --ff-only` a stale sibling (safe-guarded)
 └── clean-cache         # prune the extraction cache
 ```
 
@@ -86,6 +87,44 @@ the script returns its path immediately. Concurrent first-time
 extractions race on an atomic `mv` of a per-PID temp directory; the
 loser discards its temp.
 
+### `update-sibling`
+
+```
+update-sibling <sibling-name>            # resolved under <workspace-root>
+update-sibling <absolute-path>           # acts on that path directly
+```
+
+Invoked by the agent (after user consent) when `discover` emits a
+`STALE` warning. Safe by design:
+
+- Pulls **only** when the sibling is on `master` or `main` with a
+  clean working tree and a tracked upstream.
+- On any other branch, exits `0` without touching anything — the
+  user's "advancing multiple subprojects at once" workflow keeps
+  feature branches checked out as intentional staging state.
+- Refuses on detached HEAD (`3`), uncommitted changes (`4`), or
+  missing upstream (`5`).
+- Never switches branches, never `--rebase`, never `--force`.
+
+On success (exit `0`), the script writes a single stable token to
+**stdout** that names the outcome — callers should branch on the
+token, not on stderr text. Failure paths produce empty stdout.
+
+Exit codes:
+
+| Code | stdout | Meaning |
+|---|---|---|
+| `0` | `pulled` | HEAD advanced to upstream tip |
+| `0` | `up-to-date` | Already at upstream tip; nothing to do |
+| `0` | `skipped-branch` | On a non-default branch; left untouched |
+| `1` | _(empty)_ | Sibling not on disk |
+| `2` | _(empty)_ | Not a git repository |
+| `3` | _(empty)_ | Detached HEAD — refused |
+| `4` | _(empty)_ | Working tree dirty — refused |
+| `5` | _(empty)_ | No upstream tracking on default branch — refused |
+| `6` | _(empty)_ | `git pull --ff-only` failed (divergence, network, etc.) |
+| `64` | _(empty)_ | Usage error (no/too many arguments) — BSD `sysexits(3)` convention |
+
 ### `clean-cache`
 
 ```
@@ -113,6 +152,6 @@ Manual pruning only. Nothing runs on a timer.
 |---|---|---|
 | `cache not initialized` (exit 10) | Bootstrap not run | Follow the skill's bootstrap prompt |
 | `sibling not on disk` | Spine repo not cloned | `git clone` it next to your consumer repo |
-| `STALE: ...` | Sibling drifted from declared version | Pull the sibling, or accept the warning |
+| `STALE: ...` | Sibling drifted from declared version | Run `update-sibling <path>` (auto-skips feature branches), or accept the warning |
 | `is in the Gradle cache but publishes no -sources.jar` | Upstream artifact has no sources | Read the binary `.class` files via a different tool, or look at GitHub directly |
 | `is not in the local Gradle cache` | Gradle has not fetched the dep | `./gradlew dependencies` to populate, then retry |
