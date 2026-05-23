@@ -90,7 +90,7 @@ jobs:
         working-directory: docs/_preview
         run: npm ci
 
-      - name: Build Validation docs
+      - name: Build docs preview site
         if: steps.docs.outputs.present == 'true'
         working-directory: docs/_preview
         run: hugo -e development
