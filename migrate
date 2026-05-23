@@ -62,7 +62,8 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     rm -rf ../.agents/skills/dependency-update
     rm -rf ../.agents/skills/java-to-kotlin
     rm -rf ../.agents/skills/kotlin-review
-    rm -rf ../.agents/skills/version-bumped
+    # Remove dead-link TOC (references JVM-specific files that were pruned above)
+    rm -f ../.agents/_TOC.md
     # Remove JVM-specific guidelines
     rm -f ../.agents/quick-reference-card.md
     rm -f ../.agents/coding-guidelines.md
@@ -95,7 +96,6 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     rm -rf ../.claude/skills/dependency-update
     rm -rf ../.claude/skills/java-to-kotlin
     rm -rf ../.claude/skills/kotlin-review
-    rm -rf ../.claude/skills/version-bumped
     # Remove JVM-specific agents
     rm -f ../.claude/agents/kotlin-review.md
     rm -f ../.claude/agents/dependency-audit.md
@@ -103,6 +103,7 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     cp .claude/settings-hugo.json ../.claude/settings.json
 
     echo "Updating GitHub workflows"
+    mkdir -p ../.github/workflows
     cp .github/workflows/check-links.yml ../.github/workflows/
 
 else
