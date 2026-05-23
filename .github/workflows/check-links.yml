@@ -47,8 +47,13 @@ jobs:
             for cfg in hugo.toml hugo.yaml; do
               if [ -f "$dir/$cfg" ]; then
                 echo "site_dir=$dir" >> "$GITHUB_OUTPUT"
-                echo "present=true" >> "$GITHUB_OUTPUT"
-                echo "::notice::Hugo site found under $dir/"
+                if [ -f "$dir/_preview/package-lock.json" ]; then
+                  echo "present=true" >> "$GITHUB_OUTPUT"
+                  echo "::notice::Hugo site found under $dir/"
+                else
+                  echo "present=false" >> "$GITHUB_OUTPUT"
+                  echo "::notice::Hugo config found in $dir/ but $dir/_preview/package-lock.json is missing — skipping link check."
+                fi
                 exit 0
               fi
             done

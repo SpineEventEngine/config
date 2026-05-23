@@ -78,6 +78,8 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     rm -f ../.agents/scripts/protect-version-file.sh
     rm -f ../.agents/scripts/publish-version-gate.sh
     rm -rf ../.agents/scripts/api-discovery
+    # Remove JVM-specific task file
+    rm -f ../.agents/tasks/api-discovery.md
 
     echo "Updating \`.claude\` directory (Hugo subset)"
     rm -rf ../.claude
@@ -103,6 +105,8 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     # Use Hugo-specific Claude settings; drop settings.local.json (references version-bumped)
     cp .claude/settings-hugo.json ../.claude/settings.json
     rm -f ../.claude/settings.local.json
+    # Remove the template file — it's been applied as settings.json and is not needed in the target
+    rm -f ../.claude/settings-hugo.json
 
     echo "Updating GitHub workflows"
     mkdir -p ../.github/workflows
@@ -116,6 +120,8 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     rm -f ../.github/workflows/detekt-code-analysis.yml
     rm -f ../.github/workflows/gradle-wrapper-validation.yml
     cp .github/workflows/check-links.yml ../.github/workflows/
+
+    cd ..
 
 else
 
@@ -134,6 +140,8 @@ else
     rm -rf ../.claude
     if [ -d ".claude" ]; then
         cp -a .claude ..
+        # Remove the Hugo-only settings template — it has no use in a JVM repo
+        rm -f ../.claude/settings-hugo.json
     fi
 
     # Update existing workflows with more recent versions
