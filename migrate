@@ -44,7 +44,6 @@ function initialize() {
 
 initialize .gitattributes
 initialize .gitignore
-initialize .github
 
 if [ "$IS_HUGO_DOCS" = "true" ]; then
 
@@ -62,6 +61,7 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     rm -rf ../.agents/skills/dependency-update
     rm -rf ../.agents/skills/java-to-kotlin
     rm -rf ../.agents/skills/kotlin-review
+    rm -rf ../.agents/skills/version-bumped
     # Remove dead-link TOC (references JVM-specific files that were pruned above)
     rm -f ../.agents/_TOC.md
     # Remove JVM-specific guidelines
@@ -96,17 +96,30 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     rm -rf ../.claude/skills/dependency-update
     rm -rf ../.claude/skills/java-to-kotlin
     rm -rf ../.claude/skills/kotlin-review
+    rm -rf ../.claude/skills/version-bumped
     # Remove JVM-specific agents
     rm -f ../.claude/agents/kotlin-review.md
     rm -f ../.claude/agents/dependency-audit.md
-    # Use Hugo-specific Claude settings
+    # Use Hugo-specific Claude settings; drop settings.local.json (references version-bumped)
     cp .claude/settings-hugo.json ../.claude/settings.json
+    rm -f ../.claude/settings.local.json
 
     echo "Updating GitHub workflows"
     mkdir -p ../.github/workflows
+    # Remove any JVM workflows that may exist from a previous non-Hugo pull
+    rm -f ../.github/workflows/build-on-ubuntu.yml
+    rm -f ../.github/workflows/build-on-windows.yml
+    rm -f ../.github/workflows/ensure-reports-updated.yml
+    rm -f ../.github/workflows/increment-guard.yml
+    rm -f ../.github/workflows/publish.yml
+    rm -f ../.github/workflows/remove-obsolete-artifacts-from-packages.yaml
+    rm -f ../.github/workflows/detekt-code-analysis.yml
+    rm -f ../.github/workflows/gradle-wrapper-validation.yml
     cp .github/workflows/check-links.yml ../.github/workflows/
 
 else
+
+    initialize .github
 
     echo "Updating Codecov settings"
     cp .codecov.yml ..
