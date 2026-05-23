@@ -4,8 +4,8 @@ description: >
   Run the pre-PR checklist for this repo: apply the version gate only when
   the repository has a root `version.gradle.kts`, run the configured
   build/check command per `.agents/running-builds.md`, and invoke the
-  configured reviewers (`kotlin-review`, `review-docs`, `dependency-audit`)
-  against the branch diff. On success, write a sentinel file at
+  configured reviewers (`kotlin-review`, `review-docs`, `dependency-audit`,
+  `check-links`) against the branch diff. On success, write a sentinel file at
   `.git/pre-pr.ok` so the `gh pr create` hook can verify the checklist ran
   for the current HEAD. Use before opening a PR, or when CI rejected a
   branch and you want a fast local repro.
@@ -32,7 +32,9 @@ The authoritative standards live in `.agents/`:
 - `.agents/safety-rules.md` and `.agents/advanced-safety-rules.md` — hard
   constraints checked by the reviewers.
 - The reviewer skills/agents themselves: `kotlin-review` (Claude agent),
-  `review-docs` (skill + Claude agent), `dependency-audit` (Claude agent).
+  `review-docs` (skill + Claude agent), `dependency-audit` (Claude agent),
+  `check-links` (skill — runs Lychee against the rendered Hugo site
+  under `docs/`).
 
 ## Procedure
 
@@ -61,6 +63,9 @@ Execute the steps in order. If a step fails, stop, write a `FAIL` sentinel
   - **docs** — any `*.md` file or doc-only edits inside sources changed.
   - **deps** — any file under `buildSrc/src/main/kotlin/io/spine/dependency/`
     changed.
+  - **site** — any file under `docs/**` changed, or `lychee.toml` changed
+    (independent of **docs**; triggers the Hugo link check; pure `README.md`
+    edits or KDoc-only changes do *not* count as **site**).
 
 ### 2. Version-bump check
 
@@ -98,7 +103,20 @@ Dispatch the relevant reviewers concurrently and collect their verdicts:
 
 - Always: `kotlin-review` (if **code** changed) and `review-docs` (if
   **docs** or KDoc changed).
+- If **site** changed: `check-links` (runs in parallel with any other
+  dispatched reviewers), **unless** the sentinel short-circuit below applies.
 - If **deps** changed: `dependency-audit`.
+
+**`check-links` sentinel short-circuit.** Before dispatching
+`check-links`, read `.git/check-links.ok` (if present) and parse the
+`head=` and `status=` fields. If `head=` equals the current HEAD SHA (full,
+not short) and `status=PASS`, skip the dispatch and record the reviewer as
+`APPROVE` with the note "cached from `.git/check-links.ok`". Any HEAD
+advance — commit, amend, rebase — automatically invalidates the cache because
+the recorded SHA no longer matches. If the file is missing, malformed, or the
+`head=` does not match, dispatch the reviewer normally. Other reviewers do not
+use this pattern today; only `check-links` does, because its rebuild+serve
+cycle is slow (~30 s) and the result is deterministic for a given HEAD.
 
 Pass each reviewer the base ref, changed-file list, build/check result, and
 version-check result. When the version check is `N/A`, say explicitly:
@@ -145,13 +163,14 @@ Report in this shape:
 ```
 ## Pre-PR checklist (<branch> vs <base>)
 
-| Check         | Status | Notes                                  |
-|---------------|--------|----------------------------------------|
-| Version check | …      | <old> → <new>, introduced, or N/A      |
-| Build/check   | …      | <command>                              |
-| kotlin-review | …      | <verdict + count of Must/Should>       |
-| review-docs   | …      | <verdict + count of Must/Should>       |
-| dep audit     | …      | <verdict + count of Must/Should>       |
+| Check            | Status | Notes                                  |
+|------------------|--------|----------------------------------------|
+| Version check    | …      | <old> → <new>, introduced, or N/A      |
+| Build/check      | …      | <command>                              |
+| kotlin-review    | …      | <verdict + count of Must/Should>       |
+| review-docs      | …      | <verdict + count of Must/Should>       |
+| check-links      | …      | <K broken URLs across N pages>         |
+| dep audit        | …      | <verdict + count of Must/Should>       |
 
 **Overall: PASS|FAIL**
 Sentinel: .git/pre-pr.ok (status=PASS|FAIL, head=<SHA>)
