@@ -28,9 +28,10 @@ Repo-specific `project.md` files link here and add their own context.
 **Tests**
 - New or changed functionality must include tests.
 - Use stubs, not mocks.
-- Prefer [Kotest assertions](https://kotest.io/docs/assertions/assertions.html)
-  over JUnit or Google Truth.
+- Prefer [Kotest assertions][kotest-assertions] over JUnit or Google Truth.
 
 **Versioning**
 - If the repo has `version.gradle.kts`, every PR must include a version bump.
   Flag the absence as a required change.
+
+[kotest-assertions]: https://kotest.io/docs/assertions/assertions.html

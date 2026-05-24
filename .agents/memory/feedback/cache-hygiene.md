@@ -6,11 +6,11 @@ metadata:
   since: 2026-05-24
 ---
 
-Every edit to `CLAUDE.md`, `quick-reference-card.md`, or any skill's
-`SKILL.md` invalidates the cached prompt prefix in every active session
-across all ~40 sibling repos simultaneously. The `migrate` script copies
-these files verbatim, so all repos share the same cache entry — and bust
-it together on every config release.
+Every edit to `CLAUDE.md`, `AGENTS.md`, `quick-reference-card.md`, any skill's
+`SKILL.md`, or any file under `.agents/`, `.claude/`, or `buildSrc/` invalidates
+the cached prompt prefix in every active session across all ~40 sibling repos
+simultaneously. The `migrate` script copies all of these verbatim, so all repos
+share the same cache entry — and bust it together on every config release.
 
 **Why:** With two developers and concurrent agent sessions, cache hits
 depend on stable content. Frequent small edits reset the 1-hour TTL

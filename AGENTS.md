@@ -6,8 +6,7 @@ If `.agents/project.md` exists in this repository, read it first — it describe
 the language, architecture, and role of this specific repo within the Spine SDK
 organisation.
 
-For full guidelines and reference material, see
-**[Agent Documentation](./.agents/_TOC.md)**.
+For full guidelines and reference material, see **[Agent Documentation](.agents/_TOC.md)**.
 
 ## Commit and history safety
 

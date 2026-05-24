@@ -1,3 +1,6 @@
+<!-- Template — copy to a sibling repo's .agents/project.md and fill in the
+     sections below. In the config repo itself this file is a template only. -->
+
 # Project: <name>
 
 ## Overview

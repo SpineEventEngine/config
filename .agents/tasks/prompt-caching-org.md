@@ -1,9 +1,10 @@
 ---
 slug: prompt-caching-org
-branch: master
+branch: improve-caching
 owner: claude
 status: in-progress
 started: 2026-05-24
+related-memories: [cache-hygiene, cache-warm-window, anthropic-api-caching]
 ---
 
 ## Goal

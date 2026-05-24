@@ -2,7 +2,7 @@
 
 ## Repository context
 
-This repository is part of the Spine Event Engine SDK organisation (~40 repos).
+This repository is part of the Spine SDK organisation (~40 repos).
 
 If `.agents/project.md` exists, read it before reviewing. It provides the
 language, architecture, role, and code review checklist for this specific repo.
