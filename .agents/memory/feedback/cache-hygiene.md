@@ -12,7 +12,7 @@ the cached prompt prefix in every active session across all ~40 sibling repos
 simultaneously. The `migrate` script copies all of these verbatim, so all repos
 share the same cache entry — and bust it together on every config release.
 
-**Why:** With two developers and concurrent agent sessions, cache hits
+**Why:** With several developers and concurrent agent sessions, cache hits
 depend on stable content. Frequent small edits reset the 1-hour TTL
 window repeatedly, turning potential cache reads (0.1× cost) into
 repeated cache writes (1.25–2× cost).

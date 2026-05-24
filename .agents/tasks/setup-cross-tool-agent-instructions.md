@@ -93,8 +93,9 @@ Replace the current content with:
 
 ### 3. Verify `.github/copilot-instructions.md`
 
-This file already exists and is correct (points to `AGENTS.md` and
-`project.md`). Confirm it is unchanged; no edits needed.
+This file already exists. Confirm it contains an explicit reference to `AGENTS.md`
+at the repository root, a pointer to `project.md` for repo context, and the
+universal "Do not suggest" safety rules. Add the `AGENTS.md` reference if absent.
 
 ### 4. Verify the setup
 

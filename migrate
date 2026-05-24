@@ -51,10 +51,18 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     cp lychee.toml ..
 
     echo "Updating \`.agents\` directory (Hugo subset)"
+    # Preserve any repo-specific project.md before overwriting .agents.
+    PRESERVE_PROJECT_MD=""
+    if [ -f "../.agents/project.md" ]; then
+      PRESERVE_PROJECT_MD=$(mktemp)
+      cp -a "../.agents/project.md" "$PRESERVE_PROJECT_MD"
+    fi
     rm -rf ../.agents
     cp -R .agents ..
-    # Seed project.md from the template only if the target repo does not have one yet.
-    if [ ! -f "../.agents/project.md" ]; then
+    if [ -n "$PRESERVE_PROJECT_MD" ] && [ -f "$PRESERVE_PROJECT_MD" ]; then
+      cp -a "$PRESERVE_PROJECT_MD" "../.agents/project.md"
+      rm -f "$PRESERVE_PROJECT_MD"
+    elif [ ! -f "../.agents/project.md" ]; then
       cp .agents/project.template.md ../.agents/project.md
     fi
     # Remove JVM-specific skills
@@ -137,12 +145,20 @@ else
     cp .codecov.yml ..
 
     echo "Updating \`.agents\` directory"
+    # Preserve any repo-specific project.md before overwriting .agents.
+    PRESERVE_PROJECT_MD=""
+    if [ -f "../.agents/project.md" ]; then
+      PRESERVE_PROJECT_MD=$(mktemp)
+      cp -a "../.agents/project.md" "$PRESERVE_PROJECT_MD"
+    fi
     rm -rf ../.agents
     if [ -d ".agents" ]; then
         cp -R .agents ..
     fi
-    # Seed project.md from the template only if the target repo does not have one yet.
-    if [ ! -f "../.agents/project.md" ]; then
+    if [ -n "$PRESERVE_PROJECT_MD" ] && [ -f "$PRESERVE_PROJECT_MD" ]; then
+      cp -a "$PRESERVE_PROJECT_MD" "../.agents/project.md"
+      rm -f "$PRESERVE_PROJECT_MD"
+    elif [ -d "../.agents" ] && [ -f ".agents/project.template.md" ]; then
       cp .agents/project.template.md ../.agents/project.md
     fi
 

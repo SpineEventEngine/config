@@ -103,8 +103,9 @@ missing version bump.
 
 **Auto-fix policy for reviewer findings:**
 
-- Findings that the agent can fix autonomously (copyright headers, KDoc
-  formatting) → fix immediately without confirmation, then note what was done.
+- Findings from `kotlin-review`, `review-docs`, or `dependency-audit` → record
+  as Must-fix or Should-fix; do **not** auto-apply. Surface them and wait for
+  user action.
 - If a reviewer reports a missing version bump after Step 2 already ran, the
   auto-fix did not take — record a Must-fix and do not silently re-apply.
 - `dependency-audit` reports a **version rollback** → do **not** auto-fix.

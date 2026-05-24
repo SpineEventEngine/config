@@ -4,6 +4,9 @@
 
 This repository is part of the Spine SDK organisation (~40 repos).
 
+Universal agent instructions are in [`AGENTS.md`](../AGENTS.md) at the
+repository root — read it first.
+
 If `.agents/project.md` exists, read it before reviewing. It provides the
 language, architecture, role, and code review checklist for this specific repo.
 
