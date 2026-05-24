@@ -4,9 +4,15 @@
 
 If `.agents/project.md` exists in this repository, read it first — it describes
 the language, architecture, and role of this specific repo within the Spine SDK
-organisation.
+organisation. To create one, copy `.agents/project.template.md` (or the
+relevant language template) and fill it in. If `project.md` links to a shared
+requirements file (e.g. `jvm-project.md`), read that too.
 
-For full guidelines and reference material, see **[Agent Documentation](.agents/_TOC.md)**.
+- Start every session by reading `.agents/quick-reference-card.md`.
+- For specific tasks (code review, PR prep, dependency updates, docs, etc.),
+  prefer the matching skill from `.agents/skills/`.
+- Full standards reference: `.agents/_TOC.md` — consult when a skill doesn't
+  cover the needed context.
 
 ## Commit and history safety
 
@@ -39,3 +45,35 @@ unless the user explicitly asks for a fresh replacement.
 
 If `git mv` fails due to permissions or sandbox restrictions, request approval;
 do not fall back to delete/create.
+
+## Memory
+
+Team-shared memory lives in `.agents/memory/` (checked into git). Use it for
+feedback rules, durable project rationale, and external system pointers.
+See `.agents/memory/README.md` for layout and write protocol.
+
+Review `.agents/memory/MEMORY.md` at the start of every session.
+Ruthlessly iterate until mistakes stop repeating.
+
+## Verification & Quality
+
+- Never mark a task done without proof (tests, logs, diff vs main).
+- Ask: "Would a senior/staff engineer approve this?"
+- For non-trivial changes: pause and consider a more elegant solution.
+- Fix bugs autonomously — find root cause, no hand-holding, no band-aids.
+
+## Core Principles
+
+- Simplicity first: minimal code impact, minimal surface area.
+- No laziness: always find root causes.
+- Minimal side effects: avoid new bugs.
+- Prefer early returns and clear naming.
+- Challenge your own work before presenting it.
+
+## Task planning
+
+- Write plans to `.agents/tasks/<slug>.md` before coding.
+  See `.agents/tasks/README.md` for format and lifecycle.
+- Verify changes before marking a task done.
+- Update memory if lessons emerged.
+- Delete the task file on merge to master.
