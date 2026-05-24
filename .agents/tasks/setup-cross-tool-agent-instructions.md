@@ -93,14 +93,9 @@ Replace the current content with:
 
 ### 3. Verify `.github/copilot-instructions.md`
 
-<<<<<<< HEAD
 This file already exists. Confirm it contains an explicit reference to `AGENTS.md`
 at the repository root, a pointer to `project.md` for repo context, and the
 universal "Do not suggest" safety rules. Add the `AGENTS.md` reference if absent.
-=======
-This file already exists and is correct (points to `project.md` and
-`.agents/_TOC.md`). Confirm it is unchanged; no edits needed.
->>>>>>> origin/improve-caching
 
 ### 4. Verify the setup
 
