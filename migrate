@@ -61,7 +61,6 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     rm -rf ../.agents/skills/dependency-update
     rm -rf ../.agents/skills/java-to-kotlin
     rm -rf ../.agents/skills/kotlin-review
-    rm -rf ../.agents/skills/version-bumped
     # Remove dead-link TOC (references JVM-specific files that were pruned above)
     rm -f ../.agents/_TOC.md
     # Remove JVM-specific guidelines
@@ -98,7 +97,6 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     rm -rf ../.claude/skills/dependency-update
     rm -rf ../.claude/skills/java-to-kotlin
     rm -rf ../.claude/skills/kotlin-review
-    rm -rf ../.claude/skills/version-bumped
     # Remove JVM-specific agents
     rm -f ../.claude/agents/kotlin-review.md
     rm -f ../.claude/agents/dependency-audit.md
@@ -150,72 +148,8 @@ else
     cp -a .github/workflows/. ../.github/workflows
     rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
 
-    # 2026-04-06 Remove `LicenseReport.kt` as the dependency object is not used.
-    # We use the `LicenseReportPlugin` class via the dependency in `buildSrc/build.gradle.kts`.
-    rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/build/LicenseReport.kt
-
-    # 2025-11-20 Remove renamed `Runtime.kt` file.
-    rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/Runtime.kt
-
-    # 2025-11-17 Remove old Dokka configuration scripts.
-    rm -f ../buildSrc/src/main/kotlin/dokka-for-kotlin.gradle.kts
-    rm -f ../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts
-
-    # 2025-11-17 Remove duplicated Dokka-related extensions.
-    rm -r ../buildSrc/src/main/kotlin/io/spine/gradle/dokka/
-
-    # 2025-11-11 Remove the older `detekt-analysis.yml` workflow.
-    # See: https://github.com/SpineEventEngine/config/issues/434
-    rm -f ../.github/workflows/detekt-analysis.yml
-
-    # 2025-10-28 Remove `ArtifactVersion.kt` and `Text.kt`.
-    rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/ArtifactVersion.kt
-    rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/Text.kt
-
-    # 2025-10-28 Remove `compile-protobuf.gradle.kts`.
-    # It no longer needed because we have `io.spine.protobuf-setup` plugin instead.
-    rm -f ../buildSrc/src/main/kotlin/compile-protobuf.gradle.kts
-
-    # 2025-10-27 Remove `VersionWriter.kt` and `ProtoTaskExtensions.kt`
-    rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/VersionWriter.kt
-    rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/protobuf/ProtoTaskExtensions.kt
-
-    # 2025-10-01 Remove renamed `CoreJava.kt`
-    rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/CoreJava.kt
-
-    # 2025-05-02 Remove the refactored file.
-    rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/javadoc/TaskContainerExtensions.kt
-
-    # 2025-04-25 Remove the refactored files moved to subpackages
-    rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/Repositories.kt
-    rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/RepoSlug.kt
-
-    # 2025-04-22 Remove the refactored file to avoid "duplicated declarations" error.
-    rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/publish/Publications.kt
-
-    # 2025-04-16 — Overwrite `gradle.properties` to support Dokka transition mode.
     cp -a gradle.properties ..
-
-    # 2025-04-16 — Overwrite `.gitignore` to propagate recent changes
     cp -a .gitignore ..
-
-    # 2024-10-28
-    echo "Removing old packages under \`buildSrc/src/main/kotlin/\`"
-    rm -r ../buildSrc/src/main/kotlin/io/spine/internal/
-
-    # 2023-07-12, remove outdated files.
-    rm -f ../buildSrc/src/main/kotlin/java-module.gradle.kts
-    rm -f ../buildSrc/src/main/kotlin/kotlin-jvm-module.gradle.kts
-    rm -f ../buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts
-    rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/DependencyResolution.kt
-    rm -f ../buildSrc/src/main/kotlin/Repositories.kt
-
-    # 2023-07-30, remove outdated files.
-    rm -f ../.lift.toml
-
-    # 2023-11-24, remove `license-report.md` in favor of `dependencies.md`
-    # See `config#498` for more.
-    rm -f ../license-report.md
 
     echo "Updating Gradle \`buildSrc\`"
 
