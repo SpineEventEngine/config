@@ -5,7 +5,7 @@ See [README.md](README.md) for the format and routing rules.
 
 ## Feedback (validated patterns & corrections)
 
-*(no entries yet)*
+- [cache-hygiene](feedback/cache-hygiene.md) — Batch edits to shared config files to protect prompt cache hit rates across all sibling repos.
 
 ## Project (durable context & rationale)
 
@@ -13,4 +13,5 @@ See [README.md](README.md) for the format and routing rules.
 
 ## Reference (external systems)
 
-*(no entries yet)*
+- [cache-warm-window](reference/cache-warm-window.md) — How prompt cache entries are shared between sibling-repo sessions and how to maximise overlap.
+- [anthropic-api-caching](reference/anthropic-api-caching.md) — Pattern and pricing for adding prompt caching to any direct Anthropic API call.
