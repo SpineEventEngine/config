@@ -103,9 +103,12 @@ missing version bump.
 
 **Auto-fix policy for reviewer findings:**
 
+<<<<<<< HEAD
 - Findings from `kotlin-review`, `review-docs`, or `dependency-audit` → record
   as Must-fix or Should-fix; do **not** auto-apply. Surface them and wait for
   user action.
+=======
+>>>>>>> origin/improve-caching
 - If a reviewer reports a missing version bump after Step 2 already ran, the
   auto-fix did not take — record a Must-fix and do not silently re-apply.
 - `dependency-audit` reports a **version rollback** → do **not** auto-fix.
