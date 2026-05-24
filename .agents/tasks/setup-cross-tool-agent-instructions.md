@@ -1,114 +1,129 @@
-# Task: Set Up Cross-Tool AI Agent Instructions
+# Task: Consolidate Agent Instructions into AGENTS.md
 
 ## Goal
 
-Establish a single canonical source of AI coding agent instructions that works across Claude Code, GitHub Copilot, and OpenAI Codex. Eliminate duplicate, drift-prone instruction files.
+Move universal agent instructions from `CLAUDE.md` into `AGENTS.md` so that
+Claude Code, GitHub Copilot, and Codex all read identical rules from a single
+source. Reduce `CLAUDE.md` to a thin wrapper that imports `AGENTS.md` plus a
+small Claude Code-specific section.
 
-## Strategy
+## Current state
 
-`AGENTS.md` at the repository root is the canonical source of truth. Tool-specific files thin-wrap or import it so each agent picks up the same content natively.
+Both files already exist with real content.
 
-## Prerequisites
+**`AGENTS.md`** currently has:
+- Orientation — `project.md` reference, link to `.agents/_TOC.md`
+- Commit and history safety — full rule (authoritative)
+- Other safety rules — compile check, no auto-deps, no analytics, no reflection
+- Moving files — `git mv` rule
 
-Before making changes, check whether any of these files already exist:
+**`CLAUDE.md`** currently has:
+- Project Guidelines — quick-reference-card, `project.md`, `jvm-project.md`,
+  skills, TOC
+- Workflow Rules — `EnterPlanMode`, task planning, `api-discovery` skill,
+  commit rule (duplicate of AGENTS.md)
+- Memory — team memory (`.agents/memory/`) + per-developer (auto-memory)
+- Verification & Quality
+- Core Principles
+- Task Flow — plan writing, `ExitPlanMode`, `TaskCreate`
+- Final Rule
 
-- `AGENTS.md` (repo root)
-- `CLAUDE.md` (repo root)
-- `.github/copilot-instructions.md`
-- `.github/instructions/*.instructions.md`
+## Content split
 
-If any exist, read each one first. Merge their content into `AGENTS.md` rather than overwriting. If the existing files contain conflicting rules, surface the conflicts in a summary to the user and stop. Do not silently resolve them.
+**Universal — move to `AGENTS.md`:**
+
+| Section | Notes |
+|---|---|
+| Project Guidelines (project.md, jvm-project.md, skills, TOC) | All agents need this orientation |
+| Memory → team-shared store only (`.agents/memory/`) | Codex/Copilot have no auto-memory; the team store is universal |
+| Verification & Quality | Universal engineering standards |
+| Core Principles | Universal |
+| Task Flow items 1, 4, 5, 6 (plan write, verify, update memory, delete task) | Universal; omit items 2–3 (ExitPlanMode/TaskCreate) |
+
+**Claude Code-specific — keep in `CLAUDE.md` only:**
+
+| Item | Why Claude-only |
+|---|---|
+| `EnterPlanMode` / `ExitPlanMode` | Claude Code SDK tools |
+| `api-discovery` skill / never unzip JARs | Gradle cache path is machine-local |
+| Per-developer auto-memory | Claude Code built-in feature |
+| `TaskCreate` for live status | Claude Code SDK tool |
+| Final Rule meta-note | Claude Code session advice |
 
 ## Steps
 
-### 1. Create or update `AGENTS.md` at the repo root
+### 1. Expand `AGENTS.md`
 
-Plain Markdown. Include these sections, omitting any that do not apply to this project:
+Add the universal sections to `AGENTS.md` after the existing content. Do not
+duplicate the commit rule — it is already there. Resulting sections in order:
 
-- **Project overview** — one or two sentences describing what this codebase is and its core constraint.
-- **Tech stack** — language(s) and major frameworks with versions where versions matter.
-- **Build, test, lint commands** — exact CLI commands the agent should use. For a Kotlin/Gradle project, e.g. `./gradlew build`, `./gradlew test`, `./gradlew ktlintCheck`.
-- **Conventions** — concrete rules. "Prefer `val` over `var`", "no wildcard imports", "expression bodies for single-expression functions". Avoid vague guidance like "write clean code".
-- **Project layout** — where modules, tests, and key files live. Only include if non-obvious from the directory tree.
-- **PR / commit conventions** — title format, required checks before commit, branching rules.
-- **What not to do** — destructive or out-of-scope behaviors. E.g. "Never modify files under `build/`", "Do not rotate secrets".
+1. Welcome / Orientation *(already exists — update to include quick-reference-card and skills references)*
+2. Commit and history safety *(already exists — keep as-is)*
+3. Other safety rules *(already exists — keep as-is)*
+4. Moving files *(already exists — keep as-is)*
+5. **Memory** — team-shared store only; omit the per-developer store
+6. **Verification & Quality**
+7. **Core Principles**
+8. **Task planning** — write plan to `.agents/tasks/<slug>.md`; verify before marking done; delete task file on merge
 
-Keep the file under 300 lines. Every line must change agent behavior — if it would not, delete it.
+Keep `AGENTS.md` under 120 lines. Every line must change agent behaviour.
 
-### 2. Create `CLAUDE.md` at the repo root
+### 2. Rewrite `CLAUDE.md` as a thin wrapper
 
-Make it minimal. Use Claude Code's import syntax to pull in `AGENTS.md`:
+Replace the current content with:
 
 ```markdown
 @AGENTS.md
 
 ## Claude Code-specific notes
 
-<!-- Optional. Add Claude Code-only overrides here. Leave empty if none. -->
+- Use Plan mode (`EnterPlanMode`) for architecture, refactoring, multi-file
+  changes, or lengthy documentation. Show the plan (`ExitPlanMode`) before
+  implementing.
+- Track live progress with `TaskCreate`.
+- Before reading library source code from `~/.gradle/caches`, follow the
+  `api-discovery` skill — never `unzip` JARs directly.
+- Per-developer memory lives in the built-in auto-memory dir. Use it for
+  personal preferences, ephemeral project state, and per-machine resources.
+  Litmus test: *would a teammate benefit from this next month?* → repo.
+  Otherwise → auto-memory.
+- This is living team memory. Update it regularly and keep it concise
+  (<120 lines / ~2.5k tokens).
 ```
 
-Rationale: Claude Code does not yet read `AGENTS.md` natively. The `@AGENTS.md` import is the official workaround.
+### 3. Verify `.github/copilot-instructions.md`
 
-### 3. Create `.github/copilot-instructions.md`
+This file already exists and is correct (points to `AGENTS.md` and
+`project.md`). Confirm it is unchanged; no edits needed.
 
-Create the `.github/` directory if it does not exist. Then create a one-line pointer file:
-
-```markdown
-See [AGENTS.md](../AGENTS.md) at the repository root.
-```
-
-Rationale: Copilot reads `AGENTS.md` natively, but a pointer at the conventional Copilot path makes the setup obvious to anyone inspecting the repo. Do **not** duplicate the contents of `AGENTS.md` here unless explicitly instructed — duplication causes drift.
-
-### 4. (Optional) Add path-specific Copilot rules
-
-Only do this step if the user has indicated they need language- or directory-scoped Copilot rules that do not fit cleanly in `AGENTS.md`. Otherwise skip.
-
-For each scope:
-
-1. Create `.github/instructions/<descriptive-name>.instructions.md`.
-2. Add YAML frontmatter with an `applyTo` glob. Example for Kotlin files:
-   ```markdown
-   ---
-   applyTo: "**/*.kt,**/*.kts"
-   ---
-   ```
-3. Below the frontmatter, write the rules that apply only to files matching the glob.
-
-Note: this scoping mechanism is Copilot-specific. Codex and Claude Code do not read `.github/instructions/`. If the rules are important for all three tools, put them in `AGENTS.md` (or a nested `AGENTS.md` in the relevant subdirectory) instead.
-
-### 5. Verify the setup
+### 4. Verify the setup
 
 Run these checks and report results:
 
-- `AGENTS.md` exists at the repo root and is non-empty.
-- `CLAUDE.md` exists at the repo root and its first non-empty line is `@AGENTS.md`.
+- `AGENTS.md` exists at repo root and is under 120 lines (`wc -l AGENTS.md`).
+- `CLAUDE.md` first non-empty line is `@AGENTS.md`.
 - `.github/copilot-instructions.md` exists and references `AGENTS.md`.
-- All created or modified files are tracked by git (no relevant entries under "Untracked files" in `git status`).
-- The `AGENTS.md` content is under 300 lines (`wc -l AGENTS.md`).
+- All modified files are tracked by git (no relevant "Untracked files" in
+  `git status`).
 
-### 6. Commit
+### 5. Commit
 
-Stage only the files created or modified by this task. Use this commit message:
+Stage only the files modified by this task. Use this commit message:
 
 ```
-chore: set up cross-tool AI agent instructions
+refactor: consolidate agent instructions into AGENTS.md
 
-Establish AGENTS.md as the canonical source of agent instructions.
-CLAUDE.md and .github/copilot-instructions.md thin-wrap it so the
-same content is used by Claude Code, Copilot, and Codex.
+Move universal rules (orientation, memory, quality, principles, task
+planning) from CLAUDE.md into AGENTS.md so Codex, Copilot, and Claude
+Code all read from a single source. CLAUDE.md becomes a thin @AGENTS.md
+wrapper plus Claude Code-specific notes.
 ```
 
 ## Acceptance Criteria
 
-- Editing `AGENTS.md` is the only required change to update agent behavior across all three tools.
-- No instruction content is duplicated between files.
-- `AGENTS.md` is under 300 lines.
-- All checks in step 5 pass.
-
-## Notes for the Agent
-
-- The path `.agents/tasks/` (where this task file lives) is a local convention, not an industry standard. No tool auto-discovers files in this directory.
-- `AGENTS.md` is the open standard at https://agents.md/, supported natively by Codex, Copilot (since Aug 2025), Cursor, Factory, GitLab Duo, and others.
-- Native `AGENTS.md` support in Claude Code is requested but not yet shipped: https://github.com/anthropics/claude-code/issues/6235. The `@AGENTS.md` import is the current workaround.
-- Skills (folders under `.github/skills/` or `.claude/skills/`) are a separate mechanism for repeatable multi-step workflows with bundled assets. They complement `AGENTS.md`; they do not replace it. This task does not set up skills.
-- If the user asks to use a different filename or layout (e.g. `.cursorrules`, `GEMINI.md`), apply the same thin-wrapper principle: one canonical file, all others point to it.
+- Editing `AGENTS.md` is the only required change to update agent behaviour
+  across all three tools.
+- No universal instruction content exists only in `CLAUDE.md`.
+- `AGENTS.md` is under 120 lines.
+- `CLAUDE.md` first non-empty line is `@AGENTS.md`.
+- All checks in step 4 pass.
