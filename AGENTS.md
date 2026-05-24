@@ -8,11 +8,11 @@ organisation. To create one, copy `.agents/project.template.md` (or the
 relevant language template) and fill it in. If `project.md` links to a shared
 requirements file (e.g. `jvm-project.md`), read that too.
 
-- Start every session by reading `.agents/quick-reference-card.md`.
+- Start every session by reading `.agents/quick-reference-card.md` (if present).
 - For specific tasks (code review, PR prep, dependency updates, docs, etc.),
   prefer the matching skill from `.agents/skills/`.
-- Full standards reference: `.agents/_TOC.md` — consult when a skill doesn't
-  cover the needed context.
+- Full standards reference: `.agents/_TOC.md` (if present) — consult when a
+  skill doesn't cover the needed context.
 
 ## Commit and history safety
 

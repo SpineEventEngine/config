@@ -76,6 +76,7 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     # Remove dead-link TOC (references JVM-specific files that were pruned above)
     rm -f ../.agents/_TOC.md
     # Remove JVM-specific guidelines
+    rm -f ../.agents/jvm-project.md
     rm -f ../.agents/quick-reference-card.md
     rm -f ../.agents/coding-guidelines.md
     rm -f ../.agents/testing.md

@@ -13,5 +13,6 @@ Spine SDK organisation.*
 *Role in the org: library / tool / Gradle plugin / application.
 Key patterns, public API boundaries, and constraints specific to this repo.*
 
-Read [`.agents/jvm-project.md`](jvm-project.md) for general JVM requirements:
-build stack, coding style, tests, and versioning.
+<!-- JVM projects: uncomment the line below after seeding this file.
+Read [`.agents/jvm-project.md`](jvm-project.md) for build stack, coding style, tests, and versioning.
+-->
