@@ -3,6 +3,9 @@
 ## Project Guidelines
 
 - Quick-reference baseline: `.agents/quick-reference-card.md` — always read this first.
+- If `.agents/project.md` exists, read it for repo-specific context: language, architecture, and role.
+  To create one, copy `.agents/jvm-project.md` (or the relevant language template) and fill it in.
+- If `project.md` links to a shared requirements file (e.g. `jvm-project.md`), read that too.
 - For specific tasks (code review, PR prep, dependency updates, docs, etc.): prefer the matching
   skill from `.agents/skills/`.
 - Full standards reference: `.agents/_TOC.md` — consult when a skill
