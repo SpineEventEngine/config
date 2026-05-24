@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+# Detect if the target repo is a Hugo docs-only repository.
+IS_HUGO_DOCS=false
+for hugo_dir in docs site; do
+  for hugo_cfg in hugo.toml hugo.yaml; do
+    if [ -f "../$hugo_dir/$hugo_cfg" ]; then
+      IS_HUGO_DOCS=true
+      echo "Detected Hugo docs repository."
+      break 2
+    fi
+  done
+done
+
 echo "Updating IDEA configuration"
 cp -R .idea ..
 
@@ -9,31 +21,16 @@ cp CONTRIBUTING.md ..
 echo "Updating Contributor Covenant"
 cp CODE_OF_CONDUCT.md ..
 
-echo "Updating Codecov settings"
-cp .codecov.yml ..
-
-echo "Updating \\\`AGENTS.md\\\`"
+echo "Updating \`AGENTS.md\`"
 cp AGENTS.md ..
 
-echo "Updating \\\`CLAUDE.md\\\`"
+echo "Updating \`CLAUDE.md\`"
 cp CLAUDE.md ..
 
 echo "Updating Junie guidelines"
 rm -rf ../.junie
 if [ -d ".junie" ]; then
     cp -R .junie ..
-fi
-
-echo "Updating \\\`.agents\\\` directory"
-rm -rf ../.agents
-if [ -d ".agents" ]; then
-    cp -R .agents ..
-fi
-
-echo "Updating \\\`.claude\\\` directory"
-rm -rf ../.claude
-if [ -d ".claude" ]; then
-    cp -a .claude ..
 fi
 
 # Copies the file or directory passed as the first parameter to the upper directory,
@@ -47,108 +44,141 @@ function initialize() {
 
 initialize .gitattributes
 initialize .gitignore
-initialize .github
 
-# Update existing workflows with more recent versions
-echo "Updating GitHub workflows"
-cp -a .github-workflows/. ../.github/workflows
-cp -a .github/workflows/. ../.github/workflows
-rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
+if [ "$IS_HUGO_DOCS" = "true" ]; then
 
-# 2026-04-06 Remove `LicenseReport.kt` as the dependency object is not used.
-# We use the `LicenseReportPlugin` class via the dependency in `buildSrc/build.gradle.kts`.
-rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/build/LicenseReport.kt
+    echo "Updating lychee.toml"
+    cp lychee.toml ..
 
-# 2025-11-20 Remove renamed `Runtime.kt` file.
-rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/Runtime.kt
+    echo "Updating \`.agents\` directory (Hugo subset)"
+    rm -rf ../.agents
+    cp -R .agents ..
+    # Remove JVM-specific skills
+    rm -rf ../.agents/skills/api-discovery
+    rm -rf ../.agents/skills/bump-gradle
+    rm -rf ../.agents/skills/bump-version
+    rm -rf ../.agents/skills/dependency-audit
+    rm -rf ../.agents/skills/dependency-update
+    rm -rf ../.agents/skills/java-to-kotlin
+    rm -rf ../.agents/skills/kotlin-review
+    # Remove dead-link TOC (references JVM-specific files that were pruned above)
+    rm -f ../.agents/_TOC.md
+    # Remove JVM-specific guidelines
+    rm -f ../.agents/quick-reference-card.md
+    rm -f ../.agents/coding-guidelines.md
+    rm -f ../.agents/testing.md
+    rm -f ../.agents/version-policy.md
+    rm -f ../.agents/project-overview.md
+    rm -f ../.agents/running-builds.md
+    rm -f ../.agents/refactoring-guidelines.md
+    rm -f ../.agents/common-tasks.md
+    rm -f ../.agents/project-structure-expectations.md
+    # Remove JVM-specific scripts
+    rm -f ../.agents/scripts/protect-version-file.sh
+    rm -f ../.agents/scripts/publish-version-gate.sh
+    rm -rf ../.agents/scripts/api-discovery
+    # Remove JVM-specific task file
+    rm -f ../.agents/tasks/api-discovery.md
 
-# 2025-11-17 Remove old Dokka configuration scripts.
-rm -f ../buildSrc/src/main/kotlin/dokka-for-kotlin.gradle.kts
-rm -f ../buildSrc/src/main/kotlin/dokka-for-java.gradle.kts
+    echo "Updating \`.claude\` directory (Hugo subset)"
+    rm -rf ../.claude
+    cp -a .claude ..
+    # Remove JVM-specific commands
+    rm -f ../.claude/commands/bump-gradle.md
+    rm -f ../.claude/commands/bump-version.md
+    rm -f ../.claude/commands/dependency-update.md
+    rm -f ../.claude/commands/java-to-kotlin.md
+    rm -f ../.claude/commands/run-build.md
+    # Remove JVM-specific skills
+    rm -rf ../.claude/skills/api-discovery
+    rm -rf ../.claude/skills/bump-gradle
+    rm -rf ../.claude/skills/bump-version
+    rm -rf ../.claude/skills/dependency-audit
+    rm -rf ../.claude/skills/dependency-update
+    rm -rf ../.claude/skills/java-to-kotlin
+    rm -rf ../.claude/skills/kotlin-review
+    # Remove JVM-specific agents
+    rm -f ../.claude/agents/kotlin-review.md
+    rm -f ../.claude/agents/dependency-audit.md
+    # Use Hugo-specific Claude settings; drop settings.local.json (references version-bumped)
+    cp .claude/settings-hugo.json ../.claude/settings.json
+    rm -f ../.claude/settings.local.json
+    # Remove the template file — it's been applied as settings.json and is not needed in the target
+    rm -f ../.claude/settings-hugo.json
 
-# 2025-11-17 Remove duplicated Dokka-related extensions.
-rm -r ../buildSrc/src/main/kotlin/io/spine/gradle/dokka/
+    echo "Updating GitHub workflows"
+    mkdir -p ../.github/workflows
+    # Remove any JVM workflows that may exist from a previous non-Hugo pull
+    rm -f ../.github/workflows/build-on-ubuntu.yml
+    rm -f ../.github/workflows/build-on-windows.yml
+    rm -f ../.github/workflows/ensure-reports-updated.yml
+    rm -f ../.github/workflows/increment-guard.yml
+    rm -f ../.github/workflows/publish.yml
+    rm -f ../.github/workflows/remove-obsolete-artifacts-from-packages.yaml
+    rm -f ../.github/workflows/detekt-code-analysis.yml
+    rm -f ../.github/workflows/gradle-wrapper-validation.yml
+    cp .github/workflows/check-links.yml ../.github/workflows/
 
-# 2025-11-11 Remove the older `detekt-analysis.yml` workflow.
-# See: https://github.com/SpineEventEngine/config/issues/434
-rm -f ../.github/workflows/detekt-analysis.yml
+    cd ..
 
-# 2025-10-28 Remove `ArtifactVersion.kt` and `Text.kt`.
-rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/ArtifactVersion.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/Text.kt
+else
 
-# 2025-10-28 Remove `compile-protobuf.gradle.kts`.
-# It no longer needed because we have `io.spine.protobuf-setup` plugin instead.
-rm -f ../buildSrc/src/main/kotlin/compile-protobuf.gradle.kts
+    initialize .github
 
-# 2025-10-27 Remove `VersionWriter.kt` and `ProtoTaskExtensions.kt`
-rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/VersionWriter.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/protobuf/ProtoTaskExtensions.kt
+    echo "Updating Codecov settings"
+    cp .codecov.yml ..
 
-# 2025-10-01 Remove renamed `CoreJava.kt`
-rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/CoreJava.kt
+    echo "Updating \`.agents\` directory"
+    rm -rf ../.agents
+    if [ -d ".agents" ]; then
+        cp -R .agents ..
+    fi
 
-# 2025-05-02 Remove the refactored file.
-rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/javadoc/TaskContainerExtensions.kt
+    echo "Updating \`.claude\` directory"
+    rm -rf ../.claude
+    if [ -d ".claude" ]; then
+        cp -a .claude ..
+        # Remove the Hugo-only settings template — it has no use in a JVM repo
+        rm -f ../.claude/settings-hugo.json
+    fi
 
-# 2025-04-25 Remove the refactored files moved to subpackages
-rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/Repositories.kt
-rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/RepoSlug.kt
+    # Update existing workflows with more recent versions
+    echo "Updating GitHub workflows"
+    cp -a .github-workflows/. ../.github/workflows
+    cp -a .github/workflows/. ../.github/workflows
+    rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
 
-# 2025-04-22 Remove the refactored file to avoid "duplicated declarations" error.
-rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/publish/Publications.kt
+    cp -a gradle.properties ..
+    cp -a .gitignore ..
 
-# 2025-04-16 — Overwrite `gradle.properties` to support Dokka transition mode.
-cp -a gradle.properties ..
+    echo "Updating Gradle \`buildSrc\`"
 
-# 2025-04-16 — Overwrite `.gitignore` to propagate recent changes
-cp -a .gitignore ..
+    # Preserve an existing project's `module.gradle.kts` (do not overwrite it).
+    DEST_MODULE="../buildSrc/src/main/kotlin/module.gradle.kts"
+    PRESERVE_TMP=""
+    if [ -f "$DEST_MODULE" ]; then
+      echo "Preserving existing \`module.gradle.kts\`"
+      PRESERVE_TMP=$(mktemp)
+      cp -a "$DEST_MODULE" "$PRESERVE_TMP"
+    fi
 
-# 2024-10-28
-echo "Removing old packages under \\\`buildSrc/src/main/kotlin/\\\`"
-rm -r ../buildSrc/src/main/kotlin/io/spine/internal/
+    cp -R buildSrc ..
 
-# 2023-07-12, remove outdated files.
+    # Restore preserved `module.gradle.kts`, if any.
+    if [ -n "$PRESERVE_TMP" ] && [ -f "$PRESERVE_TMP" ]; then
+      echo "Restoring existing \`module.gradle.kts\`"
+      cp -a "$PRESERVE_TMP" "$DEST_MODULE"
+      rm -f "$PRESERVE_TMP"
+    fi
 
-rm -f ../buildSrc/src/main/kotlin/java-module.gradle.kts
-rm -f ../buildSrc/src/main/kotlin/kotlin-jvm-module.gradle.kts
-rm -f ../buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts
-rm -f ../buildSrc/src/main/kotlin/io/spine/internal/gradle/DependencyResolution.kt
-rm -f ../buildSrc/src/main/kotlin/Repositories.kt
+    echo "Updating Gradle Wrapper"
+    cp -R ./gradle ..
+    cp gradlew ..
+    cp gradlew.bat ..
 
-# 2023-07-30, remove outdated files.
-rm -f ../.lift.toml
+    cd ..
 
-# 2023-11-24, remove `license-report.md` in favor of `dependencies.md`
-# See `config#498` for more.
-rm -f ../license-report.md
+    echo "Adding \`buildSrc\` sources to Git..."
+    git add ./buildSrc/src
 
-echo "Updating Gradle \\\`buildSrc\\\`"
-
-# Preserve an existing project's `module.gradle.kts` (do not overwrite it).
-DEST_MODULE="../buildSrc/src/main/kotlin/module.gradle.kts"
-PRESERVE_TMP=""
-if [ -f "$DEST_MODULE" ]; then
-  echo "Preserving existing \\\`module.gradle.kts\\\`"
-  PRESERVE_TMP=$(mktemp)
-  cp -a "$DEST_MODULE" "$PRESERVE_TMP"
 fi
-
-cp -R buildSrc ..
-
-# Restore preserved `module.gradle.kts`, if any.
-if [ -n "$PRESERVE_TMP" ] && [ -f "$PRESERVE_TMP" ]; then
-  echo "Restoring existing \\\`module.gradle.kts\\\`"
-  cp -a "$PRESERVE_TMP" "$DEST_MODULE"
-  rm -f "$PRESERVE_TMP"
-fi
-
-echo "Updating Gradle Wrapper"
-cp -R ./gradle ..
-cp gradlew ..
-cp gradlew.bat ..
-
-cd ..
-
-echo "Adding \\\`buildSrc\\\` sources to Git..."
-git add ./buildSrc/src
