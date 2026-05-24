@@ -120,7 +120,9 @@ missing version bump.
 
 ### 6. Sentinel
 
-Write `.git/pre-pr.ok` at the repo root (never under `.claude/`):
+Write `.git/pre-pr.ok` at the repo root (never under `.claude/`). The `gh pr
+create` hook (`.agents/scripts/pre-pr-gate.sh`) checks `head=` and `status=`;
+field names in this block are part of that contract.
 
 ```
 head=<full HEAD SHA>
@@ -164,3 +166,5 @@ them in one line before the verdict: `Auto-fixed: <comma-separated list>.`
 - The sentinel lives under `.git/` — per-clone, never committed.
 - Each reviewer is the source of truth for its own checks; this skill only
   orchestrates and aggregates.
+- This skill may auto-fix a missing version bump by invoking `/bump-version`;
+  all other fixes require explicit user confirmation.
