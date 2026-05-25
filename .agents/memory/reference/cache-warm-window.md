@@ -19,7 +19,7 @@ Developers must have `ENABLE_PROMPT_CACHING_1H=1` set, otherwise the
 window is too short for cross-session hits to occur reliably.
 
 **Cache is per Anthropic workspace.** All developers authenticated via the
-same "TeamDev Management OÜ" Console org share the same cache pool. Do not
+same Anthropic organisation Console org share the same cache pool. Do not
 create separate Console workspaces per developer — that would isolate their
 cache entries.
 
