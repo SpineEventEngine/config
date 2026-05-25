@@ -41,7 +41,7 @@ the first failure.
 - Changed files: `git diff <base>...HEAD --name-only`
 - Repository root: `git rev-parse --show-toplevel`
 - Version gate: check only the repository-root `version.gradle.kts`.
-  - Absent at both sides → `N/A`, continue.
+  - Absent at both sides → `not-applicable`, continue.
   - Present at `HEAD` → enforce in step 2.
   - Present at `<base>` but missing at `HEAD` → fail unless the user
     explicitly asked to migrate away from Gradle Build Tools versioning.
@@ -55,7 +55,7 @@ the first failure.
 
 ### 2. Version-bump check
 
-- Skip when version gate is `N/A`.
+- Skip when version gate is `not-applicable`.
 - Read `version.gradle.kts` at `HEAD`. Read `<base>` only if the file exists
   there; if it does not, the file is newly introduced — record the introduced
   version and continue.
@@ -100,7 +100,7 @@ dispatch and record `APPROVE` with note "cached from `.git/check-links.ok`"
 HEAD). Otherwise dispatch normally.
 
 Pass each reviewer: base ref, changed-file list, build result, version result.
-When the version check is `N/A`, say so explicitly so reviewers don't flag a
+When the version check is `not-applicable`, say so explicitly so reviewers don't flag a
 missing version bump.
 
 **Auto-fix policy for reviewer findings:**
@@ -116,7 +116,7 @@ missing version bump.
 
 ### 5. Aggregate
 
-- **PASS**: version check passed or `N/A`, build succeeded, every reviewer
+- **PASS**: version check passed or `not-applicable`, build succeeded, every reviewer
   returned `APPROVE` or `APPROVE WITH CHANGES`, and no unaddressed Must-fix
   items remain.
 - **FAIL**: anything else.

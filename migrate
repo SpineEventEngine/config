@@ -157,6 +157,7 @@ else
         cp -R .agents ..
     fi
     if [ -n "$PRESERVE_PROJECT_MD" ] && [ -f "$PRESERVE_PROJECT_MD" ]; then
+      mkdir -p ../.agents
       cp -a "$PRESERVE_PROJECT_MD" "../.agents/project.md"
       rm -f "$PRESERVE_PROJECT_MD"
     elif [ -d "../.agents" ] && [ -f ".agents/project.template.md" ]; then
