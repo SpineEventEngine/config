@@ -54,7 +54,7 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     # Preserve any repo-specific project.md before overwriting .agents.
     PRESERVE_PROJECT_MD=""
     if [ -f "../.agents/project.md" ]; then
-      PRESERVE_PROJECT_MD=$(mktemp)
+      PRESERVE_PROJECT_MD=$(mktemp -t project.XXXXXX)
       cp -a "../.agents/project.md" "$PRESERVE_PROJECT_MD"
     fi
     rm -rf ../.agents
@@ -149,7 +149,7 @@ else
     # Preserve any repo-specific project.md before overwriting .agents.
     PRESERVE_PROJECT_MD=""
     if [ -f "../.agents/project.md" ]; then
-      PRESERVE_PROJECT_MD=$(mktemp)
+      PRESERVE_PROJECT_MD=$(mktemp -t project.XXXXXX)
       cp -a "../.agents/project.md" "$PRESERVE_PROJECT_MD"
     fi
     rm -rf ../.agents
@@ -191,7 +191,7 @@ else
     PRESERVE_TMP=""
     if [ -f "$DEST_MODULE" ]; then
       echo "Preserving existing \`module.gradle.kts\`"
-      PRESERVE_TMP=$(mktemp)
+      PRESERVE_TMP=$(mktemp -t module.XXXXXX)
       cp -a "$DEST_MODULE" "$PRESERVE_TMP"
     fi
 
