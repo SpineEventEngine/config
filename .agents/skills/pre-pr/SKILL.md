@@ -56,13 +56,14 @@ the first failure.
 ### 2. Version-bump check
 
 - Skip when version gate is `N/A`.
-- Read `version.gradle.kts` at `HEAD` and `<base>`.
-- If the version is not strictly greater (semver + Spine snapshot rules in
-  `.agents/version-policy.md`): **auto-fix immediately** by invoking
-  `/bump-version` without asking. Re-read the file after the fix. If the
-  version is still not strictly greater, record a Must-fix and continue.
-- If the file is newly introduced at `HEAD`, record the introduced version and
-  continue.
+- Read `version.gradle.kts` at `HEAD`. Read `<base>` only if the file exists
+  there; if it does not, the file is newly introduced — record the introduced
+  version and continue.
+- When both sides have the file: if the version is not strictly greater (semver
+  + Spine snapshot rules in `.agents/version-policy.md`): **auto-fix
+  immediately** by invoking `/bump-version` without asking. Re-read the file
+  after the fix. If the version is still not strictly greater, record a
+  Must-fix and continue.
 
 ### 3. Build or check
 

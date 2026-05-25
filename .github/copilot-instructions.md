@@ -10,7 +10,8 @@ repository root — read it first.
 If `.agents/project.md` exists, read it before reviewing. It provides the
 language, architecture, role, and code review checklist for this specific repo.
 
-Additional guidelines are in `.agents/` — see `.agents/_TOC.md` for the index.
+Additional guidelines are in `.agents/` — see `.agents/_TOC.md` for the index
+(if present; Hugo repos do not include this file).
 
 ## Universal rules
 
