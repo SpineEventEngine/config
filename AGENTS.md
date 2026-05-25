@@ -16,7 +16,7 @@ requirements file (e.g. `jvm-project.md`), read that too.
 
 ## Commit and history safety
 
-**Do not commit, push, tag, rebase, merge, or otherwise write to git history**
+**Do not commit, push, tag, rebase, merge, cherry-pick, or otherwise write to git history**
 unless one of the following is true *right now*:
 
 1. The currently active skill's `SKILL.md` has a `## Commit authorization` section
