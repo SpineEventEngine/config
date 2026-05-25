@@ -15,6 +15,7 @@
       "Bash(git restore:*)",
       "Bash(git stash:*)",
       "Bash(git fetch:*)",
+      "Bash(git push:*)",
       "Bash(git rev-parse:*)",
       "Bash(git ls-files:*)",
       "Bash(git mv:*)",
@@ -34,7 +35,6 @@
       "Bash(./config/migrate)"
     ],
     "deny": [
-      "Bash(git push:*)",
       "Bash(git reset --hard:*)",
       "Bash(git clean -fdx:*)",
       "Bash(rm -rf /:*)",

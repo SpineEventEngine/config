@@ -51,8 +51,20 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     cp lychee.toml ..
 
     echo "Updating \`.agents\` directory (Hugo subset)"
+    # Preserve any repo-specific project.md before overwriting .agents.
+    PRESERVE_PROJECT_MD=""
+    if [ -f "../.agents/project.md" ]; then
+      PRESERVE_PROJECT_MD=$(mktemp -t project.XXXXXX)
+      cp -a "../.agents/project.md" "$PRESERVE_PROJECT_MD"
+    fi
     rm -rf ../.agents
     cp -R .agents ..
+    if [ -n "$PRESERVE_PROJECT_MD" ] && [ -f "$PRESERVE_PROJECT_MD" ]; then
+      cp -a "$PRESERVE_PROJECT_MD" "../.agents/project.md"
+      rm -f "$PRESERVE_PROJECT_MD"
+    elif [ ! -f "../.agents/project.md" ]; then
+      cp .agents/project.template.md ../.agents/project.md
+    fi
     # Remove JVM-specific skills
     rm -rf ../.agents/skills/api-discovery
     rm -rf ../.agents/skills/bump-gradle
@@ -64,6 +76,7 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     # Remove dead-link TOC (references JVM-specific files that were pruned above)
     rm -f ../.agents/_TOC.md
     # Remove JVM-specific guidelines
+    rm -f ../.agents/jvm-project.md
     rm -f ../.agents/quick-reference-card.md
     rm -f ../.agents/coding-guidelines.md
     rm -f ../.agents/testing.md
@@ -106,6 +119,10 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     # Remove the template file — it's been applied as settings.json and is not needed in the target
     rm -f ../.claude/settings-hugo.json
 
+    echo "Updating GitHub Copilot instructions"
+    mkdir -p ../.github
+    cp .github/copilot-instructions.md ../.github/copilot-instructions.md
+
     echo "Updating GitHub workflows"
     mkdir -p ../.github/workflows
     # Remove any JVM workflows that may exist from a previous non-Hugo pull
@@ -129,9 +146,22 @@ else
     cp .codecov.yml ..
 
     echo "Updating \`.agents\` directory"
+    # Preserve any repo-specific project.md before overwriting .agents.
+    PRESERVE_PROJECT_MD=""
+    if [ -f "../.agents/project.md" ]; then
+      PRESERVE_PROJECT_MD=$(mktemp -t project.XXXXXX)
+      cp -a "../.agents/project.md" "$PRESERVE_PROJECT_MD"
+    fi
     rm -rf ../.agents
     if [ -d ".agents" ]; then
         cp -R .agents ..
+    fi
+    if [ -n "$PRESERVE_PROJECT_MD" ] && [ -f "$PRESERVE_PROJECT_MD" ]; then
+      mkdir -p ../.agents
+      cp -a "$PRESERVE_PROJECT_MD" "../.agents/project.md"
+      rm -f "$PRESERVE_PROJECT_MD"
+    elif [ -d "../.agents" ] && [ -f ".agents/project.template.md" ]; then
+      cp .agents/project.template.md ../.agents/project.md
     fi
 
     echo "Updating \`.claude\` directory"
@@ -141,6 +171,9 @@ else
         # Remove the Hugo-only settings template — it has no use in a JVM repo
         rm -f ../.claude/settings-hugo.json
     fi
+
+    echo "Updating GitHub Copilot instructions"
+    cp .github/copilot-instructions.md ../.github/copilot-instructions.md
 
     # Update existing workflows with more recent versions
     echo "Updating GitHub workflows"
@@ -158,7 +191,7 @@ else
     PRESERVE_TMP=""
     if [ -f "$DEST_MODULE" ]; then
       echo "Preserving existing \`module.gradle.kts\`"
-      PRESERVE_TMP=$(mktemp)
+      PRESERVE_TMP=$(mktemp -t module.XXXXXX)
       cp -a "$DEST_MODULE" "$PRESERVE_TMP"
     fi
 
