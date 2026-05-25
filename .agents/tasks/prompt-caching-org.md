@@ -4,7 +4,7 @@ branch: improve-caching
 owner: claude
 status: in-review
 started: 2026-05-24
-related-memories: [cache-hygiene, cache-warm-window, anthropic-api-caching]
+related-memories: [cache-warm-window, anthropic-api-caching]
 ---
 
 ## Goal
@@ -97,18 +97,9 @@ from cache at 0.1× token cost rather than processing the full prompt fresh.
   Until steps 0a–0b are done on both developer machines, Steps 1–3 improve
   future cache hygiene but produce limited cost savings.
 
-- [x] **Step 1 — Cache-hygiene team memory**
-
-  Create `.agents/memory/feedback/cache-hygiene.md` documenting:
-  - Batch unrelated edits to `CLAUDE.md`, `quick-reference-card.md`, and
-    SKILL.md files into single PRs. Target ≤ 2 shared-config releases per
-    week during active periods — every release busts the cached prefix in
-    every live session across all 40 repos.
-  - After merging a config change, sibling repos should run
-    `./config/pull` within the same cache window (see Step 2) to maximise
-    the period during which all repos share the same warm entry.
-
-  Update `.agents/memory/MEMORY.md` index.
+- ~~**Step 1 — Cache-hygiene team memory**~~ — *reverted 2026-05-25: the
+  batching guidance was too restrictive on `config` changes; removed
+  `.agents/memory/feedback/cache-hygiene.md` and its references.*
 
 - [x] **Step 2 — Post-migration cache-warm window (reference memory)**
 
@@ -171,3 +162,4 @@ from cache at 0.1× token cost rather than processing the full prompt fresh.
 - 2026-05-24 — Step 0 revised: root cause identified — Console API key users get 5-min TTL by default vs 1-hour for subscription users; ENABLE_PROMPT_CACHING_1H=1 is the fix; warning on first launch is one-time approval only
 - 2026-05-24 — Step 0 revised again: switched to Console OAuth (not raw API key) to preserve per-developer identity; ENABLE_PROMPT_CACHING_1H=1 still required for Console OAuth users (5-min TTL default applies to all non-subscription auth)
 - 2026-05-24 — Steps 1–4 complete: three memory files created, MEMORY.md index updated, workspace consolidation confirmed; Step 0 remains in progress (Console OAuth setup and verification)
+- 2026-05-25 — reverted Step 1: removed `cache-hygiene.md` and references — batching guidance was too restrictive for `config` development cadence

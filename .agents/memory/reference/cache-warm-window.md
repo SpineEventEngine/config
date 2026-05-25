@@ -27,4 +27,4 @@ cache entries.
 first session after a config change pays the cache-write cost; any session
 starting within the next hour (with 1H TTL) reads from cache at 0.1× cost.
 
-Related: [[cache-hygiene]], [[anthropic-api-caching]]
+Related: [[anthropic-api-caching]]

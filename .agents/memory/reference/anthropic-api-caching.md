@@ -49,4 +49,4 @@ job triggered on push to `master` — calls the API with `max_tokens: 0` and
 `cache_control: {ttl: "1h"}` so the first session after a config change
 hits rather than writes.
 
-Related: [[cache-warm-window]], [[cache-hygiene]]
+Related: [[cache-warm-window]]
