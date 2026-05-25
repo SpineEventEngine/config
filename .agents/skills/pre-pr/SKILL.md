@@ -60,12 +60,13 @@ the first failure.
   there; if it does not, the file is newly introduced — record the introduced
   version and continue.
 - When both sides have the file: if the version is not strictly greater (semver
-  + Spine snapshot rules in `.agents/version-policy.md`): **auto-fix
-  immediately** by invoking `/bump-version` without asking. Re-read the file
-  after the fix. If the version is still not strictly greater, record a
-  Must-fix and continue. If the auto-fix succeeded, recompute the changed-file
-  list (`git diff <base>...HEAD --name-only`) before proceeding to Step 3 —
-  the bump commit adds `version.gradle.kts` to the diff.
+  + Spine snapshot rules in `.agents/version-policy.md`): if
+  `.agents/skills/bump-version/` exists, **auto-fix immediately** by invoking
+  `/bump-version` without asking; otherwise record a Must-fix and continue.
+  Re-read the file after the fix. If the version is still not strictly greater,
+  record a Must-fix and continue. If the auto-fix succeeded, recompute the
+  changed-file list (`git diff <base>...HEAD --name-only`) before proceeding to
+  Step 3 — the bump commit adds `version.gradle.kts` to the diff.
 
 ### 3. Build or check
 
@@ -88,7 +89,9 @@ code.
 ### 4. Reviewers (run in parallel)
 
 Dispatch relevant reviewers concurrently; collect all verdicts before
-aggregating.
+aggregating. Before dispatching, check that the skill directory exists under
+`.agents/skills/`; if a skill is absent, skip it with a note "not applicable
+for this repo" rather than failing.
 
 - **code** changed → `kotlin-review`
 - **docs** or KDoc changed → `review-docs`
