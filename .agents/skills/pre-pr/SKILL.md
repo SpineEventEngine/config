@@ -63,7 +63,9 @@ the first failure.
   + Spine snapshot rules in `.agents/version-policy.md`): **auto-fix
   immediately** by invoking `/bump-version` without asking. Re-read the file
   after the fix. If the version is still not strictly greater, record a
-  Must-fix and continue.
+  Must-fix and continue. If the auto-fix succeeded, recompute the changed-file
+  list (`git diff <base>...HEAD --name-only`) before proceeding to Step 3 —
+  the bump commit adds `version.gradle.kts` to the diff.
 
 ### 3. Build or check
 

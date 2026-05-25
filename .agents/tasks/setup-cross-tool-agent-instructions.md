@@ -1,3 +1,11 @@
+---
+slug: setup-cross-tool-agent-instructions
+branch: improve-caching
+owner: claude
+status: in-review
+started: 2026-05-24
+---
+
 # Task: Consolidate Agent Instructions into AGENTS.md
 
 ## Goal

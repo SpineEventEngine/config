@@ -1,12 +1,13 @@
 ---
 name: copilot-review-request
 description: How to request or re-request a Copilot PR review programmatically — GraphQL botIds is the only reliable path
-type: feedback
+metadata:
+  type: feedback
+  since: 2026-05-25
 ---
 
-## Any request (initial or re-request)
-
-Use the GraphQL `requestReviews` mutation with `botIds`:
+Use the GraphQL `requestReviews` mutation with `botIds` for both initial
+requests and re-requests:
 
 ```bash
 gh api graphql -f query='
@@ -20,17 +21,15 @@ mutation {
 }'
 ```
 
-- `PR_NODE_ID`: get from `gh api repos/OWNER/REPO/pulls/NUMBER --jq '.node_id'`
-- `BOT_kgDOCnlnWA`: the fixed node ID for the Copilot PR reviewer bot (stable)
+- `PR_NODE_ID`: `gh api repos/SpineEventEngine/REPO/pulls/NUMBER --jq '.node_id'`
+- `BOT_kgDOCnlnWA`: fixed node ID for the Copilot PR reviewer bot (stable)
 
-## Why not the REST API
+**Why:** The REST endpoint (`POST .../requested_reviewers` with
+`reviewers[]=Copilot`) silently no-ops on re-requests — it only works for
+the first-ever request on a PR. The GraphQL `userIds` field also fails
+because Copilot is a Bot, not a User. `botIds` is the correct field and
+works for both initial and re-requests.
 
-`POST /pulls/{number}/requested_reviewers` with `reviewers[]=Copilot` only
-works for the **initial** request. For re-requests it silently no-ops.
-
-`userIds` in the GraphQL mutation also fails — Copilot is a Bot, not a User.
-
-`botIds` is the correct field and works for both initial and re-requests.
-
-**How to apply:** Always use the GraphQL `botIds` mutation above. Do not use
-the REST endpoint or `@copilot review` comments.
+**How to apply:** Any time a Copilot review needs to be requested or
+re-requested, use the GraphQL mutation above. Do not use the REST endpoint
+or `@copilot review` comments.
