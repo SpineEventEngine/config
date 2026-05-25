@@ -1,35 +1,36 @@
 ---
 name: copilot-review-request
-description: How to request a Copilot PR review — REST API for initial request; web UI required for re-requests
+description: How to request or re-request a Copilot PR review programmatically — GraphQL botIds is the only reliable path
 type: feedback
 ---
 
-## Initial review request (first time on a PR)
+## Any request (initial or re-request)
 
-Use the REST API:
+Use the GraphQL `requestReviews` mutation with `botIds`:
 
 ```bash
-gh api repos/SpineEventEngine/REPO/pulls/NUMBER/requested_reviewers \
-  -X POST \
-  -f 'reviewers[]=Copilot'
+gh api graphql -f query='
+mutation {
+  requestReviews(input: {
+    pullRequestId: "PR_NODE_ID",
+    botIds: ["BOT_kgDOCnlnWA"]
+  }) {
+    pullRequest { id number }
+  }
+}'
 ```
 
-`REPO` is the current repository name — derive it from `gh repo view --json name -q .name`.
-The reviewer login is `Copilot` (capital C).
+- `PR_NODE_ID`: get from `gh api repos/OWNER/REPO/pulls/NUMBER --jq '.node_id'`
+- `BOT_kgDOCnlnWA`: the fixed node ID for the Copilot PR reviewer bot (stable)
 
-## Re-requests (after Copilot has already reviewed)
+## Why not the REST API
 
-**No programmatic path works.** The REST endpoint silently no-ops, the GraphQL
-`requestReviews` mutation rejects Bot node IDs, and `@copilot review` comments
-are unreliable. The web UI uses an internal GitHub API not available publicly.
+`POST /pulls/{number}/requested_reviewers` with `reviewers[]=Copilot` only
+works for the **initial** request. For re-requests it silently no-ops.
 
-**Tell the user to re-request via the web UI** — "Re-request review" button next
-to Copilot in the Reviewers sidebar of the PR.
+`userIds` in the GraphQL mutation also fails — Copilot is a Bot, not a User.
 
-**Why:** GitHub only exposes re-request flows for human reviewers via public API.
-Copilot is a GitHub App/Bot; re-requesting it after an existing review requires
-the internal UI path.
+`botIds` is the correct field and works for both initial and re-requests.
 
-**How to apply:** On the first request for a PR, use the REST API above. On any
-subsequent request for the same PR, tell the user to click "Re-request review"
-in the web UI.
+**How to apply:** Always use the GraphQL `botIds` mutation above. Do not use
+the REST endpoint or `@copilot review` comments.
