@@ -2,9 +2,10 @@
 name: pre-pr
 description: >
   Run the pre-PR checklist for this repo: apply the version gate only when
-  the repository has a root `version.gradle.kts`, run the configured
-  build/check command per `.agents/running-builds.md`, and invoke the
-  configured reviewers (`kotlin-review`, `review-docs`, `dependency-audit`,
+  the repository has a root `version.gradle.kts`, run a scope-dependent
+  build/check command per `.agents/running-builds.md` (deps-only → skipped;
+  docs-only → `dokka`; code → `build`; proto → `clean build`), and invoke
+  the relevant reviewers (`kotlin-review`, `review-docs`, `dependency-audit`,
   `check-links`) against the branch diff. On success, write a sentinel file at
   `.git/pre-pr.ok` so the `gh pr create` hook can verify the checklist ran
   for the current HEAD. Use before opening a PR, or when CI rejected a
