@@ -75,11 +75,12 @@ Pick the target per `.agents/running-builds.md`:
 
 If `./gradlew` is absent, read `.agents/running-builds.md` for the
 repository-specific command. If none is documented for the change type,
-record `build=skipped` with the reason and continue.
+record `build_status=skipped` with the reason and continue.
 
 Run the chosen command. On failure, record the first failing task and
-continue to step 4 — do not abort. Pass `build=FAIL` in the context given
-to reviewers so they can discount false positives from non-compiling code.
+continue to step 4 — do not abort. Pass `build_status=FAIL` in the context
+given to reviewers so they can discount false positives from non-compiling
+code.
 
 ### 4. Reviewers (run in parallel)
 
@@ -132,6 +133,7 @@ branch=<current branch>
 status=PASS|FAIL
 timestamp=<ISO-8601 UTC>
 build=<command run, or "skipped">
+build_status=PASS|FAIL|skipped
 reviewers=<comma-separated names invoked>
 version=<old->new, introduced:<new>, or "not-applicable">
 ```

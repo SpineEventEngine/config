@@ -16,8 +16,9 @@ Additional guidelines are in `.agents/` — see `.agents/_TOC.md` for the index
 ## Universal rules
 
 **Do not suggest:**
-- `git commit`, `git push`, `git tag`, or any history-rewriting command —
-  leave history operations to the developer.
+- Any git history operation — `git commit`, `git push`, `git tag`,
+  `git rebase`, `git merge`, `git cherry-pick`, `gh pr merge`, or any other
+  command that writes to history — leave these to the developer.
 - Auto-updating dependency versions outside a dedicated update task.
 - Feature flags, backwards-compatibility shims, or fallbacks for scenarios
   that cannot occur in the current codebase.
