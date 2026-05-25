@@ -35,7 +35,6 @@
       "Bash(./config/migrate)"
     ],
     "deny": [
-      "Bash(git push:*)",
       "Bash(git reset --hard:*)",
       "Bash(git clean -fdx:*)",
       "Bash(rm -rf /:*)",
