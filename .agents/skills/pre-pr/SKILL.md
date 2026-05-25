@@ -49,7 +49,7 @@ the first failure.
   - **proto** — any `*.proto` changed
   - **code** — any `*.kt`, `*.kts`, or `*.java` changed
   - **docs** — any `*.md` or doc-only source edits changed
-  - **deps** — any file under `buildSrc/src/main/kotlin/io/spine/dependency/`
+  - **deps** — any file under `buildSrc/src/main/kotlin/io/spine/dependency/` changed
   - **site** — any file under `docs/**` or `lychee.toml` (triggers Hugo link
     check; pure `README.md` or KDoc-only changes do *not* count)
 
