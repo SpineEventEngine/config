@@ -15,7 +15,7 @@ same cache slot — provided they fall within the TTL.
 - Default: **5 minutes** (applies to all non-subscription auth)
 - With `ENABLE_PROMPT_CACHING_1H=1` in `~/.claude/settings.json`: **1 hour**
 
-Both developers must have `ENABLE_PROMPT_CACHING_1H=1` set, otherwise the
+Developers must have `ENABLE_PROMPT_CACHING_1H=1` set, otherwise the
 window is too short for cross-session hits to occur reliably.
 
 **Cache is per Anthropic workspace.** All developers authenticated via the
