@@ -76,8 +76,9 @@ Pick the target per `.agents/running-builds.md`:
 - Else **docs**-only → `./gradlew dokka`
 
 If `./gradlew` is absent, read `.agents/running-builds.md` for the
-repository-specific command. If none is documented for the change type,
-record `build_status=skipped` with the reason and continue.
+repository-specific command. If that file is also absent, or if none is
+documented for the change type, record `build_status=skipped` with the
+reason and continue.
 
 Run the chosen command. On failure, record the first failing task and
 continue to step 4 — do not abort. Pass `build_status=FAIL` in the context

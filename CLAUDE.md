@@ -6,8 +6,8 @@
   changes, or lengthy documentation. Show the plan (`ExitPlanMode`) before
   implementing.
 - Track live progress with `TaskCreate`.
-- Before reading library source code from `~/.gradle/caches`, follow the
-  `api-discovery` skill — never `unzip` JARs directly.
+- In JVM repos: before reading library source code from `~/.gradle/caches`,
+  follow the `api-discovery` skill — never `unzip` JARs directly.
 - Per-developer memory lives in the built-in auto-memory dir. Use it for
   personal preferences, ephemeral project state, and per-machine resources.
   Litmus test: *would a teammate benefit from this next month?* → repo.
