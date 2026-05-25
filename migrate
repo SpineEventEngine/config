@@ -12,15 +12,6 @@ for hugo_dir in docs site; do
   done
 done
 
-# Detect if the target repo is a JVM (Gradle) repository.
-# The presence of the Spine dependency declarations directory is the reliable marker —
-# build files alone can exist in non-JVM repos for convenience tooling.
-IS_JVM=false
-if [ -d "../buildSrc/src/main/kotlin/io/spine/dependency" ]; then
-  IS_JVM=true
-  echo "Detected JVM repository."
-fi
-
 echo "Updating IDEA configuration"
 cp -R .idea ..
 
@@ -184,14 +175,6 @@ else
     echo "Updating GitHub Copilot instructions"
     cp .github/copilot-instructions.md ../.github/copilot-instructions.md
 
-    # Update existing workflows with more recent versions (JVM-only)
-    if [ "$IS_JVM" = "true" ]; then
-        echo "Updating GitHub workflows"
-        cp -a .github-workflows/. ../.github/workflows
-        cp -a .github/workflows/. ../.github/workflows
-        rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
-    fi
-
     cp -a gradle.properties ..
     cp -a .gitignore ..
 
@@ -213,6 +196,24 @@ else
       echo "Restoring existing \`module.gradle.kts\`"
       cp -a "$PRESERVE_TMP" "$DEST_MODULE"
       rm -f "$PRESERVE_TMP"
+    fi
+
+    # Detect JVM after buildSrc is in place so that the Spine dependency
+    # declarations directory is present even on a first-time configure run.
+    # Convenience Gradle files alone can exist in non-JVM repos and are not
+    # a reliable marker; this specific directory is.
+    IS_JVM=false
+    if [ -d "../buildSrc/src/main/kotlin/io/spine/dependency" ]; then
+      IS_JVM=true
+      echo "Detected JVM repository."
+    fi
+
+    # Update existing workflows with more recent versions (JVM-only)
+    if [ "$IS_JVM" = "true" ]; then
+        echo "Updating GitHub workflows"
+        cp -a .github-workflows/. ../.github/workflows
+        cp -a .github/workflows/. ../.github/workflows
+        rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
     fi
 
     echo "Updating Gradle Wrapper"
