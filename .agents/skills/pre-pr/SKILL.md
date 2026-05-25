@@ -118,9 +118,10 @@ missing version bump.
 
 ### 5. Aggregate
 
-- **PASS**: version check passed or `not-applicable`, build succeeded, every reviewer
-  returned `APPROVE` or `APPROVE WITH CHANGES`, and no unaddressed Must-fix
-  items remain.
+- **PASS**: version check passed or `not-applicable`, build succeeded or
+  `build_status=skipped` (no documented command for the change type), every
+  reviewer returned `APPROVE` or `APPROVE WITH CHANGES`, and no unaddressed
+  Must-fix items remain.
 - **FAIL**: anything else.
 
 ### 6. Sentinel
