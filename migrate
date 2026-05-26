@@ -1,16 +1,40 @@
 #!/usr/bin/env bash
 
-# Detect if the target repo is a Hugo docs-only repository.
+# ---------------------------------------------------------------------------
+# Project type detection
+# ---------------------------------------------------------------------------
+
+# Detect if the target repo has a Hugo documentation site.
+# Hugo config may live directly in the site root or in a `config/` or
+# `config/_default/` subdirectory (both layouts are valid Hugo conventions).
 IS_HUGO_DOCS=false
 for hugo_dir in docs site; do
-  for hugo_cfg in hugo.toml hugo.yaml; do
+  for hugo_cfg in hugo.toml hugo.yaml \
+                  config/hugo.toml config/hugo.yaml \
+                  config/_default/hugo.toml config/_default/hugo.yaml; do
     if [ -f "../$hugo_dir/$hugo_cfg" ]; then
       IS_HUGO_DOCS=true
-      echo "Detected Hugo docs repository."
+      echo "Detected Hugo documentation site."
       break 2
     fi
   done
 done
+
+# Detect if the target repo is a JVM (Gradle) repository.
+# The Spine dependency declarations directory is the reliable marker —
+# convenience Gradle files alone can exist in non-JVM repos.
+# Note: on a first-time configure of a brand-new JVM repo the directory will
+# not yet exist; running migrate a second time (after the initial buildSrc
+# copy) will pick it up.
+IS_JVM=false
+if [ -d "../buildSrc/src/main/kotlin/io/spine/dependency" ]; then
+  IS_JVM=true
+  echo "Detected JVM repository."
+fi
+
+# ---------------------------------------------------------------------------
+# Common — applies to every repository
+# ---------------------------------------------------------------------------
 
 echo "Updating IDEA configuration"
 cp -R .idea ..
@@ -33,8 +57,8 @@ if [ -d ".junie" ]; then
     cp -R .junie ..
 fi
 
-# Copies the file or directory passed as the first parameter to the upper directory,
-# only if such a file or directory does not exist there.
+# Copies the file or directory passed as the first parameter to the upper
+# directory, only if such a file or directory does not yet exist there.
 function initialize() {
   if [ ! -e ../"$1" ]; then
       echo "Creating $1"
@@ -45,26 +69,36 @@ function initialize() {
 initialize .gitattributes
 initialize .gitignore
 
-if [ "$IS_HUGO_DOCS" = "true" ]; then
+mkdir -p ../.github/workflows
+echo "Updating GitHub Copilot instructions"
+cp .github/copilot-instructions.md ../.github/copilot-instructions.md
 
-    echo "Updating lychee.toml"
-    cp lychee.toml ..
+# ---------------------------------------------------------------------------
+# .agents directory
+# ---------------------------------------------------------------------------
 
-    echo "Updating \`.agents\` directory (Hugo subset)"
-    # Preserve any repo-specific project.md before overwriting .agents.
-    PRESERVE_PROJECT_MD=""
-    if [ -f "../.agents/project.md" ]; then
-      PRESERVE_PROJECT_MD=$(mktemp -t project.XXXXXX)
-      cp -a "../.agents/project.md" "$PRESERVE_PROJECT_MD"
-    fi
-    rm -rf ../.agents
+echo "Updating \`.agents\` directory"
+# Preserve any repo-specific project.md before overwriting .agents.
+PRESERVE_PROJECT_MD=""
+if [ -f "../.agents/project.md" ]; then
+  PRESERVE_PROJECT_MD=$(mktemp -t project.XXXXXX)
+  cp -a "../.agents/project.md" "$PRESERVE_PROJECT_MD"
+fi
+rm -rf ../.agents
+if [ -d ".agents" ]; then
     cp -R .agents ..
-    if [ -n "$PRESERVE_PROJECT_MD" ] && [ -f "$PRESERVE_PROJECT_MD" ]; then
-      cp -a "$PRESERVE_PROJECT_MD" "../.agents/project.md"
-      rm -f "$PRESERVE_PROJECT_MD"
-    elif [ ! -f "../.agents/project.md" ]; then
-      cp .agents/project.template.md ../.agents/project.md
-    fi
+fi
+if [ -n "$PRESERVE_PROJECT_MD" ] && [ -f "$PRESERVE_PROJECT_MD" ]; then
+  mkdir -p ../.agents
+  cp -a "$PRESERVE_PROJECT_MD" "../.agents/project.md"
+  rm -f "$PRESERVE_PROJECT_MD"
+elif [ -d "../.agents" ] && [ -f ".agents/project.template.md" ]; then
+  cp .agents/project.template.md ../.agents/project.md
+fi
+
+# Prune JVM-specific items only on Hugo-only repos. JVM repos (including
+# those that also host Hugo docs) keep the full set.
+if [ "$IS_HUGO_DOCS" = "true" ] && [ "$IS_JVM" = "false" ]; then
     # Remove JVM-specific skills
     rm -rf ../.agents/skills/api-discovery
     rm -rf ../.agents/skills/bump-gradle
@@ -73,7 +107,7 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     rm -rf ../.agents/skills/dependency-update
     rm -rf ../.agents/skills/java-to-kotlin
     rm -rf ../.agents/skills/kotlin-review
-    # Remove dead-link TOC (references JVM-specific files that were pruned above)
+    # Remove dead-link TOC (references JVM-specific files pruned above)
     rm -f ../.agents/_TOC.md
     # Remove JVM-specific guidelines
     rm -f ../.agents/jvm-project.md
@@ -92,10 +126,21 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     rm -rf ../.agents/scripts/api-discovery
     # Remove JVM-specific task file
     rm -f ../.agents/tasks/api-discovery.md
+fi
 
-    echo "Updating \`.claude\` directory (Hugo subset)"
-    rm -rf ../.claude
+# ---------------------------------------------------------------------------
+# .claude directory
+# ---------------------------------------------------------------------------
+
+echo "Updating \`.claude\` directory"
+rm -rf ../.claude
+if [ -d ".claude" ]; then
     cp -a .claude ..
+fi
+
+# Prune JVM-specific items only on Hugo-only repos; apply Hugo settings.
+# JVM repos (including those that also host Hugo docs) keep the full set.
+if [ "$IS_HUGO_DOCS" = "true" ] && [ "$IS_JVM" = "false" ]; then
     # Remove JVM-specific commands
     rm -f ../.claude/commands/bump-gradle.md
     rm -f ../.claude/commands/bump-version.md
@@ -113,73 +158,53 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     # Remove JVM-specific agents
     rm -f ../.claude/agents/kotlin-review.md
     rm -f ../.claude/agents/dependency-audit.md
-    # Use Hugo-specific Claude settings; drop settings.local.json (references version-bumped)
+    # Use Hugo-specific Claude settings; drop settings.local.json (which
+    # references version-bumped commands not present in Hugo repos)
     cp .claude/settings-hugo.json ../.claude/settings.json
     rm -f ../.claude/settings.local.json
-    # Remove the template file — it's been applied as settings.json and is not needed in the target
+    # Remove the template — it has been applied as settings.json above
     rm -f ../.claude/settings-hugo.json
+else
+    # The Hugo-only settings template has no use in JVM or mixed repos
+    rm -f ../.claude/settings-hugo.json
+fi
 
-    echo "Updating GitHub Copilot instructions"
-    mkdir -p ../.github
-    cp .github/copilot-instructions.md ../.github/copilot-instructions.md
+# ---------------------------------------------------------------------------
+# Hugo-specific
+# ---------------------------------------------------------------------------
 
-    echo "Updating GitHub workflows"
-    mkdir -p ../.github/workflows
-    # Remove any JVM workflows that may exist from a previous non-Hugo pull
-    rm -f ../.github/workflows/build-on-ubuntu.yml
-    rm -f ../.github/workflows/build-on-windows.yml
-    rm -f ../.github/workflows/ensure-reports-updated.yml
-    rm -f ../.github/workflows/increment-guard.yml
-    rm -f ../.github/workflows/publish.yml
-    rm -f ../.github/workflows/remove-obsolete-artifacts-from-packages.yaml
-    rm -f ../.github/workflows/detekt-code-analysis.yml
-    rm -f ../.github/workflows/gradle-wrapper-validation.yml
+if [ "$IS_HUGO_DOCS" = "true" ]; then
+
+    echo "Updating lychee.toml"
+    cp lychee.toml ..
+
+    echo "Updating GitHub workflows (Hugo)"
     cp .github/workflows/check-links.yml ../.github/workflows/
 
-    cd ..
+    # On a Hugo-only repo, remove any JVM workflows that may be present from
+    # a previous non-Hugo pull. On a repo that is also JVM, leave them — the
+    # JVM section below will keep them current.
+    if [ "$IS_JVM" = "false" ]; then
+        rm -f ../.github/workflows/build-on-ubuntu.yml
+        rm -f ../.github/workflows/build-on-windows.yml
+        rm -f ../.github/workflows/ensure-reports-updated.yml
+        rm -f ../.github/workflows/increment-guard.yml
+        rm -f ../.github/workflows/publish.yml
+        rm -f ../.github/workflows/remove-obsolete-artifacts-from-packages.yaml
+        rm -f ../.github/workflows/detekt-code-analysis.yml
+        rm -f ../.github/workflows/gradle-wrapper-validation.yml
+    fi
 
-else
+fi
 
-    initialize .github
+# ---------------------------------------------------------------------------
+# JVM-specific
+# ---------------------------------------------------------------------------
+
+if [ "$IS_JVM" = "true" ]; then
 
     echo "Updating Codecov settings"
     cp .codecov.yml ..
-
-    echo "Updating \`.agents\` directory"
-    # Preserve any repo-specific project.md before overwriting .agents.
-    PRESERVE_PROJECT_MD=""
-    if [ -f "../.agents/project.md" ]; then
-      PRESERVE_PROJECT_MD=$(mktemp -t project.XXXXXX)
-      cp -a "../.agents/project.md" "$PRESERVE_PROJECT_MD"
-    fi
-    rm -rf ../.agents
-    if [ -d ".agents" ]; then
-        cp -R .agents ..
-    fi
-    if [ -n "$PRESERVE_PROJECT_MD" ] && [ -f "$PRESERVE_PROJECT_MD" ]; then
-      mkdir -p ../.agents
-      cp -a "$PRESERVE_PROJECT_MD" "../.agents/project.md"
-      rm -f "$PRESERVE_PROJECT_MD"
-    elif [ -d "../.agents" ] && [ -f ".agents/project.template.md" ]; then
-      cp .agents/project.template.md ../.agents/project.md
-    fi
-
-    echo "Updating \`.claude\` directory"
-    rm -rf ../.claude
-    if [ -d ".claude" ]; then
-        cp -a .claude ..
-        # Remove the Hugo-only settings template — it has no use in a JVM repo
-        rm -f ../.claude/settings-hugo.json
-    fi
-
-    echo "Updating GitHub Copilot instructions"
-    cp .github/copilot-instructions.md ../.github/copilot-instructions.md
-
-    # Update existing workflows with more recent versions
-    echo "Updating GitHub workflows"
-    cp -a .github-workflows/. ../.github/workflows
-    cp -a .github/workflows/. ../.github/workflows
-    rm -f ../.github/workflows/detekt-code-analysis.yml # This one is `config`-only workflow.
 
     cp -a gradle.properties ..
     cp -a .gitignore ..
@@ -204,14 +229,21 @@ else
       rm -f "$PRESERVE_TMP"
     fi
 
+    echo "Updating GitHub workflows (JVM)"
+    cp -a .github-workflows/. ../.github/workflows
+    cp -a .github/workflows/. ../.github/workflows
+    rm -f ../.github/workflows/detekt-code-analysis.yml # config-only workflow
+
     echo "Updating Gradle Wrapper"
     cp -R ./gradle ..
     cp gradlew ..
     cp gradlew.bat ..
 
-    cd ..
+fi
 
+cd ..
+
+if [ "$IS_JVM" = "true" ]; then
     echo "Adding \`buildSrc\` sources to Git..."
     git add ./buildSrc/src
-
 fi
