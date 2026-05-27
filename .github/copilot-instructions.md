@@ -13,6 +13,20 @@ language, architecture, role, and code review checklist for this specific repo.
 Additional guidelines are in `.agents/` — see `.agents/_TOC.md` for the index
 (if present; Hugo repos do not include this file).
 
+## Do not review
+
+The following files are managed by the `config` submodule and must be
+reviewed in the `config` repository, not here. Skip them without comment:
+
+- `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`
+- `.agents/**` (except `.agents/project.md`)
+- `.claude/**`, `.idea/**`, `.junie/**`
+- `.github/copilot-instructions.md`
+- `buildSrc/**` (except `buildSrc/src/main/kotlin/module.gradle.kts`)
+- `gradle/`, `gradlew`, `gradlew.bat`
+- `.codecov.yml`, `gradle.properties`, `lychee.toml`
+- `.github/workflows/` — unless the workflow was introduced by this repo
+
 ## Universal rules
 
 **Do not suggest:**

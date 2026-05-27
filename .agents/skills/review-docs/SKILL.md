@@ -36,6 +36,9 @@ The authoritative standards live in `.agents/`:
    - `**/*.kt`, `**/*.kts`, `**/*.java` (for KDoc/Javadoc inside sources)
    - `**/*.md` (Markdown docs)
    Do **not** review the full repo — only what changed.
+   Filter out config-distributed files (see `AGENTS.md § Code review` for the
+   exact list) before proceeding. If nothing remains after filtering, return
+   `APPROVE — all changes are config-distributed files.` and stop.
 
 2. **Read each affected file fully, not just the hunks.** Prose review
    requires surrounding context — judging widows/runts/orphans, link

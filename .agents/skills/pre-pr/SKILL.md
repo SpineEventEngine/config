@@ -41,6 +41,11 @@ the first failure.
 
 - Base ref: `master` unless the user provides a different one.
 - Changed files: `git diff <base>...HEAD --name-only`
+  Remove any path matching the config-distributed list in
+  `AGENTS.md § Code review`. A PR that contains *only* config-distributed
+  files needs no build, no reviewers, and should PASS immediately — skip
+  to step 6 with `build=skipped`, `build_status=skipped`,
+  `reviewers=none`, `version=not-applicable`.
 - Repository root: `git rev-parse --show-toplevel`
 - Version gate: check only the repository-root `version.gradle.kts`.
   - Absent at both sides → `not-applicable`, continue.
