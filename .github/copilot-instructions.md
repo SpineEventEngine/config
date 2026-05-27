@@ -15,8 +15,10 @@ Additional guidelines are in `.agents/` — see `.agents/_TOC.md` for the index
 
 ## Do not review
 
-The following files are managed by the `config` submodule and must be
-reviewed in the `config` repository, not here. Skip them without comment:
+If the current repository is `config`, review these files normally: they are
+authoritative there. In other repositories, the following files are managed by
+the `config` submodule and must be reviewed in the `config` repository, not
+here. In those consumer repositories, skip them without comment:
 
 - `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`
 - `.agents/**` (except `.agents/project.md`)
