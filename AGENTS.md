@@ -77,3 +77,25 @@ Ruthlessly iterate until mistakes stop repeating.
 - Verify changes before marking a task done.
 - Update memory if lessons emerged.
 - Delete the task file on merge to master.
+
+## Code review
+
+When reviewing a pull request or diff in a consumer repository, skip any
+file that the `config` module distributes. Those files belong in a review
+of the `config` repo, not the consumer repo — reviewing them there adds
+noise without value.
+
+Do **not** apply this skip rule when reviewing the `config` repository
+itself. In `config`, these files are source files owned by the current
+repo and must be reviewed normally.
+
+In consumer repositories, skip without comment any path matching:
+
+- `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`
+- `.agents/**` (except `.agents/project.md`)
+- `.claude/**`, `.idea/**`, `.junie/**`
+- `.github/copilot-instructions.md`
+- `buildSrc/**` (except `buildSrc/src/main/kotlin/module.gradle.kts`)
+- `gradle/`, `gradlew`, `gradlew.bat`
+- `.codecov.yml`, `.gitignore`, `gradle.properties`, `lychee.toml`
+- `.github/workflows/` — unless the workflow was introduced by this repo
