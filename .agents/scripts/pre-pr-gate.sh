@@ -9,7 +9,14 @@
 #
 set -eu
 
-command -v jq >/dev/null 2>&1 || exit 0
+if ! command -v jq >/dev/null 2>&1; then
+  cat >&2 <<EOF
+'gh pr create' blocked: this hook requires 'jq' to inspect the tool request.
+
+Install jq and retry, then run /pre-pr before creating the PR.
+EOF
+  exit 2
+fi
 
 input=$(cat)
 tool=$(printf '%s' "$input" | jq -r '.tool_name // empty')

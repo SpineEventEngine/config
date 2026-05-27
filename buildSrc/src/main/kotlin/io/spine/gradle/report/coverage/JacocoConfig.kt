@@ -1,5 +1,5 @@
 /*
- * Copyright 2025, TeamDev. All rights reserved.
+ * Copyright 2026, TeamDev. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.SourceSetOutput
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.the
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
@@ -91,14 +92,16 @@ class JacocoConfig(
          */
         fun applyTo(project: Project) {
             project.applyPlugin(BasePlugin::class.java)
-            val javaProjects: Iterable<Project> = eligibleProjects(project)
-            val reportsDir = project.rootProject.layout
-                .buildDirectory.dir(reportsDirSuffix).get().asFile
-            JacocoConfig(
-                project.rootProject,
-                reportsDir,
-                javaProjects
-            ).configure()
+            project.gradle.projectsEvaluated {
+                val javaProjects: Iterable<Project> = eligibleProjects(project)
+                val reportsDir = project.rootProject.layout
+                    .buildDirectory.dir(reportsDirSuffix).get().asFile
+                JacocoConfig(
+                    project.rootProject,
+                    reportsDir,
+                    javaProjects
+                ).configure()
+            }
         }
 
         /**
@@ -182,6 +185,7 @@ class JacocoConfig(
         val everyExecData = mutableListOf<ConfigurableFileCollection>()
         projects.forEach { project ->
             val jacocoTestReport = project.getTask<JacocoReport>(jacocoTestReport.name)
+            jacocoTestReport.dependsOn(project.tasks.withType(Test::class.java))
             val executionData = jacocoTestReport.executionData
             everyExecData.add(executionData)
         }

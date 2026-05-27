@@ -12,7 +12,14 @@
 #
 set -eu
 
-command -v jq >/dev/null 2>&1 || exit 0
+if ! command -v jq >/dev/null 2>&1; then
+  cat >&2 <<'EOF'
+This hook requires `jq` to validate edits to version.gradle.kts and cannot run safely without it.
+
+Install `jq` and retry. This hook fails closed to avoid silently allowing prohibited edits.
+EOF
+  exit 2
+fi
 
 input=$(cat)
 file=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')
