@@ -97,5 +97,5 @@ In consumer repositories, skip without comment any path matching:
 - `.github/copilot-instructions.md`
 - `buildSrc/**` (except `buildSrc/src/main/kotlin/module.gradle.kts`)
 - `gradle/`, `gradlew`, `gradlew.bat`
-- `.codecov.yml`, `gradle.properties`, `lychee.toml`
+- `.codecov.yml`, `.gitignore`, `gradle.properties`, `lychee.toml`
 - `.github/workflows/` — unless the workflow was introduced by this repo
