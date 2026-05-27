@@ -15,8 +15,11 @@ Additional guidelines are in `.agents/` — see `.agents/_TOC.md` for the index
 
 ## Do not review
 
-If the current repository is `config`, review these files normally: they are
-authoritative there. In other repositories, the following files are managed by
+Never review `gradlew` or `gradlew.bat` in any repository, including `config`.
+These files are provided by Gradle and are not edited manually.
+
+If the current repository is `config`, review its files normally unless noted
+above: they are authoritative there. In other repositories, the following files are managed by
 the `config` submodule and must be reviewed in the `config` repository, not
 here. In those consumer repositories, skip them without comment:
 
