@@ -80,11 +80,16 @@ Ruthlessly iterate until mistakes stop repeating.
 
 ## Code review
 
-When reviewing a pull request or diff, skip any file that the `config`
-module distributes. Those files belong in a review of the `config` repo,
-not the consumer repo — reviewing them here adds noise without value.
+When reviewing a pull request or diff in a consumer repository, skip any
+file that the `config` module distributes. Those files belong in a review
+of the `config` repo, not the consumer repo — reviewing them there adds
+noise without value.
 
-Skip without comment any path matching:
+Do **not** apply this skip rule when reviewing the `config` repository
+itself. In `config`, these files are source files owned by the current
+repo and must be reviewed normally.
+
+In consumer repositories, skip without comment any path matching:
 
 - `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`
 - `.agents/**` (except `.agents/project.md`)
