@@ -19,6 +19,7 @@ coverage:
         target: auto
         threshold: 0.05%
         paths:
+          - "src/main/**/*"
           - "**/src/main/**"
         if_ci_failed: error
         informational: false
