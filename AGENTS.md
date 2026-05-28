@@ -80,6 +80,9 @@ Ruthlessly iterate until mistakes stop repeating.
 
 ## Code review
 
+Never review `gradlew` or `gradlew.bat` in any repository, including `config`.
+These files are provided by Gradle and are not edited manually.
+
 When reviewing a pull request or diff in a consumer repository, skip any
 file that the `config` module distributes. Those files belong in a review
 of the `config` repo, not the consumer repo — reviewing them there adds
@@ -87,7 +90,7 @@ noise without value.
 
 Do **not** apply this skip rule when reviewing the `config` repository
 itself. In `config`, these files are source files owned by the current
-repo and must be reviewed normally.
+repo and must be reviewed normally, except `gradlew` and `gradlew.bat`.
 
 In consumer repositories, skip without comment any path matching:
 

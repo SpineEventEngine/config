@@ -32,6 +32,7 @@ live in `.agents/`:
    nullability, and idiomatic refactors require surrounding context.
 3. Check against `.agents/coding-guidelines.md`:
    - Kotlin idioms (extension functions, `when`, smart casts, data/sealed classes).
+   - Kotlin Protobuf DSL (`message { ... }`) preferred over Java builders (`newBuilder()`, `toBuilder()`) in Kotlin.
    - Immutability by default.
    - No `!!` without justification.
    - No type names in variable names.
