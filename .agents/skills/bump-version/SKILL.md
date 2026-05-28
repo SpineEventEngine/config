@@ -25,8 +25,8 @@ under these constraints:
   for this skill's commit and must remain unstaged.
 - Use the exact subject `` Bump version -> `<new>` `` (see step 4 of the
   Checklist) with the actual new version value substituted. Keep the
-  backticks around the version literal (for example, `... -> `2.0.0``) and
-  do not escape them as `\``.
+  backticks around the version literal (for example, ``... -> `2.0.0``` ) and
+  do not escape them as ``\````.
 - No `git push`, `git tag`, `git rebase`, `git commit --amend`, or any other
   history-writing operation. Those require a separate authorization
   (`.agents/safety-rules.md` → *Commits and history-writing*).
