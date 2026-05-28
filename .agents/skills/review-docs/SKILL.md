@@ -34,6 +34,7 @@ The authoritative standards live in `.agents/`:
    `git diff <base>...HEAD` depending on what the user describes. Restrict
    to files matching:
    - `**/*.kt`, `**/*.kts`, `**/*.java` (for KDoc/Javadoc inside sources)
+   - `**/*.proto` (for file-level documentation headers)
    - `**/*.md` (Markdown docs)
    Do **not** review the full repo — only what changed.
    Filter out config-distributed files (see `AGENTS.md § Code review` for the
@@ -68,6 +69,9 @@ The authoritative standards live in `.agents/`:
   `// TODO: …` without owner/issue reference is a Should-fix.
 - **File and directory names rendered as code.** Within KDoc/Javadoc prose,
   `path/to/file.kt` and `module-name` must use backticks.
+- **Multi-paragraph Protobuf headers end with an empty comment line.** In
+  `.proto` files, if the file-level documentation header has more than one
+  paragraph, it must end with a trailing empty comment line (`//`).
 
 ### B. Markdown docs
 
