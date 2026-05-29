@@ -17,7 +17,7 @@ update this section.
 
 | File | Source | Last reviewed |
 |------|--------|---------------|
-| [tasks.md](tasks.md) | <https://docs.gradle.org/current/userguide/best_practices_tasks.html> | 2026-05-29 |
+| [tasks.md](tasks.md) | <https://docs.gradle.org/9.5.1/userguide/best_practices_tasks.html> | 2026-05-29 |
 
 ## Ingest procedure
 

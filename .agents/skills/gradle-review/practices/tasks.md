@@ -1,5 +1,5 @@
 ---
-source: https://docs.gradle.org/current/userguide/best_practices_tasks.html
+source: https://docs.gradle.org/9.5.1/userguide/best_practices_tasks.html
 gradle-version: 9.5.1
 ingested: 2026-05-29
 ---
@@ -144,4 +144,4 @@ writes to its own deterministic location, typically under
   above in this file, or the upstream page[^src]) so future readers
   know which best practice the class implements.
 
-[^src]: https://docs.gradle.org/current/userguide/best_practices_tasks.html
+[^src]: https://docs.gradle.org/9.5.1/userguide/best_practices_tasks.html

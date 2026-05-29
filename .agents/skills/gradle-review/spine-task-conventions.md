@@ -42,11 +42,18 @@ The rule applies to:
   configures tasks (`Plugin<Project>` implementations under
   `tool-base` and similar repos).
 
+Both examples below reference the shared constant
+`io.spine.gradle.SpineTaskGroup.name`, which holds the value
+`"spine"` and is visible to every `build.gradle.kts` because it
+lives in `buildSrc/`.
+
 ### Example — registering a new task
 
 ```kotlin
+import io.spine.gradle.SpineTaskGroup
+
 tasks.register("generateSpineModel") {
-    group = "spine"
+    group = SpineTaskGroup.name
     description = "Generates Spine model classes from .proto definitions"
     // ...
 }
@@ -55,8 +62,10 @@ tasks.register("generateSpineModel") {
 ### Example — configuring an existing task type
 
 ```kotlin
+import io.spine.gradle.SpineTaskGroup
+
 tasks.withType<YourTaskType>().configureEach {
-    group = "spine"
+    group = SpineTaskGroup.name
     description = "Compiles Spine-specific module sources"
 }
 ```

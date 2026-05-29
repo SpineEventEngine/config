@@ -1,3 +1,11 @@
+---
+slug: gradle-caching-plan
+branch: gradle-review-skill
+owner: claude
+status: draft
+started: 2026-05-29
+---
+
 # Plan: Speed Up Builds via Gradle Caching (org-wide, through `config`)
 
 > Implementation plan for Claude Code operating in the **`SpineEventEngine/config`** repository.

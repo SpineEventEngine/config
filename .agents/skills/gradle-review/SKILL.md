@@ -195,4 +195,4 @@ This skill is self-extensible. Two triggers, both **user-initiated**:
 The skill never auto-fetches. The user runs `/gradle-review` for a
 review, and explicitly asks for an ingest/refresh when one is wanted.
 
-[^gradle-tasks]: https://docs.gradle.org/current/userguide/best_practices_tasks.html
+[^gradle-tasks]: https://docs.gradle.org/9.5.1/userguide/best_practices_tasks.html

@@ -4,7 +4,6 @@ branch: coverage-tooling
 owner: claude
 status: draft
 started: 2026-05-29
-related-memories:
 ---
 
 ## Goal
