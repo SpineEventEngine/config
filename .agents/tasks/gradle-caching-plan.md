@@ -99,7 +99,7 @@ For each relevant workflow:
 - Remove `cache: gradle` from any `actions/setup-java` step.
 - Add a `gradle/actions/setup-gradle@v6` step **after** Java setup and **before** any Gradle
   invocation. (The action also configures init-scripts that apply to later `run: ./gradlew` steps.)
-- Match the repo's existing action-pinning policy; current majors are
+- Match the repo's existing action-pinning policy; current major versions available are
   `actions/checkout@v6`, `actions/setup-java@v5`, `gradle/actions/setup-gradle@v6`.
 
 Reference shape (adapt to each workflow's actual jobs/matrix — do not blindly overwrite):
