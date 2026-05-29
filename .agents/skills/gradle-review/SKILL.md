@@ -121,9 +121,10 @@ If after filtering nothing in the diff falls in any scope, return
 5. **Batch independent checks.** Issue the most common ripgrep recipes
    in parallel within a single response — examples:
 
-   - `rg -n 'tasks\.create\(' --type kt`
-     — eager registration (`--type kt` covers both `*.kt` and
-     `*.kts` in standard ripgrep).
+   - `rg -n 'tasks\.create\(' --type kotlin`
+     — eager registration (`--type kotlin` is ripgrep's built-in
+     type that covers both `*.kt` and `*.kts`; the short alias
+     `--type kt` is **not** recognised).
    - `rg -n '\.files\b|\.getFiles\b|\.size\b|\.isEmpty\b|\.toList\b|\.asPath\b' --glob '*.gradle.kts' --glob '*.kt' --glob '*.java'`
      — eager file-collection APIs (covers Kotlin property access,
      method invocation, and the Java `getFiles()` accessor in plugin
@@ -131,7 +132,7 @@ If after filtering nothing in the diff falls in any scope, return
    - `rg -n 'group\s*=\s*"spine"' --glob '*.gradle.kts' --glob '*.kt'`
      — confirm the Spine group is used; the absence in a `register`
      block is the finding.
-   - `rg -n '@CacheableTask|@DisableCachingByDefault' --type kt`
+   - `rg -n '@CacheableTask|@DisableCachingByDefault' --type kotlin`
      — locate plugin task classes that should carry an annotation.
 
    Collect every finding and emit the report once — **do not stop at

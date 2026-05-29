@@ -58,10 +58,11 @@ the replacement.
       `build.gradle.kts` and `settings.gradle.kts` (the constant is
       visible from build files thanks to `buildSrc/`). (Verified — no
       existing literals.)
-- [x] Spot-check with `rg -n '"spine"' --type kt` (covers both
-      `*.kt` and `*.kts` in standard ripgrep) — only the constant
-      declaration and unrelated occurrences (artifact prefix in
-      `Base.kt`, exclude rule for `spine-base` in
+- [x] Spot-check with `rg -n '"spine"' --type kotlin` (ripgrep's
+      built-in `kotlin` type covers both `*.kt` and `*.kts`; the
+      short alias `--type kt` is **not** recognised) — only the
+      constant declaration and unrelated occurrences (artifact
+      prefix in `Base.kt`, exclude rule for `spine-base` in
       `DependencyResolution.kt`) remain.
 
 ### B. `tool-base` constant + GitHub issue
