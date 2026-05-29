@@ -2,7 +2,7 @@
 slug: spine-task-group-constant
 branch: gradle-review-skill
 owner: claude
-status: draft
+status: in-progress
 started: 2026-05-29
 related-memories: []
 ---
@@ -45,20 +45,24 @@ the replacement.
 
 ### A. `config/buildSrc` constant
 
-- [ ] Add `const val spineTaskGroup = "spine"` (final naming TBD —
-      see "Open questions" below) in a small Kotlin file under
-      `buildSrc/src/main/kotlin/io/spine/gradle/` (e.g.
-      `SpineTaskGroup.kt`). Include copyright header and KDoc that
-      links back to
+- [x] Add `object SpineTaskGroup { const val name = "spine" }` in
+      `buildSrc/src/main/kotlin/io/spine/gradle/SpineTaskGroup.kt`
+      with copyright header and KDoc referencing
       `.agents/skills/gradle-review/spine-task-conventions.md`.
-- [ ] Migrate every `group = "spine"` usage in `buildSrc/**/*.kt` and
-      `buildSrc/**/*.gradle.kts` to the constant.
-- [ ] Migrate every `group = "spine"` usage in the project's
+- [x] Migrate every `group = "spine"` usage in `buildSrc/**/*.kt` and
+      `buildSrc/**/*.gradle.kts` to the constant. (Verified by
+      `rg "group\s*=\s*\"spine\""` — no existing literals in
+      `buildSrc/`; the only `"spine"` occurrence there is the
+      unrelated artifact-prefix constant in `dependency/local/Base.kt`.)
+- [x] Migrate every `group = "spine"` usage in the project's
       `build.gradle.kts` and `settings.gradle.kts` (the constant is
-      visible from build files thanks to `buildSrc/`).
-- [ ] Spot-check with `rg -n '"spine"' --type kt` (covers both
+      visible from build files thanks to `buildSrc/`). (Verified — no
+      existing literals.)
+- [x] Spot-check with `rg -n '"spine"' --type kt` (covers both
       `*.kt` and `*.kts` in standard ripgrep) — only the constant
-      declaration and any deliberate exceptions should remain.
+      declaration and unrelated occurrences (artifact prefix in
+      `Base.kt`, exclude rule for `spine-base` in
+      `DependencyResolution.kt`) remain.
 
 ### B. `tool-base` constant + GitHub issue
 
@@ -67,20 +71,33 @@ the replacement.
 
 [tool-base-171]: https://github.com/SpineEventEngine/tool-base/issues/171
 
-## Open questions
+## Decisions
 
-- **Naming.** Options:
-  - `SpineTaskGroup` (object) with `const val name = "spine"`.
-  - Top-level `const val spineTaskGroup = "spine"`.
-  - Companion-object member on an existing Spine-wide configuration
-    object.
-  Pick one once the migration begins; consistency with the
-  `tool-base` constant is more important than the specific shape.
-- **Location inside `buildSrc/`.** Either a new file under
-  `buildSrc/src/main/kotlin/io/spine/gradle/` or a member of an
-  existing helper (`BuildSettings.kt` is a candidate).
+- **Naming and shape.** `object SpineTaskGroup { const val name = "spine" }`.
+  Reference site reads `group = SpineTaskGroup.name`. Mirrors the
+  `JsTasks.Group.build` precedent already used inside `buildSrc/` and
+  leaves room for related constants later. Consistency with the
+  `tool-base` constant — once it exists — is more important than the
+  specific shape; the `tool-base` issue should adopt the same shape.
+- **Location.** New file at
+  `buildSrc/src/main/kotlin/io/spine/gradle/SpineTaskGroup.kt`,
+  alongside `TaskName.kt` and other top-level Gradle helpers.
+  Visibility is `public` (default) so consumer `build.gradle.kts`
+  files can import the symbol.
+- **KDoc link form.** Plain text path to
+  `.agents/skills/gradle-review/spine-task-conventions.md`; KDoc does
+  not resolve relative Markdown links in the IDE, and an absolute
+  GitHub URL would couple the source to a specific branch.
 
 ## Log
 
 - 2026-05-29 — drafted alongside the `gradle-review` skill, awaiting
   approval to start migration.
+- 2026-05-29 — implemented `SpineTaskGroup` in `config/buildSrc`
+  (`io.spine.gradle.SpineTaskGroup`). Verified by ripgrep that no
+  bare `"spine"` task-group literals exist in `*.kt` or `*.gradle.kts`
+  under this repo, so the migration step in section A is a no-op
+  inside `config`. The constant is in place for new tasks added here
+  and for consumer repositories' build files. The `tool-base`
+  constant and its migration remain tracked under
+  [tool-base#171][tool-base-171].
