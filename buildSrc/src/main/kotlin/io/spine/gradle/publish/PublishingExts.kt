@@ -169,6 +169,7 @@ private fun TaskContainer.registerCheckCredentialsTask(
     destinations: Set<Repository>,
 ): TaskProvider<Task> {
     val checkCredentials = "checkCredentials"
+    val taskDescription = "Checks credentials for the configured publishing destinations"
     try {
         // The result of this call is ignored intentionally.
         //
@@ -180,10 +181,16 @@ private fun TaskContainer.registerCheckCredentialsTask(
         // for some previously asked `destinations`.
         named(checkCredentials)
         val toConfigure = replace(checkCredentials)
+        toConfigure.group = SpineTaskGroup.name
+        toConfigure.description = taskDescription
         toConfigure.doLastCredentialsCheck(destinations)
         return named(checkCredentials)
     } catch (_: Exception) {
-        return register(checkCredentials) { doLastCredentialsCheck(destinations) }
+        return register(checkCredentials) {
+            group = SpineTaskGroup.name
+            description = taskDescription
+            doLastCredentialsCheck(destinations)
+        }
     }
 }
 
