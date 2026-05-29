@@ -112,7 +112,7 @@ The authoritative standards live in `.agents/`:
     - **River**: a vertical "gap" of aligned spaces running down justified
       text. Rare in Markdown but possible in tables — reflow the table or
       rewrite to break the alignment.
-      Quote the offending paragraph and propose a rewording that fixes it.
+  Quote the offending paragraph and propose a rewording that fixes it.
 
 ### D. Terminology and tone
 
