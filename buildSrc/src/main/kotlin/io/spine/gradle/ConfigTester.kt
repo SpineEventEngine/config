@@ -122,7 +122,7 @@ class ConfigTester(
     ) {
         tasks.register(executeBuildName) {
             group = SpineTaskGroup.name
-            description = "Checks out `${gitRepo.name}` and overlays the local `config` and `buildSrc`"
+            description = "Checks out `${gitRepo.name}` and overlays local `config` and `buildSrc`"
             doLast {
                 println(" *** Testing `config` and `config/buildSrc` with `${gitRepo.name}`. ***")
                 val ignoredFolder = tempFolder.toPath()

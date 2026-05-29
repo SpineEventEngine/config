@@ -77,7 +77,7 @@ fun DartTasks.integrationTest() =
     register(integrationTestName) {
 
         group = SpineTaskGroup.name
-        description = "Runs integration tests of the `spine-dart` library against a sample application"
+        description = "Runs integration tests of `spine-dart` against a sample application"
 
         dependsOn(
             resolveDependencies,

@@ -165,7 +165,7 @@ class JacocoConfig(
 
         val rootReport = tasks.register(jacocoRootReport.name, JacocoReport::class.java) {
             group = SpineTaskGroup.name
-            description = "Aggregates JaCoCo coverage data from all subprojects into a single report"
+            description = "Aggregates JaCoCo coverage data from subprojects into a single report"
             dependsOn(copyReports)
 
             additionalSourceDirs.from(humanProducedSourceFolders)
@@ -198,7 +198,7 @@ class JacocoConfig(
 
         val copyReports = tasks.register(copyReports.name, Copy::class.java) {
             group = SpineTaskGroup.name
-            description = "Copies and renames JaCoCo execution data from subprojects into the root reports folder"
+            description = "Copies JaCoCo `.exec` files from subprojects into root reports folder"
             from(originalLocation)
             into(reportsDir)
             rename {
