@@ -32,7 +32,7 @@ Decisions captured this session (carry these forward — do not re-litigate):
 - **Test policy (from `.agents/testing.md`, authoritative):** stubs not mocks;
   prefer Kotest assertions; cover API edge cases; scaffold `when`/sealed-class
   branches. No mocking framework is on the classpath by design.
-- **Verified stack:** JUnit 5 (Jupiter 6.0.3) platform; Google Truth 1.4.4
+- **Verified stack:** JUnit (Jupiter 6.0.3) platform; Google Truth 1.4.4
   (incl. proto-extension) for Java; Kotest 6.1.11 for Kotlin; JaCoCo 0.8.13 via
   `io.spine.gradle.report.coverage.JacocoConfig`; shared `.codecov.yml`.
 
