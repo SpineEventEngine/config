@@ -27,6 +27,7 @@
 package io.spine.gradle.report.coverage
 
 import io.spine.dependency.test.Jacoco
+import io.spine.gradle.SpineTaskGroup
 import io.spine.gradle.applyPlugin
 import io.spine.gradle.getTask
 import io.spine.gradle.report.coverage.TaskName.check
@@ -163,6 +164,8 @@ class JacocoConfig(
         val humanProducedCompiledFiles = filter.humanProducedCompiledFiles()
 
         val rootReport = tasks.register(jacocoRootReport.name, JacocoReport::class.java) {
+            group = SpineTaskGroup.name
+            description = "Aggregates JaCoCo coverage data from all subprojects into a single report"
             dependsOn(copyReports)
 
             additionalSourceDirs.from(humanProducedSourceFolders)
@@ -194,6 +197,8 @@ class JacocoConfig(
         val originalLocation = rootProject.files(everyExecData)
 
         val copyReports = tasks.register(copyReports.name, Copy::class.java) {
+            group = SpineTaskGroup.name
+            description = "Copies and renames JaCoCo execution data from subprojects into the root reports folder"
             from(originalLocation)
             into(reportsDir)
             rename {
