@@ -112,6 +112,14 @@ Apply these edits to each module's `build.gradle.kts`:
   into both the per-module and the root `kover { reports { filters { … } } }`
   blocks. See §4 (root aggregation) for the long-form equivalent if `buildSrc`
   is not on the classpath.
+- **Lifecycle gotcha — do not call `KoverConfig.applyTo(...)` from inside
+  `gradle.projectsEvaluated { … }`.** Many Spine consumer repos wrap
+  `JacocoConfig.applyTo(project)` in that block; carrying the pattern over
+  fails with `Cannot run Project.afterEvaluate(Action) when the project is
+  already evaluated`, because Kover's plugin registers its own `afterEvaluate`
+  hooks at apply time. Lift the call to top level in the root build script;
+  `KoverConfig.configure()` already uses `gradle.projectsEvaluated` internally
+  for subproject discovery, so deferred behaviour is preserved.
 
 ### Translation table
 

@@ -41,10 +41,17 @@ import org.gradle.kotlin.dsl.configure
  * coverage across subprojects and exclude classes that originate from
  * `generated/` source directories.
  *
- * Apply once from the root build script:
+ * Apply once from the root build script, at top level:
  * ```
  * KoverConfig.applyTo(rootProject)
  * ```
+ *
+ * Do **not** wrap this call in `gradle.projectsEvaluated { … }`. The Kover
+ * plugin registers its own `afterEvaluate` hooks at apply time; applying it
+ * after the root project has been evaluated fails with `Cannot run
+ * Project.afterEvaluate(Action) when the project is already evaluated`.
+ * Subproject discovery is still deferred — [configure] uses
+ * `gradle.projectsEvaluated` internally.
  *
  * The configuration:
  *
