@@ -41,16 +41,16 @@ ships a native skill system (`.agents/skills/<name>/SKILL.md` as source of
 truth, wrapped by `.claude/commands/*.md`). The external skills are used only as
 content donors (structure, taxonomy, Kotest idioms).
 
-### Deliverables already produced (pending placement)
+### Deliverables
 
 - `.agents/skills/coverage-tests/SKILL.md`
 - `.agents/skills/coverage-tests/references/coverage-signals.md`
 - `.claude/commands/coverage-tests.md`
 - install README with the `_TOC.md` patch
 
-### Tools & references observed (with relevance)
+### Tools & references to be observed
 
-Candidate agent skills evaluated:
+Candidate agent skills to be evaluated:
 
 - <a href="https://github.com/clear-solutions/unit-tests-skills">clear-solutions/unit-tests-skills</a>
   — chosen structural base. Clean analyze→generate split, editable per-language
@@ -89,13 +89,11 @@ Spine internals:
 
 ## Plan
 
-Done this session:
-
-- [x] Research and shortlist agent skills for coverage analysis + test generation.
-- [x] Capture decisions (mixed Java+Kotlin; Codecov triage + JaCoCo local;
+- [ ] Research and shortlist agent skills for coverage analysis + test generation.
+- [ ] Capture decisions (mixed Java+Kotlin; Codecov triage + JaCoCo local;
       author in `config` for all repos).
-- [x] Verify test/coverage stack and `.agents`/`.claude` conventions from `config`.
-- [x] Author `SKILL.md`, `references/coverage-signals.md`, command wrapper, and
+- [ ] Verify test/coverage stack and `.agents`/`.claude` conventions from `config`.
+- [ ] Author `SKILL.md`, `references/coverage-signals.md`, command wrapper, and
       install README.
 
 Open items to resolve before first real run (these are the former
