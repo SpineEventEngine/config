@@ -263,9 +263,9 @@ the source layout, both of which Kover preserves under `useJacoco(...)`.
 ### `scripts/*.sh`
 
 Substitute task and path tokens. **Flag** any script that reads raw `.exec`
-files (e.g. `build/jacoco/test.exec`) — Kover does not expose them; the script
-either needs to switch to the XML report or be retired. (Reference: in `config`,
-`scripts/upload-artifacts.sh:38` defines `JACOCO_REPORTS=…`.)
+files (e.g. `build/jacoco/test.exec`) or globs `build/jacoco*` directories —
+Kover does not expose them; the script either needs to switch to the XML report
+under `build/reports/kover/` or be retired.
 
 ## 6. KMP recipe (JVM target only)
 
@@ -340,7 +340,7 @@ and ask the user to decide before applying:
 - Kover 0.7 migration guide:
   <https://kotlin.github.io/kotlinx-kover/gradle-plugin/migrations/migration-to-0.7.0.html>
 - Kover DSL reference (verify / reports / filters):
-  <https://kotlin.github.io/kotlinx-kover/gradle-plugin/dokka/current/kover-gradle-plugin/kotlinx.kover.gradle.plugin.dsl/>
+  <https://kotlin.github.io/kotlinx-kover/gradle-plugin/dokka/-kover%20-gradle%20-plugin/kotlinx.kover.gradle.plugin.dsl/index.html>
 - JaCoCo XML schema (engine, preserved under `useJacoco(...)`):
   <https://www.jacoco.org/jacoco/trunk/coverage/report.dtd>
 - Spine convention sources:
