@@ -41,12 +41,17 @@ the first failure.
 
 - Base ref: `master` unless the user provides a different one.
 - Changed files: `git diff <base>...HEAD --name-only`
-  Remove any path matching the config-distributed list in
-  `AGENTS.md § Code review`. A PR that contains *only* config-distributed
-  files needs no build, no reviewers, and should PASS immediately — skip
-  to step 6 with `build=skipped`, `build_status=skipped`,
-  `reviewers=none`, `version=not-applicable`.
 - Repository root: `git rev-parse --show-toplevel`
+- Repository kind: detect the `config` repository by scanning `git remote -v`
+  for any URL matching `[:/]SpineEventEngine/config(\.git)?$`.
+- Filter changed files using `AGENTS.md § Code review`:
+  - In **`config` itself**, skip only `gradlew` and `gradlew.bat`; every other
+    config-distributed path is owned by this repo and stays in scope.
+  - In any **consumer repo**, remove the full config-distributed skip list. A
+    PR that contains *only* config-distributed files needs no build, no
+    reviewers, and should PASS immediately — skip to step 6 with
+    `build=skipped`, `build_status=skipped`, `reviewers=none`,
+    `version=not-applicable`.
 - Version gate: check only the repository-root `version.gradle.kts`.
   - Absent at both sides → `not-applicable`, continue.
   - Present at `HEAD` → enforce in step 2.

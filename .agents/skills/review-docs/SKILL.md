@@ -37,9 +37,14 @@ The authoritative standards live in `.agents/`:
    - `**/*.proto` (for file-level documentation headers)
    - `**/*.md` (Markdown docs)
    Do **not** review the full repo — only what changed.
-   Filter out config-distributed files (see `AGENTS.md § Code review` for the
-   exact list) before proceeding. If nothing remains after filtering, return
-   `APPROVE — all changes are config-distributed files.` and stop.
+   Apply the `AGENTS.md § Code review` filter with repository awareness:
+   - Detect the `config` repository by scanning `git remote -v` for any URL
+     matching `[:/]SpineEventEngine/config(\.git)?$`.
+   - In **`config` itself**, skip only `gradlew` and `gradlew.bat`; every other
+     config-distributed path is owned by this repo and stays in scope.
+   - In any **consumer repo**, skip the full config-distributed list. If
+     nothing remains after filtering, return
+     `APPROVE — all changes are config-distributed files.` and stop.
 
 2. **Read each affected file fully, not just the hunks.** Prose review
    requires surrounding context — judging widows/runts/orphans, link
