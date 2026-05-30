@@ -29,7 +29,7 @@ simplify the original draft.
 |---|---|
 | Skill name | **`raise-coverage`** (verb-noun, like `write-docs` / `bump-version`) |
 | Workflow | localize → propose cases → **wait for approval** → generate → verify; plus read-only `--triage` |
-| Coverage engine | **JaCoCo engine**, exposed per-repo via Kover (`koverXmlReport`, consumer repos) or raw JaCoCo (`config`); Codecov deferred |
+| Coverage engine | **JaCoCo engine**, exposed via **Kover** (`koverXmlReport`); when a consumer repo still has vanilla JaCoCo, the skill migrates it first (see `raise-coverage-kover-migration.md`); Codecov deferred |
 | Test language | match prod: **Kotlin→Kotest, Java→Google Truth** (+proto) |
 | Scratch dir | reuse existing `tmp/` → `tmp/base-libraries` (already gitignored via `/tmp`) |
 | Done bar | full loop on one `base-libraries` module, **local, nothing committed** |
@@ -53,12 +53,11 @@ simplify the original draft.
   `@DisplayName` / `@TempDir`) + **Kotest matchers** (`shouldBe`, `shouldThrow`,
   `shouldContainExactlyInAnyOrder`). NOT pure Kotest specs. (Verified in
   `buildSrc/src/test/.../FileExtensionsTest.kt`.)
-- **JaCoCo paths**: per-module
-  `<module>/build/reports/jacoco/test/jacocoTestReport.xml` (Gradle default, not
-  overridden); root aggregate
-  `build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml`. KMP modules keep
-  exec data at `build/jacoco/jvmTest.exec`. `JacocoConfig.applyTo` throws on
-  single-module projects.
+- **Kover paths** (post-migration): per-module
+  `<module>/build/reports/kover/report.xml` (KMP JVM-only:
+  `<module>/build/reports/kover/reportJvm.xml`); root aggregation (when wired):
+  `build/reports/kover/report.xml`. Kover manages exec data internally — no
+  raw `.exec` paths are exposed to consumers.
 - **Never test**: generated code (any path containing `generated`), `examples`,
   existing `test` sources. `.codecov.yml` scope is `src/main/**` only.
 - **No version bump** for tests-only changes (contrast with other action skills,
@@ -144,6 +143,9 @@ the skill's procedure against one module and verify.
       (inline / unreachable) gaps surfaced by the pilot.
 - [~] Review: `review-docs` over the new Markdown; sanity-check the `migrate`
       edit; confirm nothing staged in `tmp/base-libraries`.
+- [ ] Kover-only pivot: implement `.agents/tasks/raise-coverage-kover-migration.md`
+      (drop dual-frontend logic, add Step 0 migration gate, deprecate the
+      JaCoCo-pipeline `buildSrc` helpers).
 - [ ] On merge: flip `status: done` and delete this task file per the
       `.agents/tasks/` lifecycle.
 
@@ -181,6 +183,14 @@ the skill's procedure against one module and verify.
   local full-loop on a `base-libraries` module; added `openai.yaml` + `migrate`
   prune-block deliverables. Verified the test stack and JaCoCo report paths from
   `buildSrc`. Rewrote this task file from the plan; awaiting review.
+- 2026-05-30 — Pivot to Kover-only. Decided to collapse the skill to a single
+  frontend and add a Step 0 migration gate. When the skill detects vanilla
+  JaCoCo, it proposes a one-shot repo-wide migration and waits for approval;
+  when nothing is in place, it installs Kover silently. The vanilla-JaCoCo
+  helpers under `buildSrc` (`jacoco-kotlin-jvm` / `jacoco-kmm-jvm` script
+  plugins, `JacocoConfig` aggregator and its support classes) are deprecated,
+  not deleted, so existing consumers keep building. Full implementation plan
+  moved to `.agents/tasks/raise-coverage-kover-migration.md`.
 - 2026-05-30 — Built the four files + wire-up; ran the `base-libraries` pilot.
   Findings that reshaped the skill: (1) consumer repos expose coverage through
   **Kover** (`koverXmlReport`, JaCoCo engine, JaCoCo-format XML) — not the

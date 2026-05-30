@@ -20,7 +20,7 @@
  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF TE USE
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
@@ -60,6 +60,12 @@ private const val KOTLIN_FILE_CLASS_SUFFIX = "Kt"
  * If the absolute path of this file has either no [precedingMarker] or no [extension],
  * returns `null`.
  */
+@Deprecated(
+    message = "Used only by the deprecated `JacocoConfig` pipeline. " +
+            "Removed when `JacocoConfig` is.",
+    level = DeprecationLevel.WARNING
+)
+@Suppress("DEPRECATION")
 internal fun File.parseClassName(
     precedingMarker: PathMarker,
     extension: FileExtension
@@ -85,6 +91,12 @@ internal fun File.parseClassName(
  * If the `.class` file corresponds to the anonymous or nested class, only the name of the
  * top-level enclosing class is returned.
  */
+@Deprecated(
+    message = "Used only by the deprecated `JacocoConfig` pipeline. " +
+            "Removed when `JacocoConfig` is.",
+    level = DeprecationLevel.WARNING
+)
+@Suppress("DEPRECATION")
 internal fun File.asJavaCompiledClassName(): String? {
     var className = this.parseClassName(MAIN_OUTPUT_FOLDER, COMPILED_CLASS)
     if (className != null && className.contains(ANONYMOUS_CLASS.infix)) {
@@ -111,6 +123,11 @@ internal fun File.asJavaCompiledClassName(): String? {
  *
  * Returns an empty list if this file is not located under [sourceRoot].
  */
+@Deprecated(
+    message = "Used only by the deprecated `JacocoConfig` pipeline. " +
+            "Removed when `JacocoConfig` is.",
+    level = DeprecationLevel.WARNING
+)
 internal fun File.classNamesIn(sourceRoot: File): List<String> {
     if (!this.startsWith(sourceRoot)) {
         return emptyList()
@@ -136,5 +153,11 @@ private fun String.toFqn(): String = this.replace(File.separatorChar, '.')
 /**
  * Tells whether this file is a part of the generated sources, and not produced by a human.
  */
+@Deprecated(
+    message = "Used only by the deprecated `JacocoConfig` pipeline. " +
+            "Removed when `JacocoConfig` is.",
+    level = DeprecationLevel.WARNING
+)
+@Suppress("DEPRECATION")
 internal val File.isGenerated
     get() = this.absolutePath.contains(GENERATED.infix)

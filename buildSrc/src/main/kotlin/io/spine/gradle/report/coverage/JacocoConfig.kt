@@ -65,7 +65,16 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
  * Therefore, tn case this utility is applied to a single-module Gradle project,
  * an `IllegalStateException` is thrown.
  */
-@Suppress("unused")
+@Deprecated(
+    message = "Use `KoverConfig.applyTo(rootProject)`, the Kover-based " +
+            "successor that aggregates per-subproject coverage into the " +
+            "root `koverXmlReport` and excludes classes compiled from " +
+            "`generated/` source directories. " +
+            "The `raise-coverage` skill performs this migration automatically. " +
+            "See .agents/skills/raise-coverage/references/migrate-to-kover.md.",
+    level = DeprecationLevel.WARNING
+)
+@Suppress("unused", "DEPRECATION")
 class JacocoConfig(
     private val rootProject: Project,
     private val reportsDir: File,

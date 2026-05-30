@@ -3,17 +3,16 @@
 Mechanical reference for the `raise-coverage` skill. The `SKILL.md` says *what to
 do*; this file says *how to read the numbers*.
 
-Coverage is computed by the **JaCoCo engine** in every Spine repo, but it is
-exposed through one of **two frontends**. Detect which the target repo uses, run
-the matching report task, then parse the XML — which is **JaCoCo-format either
-way**, so all the parsing rules below are shared.
+Coverage is computed by the **JaCoCo engine**, but the Spine convention is to
+expose it through **Kover** with `useJacoco(version = Jacoco.version)`. Kover
+owns the Gradle tasks; JaCoCo owns the engine and the XML format. The skill's
+Step 0 ensures every target repo is on Kover before any analysis runs (see
+[`migrate-to-kover.md`](migrate-to-kover.md)).
 
-## Two coverage frontends
+## Where the report lives
 
-### Kover — the consumer-repo norm
-
-Repos that consume `config`'s `buildSrc` apply **Kover** per module via the
-distributed `module.gradle.kts`:
+Kover is applied per module via the distributed `jvm-module` /
+`kmp-module` script plugins, or directly:
 
 ```kotlin
 plugins { /* … */ id("org.jetbrains.kotlinx.kover") }
@@ -23,52 +22,34 @@ kover {
 }
 ```
 
-`useJacoco(...)` is a **Kover** DSL call — the tasks are Kover's, but the engine
-and the XML format are JaCoCo's.
+`useJacoco(...)` is a **Kover** DSL call — the tasks are Kover's, but the
+engine and the XML format are JaCoCo's.
 
 - Per-module report task: `:<module>:koverXmlReport`
 - XML path: `<module>/build/reports/kover/report.xml`
-  (JVM-only variant: `koverXmlReportJvm` → `reportJvm.xml`)
+  (KMP JVM-only variant: `koverXmlReportJvm` → `reportJvm.xml`)
+- Root-level aggregation (when the repo wires it):
+  `./gradlew koverXmlReport` → `build/reports/kover/report.xml`
 
-### Raw JaCoCo — the `config` repo itself
-
-`config` applies the `jacoco` plugin plus
-`io.spine.gradle.report.coverage.JacocoConfig`:
-
-- Per-module report task: `:<module>:jacocoTestReport`
-  → `<module>/build/reports/jacoco/test/jacocoTestReport.xml`
-- Aggregate root task: `jacocoRootReport`
-  → `build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml`
-- `JacocoConfig.applyTo` throws on a single-module project.
-
-### Detecting which frontend a repo uses
+If unsure of the output path:
 
 ```bash
-./gradlew :<module>:tasks --all --console=plain | grep -iE 'koverXmlReport|jacocoTestReport'
-```
-
-Prefer **`koverXmlReport`** when present (consumer repos); otherwise use
-**`jacocoTestReport`** / `jacocoRootReport` (the `config` repo). If unsure of the
-output path, find it (both reports carry the JaCoCo `report.dtd`):
-
-```bash
-find <module>/build -name '*.xml' \( -path '*kover*' -o -path '*jacoco*' \)
+find <module>/build -name '*.xml' -path '*kover*'
 ```
 
 ## Generating a report
 
 ```bash
-# Kover (consumer repos) — runs the module tests, then writes report.xml
+# Kover — runs the module tests, then writes report.xml
 ./gradlew :<module>:koverXmlReport
 
-# Raw JaCoCo (the config repo)
-./gradlew :<module>:test :<module>:jacocoTestReport     # one module
-./gradlew jacocoRootReport                              # whole repo (slow)
+# KMP JVM-only variant
+./gradlew :<module>:koverXmlReportJvm
 ```
 
 ## Reading the XML
 
-Both frontends emit the same structure: `report > package > class > method`, each
+Kover emits the JaCoCo XML structure: `report > package > class > method`, each
 with `<counter>` elements, plus `<sourcefile>` elements carrying per-line data.
 
 - `<counter type="INSTRUCTION|BRANCH|LINE|METHOD|CLASS|COMPLEXITY"
@@ -106,7 +87,7 @@ report has no XML namespace, so the XPath is plain:
 ```bash
 xmllint --nonet \
   --xpath '//class[@name="io/spine/.../MyType"]//line[@ci="0" or @mb > 0]' \
-  <module>/build/reports/kover/report.xml          # or the jacoco path
+  <module>/build/reports/kover/report.xml
 ```
 
 Python (robust for large reports; reads both class/method counters and
@@ -128,10 +109,9 @@ for pkg in root.findall("package"):
 Only human-written `src/main` code. Two filters already exclude the rest — honor
 both, and never count an excluded file as a gap:
 
-- **`JacocoConfig` human-produced filter** (config repo) — any file whose absolute
-  path contains `generated` is treated as generated and dropped (covers Protobuf
-  and `protoc-gen-kotlin` output). Anonymous/nested classes fold into their
-  top-level class.
+- **Kover filters** — `kover { filters { excludes { … } } }` drops classes by
+  pattern. Generated paths (anything containing `generated`, including Protobuf
+  and `protoc-gen-kotlin` output) are excluded by convention.
 - **`.codecov.yml`** — `ignore` removes `**/generated/**`, `**/examples/**`,
   `**/test/**`; coverage status applies only to `src/main/**`.
 
@@ -140,17 +120,15 @@ both, and never count an excluded file as a gap:
 For Kotlin-JVM and KMP modules, `koverXmlReport` already targets the JVM
 compilation; `koverXmlReportJvm` is the JVM-only variant. Add tests under the
 module's test source set (`src/test`, or `src/jvmTest` / `src/commonTest` for
-KMP) to match. In the raw-JaCoCo `config` repo, the `jacoco-kotlin-jvm` /
-`jacoco-kmm-jvm` script plugins keep exec data at `build/jacoco/jvmTest.exec` and
-classes under `build/classes/kotlin/jvm/`.
+KMP) to match.
 
 ## Verification (SKILL.md step 6)
 
-After generating tests, re-run the **same** report task and re-parse the XML for
-the targeted class: the previously listed `nr` values should no longer be gaps,
-and the method/class `BRANCH` + `LINE` counters should show `missed` reduced.
-Cross-check the module total against the relevant `.codecov.yml` `project` target
-so nothing regresses.
+After generating tests, re-run `:<module>:koverXmlReport` and re-parse the XML
+for the targeted class: the previously listed `nr` values should no longer be
+gaps, and the method/class `BRANCH` + `LINE` counters should show `missed`
+reduced. Cross-check the module total against the relevant `.codecov.yml`
+`project` target so nothing regresses.
 
 ---
 
@@ -169,4 +147,4 @@ targets across repos without a local build. If added:
   hardcode it; it is easy to get backwards.
 - Always degrade gracefully to the local report (above) when the token is absent.
 
-Until that lands, do everything from the local Kover/JaCoCo report.
+Until that lands, do everything from the local Kover report.

@@ -29,6 +29,11 @@ package io.spine.gradle.report.coverage
 /**
  * Fragments of file path which allow to detect the type of the file.
  */
+@Deprecated(
+    message = "Used only by the deprecated `JacocoConfig` pipeline. " +
+            "Removed when `JacocoConfig` is.",
+    level = DeprecationLevel.WARNING
+)
 internal enum class PathMarker(val infix: String) {
 
     /**
