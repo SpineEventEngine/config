@@ -163,8 +163,20 @@ the skill's procedure against one module and verify.
       per-module and root reports. Three review/fix cycles
       (`kotlin-review` + `review-docs`, parallel) all returned APPROVE;
       `./gradlew -p buildSrc compileKotlin` green.
-- [ ] Re-run pilot with the updated skill against `tmp/base-libraries`
-      (`--triage` first, then close one fresh gap).
+- [x] Re-run pilot with the updated skill against `tmp/base-libraries`
+      (`--triage` first, then close one fresh gap). Step 0 correctly detected
+      the hybrid state (root vanilla JaCoCo + subprojects already on Kover via
+      `module` script plugin), emitted the structured proposal, and on approval
+      migrated the root build (drop `jacoco` plugin; swap `JacocoConfig` →
+      `KoverConfig`; lift the call out of `gradle.projectsEvaluated`). Smoke
+      check passed: `:base:koverXmlReport` and root `koverXmlReport` both
+      produce JaCoCo-format XML with `<!DOCTYPE … report.dtd>`; generated
+      `OptionsProto` correctly excluded. Closed gaps in
+      `io.spine.code.fs.AbstractSourceFile` with a Java + Truth + `@TempDir`
+      stub (6 cases): coverage delta 20 missed LINE → 2, 2 missed BRANCH → 0
+      (LINE 91 %, BRANCH 100 %). The residual 2 missed LINE are non-actionable
+      (`throw newIllegalStateException(...)` where the helper throws
+      internally) — pattern added to `references/coverage-signals.md`.
 - [ ] On merge: flip `status: done` and delete this task file per the
       `.agents/tasks/` lifecycle.
 
@@ -219,6 +231,19 @@ the skill's procedure against one module and verify.
   for `parse<T>` left `Parse.kt` `ci=0`), so the skill now filters them out.
   Demonstrated true closure on `EnvironmentType.equals()`/`hashCode()`
   (Java + Truth). `review-docs` running.
+- 2026-05-30 — Re-ran the pilot end-to-end on `tmp/base-libraries`. Step 0
+  detected vanilla JaCoCo at the root + Kover already applied in subprojects,
+  proposed the repo-wide migration, and on approval applied it. One lifecycle
+  gotcha surfaced: `KoverConfig.applyTo(root)` cannot live inside
+  `gradle.projectsEvaluated { … }` (Kover registers `afterEvaluate` hooks at
+  apply time). Documented in `references/migrate-to-kover.md` §3 and in the
+  `KoverConfig` class KDoc. Closed `AbstractSourceFile` with a Java + Truth
+  stub (6 cases via `@TempDir`); coverage went 20/2 missed LINE/BRANCH → 2/0.
+  Residual 2 LINE remained `mi=10 ci=0` despite passing tests — root cause is
+  the Spine `Exceptions.newIllegalStateException` idiom (declared to return
+  the exception but throws internally), making `throw helper(...)` lines
+  unreachable for JaCoCo's downstream probe. Added the pattern to
+  `references/coverage-signals.md` as a third non-actionable category.
 - 2026-05-30 — Kover-only pivot landed. Implemented per
   `.agents/tasks/raise-coverage-kover-migration.md`: collapsed the skill to a
   single Kover frontend with a Step 0 migration gate that proposes a repo-wide

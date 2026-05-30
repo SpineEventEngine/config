@@ -77,6 +77,17 @@ propose tests for them; report them as non-actionable:
 - **Unreachable guards.** `require` / `check` / `error` branches the public API
   cannot trigger (e.g. an invariant guaranteed by construction) — the gap is real
   but unclosable from outside.
+- **`throw helper(...)` where `helper` always throws.** Spine's `Exceptions`
+  utilities (`newIllegalStateException`, `newIllegalArgumentException`, …) are
+  *declared* to return an exception but actually throw it internally. Callers
+  still write `throw newIllegalStateException(...)` to satisfy the compiler's
+  flow analysis, but control never returns to the caller's `ATHROW`. JaCoCo
+  attributes coverage at the line's downstream probe, which is never hit, so
+  the whole line shows `mi=N ci=0` even when a test exercises the catch block
+  and asserts on the exception's message. (Verified on `base-libraries`:
+  `AbstractSourceFile.java:69` and `:82` remained `mi=10 ci=0` after passing
+  tests that drove the `IOException` paths in `load()` and `store()` and
+  asserted on the wrapped message.)
 
 ### Extracting gaps for a class
 
