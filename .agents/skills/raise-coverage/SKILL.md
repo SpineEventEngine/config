@@ -159,10 +159,11 @@ On success, **resume** at Workflow step 1.
    - Discard **non-actionable** gaps the engine cannot credit even with a
      perfect test (see `references/coverage-signals.md`): Kotlin `inline` /
      `inline reified` functions (their bytecode is inlined into each call
-     site, so the definition lines stay `ci=0` regardless of tests) and
+     site, so the definition lines stay `ci=0` regardless of tests),
      unreachable guards (`require`/`check`/`error` paths the public API
-     cannot trigger). Report these as non-actionable instead of proposing
-     tests for them.
+     cannot trigger), and `throw helper(...)` lines where the helper throws
+     internally. Report these as non-actionable instead of proposing tests for
+     them.
 
 3. **Read before you write.**
    - Read the class(es) under test in full — public API, constructors, branch

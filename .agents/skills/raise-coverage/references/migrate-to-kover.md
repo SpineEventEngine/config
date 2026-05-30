@@ -130,9 +130,11 @@ still source-of-truth the values you paste in.
   `JacocoConfig.applyTo(project)` in that block; carrying the pattern over
   fails with `Cannot run Project.afterEvaluate(Action) when the project is
   already evaluated`, because Kover's plugin registers its own `afterEvaluate`
-  hooks at apply time. Lift the call to top level in the root build script;
-  `KoverConfig.configure()` already uses `gradle.projectsEvaluated` internally
-  for subproject discovery, so deferred behaviour is preserved.
+  hooks at apply time. Lift the call to top level in the root build script.
+  `KoverConfig` configures the root eagerly and uses
+  `pluginManager.withPlugin(...)` callbacks for subprojects, so modules that
+  apply Kover later in the same configuration phase are still discovered
+  before Kover finalizes its reports.
 
 ### Translation table
 

@@ -28,14 +28,25 @@ package io.spine.gradle.report.coverage
 
 import io.spine.dependency.test.Jacoco
 import io.spine.dependency.test.Kover
-import io.spine.gradle.sourceSets
 import java.io.File
 import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
 import org.gradle.api.Project
 import org.gradle.api.file.SourceDirectorySet
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+
+private const val GENERATED_MARKER: String = "generated"
+private const val KOTLIN_SOURCE_SET_EXT_NAME: String = "kotlin"
+private const val KOTLIN_MAIN_SOURCE_SET_SUFFIX: String = "Main"
+private const val JAVA_SOURCE_SUFFIX: String = ".java"
+private const val KOTLIN_SOURCE_SUFFIX: String = ".kt"
+private const val PROTO_KOTLIN_SUFFIX: String = ".proto.kt"
+private const val KOTLIN_FILE_CLASS_SUFFIX: String = "Kt"
 
 /**
  * Configures Kover at the root of a multi-module Gradle project to aggregate
@@ -92,13 +103,6 @@ class KoverConfig private constructor(
 ) {
 
     companion object {
-
-        private const val GENERATED_MARKER: String = "generated"
-        private const val KOTLIN_SOURCE_SET_EXT_NAME: String = "kotlin"
-        private const val JAVA_SOURCE_SUFFIX: String = ".java"
-        private const val KOTLIN_SOURCE_SUFFIX: String = ".kt"
-        private const val PROTO_KOTLIN_SUFFIX: String = ".proto.kt"
-        private const val KOTLIN_FILE_CLASS_SUFFIX: String = "Kt"
 
         /**
          * Configures Kover aggregation and generated-code exclusion at the
@@ -217,15 +221,14 @@ class KoverConfig private constructor(
 
     /**
      * Returns the fully-qualified names of all classes that originate from
-     * `generated/` source directories of the [project]'s `main` source set.
+     * `generated/` source directories of the [project]'s production source sets.
      *
-     * Returns an empty list if the project does not expose a Java/Kotlin
-     * `main` source set (for example, a pure non-JVM module).
+     * Java/Kotlin-JVM projects expose these dirs through the `main` source set.
+     * Kotlin Multiplatform projects expose them through source sets such as
+     * `commonMain` and `jvmMain`.
      */
     private fun generatedClassFqns(project: Project): List<String> {
-        val main = project.sourceSets.findByName(SourceSet.MAIN_SOURCE_SET_NAME)
-            ?: return emptyList()
-        return generatedSrcDirs(main)
+        return generatedSrcDirs(project)
             .asSequence()
             .filter { it.exists() && it.isDirectory }
             .flatMap { root ->
@@ -236,48 +239,83 @@ class KoverConfig private constructor(
             .distinct()
             .toList()
     }
+}
 
-    private fun generatedSrcDirs(main: SourceSet): Set<File> {
-        val javaDirs = main.allJava.srcDirs
-        val kotlinDirs =
-            (main.extensions.findByName(KOTLIN_SOURCE_SET_EXT_NAME) as? SourceDirectorySet)
-                ?.srcDirs
-                ?: emptySet()
-        return (javaDirs + kotlinDirs).filter { it.absolutePath.contains(GENERATED_MARKER) }
-            .toSet()
+private fun generatedSrcDirs(project: Project): Set<File> {
+    val javaDirs = javaMainSourceSet(project)
+        ?.let(::generatedSrcDirs)
+        ?: emptySet()
+    val kotlinMultiplatformDirs = kotlinMultiplatformMainSourceSets(project)
+        .asSequence()
+        .flatMap { generatedSrcDirs(it).asSequence() }
+        .toSet()
+    return javaDirs + kotlinMultiplatformDirs
+}
+
+private fun javaMainSourceSet(project: Project): SourceSet? =
+    project.extensions.findByType(JavaPluginExtension::class.java)
+        ?.sourceSets
+        ?.findByName(SourceSet.MAIN_SOURCE_SET_NAME)
+
+private fun kotlinMultiplatformMainSourceSets(project: Project): List<KotlinSourceSet> =
+    project.extensions.findByType(KotlinMultiplatformExtension::class.java)
+        ?.sourceSets
+        ?.filter { it.isMainSourceSet() }
+        ?: emptyList()
+
+private fun generatedSrcDirs(main: SourceSet): Set<File> {
+    val javaDirs = main.allJava.srcDirs
+    val kotlinDirs =
+        (main.extensions.findByName(KOTLIN_SOURCE_SET_EXT_NAME) as? SourceDirectorySet)
+            ?.srcDirs
+            ?: emptySet()
+    return (javaDirs + kotlinDirs).filter { it.absolutePath.contains(GENERATED_MARKER) }
+        .toSet()
+}
+
+@OptIn(ExperimentalKotlinGradlePluginApi::class)
+private fun generatedSrcDirs(sourceSet: KotlinSourceSet): Set<File> {
+    val kotlinDirs = sourceSet.kotlin.srcDirs
+    val generatedKotlinDirs = sourceSet.generatedKotlin.srcDirs
+    return (kotlinDirs + generatedKotlinDirs)
+        .filter { it.absolutePath.contains(GENERATED_MARKER) }
+        .toSet()
+}
+
+private fun KotlinSourceSet.isMainSourceSet(): Boolean =
+    name == KotlinSourceSet.COMMON_MAIN_SOURCE_SET_NAME ||
+            name.endsWith(KOTLIN_MAIN_SOURCE_SET_SUFFIX)
+
+/**
+ * Derives one or more class FQNs from this source file's path relative
+ * to [root].
+ *
+ *  - `.java` — one FQN.
+ *  - `.kt` — the declared class plus the Kotlin file-class synthetic
+ *    (`<Name>Kt`).
+ *  - `.proto.kt` — `protoc-gen-kotlin` convention; the two-part suffix
+ *    is stripped, otherwise treated as a `.kt` file.
+ *  - any other extension — an empty list.
+ *
+ * Returns an empty list if this file is not under [root].
+ */
+private fun File.fqnsRelativeTo(root: File): List<String> {
+    if (!startsWith(root)) {
+        return emptyList()
     }
-
-    /**
-     * Derives one or more class FQNs from this source file's path relative
-     * to [root].
-     *
-     *  - `.java` — one FQN.
-     *  - `.kt` — the declared class plus the Kotlin file-class synthetic
-     *    (`<Name>Kt`).
-     *  - `.proto.kt` — `protoc-gen-kotlin` convention; the two-part suffix
-     *    is stripped, otherwise treated as a `.kt` file.
-     *  - any other extension — an empty list.
-     *
-     * Returns an empty list if this file is not under [root].
-     */
-    private fun File.fqnsRelativeTo(root: File): List<String> {
-        if (!startsWith(root)) {
-            return emptyList()
+    val relative = toRelativeString(root)
+    return when {
+        relative.endsWith(PROTO_KOTLIN_SUFFIX) -> {
+            val base = relative.removeSuffix(PROTO_KOTLIN_SUFFIX).toFqn()
+            listOf(base, base + KOTLIN_FILE_CLASS_SUFFIX)
         }
-        val relative = toRelativeString(root)
-        return when {
-            relative.endsWith(PROTO_KOTLIN_SUFFIX) -> {
-                val base = relative.removeSuffix(PROTO_KOTLIN_SUFFIX).toFqn()
-                listOf(base, base + KOTLIN_FILE_CLASS_SUFFIX)
-            }
-            relative.endsWith(KOTLIN_SOURCE_SUFFIX) -> {
-                val base = relative.removeSuffix(KOTLIN_SOURCE_SUFFIX).toFqn()
-                listOf(base, base + KOTLIN_FILE_CLASS_SUFFIX)
-            }
-            relative.endsWith(JAVA_SOURCE_SUFFIX) ->
-                listOf(relative.removeSuffix(JAVA_SOURCE_SUFFIX).toFqn())
-            else -> emptyList()
+        relative.endsWith(KOTLIN_SOURCE_SUFFIX) -> {
+            val base = relative.removeSuffix(KOTLIN_SOURCE_SUFFIX).toFqn()
+            listOf(base, base + KOTLIN_FILE_CLASS_SUFFIX)
         }
+        relative.endsWith(JAVA_SOURCE_SUFFIX) ->
+            listOf(relative.removeSuffix(JAVA_SOURCE_SUFFIX).toFqn())
+        else -> emptyList()
     }
 }
 
