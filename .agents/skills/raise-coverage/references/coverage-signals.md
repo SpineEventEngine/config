@@ -27,7 +27,10 @@ engine and the XML format are JaCoCo's.
 
 - Per-module report task: `:<module>:koverXmlReport`
 - XML path: `<module>/build/reports/kover/report.xml`
-  (KMP JVM-only variant: `koverXmlReportJvm` → `reportJvm.xml`)
+- Same task on KMP modules configured by Spine's `kmp-module` script
+  plugin — it only sets up the `total` report, so `koverXmlReport` exists
+  but no `koverXmlReport<Variant>` does (a `Jvm`-suffixed task would only
+  appear if a named `variant("jvm") { … }` block were declared).
 - Root-level aggregation (when the repo wires it):
   `./gradlew koverXmlReport` → `build/reports/kover/report.xml`
 
@@ -40,11 +43,9 @@ find <module>/build -name '*.xml' -path '*kover*'
 ## Generating a report
 
 ```bash
-# Kover — runs the module tests, then writes report.xml
+# Kover — runs the module tests, then writes report.xml. Same task name
+# for Kotlin-JVM and Spine `kmp-module` modules.
 ./gradlew :<module>:koverXmlReport
-
-# KMP JVM-only variant
-./gradlew :<module>:koverXmlReportJvm
 ```
 
 ## Reading the XML
@@ -145,10 +146,12 @@ both, and never count an excluded file as a gap:
 
 ## KMP / Kotlin-JVM modules
 
-For Kotlin-JVM and KMP modules, `koverXmlReport` already targets the JVM
-compilation; `koverXmlReportJvm` is the JVM-only variant. Add tests under the
-module's test source set (`src/test`, or `src/jvmTest` / `src/commonTest` for
-KMP) to match.
+For both Kotlin-JVM and KMP modules configured by Spine's `kmp-module` script
+plugin, `koverXmlReport` is the single report task — Kover only generates
+`koverXmlReport<Variant>` tasks when a named `variant("…") { … }` block is
+declared, and `kmp-module` declares none (it configures only the `total`
+report). Add tests under the module's test source set (`src/test`, or
+`src/jvmTest` / `src/commonTest` for KMP) to match.
 
 ## Verification (SKILL.md step 6)
 

@@ -272,9 +272,17 @@ Per decision 5, only the JVM target migrates. Non-JVM targets are out of scope.
 - Apply `id("org.jetbrains.kotlinx.kover")` (literal; the Gradle Kotlin DSL
   `plugins { }` block does not accept the buildSrc `Kover.id` constant). Or
   use `kmp-module`, which applies Kover automatically.
-- Use the `Jvm`-suffixed task and report:
-  - Task: `:<module>:koverXmlReportJvm`
-  - XML: `<module>/build/reports/kover/reportJvm.xml`
+- Use Kover's default report task and XML:
+  - Task: `:<module>:koverXmlReport`
+  - XML: `<module>/build/reports/kover/report.xml`
+
+  When the `kover { reports { total { … } } }` block is the only report
+  configured (as in `kmp-module.gradle.kts:181-190`), Kover does **not**
+  generate a separate `koverXmlReport<Variant>` task per target — the
+  `total` report aggregates every Kotlin variant the module declares, and
+  because Spine only migrates the JVM target the aggregate is JVM-shaped.
+  A `koverXmlReportJvm` task only exists when a named `variant("jvm") { … }`
+  block is added explicitly, which `kmp-module` does not do.
 - Configuration block at module scope:
   ```kotlin
   kover {
@@ -287,8 +295,8 @@ Per decision 5, only the JVM target migrates. Non-JVM targets are out of scope.
   }
   ```
   (`kmp-module.gradle.kts:181-190` already has the right shape.)
-- CI / `.codecov.yml` use the `Jvm` suffix in both the task name and the report
-  filename. Substitute accordingly.
+- CI / `.codecov.yml` use `koverXmlReport` and
+  `build/reports/kover/report.xml`, same as for a Kotlin-JVM module.
 
 ## 7. Manual-review surfaces
 

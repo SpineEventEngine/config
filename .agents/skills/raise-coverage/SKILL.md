@@ -42,8 +42,10 @@ file about *what to do*; that one is *how to read the numbers*.
   Kover Gradle plugin with `useJacoco(version = Jacoco.version)`, which makes
   Kover compute coverage with the JaCoCo engine and emit JaCoCo-format XML.
   Per-module task `:<module>:koverXmlReport`; XML at
-  `<module>/build/reports/kover/report.xml` (KMP JVM-only:
-  `koverXmlReportJvm` → `reportJvm.xml`). See `references/coverage-signals.md`.
+  `<module>/build/reports/kover/report.xml`. KMP modules configured by Spine's
+  `kmp-module` script plugin define only the `total` Kover report, so the
+  same `koverXmlReport` / `report.xml` pair applies — see
+  `references/coverage-signals.md`.
 - **Target human-written `src/main` code only.** Never write tests for generated
   code (any path containing `generated`, e.g. Protobuf output), `examples`, or
   existing test sources. These are excluded by `.codecov.yml` — respect that
@@ -106,17 +108,14 @@ unresolved manual-review surface → stop with "needs your call on `<x>`".
 
 ### Verify (smoke check)
 
-Pick the smallest migrated leaf module and run its Kover report task, then
-inspect the produced XML:
+Pick the smallest migrated leaf module and run `:<module>:koverXmlReport`,
+then inspect `<module>/build/reports/kover/report.xml`. KMP modules also use
+this task — Spine's `kmp-module` script plugin configures only Kover's
+`total` report, which for the JVM-only KMP target is identical in shape to
+the JVM case (see `references/migrate-to-kover.md` §6).
 
-- **JVM module** — task `:<module>:koverXmlReport`; XML at
-  `<module>/build/reports/kover/report.xml`.
-- **KMP module** — task `:<module>:koverXmlReportJvm`; XML at
-  `<module>/build/reports/kover/reportJvm.xml`. (The skill only migrates the
-  JVM target — see `references/migrate-to-kover.md` §6.)
-
-Run `./gradlew :<module>:<task> --quiet`; if the root was touched, also run
-`./gradlew koverXmlReport --quiet` (the root aggregate is always JVM-shaped).
+Run `./gradlew :<module>:koverXmlReport --quiet`; if the root was touched,
+also run `./gradlew koverXmlReport --quiet`.
 Confirm the XML exists, is non-empty, and the first non-XML-declaration line
 contains `<report `. If a `DOCTYPE` is present, confirm it points at JaCoCo's
 `report.dtd` — that confirms `useJacoco(...)` is in effect. Failure → stop;
@@ -135,8 +134,9 @@ On success, **resume** at Workflow step 1.
      **stop**.
 
 2. **Localize the gaps** (per `references/coverage-signals.md`):
-   - Run `:<module>:koverXmlReport` (or `koverXmlReportJvm` on KMP). The
-     report task runs the tests first.
+   - Run `:<module>:koverXmlReport` (the same task on JVM and KMP modules
+     configured by Spine's convention plugins; see
+     `references/coverage-signals.md`). The report task runs the tests first.
    - Parse the XML for uncovered lines (`ci == 0`) and partially covered
      branches (`mb > 0`). Prioritize methods whose `BRANCH` counter has
      `missed > 0`.

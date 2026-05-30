@@ -41,7 +41,7 @@ version) and `Kover.kt` (plugin version) are unchanged because Kover uses
 | 2 | Scope: repo-wide, proposed once |
 | 3 | Trigger: always, unless Kover is already applied everywhere |
 | 4 | Both plugins applied: always remove `jacoco`, keep Kover |
-| 5 | KMP: JVM-target-only migration (`koverXmlReportJvm`) |
+| 5 | KMP: JVM-target-only migration via Spine's `kmp-module` script plugin — uses the same `:<module>:koverXmlReport` task and `build/reports/kover/report.xml` path as Kotlin-JVM, because `kmp-module` configures only Kover's `total` report (no named variants, so no `koverXmlReport<Variant>` task is generated) |
 | 6 | CI / `.codecov.yml` / scripts: all updated to Kover paths and tasks |
 | 7 | Plugin/engine version: reference `io.spine.dependency.test.Kover` / `Jacoco`; do not hardcode |
 | 8 | Translation fidelity: best-effort full; flag unmappable constructs |
@@ -77,10 +77,12 @@ Paths are relative to the `config` repo root.
   one-shot repo-wide migration and waits for approval."
 - Body "with JaCoCo" → "with **Kover**'s JaCoCo-format XML report".
 - **Scope** bullet rewritten Kover-only. Per-module task
-  `:<module>:koverXmlReport` (KMP: `koverXmlReportJvm`); XML at
-  `<module>/build/reports/kover/report.xml` (KMP: `reportJvm.xml`). Strip
-  every "raw JaCoCo" / `jacocoTestReport` / `jacocoRootReport` reference as
-  a normal mode.
+  `:<module>:koverXmlReport`; XML at
+  `<module>/build/reports/kover/report.xml`. Same task and path on KMP
+  modules configured by Spine's `kmp-module` script plugin — it sets up only
+  Kover's `total` report (no named variants, so no
+  `koverXmlReport<Variant>` task is generated). Strip every "raw JaCoCo" /
+  `jacocoTestReport` / `jacocoRootReport` reference as a normal mode.
 - **Insert new `## Step 0 — Ensure Kover`** between `## Inputs` and
   `## Workflow`. Three branches:
   1. Kover applied everywhere → silently proceed.
@@ -110,8 +112,10 @@ Paths are relative to the `config` repo root.
   or the root-level Kover aggregation task `koverXmlReport` if the repo
   wires one".
 - **Workflow step 2**: "Detect the coverage frontend and run …" → "Run
-  `:<module>:koverXmlReport` (or `koverXmlReportJvm` on KMP)". Drop "either
-  way" from the XML-parsing sentence.
+  `:<module>:koverXmlReport`" — same task on JVM and KMP modules configured
+  by Spine's `kmp-module` script plugin (no named variants → no
+  `koverXmlReport<Variant>` task). Drop "either way" from the XML-parsing
+  sentence.
 - **Workflow step 6**: "(`koverXmlReport` or `jacocoTestReport`)" →
   `:<module>:koverXmlReport`.
 - **Report**: add a **Migration** section (emitted only when Step 0 did work).
@@ -129,7 +133,9 @@ Paths are relative to the `config` repo root.
   11–57). Replace with **"Where the report lives"** — per-module task / XML
   path, root-level aggregation paths, `find` recipe if unknown.
 - **"Generating a report"**: drop the two JaCoCo `./gradlew` lines; keep
-  Kover; add KMP variant (`koverXmlReportJvm`).
+  Kover. Same task on KMP modules configured by Spine's `kmp-module` script
+  plugin — no `koverXmlReport<Variant>` task is generated unless a named
+  `variant("…") { … }` block is declared.
 - **"Extracting gaps for a class"**: drop "or the jacoco path".
 - **"KMP / Kotlin-JVM modules"**: keep first sentence; delete the second
   sentence about `jacoco-*-jvm` exec data paths.
@@ -195,9 +201,13 @@ Eight sections:
    - `scripts/*.sh`: `build/jacoco*` glob → `build/reports/kover`; **flag**
      scripts reading raw `.exec` paths (e.g.,
      `scripts/upload-artifacts.sh:38` in `config`).
-6. **KMP recipe**. JVM-only target. Task `koverXmlReportJvm`. XML
-   `build/reports/kover/reportJvm.xml`. CI / `.codecov.yml` use the `Jvm`
-   suffix.
+6. **KMP recipe**. JVM-only target. Same task and XML path as Kotlin-JVM:
+   `:<module>:koverXmlReport` and `<module>/build/reports/kover/report.xml`.
+   Spine's `kmp-module` script plugin configures only Kover's `total` report,
+   so no `koverXmlReport<Variant>` task is generated — CI / `.codecov.yml`
+   must reference the unsuffixed path. A `koverXmlReportJvm` task would only
+   appear if a named `variant("jvm") { … }` block were declared, which
+   `kmp-module` does not do.
 7. **Manual-review surfaces** (flag and ask):
    - Custom `sourceDirectories` / `classDirectories` on `jacocoTestReport`
      (the `jacoco-*-jvm.gradle.kts` pattern).
@@ -274,9 +284,9 @@ remain unchanged. `Jacoco.kt` is the engine-version source used by
   (`koverXmlReport`); when a consumer repo still has vanilla JaCoCo, the
   skill migrates it first; Codecov deferred."
 - "Verified facts": replace the **JaCoCo paths** bullet with a Kover-paths
-  bullet (`<module>/build/reports/kover/report.xml`; KMP JVM-only
-  `reportJvm.xml`; root aggregation `build/reports/kover/report.xml`;
-  Kover manages exec data internally).
+  bullet (`<module>/build/reports/kover/report.xml` — same on KMP via
+  `kmp-module`, which configures only the `total` report; root aggregation
+  `build/reports/kover/report.xml`; Kover manages exec data internally).
 - Plan: append `- [ ]` "Kover-only pivot: implement
   `.agents/tasks/raise-coverage-kover-migration.md`".
 - Log: append a 2026-05-30 entry summarising the pivot.

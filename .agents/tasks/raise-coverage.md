@@ -54,8 +54,10 @@ simplify the original draft.
   `shouldContainExactlyInAnyOrder`). NOT pure Kotest specs. (Verified in
   `buildSrc/src/test/.../FileExtensionsTest.kt`.)
 - **Kover paths** (post-migration): per-module
-  `<module>/build/reports/kover/report.xml` (KMP JVM-only:
-  `<module>/build/reports/kover/reportJvm.xml`); root aggregation (when wired):
+  `<module>/build/reports/kover/report.xml` — same on Kotlin-JVM and KMP
+  modules configured by Spine's `kmp-module` script plugin, which sets up
+  only the `total` Kover report (no named variants, so no
+  `koverXmlReport<Variant>` task is generated). Root aggregation (when wired):
   `build/reports/kover/report.xml`. Kover manages exec data internally — no
   raw `.exec` paths are exposed to consumers.
 - **Runtime successor to `JacocoConfig`**:
