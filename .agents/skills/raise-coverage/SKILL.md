@@ -76,7 +76,7 @@ setup (detection patterns and full migration recipe in
 
 ### Proposal output
 
-Emit the following Markdown sections, in this order, and stop:
+Emit the following Markdown sections, in this order, then stop and wait for approval:
 
 - **Detected** — every module applying `jacoco` / `JacocoPlugin` /
   `JacocoConfig.applyTo` / a `jacoco-*.gradle.kts`; annotate "vanilla only"

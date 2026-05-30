@@ -31,7 +31,10 @@ package io.spine.gradle.report.coverage
  */
 @Deprecated(
     message = "Used only by the deprecated `JacocoConfig` pipeline. " +
-            "Removed when `JacocoConfig` is.",
+            "Removed when `JacocoConfig` is. " +
+            "See `KoverConfig` for the Kover-based successor and " +
+            "`.agents/skills/raise-coverage/references/migrate-to-kover.md` " +
+            "for the migration recipe.",
     level = DeprecationLevel.WARNING
 )
 internal enum class PathMarker(val infix: String) {

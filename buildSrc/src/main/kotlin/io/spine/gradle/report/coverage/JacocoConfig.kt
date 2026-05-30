@@ -62,7 +62,7 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
  * In a single-module Gradle project, this utility is NOT needed. Just a plain `jacoco` plugin
  * applied to the project is sufficient.
  *
- * Therefore, tn case this utility is applied to a single-module Gradle project,
+ * Therefore, in case this utility is applied to a single-module Gradle project,
  * an `IllegalStateException` is thrown.
  */
 @Deprecated(

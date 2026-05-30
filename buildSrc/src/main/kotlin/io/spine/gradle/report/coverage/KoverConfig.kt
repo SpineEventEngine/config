@@ -64,13 +64,14 @@ import org.gradle.kotlin.dsl.configure
  * (`koverXmlReport`) instead of vanilla `jacocoRootReport`.
  */
 @Suppress("unused")
-public class KoverConfig private constructor(
+class KoverConfig private constructor(
     private val rootProject: Project,
 ) {
 
-    public companion object {
+    companion object {
 
         private const val GENERATED_MARKER: String = "generated"
+        private const val KOTLIN_SOURCE_SET_EXT_NAME: String = "kotlin"
         private const val JAVA_SOURCE_SUFFIX: String = ".java"
         private const val KOTLIN_SOURCE_SUFFIX: String = ".kt"
         private const val PROTO_KOTLIN_SUFFIX: String = ".proto.kt"
@@ -80,10 +81,12 @@ public class KoverConfig private constructor(
          * Configures Kover aggregation and generated-code exclusion at the
          * root of a multi-module Gradle project.
          *
-         * Must be called with the root project. Throws an
-         * [IllegalStateException] if the receiver has no subprojects, since
-         * a single-module Gradle project does not need root aggregation —
-         * apply Kover directly in that module instead.
+         * Must be called with the root project; throws an
+         * [IllegalArgumentException] if called with a non-root project, and
+         * an [IllegalStateException] if [project] has no subprojects —
+         * a single-module Gradle project does not need root aggregation,
+         * so apply the `jvm-module` / `kmp-module` script plugin (or the
+         * Kover plugin) directly to that module instead.
          *
          * Eligibility is determined per subproject: only subprojects that
          * apply the Kover plugin (directly or through `jvm-module` /
@@ -91,7 +94,7 @@ public class KoverConfig private constructor(
          * Kover after `applyTo` returns are still picked up — discovery
          * runs in `gradle.projectsEvaluated`.
          */
-        public fun applyTo(project: Project) {
+        fun applyTo(project: Project) {
             require(project == project.rootProject) {
                 "`KoverConfig.applyTo` must be called with the root project. " +
                         "Received ${project.path}."
@@ -161,14 +164,6 @@ public class KoverConfig private constructor(
     }
 
     /**
-     * Expands each fully-qualified class name into two Kover exclusion
-     * patterns: the class itself, and `<FQN>$*` for any nested or anonymous
-     * classes the compiler emits alongside it.
-     */
-    private fun Collection<String>.toExclusionPatterns(): List<String> =
-        flatMap { listOf(it, "$it\$*") }
-
-    /**
      * Returns the fully-qualified names of all classes that originate from
      * `generated/` source directories of the [project]'s `main` source set.
      *
@@ -186,14 +181,16 @@ public class KoverConfig private constructor(
                     .filter { !it.isDirectory }
                     .flatMap { it.fqnsRelativeTo(root).asSequence() }
             }
+            .distinct()
             .toList()
     }
 
     private fun generatedSrcDirs(main: SourceSet): Set<File> {
         val javaDirs = main.allJava.srcDirs
-        val kotlinDirs = (main.extensions.findByName("kotlin") as? SourceDirectorySet)
-            ?.srcDirs
-            ?: emptySet()
+        val kotlinDirs =
+            (main.extensions.findByName(KOTLIN_SOURCE_SET_EXT_NAME) as? SourceDirectorySet)
+                ?.srcDirs
+                ?: emptySet()
         return (javaDirs + kotlinDirs).filter { it.absolutePath.contains(GENERATED_MARKER) }
             .toSet()
     }
@@ -230,6 +227,14 @@ public class KoverConfig private constructor(
             else -> emptyList()
         }
     }
-
-    private fun String.toFqn(): String = replace(File.separatorChar, '.')
 }
+
+/**
+ * Expands each fully-qualified class name into two Kover exclusion
+ * patterns: the class itself, and `<FQN>$*` for any nested or anonymous
+ * classes the compiler emits alongside it.
+ */
+private fun Collection<String>.toExclusionPatterns(): List<String> =
+    flatMap { listOf(it, "$it\$*") }
+
+private fun String.toFqn(): String = replace(File.separatorChar, '.')

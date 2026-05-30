@@ -62,7 +62,10 @@ private const val KOTLIN_FILE_CLASS_SUFFIX = "Kt"
  */
 @Deprecated(
     message = "Used only by the deprecated `JacocoConfig` pipeline. " +
-            "Removed when `JacocoConfig` is.",
+            "Removed when `JacocoConfig` is. " +
+            "See `KoverConfig` for the Kover-based successor and " +
+            "`.agents/skills/raise-coverage/references/migrate-to-kover.md` " +
+            "for the migration recipe.",
     level = DeprecationLevel.WARNING
 )
 @Suppress("DEPRECATION")
@@ -93,7 +96,10 @@ internal fun File.parseClassName(
  */
 @Deprecated(
     message = "Used only by the deprecated `JacocoConfig` pipeline. " +
-            "Removed when `JacocoConfig` is.",
+            "Removed when `JacocoConfig` is. " +
+            "See `KoverConfig` for the Kover-based successor and " +
+            "`.agents/skills/raise-coverage/references/migrate-to-kover.md` " +
+            "for the migration recipe.",
     level = DeprecationLevel.WARNING
 )
 @Suppress("DEPRECATION")
@@ -125,7 +131,10 @@ internal fun File.asJavaCompiledClassName(): String? {
  */
 @Deprecated(
     message = "Used only by the deprecated `JacocoConfig` pipeline. " +
-            "Removed when `JacocoConfig` is.",
+            "Removed when `JacocoConfig` is. " +
+            "See `KoverConfig` for the Kover-based successor and " +
+            "`.agents/skills/raise-coverage/references/migrate-to-kover.md` " +
+            "for the migration recipe.",
     level = DeprecationLevel.WARNING
 )
 internal fun File.classNamesIn(sourceRoot: File): List<String> {
@@ -155,7 +164,10 @@ private fun String.toFqn(): String = this.replace(File.separatorChar, '.')
  */
 @Deprecated(
     message = "Used only by the deprecated `JacocoConfig` pipeline. " +
-            "Removed when `JacocoConfig` is.",
+            "Removed when `JacocoConfig` is. " +
+            "See `KoverConfig` for the Kover-based successor and " +
+            "`.agents/skills/raise-coverage/references/migrate-to-kover.md` " +
+            "for the migration recipe.",
     level = DeprecationLevel.WARNING
 )
 @Suppress("DEPRECATION")

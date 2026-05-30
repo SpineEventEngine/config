@@ -32,7 +32,10 @@ package io.spine.gradle.report.coverage
 @Deprecated(
     message = "Internal task-name catalog for the deprecated `JacocoConfig` pipeline. " +
             "Kover uses its built-in task names (`koverXmlReport`, etc.). " +
-            "Removed when `JacocoConfig` is.",
+            "Removed when `JacocoConfig` is. " +
+            "See `KoverConfig` for the Kover-based successor and " +
+            "`.agents/skills/raise-coverage/references/migrate-to-kover.md` " +
+            "for the migration recipe.",
     level = DeprecationLevel.WARNING
 )
 @Suppress("EnumEntryName", "EnumNaming") /* Dubbing the actual values in Gradle. */

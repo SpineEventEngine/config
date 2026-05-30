@@ -119,7 +119,7 @@ Apply these edits to each module's `build.gradle.kts`:
 |---|---|
 | `jacoco { toolVersion = Jacoco.version }` | drop (engine version moves to root `useJacoco(...)`) |
 | `jacoco { toolVersion = "<other>" }` | **flag** (intentional engine pin — confirm Kover's `useJacoco(version = ...)` matches) |
-| `reports { xml=true; html=true; csv=false }` on `jacocoTestReport` | `kover { reports { total { xml { onCheck.set(true) }; html { } } } }` |
+| `reports { xml=true; html=true; csv=false }` on `jacocoTestReport` | `kover { reports { total { xml { onCheck = true }; html { } } } }` |
 | `executionData.setFrom(...)` | **flag** (Kover manages exec data internally) |
 | `sourceDirectories.setFrom(...)` | **flag** (Kover infers from compilations) |
 | `classDirectories.setFrom(...)` — the Kotlin-JVM/KMP `walkBottomUp` recipe used by `jacoco-kotlin-jvm` / `jacoco-kmm-jvm` | drop; **flag** if the module is non-Kotlin (Kover may not pick up its classes) |
@@ -192,7 +192,7 @@ kover {
     useJacoco(version = io.spine.dependency.test.Jacoco.version)
     reports {
         total {
-            xml { onCheck.set(true) }
+            xml { onCheck = true }
             html { }
         }
     }
@@ -253,7 +253,7 @@ Per decision 5, only the JVM target migrates. Non-JVM targets are out of scope.
       useJacoco(version = Jacoco.version)
       reports {
           total {
-              xml { onCheck.set(true) }
+              xml { onCheck = true }
           }
       }
   }
