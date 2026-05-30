@@ -112,7 +112,10 @@ still source-of-truth the values you paste in.
   `apply<JacocoPlugin>()`, or `apply(plugin = "jacoco")`).
 - Replace `apply(plugin = "jacoco-kotlin-jvm")` / `apply(plugin = "jacoco-kmm-jvm")`
   with `id("jvm-module")` / `id("kmp-module")` when that is the module's role;
-  otherwise drop and add `id(Kover.id)` directly.
+  otherwise drop and add `id("org.jetbrains.kotlinx.kover")` directly (the
+  literal value of `io.spine.dependency.test.Kover.id`; the Gradle Kotlin DSL
+  `plugins { }` block does not accept buildSrc constants across the Gradle
+  versions Spine supports).
 - Rewrite `JacocoConfig.applyTo(rootProject)` (at the root build script) to
   `KoverConfig.applyTo(rootProject)` and update the import to
   `io.spine.gradle.report.coverage.KoverConfig`. The Kover-based helper is the
@@ -266,14 +269,16 @@ either needs to switch to the XML report or be retired. (Reference: in `config`,
 
 Per decision 5, only the JVM target migrates. Non-JVM targets are out of scope.
 
-- Apply `id(Kover.id)` (or use `kmp-module` which does).
+- Apply `id("org.jetbrains.kotlinx.kover")` (literal; the Gradle Kotlin DSL
+  `plugins { }` block does not accept the buildSrc `Kover.id` constant). Or
+  use `kmp-module`, which applies Kover automatically.
 - Use the `Jvm`-suffixed task and report:
   - Task: `:<module>:koverXmlReportJvm`
   - XML: `<module>/build/reports/kover/reportJvm.xml`
 - Configuration block at module scope:
   ```kotlin
   kover {
-      useJacoco(version = Jacoco.version)
+      useJacoco(version = "0.8.14") // matches `io.spine.dependency.test.Jacoco.version`
       reports {
           total {
               xml { onCheck = true }
