@@ -30,7 +30,7 @@ simplify the original draft.
 | Skill name | **`raise-coverage`** (verb-noun, like `write-docs` / `bump-version`) |
 | Workflow | localize → propose cases → **wait for approval** → generate → verify; plus read-only `--triage` |
 | Coverage engine | **JaCoCo engine**, exposed via **Kover** (`koverXmlReport`); when a consumer repo still has vanilla JaCoCo, the skill migrates it first (see `raise-coverage-kover-migration.md`); Codecov deferred |
-| Test language | match prod: **Kotlin→Kotest, Java→Google Truth** (+proto) |
+| Test language | **Kotlin + Kotest** for every new test, regardless of the language of the code under test; class names use the **`Spec`** suffix (e.g. `AbstractSourceFileSpec`). Truth proto extension is reachable only when Kotest cannot express the assertion |
 | Scratch dir | reuse existing `tmp/` → `tmp/base-libraries` (already gitignored via `/tmp`) |
 | Done bar | full loop on one `base-libraries` module, **local, nothing committed** |
 | Codex parity | include `agents/openai.yaml` |
@@ -231,6 +231,15 @@ the skill's procedure against one module and verify.
   for `parse<T>` left `Parse.kt` `ci=0`), so the skill now filters them out.
   Demonstrated true closure on `EnvironmentType.equals()`/`hashCode()`
   (Java + Truth). `review-docs` running.
+- 2026-05-30 — Tightened the test-generation policy in `SKILL.md` and the
+  Codex `default_prompt`. New tests are always written in **Kotlin** (JUnit
+  Jupiter + Kotest assertions), regardless of whether the code under test is
+  Kotlin or Java, and test class names use the **`Spec`** suffix
+  (`AbstractSourceFileSpec`, not `AbstractSourceFileTest`). This matches the
+  `*Spec.kt` convention already in use across `base-libraries` and removes
+  the dual-language Truth-for-Java branch that the prior pilot followed by
+  accident. Truth (`truth-proto-extension`) stays reachable only for
+  Protobuf assertions Kotest cannot express.
 - 2026-05-30 — Re-ran the pilot end-to-end on `tmp/base-libraries`. Step 0
   detected vanilla JaCoCo at the root + Kover already applied in subprojects,
   proposed the repo-wide migration, and on approval applied it. One lifecycle

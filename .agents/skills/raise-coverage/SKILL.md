@@ -5,11 +5,12 @@ description: >
   else, ensures the repo is on Kover — if vanilla JaCoCo is detected, proposes
   a one-shot repo-wide migration and **waits for approval**. Then localizes
   uncovered lines and branches from Kover's JaCoCo-format XML report, and
-  generates policy-compliant unit tests — stubs not mocks, Kotest for Kotlin,
-  Google Truth for Java. Proposes a test-case list and waits for approval
-  before writing any test, then re-runs the report to confirm the gap is
-  closed. Use when asked to add missing tests, close coverage gaps, or raise
-  a module's coverage.
+  generates policy-compliant unit tests — stubs not mocks; tests are written
+  in **Kotlin** with Kotest assertions, regardless of whether
+  the code under test is Kotlin or Java; class names use the **`Spec`**
+  suffix. Proposes a test-case list and waits for approval before writing any
+  test, then re-runs the report to confirm the gap is closed. Use when asked
+  to add missing tests, close coverage gaps, or raise a module's coverage.
 ---
 
 # Raise test coverage
@@ -156,16 +157,23 @@ On success, **resume** at Workflow step 1.
      anything. (Under `--triage` you already stopped at step 1.)
 
 5. **Generate the tests** (only after approval), per `.agents/testing.md`:
-   - **Match the language of the code under test:**
-     - Kotlin → a Kotlin test using JUnit Jupiter structure
-       (`@Test` / `@Nested` / `@DisplayName`) with **Kotest assertions**
-       (`shouldBe`, `shouldThrow`, `shouldContainExactlyInAnyOrder`, …).
-     - Java → a Java test using JUnit Jupiter with **Google Truth**
-       (`assertThat(...)`); Protobuf types use the Truth proto extension.
+   - **Write tests in Kotlin**, regardless of whether the code under test is
+     Kotlin or Java. Use JUnit Jupiter structure (`@Test` / `@Nested` /
+     `@DisplayName`) with **Kotest assertions** (`shouldBe`, `shouldThrow`,
+     `shouldContainExactlyInAnyOrder`, …). Reach for the
+     `truth-proto-extension` only when asserting on Protobuf message subjects
+     that Kotest's matchers cannot express, and keep that import isolated to
+     the case that needs it.
+   - **Class names use the `Spec` suffix** — e.g. `AbstractSourceFileSpec`,
+     not `AbstractSourceFileTest`. This matches the house convention in
+     existing `*Spec.kt` files (`base-libraries`, etc.) and applies even when
+     the code under test is Java.
    - **Stubs, not mocks.** No mocking framework is on the classpath by design.
    - Cover API edge cases; add a case per `when`/sealed-class branch.
-   - Place the test in the module's existing test source set, mirroring the
-     package of the code under test. Reuse the file's copyright header.
+   - Place the test under `<module>/src/test/kotlin/...`, mirroring the
+     package of the code under test (KMP: `src/jvmTest/kotlin/...` or
+     `src/commonTest/kotlin/...` per the module's target). Reuse the file's
+     copyright header.
 
 6. **Verify.**
    - Re-run `:<module>:koverXmlReport`.
