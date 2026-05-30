@@ -57,7 +57,11 @@ import org.gradle.kotlin.dsl.configure
  *
  *  - Applies the Kover plugin to the root project.
  *  - Pins the coverage engine to the JaCoCo version declared in
- *    [io.spine.dependency.test.Jacoco] via `useJacoco(...)`.
+ *    [io.spine.dependency.test.Jacoco] via `useJacoco(...)` on the root **and
+ *    on every eligible subproject**. The `jvm-module` / `kmp-module` script
+ *    plugins already pin the same version, so the per-subproject call is
+ *    idempotent for those modules; it matters for subprojects that apply
+ *    Kover directly without the convention plugin.
  *  - For every subproject that applies Kover, adds a `kover(project(...))`
  *    dependency so the subproject's coverage flows into the root rollup,
  *    and pushes the subproject's generated-class FQNs into its own
@@ -124,7 +128,7 @@ class KoverConfig private constructor(
             eligible.forEach { sub ->
                 addAggregationDependency(sub)
                 val perModule = generatedClassFqns(sub)
-                applyExcludes(sub, perModule)
+                configureSubproject(sub, perModule)
                 allGenerated.addAll(perModule)
             }
             configureRoot(allGenerated)
@@ -135,15 +139,24 @@ class KoverConfig private constructor(
         rootProject.dependencies.add("kover", rootProject.project(sub.path))
     }
 
-    private fun applyExcludes(sub: Project, fqns: Collection<String>) {
-        if (fqns.isEmpty()) {
-            return
-        }
+    /**
+     * Pins the coverage engine to the JaCoCo version declared in
+     * [io.spine.dependency.test.Jacoco] on [sub], and — if [fqns] is
+     * non-empty — pushes them into the subproject's Kover exclude filter.
+     *
+     * Calling `useJacoco(...)` is idempotent: the `jvm-module` and
+     * `kmp-module` script plugins already pin the same version; the call
+     * here matters for subprojects that apply Kover directly.
+     */
+    private fun configureSubproject(sub: Project, fqns: Collection<String>) {
         sub.extensions.configure(KoverProjectExtension::class.java) {
-            reports {
-                filters {
-                    excludes {
-                        classes(fqns.toExclusionPatterns())
+            useJacoco(Jacoco.version)
+            if (fqns.isNotEmpty()) {
+                reports {
+                    filters {
+                        excludes {
+                            classes(fqns.toExclusionPatterns())
+                        }
                     }
                 }
             }

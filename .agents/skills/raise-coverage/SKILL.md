@@ -106,13 +106,21 @@ unresolved manual-review surface → stop with "needs your call on `<x>`".
 
 ### Verify (smoke check)
 
-After applying, run `./gradlew :<module>:koverXmlReport --quiet` on the smallest
-leaf migrated JVM module; if the root was touched, also run
-`./gradlew koverXmlReport --quiet`. Confirm
-`<module>/build/reports/kover/report.xml` exists, is non-empty, and the first
-non-XML-declaration line contains `<report `. If a `DOCTYPE` is present, confirm
-it points at JaCoCo's `report.dtd` — that confirms `useJacoco(...)` is in
-effect. Failure → stop; do not fall through to the Workflow.
+Pick the smallest migrated leaf module and run its Kover report task, then
+inspect the produced XML:
+
+- **JVM module** — task `:<module>:koverXmlReport`; XML at
+  `<module>/build/reports/kover/report.xml`.
+- **KMP module** — task `:<module>:koverXmlReportJvm`; XML at
+  `<module>/build/reports/kover/reportJvm.xml`. (The skill only migrates the
+  JVM target — see `references/migrate-to-kover.md` §6.)
+
+Run `./gradlew :<module>:<task> --quiet`; if the root was touched, also run
+`./gradlew koverXmlReport --quiet` (the root aggregate is always JVM-shaped).
+Confirm the XML exists, is non-empty, and the first non-XML-declaration line
+contains `<report `. If a `DOCTYPE` is present, confirm it points at JaCoCo's
+`report.dtd` — that confirms `useJacoco(...)` is in effect. Failure → stop;
+do not fall through to the Workflow.
 
 On success, **resume** at Workflow step 1.
 

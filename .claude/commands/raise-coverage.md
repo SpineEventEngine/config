@@ -15,8 +15,11 @@ Follow the `raise-coverage` skill exactly:
 - Order: localize gaps from Kover's JaCoCo-format XML → propose concrete test
   cases and **wait for confirmation** → generate → re-run
   `:<module>:koverXmlReport` to verify the gap closed.
-- Honor `.agents/testing.md` (stubs not mocks; Kotlin → Kotest, Java → Google
-  Truth) and `.agents/coding-guidelines.md` for Kotlin/Java idioms.
+- Honor `.agents/testing.md` and `.agents/coding-guidelines.md`. New tests are
+  always written in **Kotlin** (JUnit Jupiter structure + Kotest assertions),
+  regardless of whether the code under test is Kotlin or Java, with no
+  mocking framework — stubs only. Test class names use the **`Spec`** suffix
+  (e.g. `AbstractSourceFileSpec`).
 - Target human-written `src/main` code only — never generated code, `examples`,
   or existing tests.
 - Never weaken a `.codecov.yml` target or add a mocking dependency to make a

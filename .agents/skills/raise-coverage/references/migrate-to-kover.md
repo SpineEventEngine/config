@@ -80,21 +80,31 @@ Apply these edits to each module's `build.gradle.kts`:
 
 ### Add Kover
 
-- If `buildSrc` is on the classpath and exposes the `Kover` object:
+Gradle's `plugins { }` block is a constrained DSL that accepts **literal**
+plugin IDs and versions only — non-literal constants from `buildSrc` are not
+guaranteed to resolve there across the Gradle versions Spine targets. Use
+literals; the `Kover` / `Jacoco` constants in `io.spine.dependency.test`
+still source-of-truth the values you paste in.
+
+- If the module already applies `jvm-module` or `kmp-module`, **skip this
+  step** (log "already via jvm-module" / "already via kmp-module") — both
+  script plugins auto-apply Kover.
+- If `buildSrc` is on the classpath (the normal Spine consumer case), use the
+  bare literal — `buildSrc/build.gradle.kts` pins the Kover plugin version
+  globally via the `koverVersion` property, so a per-module version pin is
+  redundant:
   ```kotlin
   plugins {
-      id(io.spine.dependency.test.Kover.id)
+      id("org.jetbrains.kotlinx.kover") // matches `io.spine.dependency.test.Kover.id`
   }
   ```
-- Otherwise, with a version pin sourced from `Kover.version`:
+- Without `buildSrc`, pin the version literally (substitute the current
+  `io.spine.dependency.test.Kover.version` value):
   ```kotlin
   plugins {
-      id("org.jetbrains.kotlinx.kover") version "<Kover.version>"
+      id("org.jetbrains.kotlinx.kover") version "0.9.8"
   }
   ```
-- If the module already applies `jvm-module` or `kmp-module`, **skip the add**
-  (log "already via jvm-module" / "already via kmp-module") — both script
-  plugins auto-apply Kover.
 
 ### Strip JaCoCo
 
@@ -184,10 +194,14 @@ what the skill writes when migrating consumer repos.
 
 ### Long-form — when `buildSrc` is not available
 
+The `Kover` and `Jacoco` constants live in `buildSrc/.../io/spine/dependency/test/`
+and are unreachable when this fallback applies. Paste the literal values
+(substitute the current `Kover.version` / `Jacoco.version`):
+
 ```kotlin
 // Root build.gradle.kts
 plugins {
-    id(io.spine.dependency.test.Kover.id)
+    id("org.jetbrains.kotlinx.kover") version "0.9.8"
 }
 
 dependencies {
@@ -197,7 +211,7 @@ dependencies {
 }
 
 kover {
-    useJacoco(version = io.spine.dependency.test.Jacoco.version)
+    useJacoco(version = "0.8.14")
     reports {
         total {
             xml { onCheck = true }
@@ -208,9 +222,10 @@ kover {
 ```
 
 Note: the long-form variant does **not** exclude generated code automatically.
-Either also apply `KoverConfig.applyTo(rootProject)` (preferred), or push your
-own exclusion patterns into `kover { reports { filters { excludes { classes(…) } } } }`
-at the root and in each subproject.
+Either also apply `KoverConfig.applyTo(rootProject)` (preferred, but requires
+`buildSrc`), or push your own exclusion patterns into
+`kover { reports { filters { excludes { classes(…) } } } }` at the root and in
+each subproject.
 
 If the source repo had a root-level `jacocoTestCoverageVerification`
 (`violationRules`), mirror its `rule { limit { … } }` blocks to
