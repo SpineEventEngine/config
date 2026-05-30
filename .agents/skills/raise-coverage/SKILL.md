@@ -66,8 +66,23 @@ If `$ARGUMENTS` is empty, ask which module or path to target (or offer
 
 ## Step 0 — Ensure Kover
 
-Run this **before** the Workflow below. Branch on the repo's current coverage
-setup (detection patterns and full migration recipe in
+Run this **before** the Workflow below. Behaviour depends on `$ARGUMENTS`:
+
+### Under `--triage` (read-only)
+
+`--triage` is contractually read-only and must not write build files. If
+Kover is not already applied everywhere, **emit a "Setup required" report
+and stop** without writing anything (and without proposing a migration).
+List the modules that still need migration, point at
+[`references/migrate-to-kover.md`](references/migrate-to-kover.md), and tell
+the user to re-run `/raise-coverage` **without** `--triage` to perform the
+migration first. Once Kover is in place everywhere, `--triage` proceeds to
+the Workflow.
+
+### Otherwise
+
+Branch on the repo's current coverage setup (detection patterns and full
+migration recipe in
 [`references/migrate-to-kover.md`](references/migrate-to-kover.md)):
 
 1. **Kover applied everywhere already** — silently proceed to the Workflow.
@@ -207,8 +222,11 @@ actually did work):
 
 ## Safety
 
+- **`--triage` is read-only.** Step 0 never writes under `--triage`; if
+  Kover is not in place, emit "Setup required" and stop.
 - **Migration requires approval when vanilla JaCoCo is detected.** Silent
-  install of Kover happens only when *no* coverage frontend is in place.
+  install of Kover happens only when *no* coverage frontend is in place and
+  `--triage` is not requested.
 - **Read-only until approval.** Do not write tests before the user confirms the
   step-4 list.
 - **Never weaken a `.codecov.yml` target** or extend its `ignore` list to make a

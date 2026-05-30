@@ -33,6 +33,7 @@ import java.io.File
 import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
 import org.gradle.api.Project
 import org.gradle.api.file.SourceDirectorySet
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.kotlin.dsl.configure
 
@@ -50,8 +51,19 @@ import org.gradle.kotlin.dsl.configure
  * plugin registers its own `afterEvaluate` hooks at apply time; applying it
  * after the root project has been evaluated fails with `Cannot run
  * Project.afterEvaluate(Action) when the project is already evaluated`.
- * Subproject discovery is still deferred — [configure] uses
- * `gradle.projectsEvaluated` internally.
+ *
+ * Subproject wiring is deferred via `pluginManager.withPlugin(...)`:
+ * the per-subproject `useJacoco(...)`, aggregation dependency, and exclude
+ * filter are registered the moment a subproject applies the Kover plugin —
+ * either immediately (if the plugin is already applied) or later in the
+ * same configuration phase. Both branches run **before** Kover's own
+ * `afterEvaluate` finalization, so the engine pin and the aggregation
+ * dependency are visible when Kover builds its task graph.
+ *
+ * Generated-class FQN discovery is resolved lazily through a [Provider]
+ * passed to `classes(...)`. The directory walk happens at task-graph time
+ * (not at configuration time), so `protoc`-generated sources created by
+ * upstream tasks are picked up correctly on a clean build.
  *
  * The configuration:
  *
@@ -102,8 +114,9 @@ class KoverConfig private constructor(
          * Eligibility is determined per subproject: only subprojects that
          * apply the Kover plugin (directly or through `jvm-module` /
          * `kmp-module`) are wired into the rollup. Subprojects that apply
-         * Kover after `applyTo` returns are still picked up — discovery
-         * runs in `gradle.projectsEvaluated`.
+         * Kover after `applyTo` returns are still picked up — wiring runs
+         * inside a `pluginManager.withPlugin(...)` callback that fires
+         * the moment the plugin is applied.
          */
         fun applyTo(project: Project) {
             require(project == project.rootProject) {
@@ -120,18 +133,12 @@ class KoverConfig private constructor(
     }
 
     private fun configure() {
-        rootProject.gradle.projectsEvaluated {
-            val eligible = rootProject.subprojects.filter {
-                it.pluginManager.hasPlugin(Kover.id)
-            }
-            val allGenerated = sortedSetOf<String>()
-            eligible.forEach { sub ->
+        configureRoot()
+        rootProject.subprojects.forEach { sub ->
+            sub.pluginManager.withPlugin(Kover.id) {
                 addAggregationDependency(sub)
-                val perModule = generatedClassFqns(sub)
-                configureSubproject(sub, perModule)
-                allGenerated.addAll(perModule)
+                configureSubproject(sub)
             }
-            configureRoot(allGenerated)
         }
     }
 
@@ -141,29 +148,28 @@ class KoverConfig private constructor(
 
     /**
      * Pins the coverage engine to the JaCoCo version declared in
-     * [io.spine.dependency.test.Jacoco] on [sub], and — if [fqns] is
-     * non-empty — pushes them into the subproject's Kover exclude filter.
+     * [io.spine.dependency.test.Jacoco] on [sub] and registers a lazy
+     * exclude filter that resolves [sub]'s generated-class FQNs at
+     * task-graph time, after upstream code-generation tasks have run.
      *
      * Calling `useJacoco(...)` is idempotent: the `jvm-module` and
      * `kmp-module` script plugins already pin the same version; the call
      * here matters for subprojects that apply Kover directly.
      */
-    private fun configureSubproject(sub: Project, fqns: Collection<String>) {
+    private fun configureSubproject(sub: Project) {
         sub.extensions.configure(KoverProjectExtension::class.java) {
             useJacoco(Jacoco.version)
-            if (fqns.isNotEmpty()) {
-                reports {
-                    filters {
-                        excludes {
-                            classes(fqns.toExclusionPatterns())
-                        }
+            reports {
+                filters {
+                    excludes {
+                        classes(perSubprojectExcludePatternsProvider(sub))
                     }
                 }
             }
         }
     }
 
-    private fun configureRoot(fqns: Collection<String>) {
+    private fun configureRoot() {
         rootProject.extensions.configure(KoverProjectExtension::class.java) {
             useJacoco(Jacoco.version)
             reports {
@@ -172,16 +178,42 @@ class KoverConfig private constructor(
                         onCheck.set(true)
                     }
                 }
-                if (fqns.isNotEmpty()) {
-                    filters {
-                        excludes {
-                            classes(fqns.toExclusionPatterns())
-                        }
+                filters {
+                    excludes {
+                        classes(generatedExcludePatternsProvider())
                     }
                 }
             }
         }
     }
+
+    /**
+     * Lazy `Provider` of the union of generated-class FQN exclusion patterns
+     * across every subproject that applies the Kover plugin.
+     *
+     * Resolved at task-graph time; the per-subproject FQN walk runs **after**
+     * `protoc` (and other code-generation tasks) have populated each
+     * subproject's `generated/` directories on a clean build.
+     */
+    private fun generatedExcludePatternsProvider(): Provider<Iterable<String>> =
+        rootProject.provider {
+            rootProject.subprojects.asSequence()
+                .filter { it.pluginManager.hasPlugin(Kover.id) }
+                .flatMap { generatedClassFqns(it).asSequence() }
+                .toSortedSet()
+                .toExclusionPatterns()
+        }
+
+    /**
+     * Lazy `Provider` of the generated-class FQN exclusion patterns
+     * for [sub]. See [generatedExcludePatternsProvider] for timing notes.
+     */
+    private fun perSubprojectExcludePatternsProvider(
+        sub: Project,
+    ): Provider<Iterable<String>> =
+        sub.provider {
+            generatedClassFqns(sub).toSortedSet().toExclusionPatterns()
+        }
 
     /**
      * Returns the fully-qualified names of all classes that originate from

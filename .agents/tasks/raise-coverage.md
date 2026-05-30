@@ -76,16 +76,25 @@ simplify the original draft.
 ## Deliverables (file-by-file)
 
 1. **`.agents/skills/raise-coverage/SKILL.md`** — frontmatter `name` +
-   `description: >`. Sections: Goal/scope (JaCoCo-only; human `src/main` only) ·
-   Inputs (`$ARGUMENTS` = `:module` | path | `--triage`) · Workflow (1 resolve
-   target → 2 localize gaps w/ JaCoCo → 3 read code-under-test + existing tests +
-   collaborators → 4 **propose test-case list and WAIT**; `--triage` stops here
-   with the ranked report → 5 generate → 6 verify) · Test-generation rules (stubs
-   not mocks; Kotlin = JUnit5 + Kotest, Java = JUnit5 + Truth; proto →
-   truth-proto-extension; cover edge cases; scaffold `when`/sealed branches; skip
-   generated/excluded paths) · Report format · Safety (never weaken a
-   `.codecov.yml` target, never add a mocking dependency, read-only until
-   approval, no version bump for tests-only).
+   `description: >`. Sections: Goal/scope (**Kover-only**, using its
+   JaCoCo-format XML report; human `src/main` only) · Inputs (`$ARGUMENTS`
+   = `:module` | path | `--triage`) · Step 0 — Ensure Kover (read-only
+   under `--triage`; silent install when no coverage plugin is in place;
+   **propose-and-wait** when vanilla JaCoCo is detected, per
+   `references/migrate-to-kover.md`) · Workflow (1 resolve target →
+   2 localize gaps from Kover's `report.xml` → 3 read code-under-test +
+   existing tests + collaborators → 4 **propose test-case list and WAIT**;
+   `--triage` stops here with the ranked report → 5 generate → 6 verify) ·
+   Test-generation rules (stubs not mocks; **Kotlin + Kotest** universal —
+   JUnit Jupiter structure with Kotest assertions, written in Kotlin even
+   when the code under test is Java; class names use the **`Spec`** suffix;
+   `truth-proto-extension` is reachable only as an isolated fallback for
+   Protobuf assertions Kotest cannot express; cover edge cases; scaffold
+   `when`/sealed branches; skip generated/excluded paths) · Report format ·
+   Safety (`--triage` is read-only; migration requires approval when
+   vanilla JaCoCo is detected; never weaken a `.codecov.yml` target; never
+   add a mocking dependency; read-only until step-4 approval; no version
+   bump for tests-only).
 
 2. **`.agents/skills/raise-coverage/references/coverage-signals.md`** — JaCoCo
    mechanics (rewritten from the draft, corrected to this repo): per-module vs
