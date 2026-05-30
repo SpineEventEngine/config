@@ -30,15 +30,8 @@ mkdir reports
 
 # Find all directories matching path to add to archive.
 BUILD_REPORTS=$(find . -type d -path "*build/reports*")
-# DEPRECATED: vanilla JaCoCo. Kover does not expose raw `.exec` paths;
-# coverage XML lives at build/reports/kover/report.xml and is already captured
-# by BUILD_REPORTS above. Kept for repos that still use the deprecated
-# jacoco-*.gradle.kts script plugins. See
-# .agents/skills/raise-coverage/references/migrate-to-kover.md.
-JACOCO_REPORTS=$(find . -type d -path "*build/jacoco*")
 
 zip -r reports/test-reports.zip $BUILD_REPORTS
-zip -r reports/jacoco-reports.zip $JACOCO_REPORTS
 
 # Returns the value for the specified key.
 function getProp() {
