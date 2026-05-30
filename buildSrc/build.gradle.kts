@@ -132,7 +132,7 @@ val kotestJvmPluginVersion = "0.4.10"
 /**
  * @see [io.spine.dependency.test.Kover]
  */
-val koverVersion = "0.9.1"
+val koverVersion = "0.9.8"
 
 /**
  * The version of the Shadow Plugin.
