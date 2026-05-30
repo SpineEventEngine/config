@@ -1,7 +1,7 @@
 ---
 description: Ensure the repo is on Kover (migrate from JaCoCo if needed), then localize coverage gaps and generate missing unit tests for a module or path.
 argument-hint: "<:module | path | --triage>"
-allowed-tools: Read, Edit, Write, Grep, Glob, Bash(./gradlew:*), Bash(git status:*), Bash(find:*)
+allowed-tools: Read, Edit, Write, Grep, Glob, Bash(./gradlew:*), Bash(git status:*), Bash(find:*), Bash(xmllint:*), Bash(python3:*)
 ---
 
 Follow the `raise-coverage` skill exactly:

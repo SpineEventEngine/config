@@ -93,11 +93,28 @@ propose tests for them; report them as non-actionable:
 
 The XML carries a `DOCTYPE` pointing at a public DTD, so always pass `--nonet` to
 `xmllint` (or use the Python recipe) — parsing must never reach the network. The
-report has no XML namespace, so the XPath is plain:
+report has no XML namespace, so the XPath is plain.
+
+Note that JaCoCo (and therefore Kover with `useJacoco(...)`) puts the
+`<line>` elements under `<sourcefile>`, not under `<class>` — the `<class>`
+element only carries summary `<counter>`s. To get the uncovered-line gaps,
+query by the `<sourcefile>` that holds the class's source, scoped to the
+class's package:
+
+```bash
+# Package of the FQN with '/' as the separator; source file is the simple
+# class name plus the language suffix (.java or .kt).
+xmllint --nonet \
+  --xpath '//package[@name="io/spine/foo"]/sourcefile[@name="MyType.java"]/line[@ci="0" or @mb > 0]' \
+  <module>/build/reports/kover/report.xml
+```
+
+To confirm a method-level branch gap inside that class, query the `<class>`
+element's `<method>` counters:
 
 ```bash
 xmllint --nonet \
-  --xpath '//class[@name="io/spine/.../MyType"]//line[@ci="0" or @mb > 0]' \
+  --xpath '//class[@name="io/spine/foo/MyType"]/method[counter[@type="BRANCH" and @missed>0]]/@name' \
   <module>/build/reports/kover/report.xml
 ```
 
