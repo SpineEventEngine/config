@@ -29,7 +29,7 @@ simplify the original draft.
 |---|---|
 | Skill name | **`raise-coverage`** (verb-noun, like `write-docs` / `bump-version`) |
 | Workflow | localize → propose cases → **wait for approval** → generate → verify; plus read-only `--triage` |
-| Coverage engine | **JaCoCo only for v1**; Codecov triage documented as a future extension |
+| Coverage engine | **JaCoCo engine**, exposed per-repo via Kover (`koverXmlReport`, consumer repos) or raw JaCoCo (`config`); Codecov deferred |
 | Test language | match prod: **Kotlin→Kotest, Java→Google Truth** (+proto) |
 | Scratch dir | reuse existing `tmp/` → `tmp/base-libraries` (already gitignored via `/tmp`) |
 | Done bar | full loop on one `base-libraries` module, **local, nothing committed** |
@@ -132,15 +132,17 @@ the skill's procedure against one module and verify.
 
 ## Plan
 
-- [ ] Housekeeping: `git mv` task file → `raise-coverage.md`; `TaskCreate` to track.
-- [ ] Author `SKILL.md`, `references/coverage-signals.md`, `agents/openai.yaml`,
+- [x] Housekeeping: `git mv` task file → `raise-coverage.md`; `TaskCreate` to track.
+- [x] Author `SKILL.md`, `references/coverage-signals.md`, `agents/openai.yaml`,
       and the `.claude/commands/raise-coverage.md` wrapper.
-- [ ] Wire-up: add `_TOC.md` entry; add `raise-coverage` to the `migrate` prune block.
-- [ ] Harness + pilot: clone `base-libraries` into `tmp/`, `./config/pull`, overlay
-      the skill; pick a small module (likely `format` or `annotations`); run
-      localize → propose → generate → re-run + verify the gap closed. Tune SKILL.md
-      step-3/step-5 wording against real JaCoCo output.
-- [ ] Review: run `review-docs` over the new Markdown; sanity-check the `migrate`
+- [x] Wire-up: add `_TOC.md` entry; add `raise-coverage` to the `migrate` prune block.
+- [x] Harness + pilot: cloned `base-libraries` into `tmp/`, ran `./config/pull`,
+      overlaid the skill. Localized gaps via Kover (`koverXmlReport`), then closed
+      `EnvironmentType.equals()`/`hashCode()` with a Java+Truth test — the gap went
+      to zero (4 tests green, nothing committed). Hardened `SKILL.md` +
+      `coverage-signals.md` for the Kover frontend and for non-actionable
+      (inline / unreachable) gaps surfaced by the pilot.
+- [~] Review: `review-docs` over the new Markdown; sanity-check the `migrate`
       edit; confirm nothing staged in `tmp/base-libraries`.
 - [ ] On merge: flip `status: done` and delete this task file per the
       `.agents/tasks/` lifecycle.
@@ -151,10 +153,10 @@ the skill's procedure against one module and verify.
   through the symlink; `openai.yaml` parses.
 - Distribution: confirm the `migrate` prune block lists `raise-coverage` so
   Hugo-only repos won't receive it.
-- End-to-end: in `tmp/base-libraries`, a chosen module's
-  `:module:test :module:jacocoTestReport` runs; generated tests compile and pass;
-  re-parsing `jacocoTestReport.xml` shows previously-uncovered `nr` lines/branches
-  now covered; module total doesn't regress. **Nothing committed to base-libraries.**
+- End-to-end ✅: in `tmp/base-libraries`, `:environment:koverXmlReport` ran;
+  `EnvironmentTypeTest` (Java + Truth, 4 tests) compiles and passes; re-parsing
+  `build/reports/kover/report.xml` shows `EnvironmentType` `missedLINE`/
+  `missedBRANCH` → 0 (was 2 / 1). **Nothing committed to base-libraries.**
 
 ## Risks / notes
 
@@ -179,3 +181,12 @@ the skill's procedure against one module and verify.
   local full-loop on a `base-libraries` module; added `openai.yaml` + `migrate`
   prune-block deliverables. Verified the test stack and JaCoCo report paths from
   `buildSrc`. Rewrote this task file from the plan; awaiting review.
+- 2026-05-30 — Built the four files + wire-up; ran the `base-libraries` pilot.
+  Findings that reshaped the skill: (1) consumer repos expose coverage through
+  **Kover** (`koverXmlReport`, JaCoCo engine, JaCoCo-format XML) — not the
+  per-module `jacocoTestReport` the draft assumed — so the skill is now
+  frontend-aware (Kover or raw JaCoCo). (2) `inline`/`reified` functions and
+  unreachable guards read as uncovered but are **non-actionable** (a passing test
+  for `parse<T>` left `Parse.kt` `ci=0`), so the skill now filters them out.
+  Demonstrated true closure on `EnvironmentType.equals()`/`hashCode()`
+  (Java + Truth). `review-docs` running.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Raise Coverage"
+  short_description: "Generate unit tests to close JaCoCo coverage gaps"
+  default_prompt: "Use $raise-coverage to localize uncovered lines and branches in a Gradle module or source path with JaCoCo, propose a test-case list and wait for approval, then generate policy-compliant unit tests (stubs not mocks; Kotest for Kotlin, Google Truth for Java) and re-run JaCoCo to verify the gaps are closed. Tests-only changes do not require a version bump."
