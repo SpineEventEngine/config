@@ -58,6 +58,14 @@ simplify the original draft.
   `<module>/build/reports/kover/reportJvm.xml`); root aggregation (when wired):
   `build/reports/kover/report.xml`. Kover manages exec data internally — no
   raw `.exec` paths are exposed to consumers.
+- **Runtime successor to `JacocoConfig`**:
+  `io.spine.gradle.report.coverage.KoverConfig.applyTo(rootProject)`. Applies
+  the Kover plugin at the root, wires `dependencies { kover(project(...)) }`
+  for every Kover-enabled subproject, pins
+  `useJacoco(version = Jacoco.version)`, and pushes the union of generated-class
+  FQNs as Kover excludes into both per-module and root reports. Preserves the
+  generated-code-filtering behavior previously provided by `CodebaseFilter` so
+  the skill does not hallucinate gaps for generated classes.
 - **Never test**: generated code (any path containing `generated`), `examples`,
   existing `test` sources. `.codecov.yml` scope is `src/main/**` only.
 - **No version bump** for tests-only changes (contrast with other action skills,
@@ -141,11 +149,22 @@ the skill's procedure against one module and verify.
       to zero (4 tests green, nothing committed). Hardened `SKILL.md` +
       `coverage-signals.md` for the Kover frontend and for non-actionable
       (inline / unreachable) gaps surfaced by the pilot.
-- [~] Review: `review-docs` over the new Markdown; sanity-check the `migrate`
+- [x] Review: `review-docs` over the new Markdown; sanity-check the `migrate`
       edit; confirm nothing staged in `tmp/base-libraries`.
-- [ ] Kover-only pivot: implement `.agents/tasks/raise-coverage-kover-migration.md`
-      (drop dual-frontend logic, add Step 0 migration gate, deprecate the
-      JaCoCo-pipeline `buildSrc` helpers).
+- [x] Kover-only pivot: implemented `.agents/tasks/raise-coverage-kover-migration.md`.
+      Dropped dual-frontend logic, added Step 0 migration gate to `SKILL.md`,
+      and deprecated the JaCoCo-pipeline `buildSrc` helpers (`JacocoConfig`,
+      `CodebaseFilter`, `FileFilter`, `FileExtensions`, `FileExtension`,
+      `PathMarker`, `TaskName`, plus the `jacoco-*-jvm.gradle.kts` script
+      plugins). Authored `KoverConfig.kt` as the live runtime successor —
+      preserves the generated-code exclusion previously provided by
+      `CodebaseFilter` and wires per-subproject `kover(project(...))`
+      aggregation, with the union of generated FQNs pushed into both
+      per-module and root reports. Three review/fix cycles
+      (`kotlin-review` + `review-docs`, parallel) all returned APPROVE;
+      `./gradlew -p buildSrc compileKotlin` green.
+- [ ] Re-run pilot with the updated skill against `tmp/base-libraries`
+      (`--triage` first, then close one fresh gap).
 - [ ] On merge: flip `status: done` and delete this task file per the
       `.agents/tasks/` lifecycle.
 
@@ -200,3 +219,20 @@ the skill's procedure against one module and verify.
   for `parse<T>` left `Parse.kt` `ci=0`), so the skill now filters them out.
   Demonstrated true closure on `EnvironmentType.equals()`/`hashCode()`
   (Java + Truth). `review-docs` running.
+- 2026-05-30 — Kover-only pivot landed. Implemented per
+  `.agents/tasks/raise-coverage-kover-migration.md`: collapsed the skill to a
+  single Kover frontend with a Step 0 migration gate that proposes a repo-wide
+  JaCoCo → Kover migration (waits for approval) when vanilla JaCoCo is
+  detected. Deprecated the `JacocoConfig` aggregator and its supporting helpers
+  (`CodebaseFilter`, `FileFilter`, `FileExtensions`, `FileExtension`,
+  `PathMarker`, `TaskName`) plus the `jacoco-*-jvm.gradle.kts` script plugins
+  — kept on disk so existing consumers keep building. Authored `KoverConfig.kt`
+  as the live runtime successor (preserves generated-code exclusion via Kover
+  `filters { excludes { classes(...) } }` derived from source dirs containing
+  `generated/`; wires `kover(project(...))` aggregation for every Kover-enabled
+  subproject; pins the JaCoCo engine version). Doc set updated:
+  `references/migrate-to-kover.md` is the new mechanical recipe;
+  `SKILL.md` got the Step 0 proposal protocol; `coverage-signals.md` rewritten
+  Kover-only. Reviewed across three cycles (`kotlin-review` + `review-docs`
+  in parallel) — all APPROVE, zero outstanding comments;
+  `./gradlew -p buildSrc compileKotlin` green. Nothing committed.
