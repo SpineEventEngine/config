@@ -75,7 +75,9 @@ For each, add `group = SpineTaskGroup.name` and an imperative
       (`updateGitHubPages`, `copyJavadocDocs`, `copyHtmlDocs`,
       `updatePagesTask`).
 - [x] `buildSrc/src/main/kotlin/io/spine/gradle/report/coverage/JacocoConfig.kt:165, 196`
-      (`jacocoRootReport`, `copyReports`).
+      (`jacocoRootReport`, `copyReports`). **Superseded by Kover-only
+      migration**: this file is deprecated; do not invest in micro-rewrites.
+      See `.agents/skills/raise-coverage/references/migrate-to-kover.md`.
 - [x] `buildSrc/src/main/kotlin/io/spine/gradle/report/license/LicenseReporter.kt:111`
       (`mergeAllLicenseReports`).
 - [x] `buildSrc/src/main/kotlin/io/spine/gradle/report/pom/PomGenerator.kt:85`
@@ -113,7 +115,7 @@ Each of these forces evaluation during the configuration phase,
 breaking the configuration cache and serialising work Gradle would
 otherwise run in parallel.
 
-- [ ] `buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts:58-72` —
+- [x] `buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts:58-72` —
       rewrite the `tasks.getting(JacocoReport::class) { ... }` block
       to `tasks.named<JacocoReport>("jacocoTestReport") { ... }`,
       remove the `project.layout.buildDirectory.get().asFile.absolutePath`
@@ -122,6 +124,9 @@ otherwise run in parallel.
       that the current code silently produces an empty set on a
       clean build because `build/classes/kotlin/jvm/` does not yet
       exist — that correctness bug goes away with the lazy form.
+      **Superseded by Kover-only migration**: this file is deprecated;
+      do not invest in micro-rewrites. See
+      `.agents/skills/raise-coverage/references/migrate-to-kover.md`.
 - [ ] `buildSrc/src/main/kotlin/DokkaExts.kt:62` — change
       `dokkaHtmlOutput(): File` to return `Provider<Directory>` (or
       a `DirectoryProperty`); update its two call sites.
@@ -133,8 +138,11 @@ otherwise run in parallel.
 - [ ] `buildSrc/src/main/kotlin/io/spine/gradle/report/license/LicenseReporter.kt:84`
       — `project.layout.buildDirectory.dir(Paths.relativePath).get().asFile`:
       compose with `map` and consume inside the action.
-- [ ] `buildSrc/src/main/kotlin/io/spine/gradle/report/coverage/JacocoConfig.kt:98-99`
+- [x] `buildSrc/src/main/kotlin/io/spine/gradle/report/coverage/JacocoConfig.kt:98-99`
       — same pattern with the `reportsDirSuffix` directory.
+      **Superseded by Kover-only migration**: this file is deprecated;
+      do not invest in micro-rewrites. See
+      `.agents/skills/raise-coverage/references/migrate-to-kover.md`.
 - [ ] `buildSrc/src/main/kotlin/DependencyResolution.kt:146` —
       `named(configurationName).get().exclude(...)`: rewrite as
       `named(configurationName) { exclude(...) }`.
@@ -149,9 +157,12 @@ upstream rule warns about.
       — `docletpath = excludeInternalDoclet.files.toList()`: route
       via a `Provider<List<File>>` from `excludeInternalDoclet.elements`,
       resolved inside the `Javadoc` task action.
-- [ ] `buildSrc/src/main/kotlin/io/spine/gradle/report/coverage/CodebaseFilter.kt:65`
+- [x] `buildSrc/src/main/kotlin/io/spine/gradle/report/coverage/CodebaseFilter.kt:65`
       — `it.classesDirs.files.stream()`: switch to
       `it.classesDirs.elements` and a lazy stream/iterator.
+      **Superseded by Kover-only migration**: this file is deprecated;
+      do not invest in micro-rewrites. See
+      `.agents/skills/raise-coverage/references/migrate-to-kover.md`.
 
 ### D. Plugin task classes — caching annotations (Should fix)
 
@@ -181,10 +192,13 @@ Replace eager APIs with their lazy siblings where one exists:
 
 - [ ] `buildSrc/src/main/kotlin/uber-jar-module.gradle.kts:73` —
       `tasks.getting` → `tasks.named<Task>("publishFatJarPublicationToMavenLocal") { ... }`.
-- [ ] `buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts:58` —
+- [x] `buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts:58` —
       `tasks.getting(JacocoReport::class)` →
       `tasks.named<JacocoReport>("jacocoTestReport") { ... }` (folded
       into B above).
+      **Superseded by Kover-only migration**: this file is deprecated;
+      do not invest in micro-rewrites. See
+      `.agents/skills/raise-coverage/references/migrate-to-kover.md`.
 - [ ] `buildSrc/src/main/kotlin/io/spine/gradle/publish/IncrementGuard.kt:60`
       — `tasks.getByName("check").dependsOn(this)` →
       `tasks.named("check") { dependsOn(this@register) }`.
@@ -213,10 +227,13 @@ Replace eager APIs with their lazy siblings where one exists:
       `htmlDocsJar()`: same pattern; wire
       `from(tasks.dokkaHtmlTask().map { it.outputs.files })` and
       remove the explicit `dependsOn(dokkaTask)`.
-- [ ] `buildSrc/src/main/kotlin/io/spine/gradle/report/coverage/JacocoConfig.kt:196-203`
+- [x] `buildSrc/src/main/kotlin/io/spine/gradle/report/coverage/JacocoConfig.kt:196-203`
       — drop the trailing `dependsOn(projects.map { ... })` once
       `everyExecData` is verified to be a Provider-typed chain that
       carries producer dependencies.
+      **Superseded by Kover-only migration**: this file is deprecated;
+      do not invest in micro-rewrites. See
+      `.agents/skills/raise-coverage/references/migrate-to-kover.md`.
 - [ ] `buildSrc/src/main/kotlin/io/spine/gradle/report/license/LicenseReporter.kt:117-118, 123`
       — the explicit `consolidationTask.dependsOn(perProjectTask)`
       and `perProjectTask.dependsOn(assembleTask)` should be
