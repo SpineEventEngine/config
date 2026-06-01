@@ -1,7 +1,7 @@
 ---
 name: spine-code-review
 description: >
-  Review Kotlin and Java changes in this repo against repo-specific Spine
+  Review Kotlin, Java, and build changes in this repo against repo-specific Spine
   rules: the AGENTS.md code-review filter, safety rules, testing policy, and
   the version gate. Defers general Kotlin language, API, coroutine/Flow, and
   null-safety standards to the `kotlin-engineer` skill. Use after any
