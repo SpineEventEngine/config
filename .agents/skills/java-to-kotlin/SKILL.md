@@ -8,6 +8,10 @@ description: >
 
 # 🪄 Converting Java code to Kotlin
 
+Use `.agents/skills/kotlin-engineer/SKILL.md` as the Kotlin implementation
+baseline for every conversion. Its null-safety, API-design, coroutine, Flow,
+and idiom rules apply to the Kotlin code produced by this skill.
+
 * Java code API comments are Javadoc format.
 * Kotlin code API comments are in KDoc format. 
  

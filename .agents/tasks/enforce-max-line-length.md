@@ -84,8 +84,8 @@ repo policy, not Must-fix.
   `buildSrc/quality/pmd.xml:36-37` already exclude from the other
   static-analysis runs.
 - **Reading context vs. reporting scope.** Reviewers continue to read
-  each affected file fully (existing `kotlin-review` rule at
-  `.agents/skills/kotlin-review/SKILL.md:31-32`). They only *report*
+  each affected file fully (existing `spine-code-review` rule at
+  `.agents/skills/spine-code-review/SKILL.md:31-32`). They only *report*
   line-length findings on lines the diff touched
   (`git diff -U0 <base>...HEAD`). Pre-existing long lines are not
   flagged. The two rules co-exist: read all, report changed.
@@ -157,7 +157,7 @@ wrap at the configured limit.
   > `buildSrc/quality/detekt-config.yml` and wrap new lines under it.
   > See `coding-guidelines.md § Line length`.
 
-### 4. `.agents/skills/kotlin-review/SKILL.md`
+### 4. `.agents/skills/spine-code-review/SKILL.md`
 
 - [ ] In "Review procedure" step 3 (the coding-guidelines checklist),
       append:
@@ -182,7 +182,7 @@ wrap at the configured limit.
   > **Line length.** KDoc / Javadoc body lines wrap at the limit from
   > `buildSrc/quality/detekt-config.yml`. Long body lines are
   > **Should fix**; code lines around the comment, if also too long,
-  > are owned by `kotlin-review`.
+  > are owned by `spine-code-review`.
 
 - [ ] Insert into "Checks → B. Markdown docs":
 
@@ -199,7 +199,7 @@ wrap at the configured limit.
       `.agents/skills/pre-pr/SKILL.md:104-106`):
 
   > Line-length findings on changed Kotlin / Java / Markdown lines
-  > are reported by the dispatched reviewers (`kotlin-review`,
+  > are reported by the dispatched reviewers (`spine-code-review`,
   > `review-docs`). pre-pr itself does not re-check.
 
   Documentation only — no logic change. Clarifies that the rule is
@@ -228,7 +228,7 @@ wrap at the configured limit.
       non-comment `.kt` line over the limit (expect Must fix); one
       KDoc body line over the limit (expect Should fix); one `.java`
       line over the limit (expect Should fix); one `.md` body line
-      over the limit (expect Should fix). Run `kotlin-review` and
+      over the limit (expect Should fix). Run `spine-code-review` and
       `review-docs` and confirm bucketing.
 - [ ] Confirm the missing-YAML behaviour: temporarily move
       `buildSrc/quality/detekt-config.yml` aside, run a reviewer over
@@ -242,8 +242,8 @@ wrap at the configured limit.
   don't enforce. The canonical rule in `coding-guidelines.md` reaches
   them by reference.
 - `gradle-review/SKILL.md` — `.kts` files are reviewed by
-  `kotlin-review` (via pre-pr's `code` dispatch). Adding a second
-  owner would double-report; defer to `kotlin-review § Line length`.
+  `spine-code-review` (via pre-pr's `code` dispatch). Adding a second
+  owner would double-report; defer to `spine-code-review § Line length`.
 - `update-copyright/SKILL.md` — if a header rewrite produces a long
   line, the reviewer will catch it; no skill-local rule.
 - `memory/MEMORY.md` and `_TOC.md` — the rule is durable team policy
@@ -258,10 +258,10 @@ wrap at the configured limit.
   by `buildSrc/src/main/kotlin/detekt-code-analysis.gradle.kts:52`
   (115-char KDoc body line that ships and builds clean).
 - **`gradle-review` not edited**. `.kts` files flow through
-  `kotlin-review` already (via pre-pr's `code` dispatch); a second
+  `spine-code-review` already (via pre-pr's `code` dispatch); a second
   owner in `gradle-review` would cause double-reports for the same
   finding. The trade-off is that manual `/gradle-review` runs without
-  a paired `/kotlin-review` will not surface line-length findings on
+  a paired `/spine-code-review` will not surface line-length findings on
   `.kts` files; users running only `gradle-review` are looking for
   Gradle conventions, not detekt rules, so the gap is acceptable.
 - **YAML lookup at session start, not per line**. Re-reading the YAML

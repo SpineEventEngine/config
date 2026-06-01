@@ -106,7 +106,8 @@ if [ "$IS_HUGO_DOCS" = "true" ] && [ "$IS_JVM" = "false" ]; then
     rm -rf ../.agents/skills/dependency-audit
     rm -rf ../.agents/skills/dependency-update
     rm -rf ../.agents/skills/java-to-kotlin
-    rm -rf ../.agents/skills/kotlin-review
+    rm -rf ../.agents/skills/kotlin-engineer
+    rm -rf ../.agents/skills/spine-code-review
     rm -rf ../.agents/skills/raise-coverage
     # Remove dead-link TOC (references JVM-specific files pruned above)
     rm -f ../.agents/_TOC.md
@@ -156,10 +157,10 @@ if [ "$IS_HUGO_DOCS" = "true" ] && [ "$IS_JVM" = "false" ]; then
     rm -rf ../.claude/skills/dependency-audit
     rm -rf ../.claude/skills/dependency-update
     rm -rf ../.claude/skills/java-to-kotlin
-    rm -rf ../.claude/skills/kotlin-review
+    rm -rf ../.claude/skills/spine-code-review
     rm -rf ../.claude/skills/raise-coverage
     # Remove JVM-specific agents
-    rm -f ../.claude/agents/kotlin-review.md
+    rm -f ../.claude/agents/spine-code-review.md
     rm -f ../.claude/agents/dependency-audit.md
     # Use Hugo-specific Claude settings; drop settings.local.json (which
     # references version-bumped commands not present in Hugo repos)

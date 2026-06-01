@@ -11,6 +11,7 @@ requirements file (e.g. `jvm-project.md`), read that too.
 - Start every session by reading `.agents/quick-reference-card.md` (if present).
 - For specific tasks (code review, PR prep, dependency updates, docs, etc.),
   prefer the matching skill from `.agents/skills/`.
+- For Kotlin implementation work, use `.agents/skills/kotlin-engineer/SKILL.md`.
 - Full standards reference: `.agents/_TOC.md` (if present) — consult when a
   skill doesn't cover the needed context.
 

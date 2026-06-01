@@ -27,6 +27,9 @@ and wait for approval. The mechanical recipe lives in
 
 The authoritative standards live in `.agents/`:
 
+- `.agents/skills/kotlin-engineer/SKILL.md` — Kotlin implementation baseline
+  for every test you write, including null-safety, API design, coroutines,
+  Flow, and idioms.
 - `.agents/testing.md` — stubs not mocks; Kotest assertions; cover API edge
   cases; scaffold `when`/sealed-class branches.
 - `.agents/coding-guidelines.md` — Kotlin/Java idioms for the tests you write.

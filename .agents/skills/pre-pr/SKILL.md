@@ -5,8 +5,8 @@ description: >
   the repository has a root `version.gradle.kts`, run a scope-dependent
   build/check command per `.agents/running-builds.md` (docs-only → `dokka`;
   code/deps → `build`; proto → `clean build`; no documented command → skipped),
-  and invoke the relevant reviewers (`kotlin-review`, `review-docs`,
-  `dependency-audit`,
+  and invoke the relevant reviewers (`kotlin-engineer`, `spine-code-review`,
+  `review-docs`, `dependency-audit`,
   `check-links`) against the branch diff. On success, write a sentinel file at
   `.git/pre-pr.ok` so the `gh pr create` hook can verify the checklist ran
   for the current HEAD. Use before opening a PR, or when CI rejected a
@@ -115,7 +115,11 @@ Before running a reviewer, check that the skill directory exists under
 `.agents/skills/`; if a skill is absent, skip it with a note "not applicable
 for this repo" rather than failing.
 
-- **code** changed → `kotlin-review`
+- **code** changed → `kotlin-engineer` (general Kotlin language standards) and
+  `spine-code-review` (repo-specific rules). Dispatch both; they cover
+  disjoint concerns and do not double-report. `kotlin-engineer` applies only
+  when `.kt` / `.kts` files changed; `spine-code-review` covers `.kt`, `.kts`,
+  and `.java`.
 - **docs** or KDoc changed → `review-docs`
 - **deps** changed → `dependency-audit`
 - **site** changed → `check-links` (unless the sentinel short-circuit below
@@ -133,9 +137,9 @@ missing version bump.
 
 **Auto-fix policy for reviewer findings:**
 
-- Findings from `kotlin-review`, `review-docs`, or `dependency-audit` → record
-  as Must-fix or Should-fix; do **not** auto-apply. Surface them and wait for
-  user action.
+- Findings from `kotlin-engineer`, `spine-code-review`, `review-docs`, or
+  `dependency-audit` → record as Must-fix or Should-fix; do **not** auto-apply.
+  Surface them and wait for user action.
 - If a reviewer reports a missing version bump after Step 2 already ran, the
   auto-fix did not take — record a Must-fix and do not silently re-apply.
 - `dependency-audit` reports a **version rollback** → do **not** auto-fix.
@@ -182,7 +186,8 @@ prefixed with the source reviewer or check:
 Pre-PR: FAIL (<branch> vs <base>)
 
 Must fix:
-- [kotlin-review] <item>
+- [kotlin-engineer] <item>
+- [spine-code-review] <item>
 - [review-docs] <item>
 
 Should fix:

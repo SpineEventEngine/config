@@ -15,11 +15,14 @@
 13. [Common tasks](common-tasks.md)
 14. [Team memory](memory/MEMORY.md)
 15. [Task plans](tasks/README.md)
-16. [Java to Kotlin conversion](skills/java-to-kotlin/SKILL.md)
-17. [Dependency update](skills/dependency-update/SKILL.md)
-18. [Documentation review](skills/review-docs/SKILL.md)
-19. [Pre-PR checklist](skills/pre-pr/SKILL.md)
-20. [Kotlin code review](skills/kotlin-review/SKILL.md)
-21. [Dependency audit](skills/dependency-audit/SKILL.md)
-22. [Gradle review](skills/gradle-review/SKILL.md)
-23. [Raise test coverage](skills/raise-coverage/SKILL.md)
+16. [Kotlin engineering](skills/kotlin-engineer/SKILL.md) — implementation
+    policy for Kotlin, coroutines, Flow, null-safety, and API design
+17. [Java to Kotlin conversion](skills/java-to-kotlin/SKILL.md)
+18. [Dependency update](skills/dependency-update/SKILL.md)
+19. [Documentation review](skills/review-docs/SKILL.md)
+20. [Pre-PR checklist](skills/pre-pr/SKILL.md)
+21. [Code review](skills/spine-code-review/SKILL.md) — repo-specific Kotlin
+    and Java review; defers general Kotlin standards to `kotlin-engineer`
+22. [Dependency audit](skills/dependency-audit/SKILL.md)
+23. [Gradle review](skills/gradle-review/SKILL.md)
+24. [Raise test coverage](skills/raise-coverage/SKILL.md)

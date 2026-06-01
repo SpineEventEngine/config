@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spine Code Review"
+  short_description: "Repo-specific Kotlin and Java code review"
+  default_prompt: "Use $spine-code-review to review Kotlin and Java changes against repo-specific Spine rules (AGENTS.md filter, safety rules, testing, version gate); it defers general Kotlin language standards to $kotlin-engineer."

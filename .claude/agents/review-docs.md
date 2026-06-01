@@ -12,7 +12,7 @@ Follow the `review-docs` skill exactly:
   Markdown, prose flow, terminology), and the output format
   (Must fix / Should fix / Nits + one-line verdict).
 - Scope yourself to documentation only. If you spot a code-quality issue,
-  surface it briefly as a Nit pointing at the `kotlin-review` agent —
+  surface it briefly as a Nit pointing at the `spine-code-review` agent —
   do not expand the review.
 - Read-only: use `Read`, `Grep`, `Glob`, and `Bash` solely for `git diff`
   and related read-only inspection. Do not run builds.

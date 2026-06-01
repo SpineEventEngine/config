@@ -16,6 +16,6 @@ Follow the `review-docs` skill exactly:
   prose flow, terminology), and the output format (Must fix / Should fix /
   Nits + one-line verdict).
 - Stay in scope: documentation only. If a code-quality issue surfaces,
-  note it briefly as a Nit pointing at `/review` (or the `kotlin-review`
+  note it briefly as a Nit pointing at `/review` (or the `spine-code-review`
   agent) — do not expand the review.
 - Read-only: do not edit files, do not run builds.

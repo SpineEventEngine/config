@@ -45,7 +45,7 @@ The `pull` script also propagates AI-agent configuration into the consuming proj
     * `settings.json` — permission allowlist tuned for the Gradle/Git workflow.
     * `commands/*.md` — slash commands such as `/bump-version`, `/java-to-kotlin`,
       `/update-copyright`. Each wraps the corresponding skill in `.agents/skills/`.
-    * `agents/*.md` — subagents (e.g. `kotlin-reviewer`).
+    * `agents/*.md` — subagents (e.g. `spine-code-review`, `kotlin-engineer`).
     * `skills` — symlink to `../.agents/skills` so Claude Code picks up the same skills.
  * `.junie/` — JetBrains Junie guidelines, if present.
 
