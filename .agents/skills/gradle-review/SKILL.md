@@ -192,7 +192,7 @@ This skill is self-extensible. Two triggers, both **user-initiated**:
       list if the new page introduces categories the procedure did
       not enumerate before.
 
-The skill never auto-fetches. The user runs `/gradle-review` for a
+The skill never auto-fetches. The user runs the `gradle-review` skill for a
 review, and explicitly asks for an ingest/refresh when one is wanted.
 
 [^gradle-tasks]: https://docs.gradle.org/9.5.1/userguide/best_practices_tasks.html
