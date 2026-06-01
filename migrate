@@ -157,9 +157,11 @@ if [ "$IS_HUGO_DOCS" = "true" ] && [ "$IS_JVM" = "false" ]; then
     rm -rf ../.claude/skills/dependency-audit
     rm -rf ../.claude/skills/dependency-update
     rm -rf ../.claude/skills/java-to-kotlin
+    rm -rf ../.claude/skills/kotlin-engineer
     rm -rf ../.claude/skills/spine-code-review
     rm -rf ../.claude/skills/raise-coverage
     # Remove JVM-specific agents
+    rm -f ../.claude/agents/kotlin-engineer.md
     rm -f ../.claude/agents/spine-code-review.md
     rm -f ../.claude/agents/dependency-audit.md
     # Use Hugo-specific Claude settings; drop settings.local.json (which
