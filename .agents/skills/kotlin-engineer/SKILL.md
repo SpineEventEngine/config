@@ -1,9 +1,9 @@
 ---
 name: kotlin-engineer
 description: >
-  Kotlin 2.x policy and pitfalls. Use when writing, reviewing, or refactoring
-  Kotlin code — enforces coroutine-safety, Flow correctness, null-safety, and
-  API-design rules that LLMs frequently get wrong.
+  Kotlin 2.x implementation policy and pitfalls. Use whenever writing,
+  modifying, refactoring, or explaining Kotlin code, especially coroutines,
+  Flow, null-safety, Java interop, Gradle Kotlin DSL, and public API design.
 ---
 
 # Kotlin — policy & pitfalls
