@@ -85,12 +85,12 @@ Assumes you know `suspend`, `launch` / `async`, `Flow` / `StateFlow` / `SharedFl
 
 ## Common anti-patterns
 
-| Anti-pattern | Correct |
-|---|---|
-| `GlobalScope.launch { ... }` | Inject `CoroutineScope` or use framework scope |
-| `runBlocking { suspendCall() }` inside a suspend function | Just `suspendCall()` — remove `runBlocking` |
-| `MutableStateFlow` returned from a public API | `val state: StateFlow<X> = _state.asStateFlow()` |
-| `.value = state.value.copy(x = y)` | `state.update { it.copy(x = y) }` |
-| `flow { withContext(IO) { emit(...) } }` | `flow { emit(...) }.flowOn(IO)` |
-| `try { work() } catch (e: Exception) { log(e) }` | Same plus `if (e is CancellationException) throw e` first |
+| Anti-pattern                                                                           | Correct                                                                       |
+|----------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| `GlobalScope.launch { ... }`                                                           | Inject `CoroutineScope` or use framework scope                                |
+| `runBlocking { suspendCall() }` inside a suspend function                              | Just `suspendCall()` — remove `runBlocking`                                   |
+| `MutableStateFlow` returned from a public API                                          | `val state: StateFlow<X> = _state.asStateFlow()`                              |
+| `.value = state.value.copy(x = y)`                                                     | `state.update { it.copy(x = y) }`                                             |
+| `flow { withContext(IO) { emit(...) } }`                                               | `flow { emit(...) }.flowOn(IO)`                                               |
+| `try { work() } catch (e: Exception) { log(e) }`                                       | Same plus `if (e is CancellationException) throw e` first                     |
 | Parallel fan-out with `.map { async { it.fetch() } }.map { it.await() }` inside `List` | Wrap in `coroutineScope { ... awaitAll() }` for proper cancellation semantics |
