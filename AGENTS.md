@@ -4,9 +4,9 @@
 
 If `.agents/project.md` exists in this repository, read it first — it describes
 the language, architecture, and role of this specific repo within the Spine SDK
-organisation. To create one, copy `.agents/guidelines/project.template.md` (or the
-relevant language template) and fill it in. If `project.md` links to a shared
-requirements file (e.g. `jvm-project.md`), read that too.
+organisation. It is a symlink to `docs/project.md`; to create one, copy
+`.agents/guidelines/project.template.md` to `docs/project.md` and fill it in. If it
+links to a shared requirements file (e.g. `jvm-project.md`), read that too.
 
 - Start every session by reading `.agents/guidelines/quick-reference-card.md` (if present).
 - For specific tasks (code review, PR prep, dependency updates, docs, etc.),

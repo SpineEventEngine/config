@@ -115,6 +115,13 @@ link() {
   local link_path="$1" target="$2"
   if [ -e "$link_path" ] && [ ! -L "$link_path" ]; then
     if git ls-files --error-unmatch "$link_path" >/dev/null 2>&1; then
+      # A tracked DIRECTORY can also hold untracked files that the `rm -rf` below
+      # would destroy — refuse if any exist (gitignored cruft is allowed).
+      if [ -n "$(git ls-files --others --exclude-standard -- "$link_path")" ]; then
+        echo "Error: '$link_path' contains untracked files (not in Git)." >&2
+        echo "       Move them aside and re-run, so nothing is lost." >&2
+        exit 1
+      fi
       git rm -r --quiet "$link_path"
     else
       echo "Error: '$link_path' exists as untracked content (not in Git)." >&2
