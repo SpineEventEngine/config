@@ -102,8 +102,7 @@ else
   # clone or a half-finished previous run. Detect that here and fail clearly.
   if [ -e "$SHARED_PATH" ] || git ls-files --error-unmatch "$SHARED_PATH" >/dev/null 2>&1; then
     echo "Error: '$SHARED_PATH' exists but is not a registered submodule." >&2
-    echo "       Remove it first ('rm -rf $SHARED_PATH'; also 'git rm --cached $SHARED_PATH'" >&2
-    echo "       if it is staged), then re-run." >&2
+    echo "       Remove it and re-run: 'rm -rf $SHARED_PATH' (and 'git rm --cached $SHARED_PATH' if it is staged)." >&2
     exit 1
   fi
   echo "Adding submodule '$SHARED_PATH' (tracking master)"
