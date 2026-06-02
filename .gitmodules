@@ -1,0 +1,6 @@
+[submodule ".agents/shared"]
+	path = .agents/shared
+	url = https://github.com/SpineEventEngine/agents.git
+	branch = master
+	update = checkout
+	ignore = all

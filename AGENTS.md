@@ -14,6 +14,11 @@ requirements file (e.g. `jvm-project.md`), read that too.
 - Full standards reference: `.agents/guidelines/_TOC.md` (if present) — consult when a
   skill doesn't cover the needed context.
 
+Shared skills, scripts, and guidelines come from the `.agents/shared` submodule (the
+[`agents`](https://github.com/SpineEventEngine/agents) repository) exposed via symlinks.
+`./config/pull` initializes and floats it automatically; on a fresh clone that skips
+`pull`, run `git submodule update --init --remote --recursive`.
+
 ## Commit and history safety
 
 **Do not commit, push, tag, rebase, merge, cherry-pick, or otherwise write to git history**

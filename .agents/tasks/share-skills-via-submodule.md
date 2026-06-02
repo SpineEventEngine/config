@@ -90,10 +90,22 @@ explicit authorization.
 ## Plan
 
 ### Phase 0 — Create the shared repo (gated: org/GitHub writes by maintainer)
-- [ ] Create `SpineEventEngine/agents` (public recommended).
-- [ ] Seed it from config's regrouped content **with history** via `git filter-repo`
-      (recipe below). Push.
+- [x] Create `SpineEventEngine/agents` — exists, PUBLIC, currently empty.
+- [~] Seed with history via `git filter-repo` — **seed PREPARED** at
+      `/Users/sanders/Projects/Spine/agents-seed` (branch `master`, 132 commits,
+      90 files, verified 1:1 against source). **PUSH PENDING** — the agent push was
+      blocked by the auto-mode classifier (outward-facing); maintainer runs it (cmds below).
 - [ ] Protect `master` (require PR + review — everyone floats to it). Add skill lint/CI.
+
+**Push the seed (maintainer runs — HTTPS, gh credential helper):**
+
+    cd /Users/sanders/Projects/Spine/agents-seed
+    git remote add origin https://github.com/SpineEventEngine/agents.git
+    git push -u origin master
+
+(SSH was unavailable on this machine — `~/.ssh/github_rsa` is missing; switched to
+HTTPS via `gh auth setup-git`. The github.com host-key was also refreshed after
+GitHub's 2023 RSA rotation; backup at `~/.ssh/known_hosts.bak.github-rotation`.)
 
 ### Phase 1 — Regroup + reference rewrite (config; do now) ✅ DONE
 - [x] `git mv` 16 paths `.agents/<x>` → `.agents/guidelines/<x>`:
@@ -131,10 +143,19 @@ explicit authorization.
 - [x] Agent-runner init drafted: Codex (`.codex/hooks.json` paths are symlink-transparent;
       cloud setup floats submodule), Copilot `copilot-setup-steps.yml`.
 
-**Gated (executed when `agents` exists):**
-- [ ] Apply new `migrate`. Run `adopt-shared-agents` in `config` (dogfood commit:
-      submodule add + flip dirs to symlinks). Commit `.gitmodules` with
-      `branch=master, update=checkout, ignore=all`.
+**Executed (config dogfood + consumer distribution):** ✅ DONE
+- [x] Rewrote `migrate`: it now delegates to the idempotent `adopt-shared-agents`
+      (bootstraps/transitions/floats the submodule) and copies only Claude settings;
+      dropped all copying of `.agents`/`.claude` content and all per-repo pruning; no
+      more `rm -rf .agents`. `.junie` is a selective copy now (preserves local memory).
+- [x] Ran `adopt-shared-agents` in `config` — it consumes `.agents/shared` (submodule,
+      `branch=master, update=checkout, ignore=all`) via symlinks. Verified skills resolve
+      and `git submodule update --remote` floats cleanly.
+- [x] `adopt-shared-agents`: default URL → HTTPS; no longer requires a pre-existing
+      `.agents/` (bootstraps fresh consumers).
+- [x] README + AGENTS document the submodule model and init. (CONTRIBUTING skipped —
+      generic process doc, poor fit; copilot-instructions skip-list still accurate.)
+- [x] Wrote config's real `docs/project.md` (replacing the seeded template stub).
 
 ### Phase 3 — Roll out (gated)
 - [ ] Run `adopt-shared-agents` across SpineEventEngine repos (one PR each).
@@ -249,3 +270,14 @@ consumers still skip `.agents/**`, `.claude/**`).
   `git submodule update` — the agents submodule rides the existing infra. Remaining
   work is all gated on creating `SpineEventEngine/agents` (Phase 0) + the dogfood
   apply (Phase 2-execute).
+- 2026-06-02 — Committed Phase 1 (`607c2285`) and scaffolding (`048176f7`) on
+  `sharable-skills`. Built + verified the `agents` seed (filter-repo, 1:1, 132
+  commits) at `../agents-seed`. `SpineEventEngine/agents` already exists (public,
+  empty); `config` is public too (no private-content concern). Agent push was blocked
+  by the auto-mode classifier — handed push commands to maintainer.
+- 2026-06-02 — Maintainer pushed the seed to `SpineEventEngine/agents` (fixed a stale
+  github.com host key + switched to HTTPS via `gh`). **Phase 2-execute done:** config
+  now dogfoods the `.agents/shared` submodule; `migrate` rewritten to the submodule
+  model (delegates to `adopt-shared-agents`); README/AGENTS updated; `docs/project.md`
+  written. Verified end to end (skills resolve, float plumbing works). Ready to commit.
+  Remaining: branch-protect `agents@master`; roll consumers (just run `./config/pull`).

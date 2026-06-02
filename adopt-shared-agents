@@ -22,7 +22,7 @@
 
 set -euo pipefail
 
-AGENTS_URL="${1:-${AGENTS_URL:-git@github.com:SpineEventEngine/agents.git}}"
+AGENTS_URL="${1:-${AGENTS_URL:-https://github.com/SpineEventEngine/agents.git}}"
 SHARED_PATH=".agents/shared"
 
 # --- preflight -----------------------------------------------------------------
@@ -31,10 +31,8 @@ if [ ! -d ".git" ] && ! git rev-parse --git-dir >/dev/null 2>&1; then
   echo "Error: run this from the repository root (no Git repo detected here)." >&2
   exit 1
 fi
-if [ ! -d ".agents" ]; then
-  echo "Error: no '.agents' directory here — nothing to convert." >&2
-  exit 1
-fi
+# Note: a pre-existing `.agents/` is NOT required — this script bootstraps it
+# (submodule + symlinks), so it works on a brand-new consumer too.
 
 echo "Shared repo URL : $AGENTS_URL"
 echo "Submodule path  : $SHARED_PATH"
