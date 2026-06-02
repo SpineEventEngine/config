@@ -85,11 +85,13 @@ done
 
 # --- 2. add the floating submodule --------------------------------------------
 
+NEWLY_ADDED=false
 if [ -f .gitmodules ] && git config -f .gitmodules --get "submodule.$SHARED_PATH.url" >/dev/null 2>&1; then
   echo "Submodule '$SHARED_PATH' already registered — updating."
 else
   echo "Adding submodule '$SHARED_PATH' (tracking master)"
   git submodule add -b master "$AGENTS_URL" "$SHARED_PATH"
+  NEWLY_ADDED=true
 fi
 
 # Float to latest and never let the gitlink show dirty / be committed as a pin bump.
@@ -166,10 +168,14 @@ fi
 
 # --- 5. stage the rest, report -------------------------------------------------
 
-# Stage .gitmodules and the symlinks (already added by `link`) — but NOT the
-# submodule gitlink. `git submodule add` recorded the initial pin; re-staging the
-# floated commit would commit a pin bump on every run, the churn we're avoiding.
+# Stage .gitmodules and the symlinks (the symlinks were already added by `link`).
+# The submodule gitlink is staged ONCE — only when the submodule was just added —
+# re-staged here after the `--remote` float so the initial committed pin matches the
+# checked-out commit. On reruns it is NOT re-staged, so floated pins never churn.
 git add .gitmodules 2>/dev/null || true
+if [ "$NEWLY_ADDED" = true ]; then
+  git add "$SHARED_PATH" 2>/dev/null || true
+fi
 
 cat <<'EOF'
 
