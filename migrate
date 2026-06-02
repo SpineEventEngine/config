@@ -84,8 +84,8 @@ cp CLAUDE.md ..
 
 echo "Updating Junie guidelines"
 # Copy only the tracked guideline file. The `.junie/skills` symlink is created
-# by `adopt-shared-agents` (below), and any repo-local `.junie/memory` is left
-# untouched rather than wiped.
+# by `adopt-shared-agents` (run earlier in this script), and any repo-local
+# `.junie/memory` is left untouched rather than wiped.
 mkdir -p ../.junie
 cp .junie/guidelines.md ../.junie/guidelines.md
 

@@ -96,6 +96,16 @@ NEWLY_ADDED=false
 if [ -f .gitmodules ] && git config -f .gitmodules --get "submodule.$SHARED_PATH.url" >/dev/null 2>&1; then
   echo "Submodule '$SHARED_PATH' already registered — updating."
 else
+  # `git submodule add` aborts with an opaque error ("already exists in the
+  # index" / "already exists and is not a valid git repo") if the path is present
+  # on disk or in the index but absent from .gitmodules — e.g. a stray manual
+  # clone or a half-finished previous run. Detect that here and fail clearly.
+  if [ -e "$SHARED_PATH" ] || git ls-files --error-unmatch "$SHARED_PATH" >/dev/null 2>&1; then
+    echo "Error: '$SHARED_PATH' exists but is not a registered submodule." >&2
+    echo "       Remove it first ('rm -rf $SHARED_PATH'; also 'git rm --cached $SHARED_PATH'" >&2
+    echo "       if it is staged), then re-run." >&2
+    exit 1
+  fi
   echo "Adding submodule '$SHARED_PATH' (tracking master)"
   git submodule add -b master "$AGENTS_URL" "$SHARED_PATH"
   NEWLY_ADDED=true
@@ -162,12 +172,30 @@ link ".junie/skills"  "../.agents/skills"
 mkdir -p docs
 if [ -e ".agents/project.md" ] && [ ! -L ".agents/project.md" ]; then
   # Legacy real .agents/project.md — relocate to docs/, unless one already exists.
+  # It may be tracked (a committed legacy copy) or untracked (someone drafted it
+  # but never committed). Use git mv/rm for the tracked case to preserve history,
+  # and plain mv/rm + `git add` for the untracked one — `git mv`/`git rm` would
+  # abort on an untracked path and take the whole migration down with it.
+  if git ls-files --error-unmatch ".agents/project.md" >/dev/null 2>&1; then
+    tracked_project=true
+  else
+    tracked_project=false
+  fi
   if [ -e "docs/project.md" ]; then
     echo "Keeping existing docs/project.md; removing legacy .agents/project.md"
-    git rm -q ".agents/project.md"
+    if [ "$tracked_project" = true ]; then
+      git rm -q ".agents/project.md"
+    else
+      rm -f ".agents/project.md"
+    fi
   else
     echo "Moving .agents/project.md -> docs/project.md"
-    git mv ".agents/project.md" "docs/project.md"
+    if [ "$tracked_project" = true ]; then
+      git mv ".agents/project.md" "docs/project.md"
+    else
+      mv ".agents/project.md" "docs/project.md"
+      git add "docs/project.md"
+    fi
   fi
 elif [ ! -e "docs/project.md" ] && [ -f "$SHARED_PATH/guidelines/project.template.md" ]; then
   echo "Seeding docs/project.md from the shared template"
