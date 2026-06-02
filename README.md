@@ -41,13 +41,13 @@ The `pull` script also wires up AI-agent configuration:
  * `AGENTS.md` and `CLAUDE.md` — copied entry points that direct any agent to
    `.agents/guidelines/_TOC.md`.
  * Shared **skills, scripts, and guidelines are _not_ copied.** They live in the
-   [`SpineEventEngine/agents`](https://github.com/SpineEventEngine/agents) repository,
-   mounted as a floating Git submodule at `.agents/shared` (tracking `master`) and exposed
-   through symlinks: `.agents/skills`, `.agents/scripts`, `.agents/guidelines`, and
-   `.claude/commands`, `.claude/agents`, `.claude/skills`. `pull` runs the idempotent
-   [`adopt-shared-agents`](./adopt-shared-agents) script, which sets up the submodule on the
-   first run and floats it to the latest `agents@master` on every subsequent run — so shared
-   skills update everywhere with **no file churn** in consumer pull requests.
+   [`SpineEventEngine/agents`][agents-repo] repository, mounted as a floating Git submodule
+   at `.agents/shared` (tracking `master`) and exposed through symlinks: `.agents/skills`,
+   `.agents/scripts`, `.agents/guidelines`, `.claude/commands`, and `.claude/agents`. `pull`
+   runs the idempotent [`adopt-shared-agents`](./adopt-shared-agents) script, which sets up
+   the submodule on the first run and floats it to the latest `agents@master` on every
+   subsequent run — so shared skills update everywhere with **no file churn** in consumer
+   pull requests.
  * `.claude/settings.json` (and `settings.local.json`) — permission allowlist tuned for the
    Gradle/Git workflow; still distributed by `config`.
  * `.junie/guidelines.md` — JetBrains Junie guidelines.
@@ -56,7 +56,7 @@ Per-repo content is never overwritten: `docs/project.md` (linked from `.agents/p
 `.agents/memory/`, and `.agents/tasks/`.
 
 The single source of truth for each workflow is its `SKILL.md` in the
-[`agents`](https://github.com/SpineEventEngine/agents) repository; the Claude slash commands
+[`agents`][agents-repo] repository; the Claude slash commands
 and subagents are thin wrappers that point Claude Code at those files.
  
 ## Checking updated configuration
@@ -113,6 +113,7 @@ These scripts are copied by the `pull` script when `config` is applied to a new 
   * [GitHub: Working with submodules][working-with-submodules]
   * [Pro Git: Git Tools - Git Submodules][submodule-tools]
   
+[agents-repo]: https://github.com/SpineEventEngine/agents
 [base]: https://github.com/SpineEventEngine/base
 [base-types]: https://github.com/SpineEventEngine/base-types
 [core-java]: https://github.com/SpineEventEngine/core-java

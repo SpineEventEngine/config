@@ -15,7 +15,7 @@ requirements file (e.g. `jvm-project.md`), read that too.
   skill doesn't cover the needed context.
 
 Shared skills, scripts, and guidelines come from the `.agents/shared` submodule (the
-[`agents`](https://github.com/SpineEventEngine/agents) repository) exposed via symlinks.
+[`agents`][agents-repo] repository) exposed via symlinks.
 `./config/pull` initializes and floats it automatically; on a fresh clone that skips
 `pull`, run `git submodule update --init --remote --recursive`.
 
@@ -118,3 +118,5 @@ In consumer repositories, skip without comment any path matching:
 - `gradle/`, `gradlew`, `gradlew.bat`
 - `.codecov.yml`, `.gitignore`, `gradle.properties`, `lychee.toml`
 - `.github/workflows/` — unless the workflow was introduced by this repo
+
+[agents-repo]: https://github.com/SpineEventEngine/agents

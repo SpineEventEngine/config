@@ -26,16 +26,17 @@ What `pull`/`migrate` distribute to each consumer:
   config files.
 
 Shared agent **skills, scripts, and guidelines** are *not* copied. They live in
-the [`SpineEventEngine/agents`](https://github.com/SpineEventEngine/agents)
-repository, mounted as a floating Git submodule at `.agents/shared` (tracking
-`master`) and exposed through symlinks (`.agents/skills`, `.agents/scripts`,
-`.agents/guidelines`, `.claude/commands`, `.claude/agents`). This eliminates
-per-repo file churn — skills update everywhere via `git submodule update
---remote` with no commits in consumer repos. `config` itself consumes this
-submodule (it dogfoods the same setup).
+the [`SpineEventEngine/agents`][agents-repo] repository, mounted as a floating Git
+submodule at `.agents/shared` (tracking `master`) and exposed through symlinks
+(`.agents/skills`, `.agents/scripts`, `.agents/guidelines`, `.claude/commands`,
+`.claude/agents`). This eliminates per-repo file churn — skills update everywhere
+via `git submodule update --remote` with no commits in consumer repos. `config`
+itself consumes this submodule (it dogfoods the same setup).
 
 Per-repo content stays local and is never overwritten: `docs/project.md`,
 `.agents/memory/`, and `.agents/tasks/`.
 
 Read [`.agents/guidelines/jvm-project.md`](.agents/guidelines/jvm-project.md) for
 build stack, coding style, tests, and versioning.
+
+[agents-repo]: https://github.com/SpineEventEngine/agents
