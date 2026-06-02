@@ -88,6 +88,9 @@ else
 fi
 
 # Float to latest and never let the gitlink show dirty / be committed as a pin bump.
+# Set `branch` unconditionally so an already-registered submodule that lacks it (or
+# points elsewhere) is corrected to track `master` before `--remote` runs.
+git config -f .gitmodules "submodule.$SHARED_PATH.branch" master
 git config -f .gitmodules "submodule.$SHARED_PATH.update" checkout
 git config -f .gitmodules "submodule.$SHARED_PATH.ignore" all
 git submodule update --init --remote "$SHARED_PATH"
@@ -95,9 +98,21 @@ git submodule update --init --remote "$SHARED_PATH"
 # --- 3. (re)create the symlinks ------------------------------------------------
 
 link() {
-  # link <link-path> <target>  — create/refresh a symlink, replacing any stale one.
+  # link <link-path> <target> — create/refresh a symlink.
+  # A non-symlink already in the way is removed only if it is TRACKED (recoverable
+  # via Git — e.g. an old copied directory). Untracked content is never destroyed:
+  # the script stops and asks the user to move it aside first.
   local link_path="$1" target="$2"
-  rm -rf "$link_path"
+  if [ -e "$link_path" ] && [ ! -L "$link_path" ]; then
+    if git ls-files --error-unmatch "$link_path" >/dev/null 2>&1; then
+      git rm -r --quiet "$link_path"
+    else
+      echo "Error: '$link_path' exists as untracked content (not in Git)." >&2
+      echo "       Move it aside and re-run, so nothing is lost." >&2
+      exit 1
+    fi
+  fi
+  rm -rf "$link_path"   # at this point only a symlink (or nothing) remains
   mkdir -p "$(dirname "$link_path")"
   ln -s "$target" "$link_path"
   git add "$link_path"

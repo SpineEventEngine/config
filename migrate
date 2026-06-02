@@ -89,8 +89,11 @@ cp .github/copilot-instructions.md ../.github/copilot-instructions.md
 # ---------------------------------------------------------------------------
 
 echo "Setting up shared agent content (.agents/shared submodule + symlinks)"
-( cd .. && bash ./config/adopt-shared-agents ) || \
-  echo "WARNING: shared-agents setup did not complete (see messages above)."
+if ! ( cd .. && bash ./config/adopt-shared-agents ); then
+  echo "ERROR: shared-agents setup failed — aborting to avoid a half-migrated repo." >&2
+  echo "       Fix the cause reported above and re-run \`./config/pull\`." >&2
+  exit 1
+fi
 
 # ---------------------------------------------------------------------------
 # Claude settings — the commands/agents/skills come from the submodule above;
