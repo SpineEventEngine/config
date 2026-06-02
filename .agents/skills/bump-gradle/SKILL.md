@@ -36,7 +36,7 @@ invocation, under these constraints:
 
 No `git push`, `git tag`, `git rebase`, `git commit --amend`, or any other
 history-writing operation. Those require a separate authorization
-(`.agents/safety-rules.md` → *Commits and history-writing*). Do not create
+(`.agents/guidelines/safety-rules.md` → *Commits and history-writing*). Do not create
 empty commits, and do not bundle unrelated changes into either commit.
 
 ## Checklist

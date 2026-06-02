@@ -50,7 +50,7 @@ description: >
 
 ## Repo Notes
 
-Follow `.agents/project-structure-expectations.md` for module/source-set/test moves.
+Follow `.agents/guidelines/project-structure-expectations.md` for module/source-set/test moves.
 
 ## Report
 

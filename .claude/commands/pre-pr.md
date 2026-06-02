@@ -12,7 +12,7 @@ Follow the `pre-pr` skill exactly:
   absent at both the base ref and `HEAD`, the version check is `N/A`; do not
   create the file and do not ask for `/bump-version`.
 - Run the build/check command selected by the skill and
-  `.agents/running-builds.md`. The command may be Gradle or non-Gradle.
+  `.agents/guidelines/running-builds.md`. The command may be Gradle or non-Gradle.
 - Dispatch the reviewers as Claude subagents in parallel — send a single
   message with multiple Agent tool uses:
   - `kotlin-review` when `.kt|.kts|.java` files changed.

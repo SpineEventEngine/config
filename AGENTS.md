@@ -4,14 +4,14 @@
 
 If `.agents/project.md` exists in this repository, read it first — it describes
 the language, architecture, and role of this specific repo within the Spine SDK
-organisation. To create one, copy `.agents/project.template.md` (or the
+organisation. To create one, copy `.agents/guidelines/project.template.md` (or the
 relevant language template) and fill it in. If `project.md` links to a shared
 requirements file (e.g. `jvm-project.md`), read that too.
 
-- Start every session by reading `.agents/quick-reference-card.md` (if present).
+- Start every session by reading `.agents/guidelines/quick-reference-card.md` (if present).
 - For specific tasks (code review, PR prep, dependency updates, docs, etc.),
   prefer the matching skill from `.agents/skills/`.
-- Full standards reference: `.agents/_TOC.md` (if present) — consult when a
+- Full standards reference: `.agents/guidelines/_TOC.md` (if present) — consult when a
   skill doesn't cover the needed context.
 
 ## Commit and history safety
@@ -26,7 +26,7 @@ unless one of the following is true *right now*:
 Authorization does not carry over between turns or sessions. When in doubt: stage
 changes, show the diff, and stop — let the user commit.
 
-See [`.agents/safety-rules.md`](.agents/safety-rules.md) → *Commits and history-writing*.
+See [`.agents/guidelines/safety-rules.md`](.agents/guidelines/safety-rules.md) → *Commits and history-writing*.
 
 ## Other safety rules
 
@@ -35,7 +35,7 @@ See [`.agents/safety-rules.md`](.agents/safety-rules.md) → *Commits and histor
 - No analytics, telemetry, or tracking code.
 - No reflection or unsafe code without explicit approval.
 
-See [`.agents/safety-rules.md`](.agents/safety-rules.md) for the full list.
+See [`.agents/guidelines/safety-rules.md`](.agents/guidelines/safety-rules.md) for the full list.
 
 ## Moving files
 

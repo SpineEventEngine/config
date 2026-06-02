@@ -3,7 +3,7 @@ name: pre-pr
 description: >
   Run the pre-PR checklist for this repo: apply the version gate only when
   the repository has a root `version.gradle.kts`, run a scope-dependent
-  build/check command per `.agents/running-builds.md` (docs-only → `dokka`;
+  build/check command per `.agents/guidelines/running-builds.md` (docs-only → `dokka`;
   code/deps → `build`; proto → `clean build`; no documented command → skipped),
   and invoke the relevant reviewers (`kotlin-review`, `review-docs`,
   `dependency-audit`,
@@ -26,10 +26,10 @@ from the project root, the version-bump check is **not applicable**.
 
 The authoritative standards live in `.agents/`:
 
-- `.agents/version-policy.md` — applies only when the repository has a root
+- `.agents/guidelines/version-policy.md` — applies only when the repository has a root
   `version.gradle.kts`.
-- `.agents/running-builds.md` — which build/check command to run.
-- `.agents/safety-rules.md` and `.agents/advanced-safety-rules.md` — hard
+- `.agents/guidelines/running-builds.md` — which build/check command to run.
+- `.agents/guidelines/safety-rules.md` and `.agents/guidelines/advanced-safety-rules.md` — hard
   constraints checked by the reviewers.
 
 ## Procedure
@@ -78,7 +78,7 @@ the first failure.
   there; if it does not, the file is newly introduced — record the introduced
   version and continue.
 - When both sides have the file: if the version is not strictly greater (semver
-  + Spine snapshot rules in `.agents/version-policy.md`): if
+  + Spine snapshot rules in `.agents/guidelines/version-policy.md`): if
   `.agents/skills/bump-version/` exists, **auto-fix immediately** by running
   the `bump-version` skill without asking; otherwise record a Must-fix and continue.
   Re-read the file after the fix. If the version is still not strictly greater,
@@ -88,13 +88,13 @@ the first failure.
 
 ### 3. Build or check
 
-Pick the target per `.agents/running-builds.md`:
+Pick the target per `.agents/guidelines/running-builds.md`:
 
 - **proto** changed → `./gradlew clean build`
 - Else **code** changed → `./gradlew build`
 - Else **docs**-only → `./gradlew dokka`
 
-If `./gradlew` is absent, read `.agents/running-builds.md` for the
+If `./gradlew` is absent, read `.agents/guidelines/running-builds.md` for the
 repository-specific command. If that file is also absent, or if none is
 documented for the change type, record `build_status=skipped` with the
 reason and continue.

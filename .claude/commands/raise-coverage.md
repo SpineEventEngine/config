@@ -15,7 +15,7 @@ Follow the `raise-coverage` skill exactly:
 - Order: localize gaps from Kover's JaCoCo-format XML → propose concrete test
   cases and **wait for confirmation** → generate → re-run
   `:<module>:koverXmlReport` to verify the gap closed.
-- Honor `.agents/testing.md` and `.agents/coding-guidelines.md`. New tests are
+- Honor `.agents/guidelines/testing.md` and `.agents/guidelines/coding-guidelines.md`. New tests are
   always written in **Kotlin** (JUnit Jupiter structure + Kotest assertions),
   regardless of whether the code under test is Kotlin or Java, with no
   mocking framework — stubs only. Test class names use the **`Spec`** suffix

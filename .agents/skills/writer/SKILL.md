@@ -47,7 +47,7 @@ description: >
 
 ## Follow local documentation conventions
 
-- Follow `.agents/documentation-guidelines.md` and `.agents/documentation-tasks.md`.
+- Follow `.agents/guidelines/documentation-guidelines.md` and `.agents/guidelines/documentation-tasks.md`.
 - Use fenced code blocks for commands and examples; format file/dir names as code.
 - When referencing a documentation page or section in body prose, use typographic
   double quotation marks only if the visible reference text is the actual page or
@@ -81,5 +81,5 @@ description: >
 
 ## Validate changes
 
-- For code changes, follow `.agents/running-builds.md`.
+- For code changes, follow `.agents/guidelines/running-builds.md`.
 - For documentation-only changes in Kotlin/Java sources, prefer `./gradlew dokka`.

@@ -38,7 +38,7 @@ The following files will be copied:
 
 The `pull` script also propagates AI-agent configuration into the consuming project:
 
- * `AGENTS.md` and `CLAUDE.md` — entry points that direct any agent to `.agents/_TOC.md`.
+ * `AGENTS.md` and `CLAUDE.md` — entry points that direct any agent to `.agents/guidelines/_TOC.md`.
  * `.agents/` — coding guidelines, safety rules, testing policy, project structure expectations,
    and per-task skill definitions under `.agents/skills/<skill-name>/SKILL.md`.
  * `.claude/` — Claude Code configuration:

@@ -99,7 +99,7 @@ Each file declares a Kotlin `object` extending `Dependency` or `DependencyWithBo
   must follow the convention of neighbors (e.g. `lib/Foo.kt` declares
   `object Foo`).
 - **No type names in property names** (`fooList`, `barObject`) — this is in
-  `.agents/coding-guidelines.md`.
+  `.agents/guidelines/coding-guidelines.md`.
 - **Module constants use `"$group:<artifact>:$version"`**, not hardcoded
   Maven coordinates. Catch copy-paste like `"io.kotest:kotest-assertions-core:6.1.11"`.
 

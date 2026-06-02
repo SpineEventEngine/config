@@ -13,7 +13,7 @@ projects; their version check is not applicable, and agents must not create
 For the bump procedure in repositories that have root `version.gradle.kts` —
 version-number selection, the commit-message convention, the rebuild,
 dependency-report updates, and conflict resolution — use the
-[`bump-version`](skills/bump-version/SKILL.md) skill.
+[`bump-version`](.agents/skills/bump-version/SKILL.md) skill.
 
 [semver]: https://semver.org/
 [wiki-versioning]: https://github.com/SpineEventEngine/documentation/wiki/Versioning

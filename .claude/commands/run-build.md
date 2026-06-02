@@ -9,4 +9,4 @@ Decide which build to run by looking at `git status --short` and `git diff --nam
 - Else if Kotlin or Java source changed: `./gradlew build`
 - Else if only docs/comments changed (KDoc / Javadoc / Markdown): `./gradlew dokka`. Tests are NOT required for doc-only changes.
 
-Report the chosen command and its result. See `.agents/running-builds.md`.
+Report the chosen command and its result. See `.agents/guidelines/running-builds.md`.

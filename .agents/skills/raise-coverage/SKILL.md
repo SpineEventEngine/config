@@ -27,10 +27,10 @@ and wait for approval. The mechanical recipe lives in
 
 The authoritative standards live in `.agents/`:
 
-- `.agents/testing.md` — stubs not mocks; Kotest assertions; cover API edge
+- `.agents/guidelines/testing.md` — stubs not mocks; Kotest assertions; cover API edge
   cases; scaffold `when`/sealed-class branches.
-- `.agents/coding-guidelines.md` — Kotlin/Java idioms for the tests you write.
-- `.agents/version-policy.md` — tests-only changes do not require a version bump.
+- `.agents/guidelines/coding-guidelines.md` — Kotlin/Java idioms for the tests you write.
+- `.agents/guidelines/version-policy.md` — tests-only changes do not require a version bump.
 
 Mechanical detail (report paths, XML parsing, gap rules) lives in
 [`references/coverage-signals.md`](references/coverage-signals.md). Keep this
@@ -180,7 +180,7 @@ On success, **resume** at Workflow step 1.
    - Present this list and **wait for the user's confirmation** before writing
      anything. (Under `--triage` you already stopped at step 1.)
 
-5. **Generate the tests** (only after approval), per `.agents/testing.md`:
+5. **Generate the tests** (only after approval), per `.agents/guidelines/testing.md`:
    - **Write tests in Kotlin**, regardless of whether the code under test is
      Kotlin or Java. Use JUnit Jupiter structure (`@Test` / `@Nested` /
      `@DisplayName`) with **Kotest assertions** (`shouldBe`, `shouldThrow`,

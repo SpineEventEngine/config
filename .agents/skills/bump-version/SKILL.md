@@ -29,7 +29,7 @@ under these constraints:
   do not escape them as ``\````.
 - No `git push`, `git tag`, `git rebase`, `git commit --amend`, or any other
   history-writing operation. Those require a separate authorization
-  (`.agents/safety-rules.md` → *Commits and history-writing*).
+  (`.agents/guidelines/safety-rules.md` → *Commits and history-writing*).
 
 If the bump cannot be performed cleanly (no diff to commit, conflicting
 staged files, build failures preceding the commit), report and stop — do not

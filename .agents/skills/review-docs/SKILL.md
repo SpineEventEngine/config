@@ -17,15 +17,15 @@ Kotlin idioms, safety rules, tests, and version-gate checks).
 
 The authoritative standards live in `.agents/`:
 
-- `.agents/documentation-guidelines.md` — commenting rules, TODO-comment
+- `.agents/guidelines/documentation-guidelines.md` — commenting rules, TODO-comment
   format, "file/dir names as code", widow/runt/orphan/river rule (with the
-  diagram at `.agents/widow-runt-orphan.jpg`).
-- `.agents/documentation-tasks.md` — KDoc-example requirement on APIs;
+  diagram at `.agents/guidelines/widow-runt-orphan.jpg`).
+- `.agents/guidelines/documentation-tasks.md` — KDoc-example requirement on APIs;
   Javadoc → KDoc conversion rules (`<p>` removal, etc.).
 - `.agents/skills/writer/SKILL.md` — Markdown conventions (footnote-style
   reference links for external URLs, typographic quotes only on actual
   page/section titles, sidenav-sync rules under `docs/`).
-- `.agents/running-builds.md` — for doc-only Kotlin/Java changes the right
+- `.agents/guidelines/running-builds.md` — for doc-only Kotlin/Java changes the right
   build is `./gradlew dokka` (no tests required).
 
 ## Review procedure
@@ -109,7 +109,7 @@ The authoritative standards live in `.agents/`:
 
 - **Avoid widows, runts, orphans, and rivers** — the rule from
   `documentation-guidelines.md` with the diagram at
-  `.agents/widow-runt-orphan.jpg`. Operationally:
+  `.agents/guidelines/widow-runt-orphan.jpg`. Operationally:
     - **Widow / runt**: a paragraph's last line containing only one short
       word (or a hyphenated fragment). Reflow the prior line.
     - **Orphan**: a single trailing line of a paragraph stranded at the top

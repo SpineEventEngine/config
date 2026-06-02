@@ -14,5 +14,5 @@ Spine SDK organisation.*
 Key patterns, public API boundaries, and constraints specific to this repo.*
 
 <!-- JVM projects: uncomment the line below after seeding this file.
-Read [`.agents/jvm-project.md`](jvm-project.md) for build stack, coding style, tests, and versioning.
+Read [`.agents/guidelines/jvm-project.md`](.agents/guidelines/jvm-project.md) for build stack, coding style, tests, and versioning.
 -->

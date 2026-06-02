@@ -46,7 +46,7 @@ If this repository does not have a root version.gradle.kts, do not add one just
 to satisfy /pre-pr; the version check is not applicable.
 
 See:
-  - .agents/version-policy.md
+  - .agents/guidelines/version-policy.md
   - .agents/skills/bump-version/SKILL.md
 EOF
     exit 2

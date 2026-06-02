@@ -90,7 +90,7 @@ complementary — neither subsumes the other.
 
 ## See also
 
-- `.agents/version-policy.md` — when the version gate applies.
+- `.agents/guidelines/version-policy.md` — when the version gate applies.
 - `.agents/skills/bump-version/SKILL.md` — the bump procedure itself.
 - `.agents/skills/pre-pr/SKILL.md` — uses the same check at PR time
   (step 2).

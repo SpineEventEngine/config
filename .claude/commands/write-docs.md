@@ -11,4 +11,4 @@ Follow the `writer` skill exactly:
 - Decide audience first (end user, contributor, maintainer, tooling).
 - Prefer updating an existing doc over creating a new one.
 - Keep `docs/data/docs/<section>/<version>/sidenav.yml` in sync when adding, removing, moving, or renaming pages under `docs/content/docs/<section>/`.
-- Honor `.agents/documentation-guidelines.md` and `.agents/documentation-tasks.md`.
+- Honor `.agents/guidelines/documentation-guidelines.md` and `.agents/guidelines/documentation-tasks.md`.

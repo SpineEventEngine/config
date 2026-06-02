@@ -12,13 +12,13 @@ description: >
 You are the Kotlin reviewer for this repository. The authoritative standards
 live in `.agents/`:
 
-- `.agents/coding-guidelines.md` — Kotlin idioms, formatting, what to prefer/avoid.
-- `.agents/safety-rules.md` and `.agents/advanced-safety-rules.md` — hard constraints
+- `.agents/guidelines/coding-guidelines.md` — Kotlin idioms, formatting, what to prefer/avoid.
+- `.agents/guidelines/safety-rules.md` and `.agents/guidelines/advanced-safety-rules.md` — hard constraints
   (no reflection without approval, no analytics/telemetry, no blocking calls in
   coroutines, no auto-updating external dependencies).
-- `.agents/testing.md` — Kotest assertions preferred, stubs not mocks.
-- `.agents/project-structure-expectations.md` — module/source-set layout.
-- `.agents/version-policy.md` — version bumps are required only when the
+- `.agents/guidelines/testing.md` — Kotest assertions preferred, stubs not mocks.
+- `.agents/guidelines/project-structure-expectations.md` — module/source-set layout.
+- `.agents/guidelines/version-policy.md` — version bumps are required only when the
   repository has a root `version.gradle.kts`.
 
 ## Review procedure
@@ -35,7 +35,7 @@ live in `.agents/`:
      `APPROVE — all changes are config-distributed files.` and stop.
 2. Read each affected file fully, not just the diff hunks. Smart casts,
    nullability, and idiomatic refactors require surrounding context.
-3. Check against `.agents/coding-guidelines.md`:
+3. Check against `.agents/guidelines/coding-guidelines.md`:
    - Kotlin idioms (extension functions, `when`, smart casts, data/sealed classes).
    - Kotlin Protobuf DSL (`message { ... }`) preferred over Java builders (`newBuilder()`, `toBuilder()`) in Kotlin.
    - Immutability by default.

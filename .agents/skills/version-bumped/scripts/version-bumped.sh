@@ -271,6 +271,6 @@ version-bumped: BLOCK — branch differs from $base
   $base_version, which integration tests in consumer repos may rely on.
 
   Run /bump-version (or invoke /version-bumped to auto-recover).
-  See .agents/version-policy.md and .agents/skills/bump-version/SKILL.md.
+  See .agents/guidelines/version-policy.md and .agents/skills/bump-version/SKILL.md.
 EOF
 exit 1

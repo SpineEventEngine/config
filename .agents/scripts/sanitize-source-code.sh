@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # PostToolUse hook: enforce the source-code formatting rules from
-# .agents/coding-guidelines.md after Edit/Write/MultiEdit:
+# .agents/guidelines/coding-guidelines.md after Edit/Write/MultiEdit:
 #   - strip trailing whitespace
 #   - replace 2+ consecutive blank lines with a single blank line
 #

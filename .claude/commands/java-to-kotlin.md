@@ -10,4 +10,4 @@ Follow the `java-to-kotlin` skill exactly:
 - Target: $ARGUMENTS
 - Preserve behavior. Convert Javadoc to KDoc, `@Nullable` to nullable Kotlin types, getters/setters to properties, static methods to companion objects or top-level functions.
 - After each file, run `./gradlew compileKotlin` (or the relevant module's compile task) to verify.
-- Honor `.agents/coding-guidelines.md` for Kotlin idioms.
+- Honor `.agents/guidelines/coding-guidelines.md` for Kotlin idioms.

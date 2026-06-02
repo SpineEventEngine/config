@@ -92,8 +92,8 @@ if [ -n "$PRESERVE_PROJECT_MD" ] && [ -f "$PRESERVE_PROJECT_MD" ]; then
   mkdir -p ../.agents
   cp -a "$PRESERVE_PROJECT_MD" "../.agents/project.md"
   rm -f "$PRESERVE_PROJECT_MD"
-elif [ -d "../.agents" ] && [ -f ".agents/project.template.md" ]; then
-  cp .agents/project.template.md ../.agents/project.md
+elif [ -d "../.agents" ] && [ -f ".agents/guidelines/project.template.md" ]; then
+  cp .agents/guidelines/project.template.md ../.agents/project.md
 fi
 
 # Prune JVM-specific items only on Hugo-only repos. JVM repos (including
@@ -109,18 +109,18 @@ if [ "$IS_HUGO_DOCS" = "true" ] && [ "$IS_JVM" = "false" ]; then
     rm -rf ../.agents/skills/kotlin-review
     rm -rf ../.agents/skills/raise-coverage
     # Remove dead-link TOC (references JVM-specific files pruned above)
-    rm -f ../.agents/_TOC.md
+    rm -f ../.agents/guidelines/_TOC.md
     # Remove JVM-specific guidelines
-    rm -f ../.agents/jvm-project.md
-    rm -f ../.agents/quick-reference-card.md
-    rm -f ../.agents/coding-guidelines.md
-    rm -f ../.agents/testing.md
-    rm -f ../.agents/version-policy.md
+    rm -f ../.agents/guidelines/jvm-project.md
+    rm -f ../.agents/guidelines/quick-reference-card.md
+    rm -f ../.agents/guidelines/coding-guidelines.md
+    rm -f ../.agents/guidelines/testing.md
+    rm -f ../.agents/guidelines/version-policy.md
     rm -f ../.agents/project-overview.md
-    rm -f ../.agents/running-builds.md
-    rm -f ../.agents/refactoring-guidelines.md
-    rm -f ../.agents/common-tasks.md
-    rm -f ../.agents/project-structure-expectations.md
+    rm -f ../.agents/guidelines/running-builds.md
+    rm -f ../.agents/guidelines/refactoring-guidelines.md
+    rm -f ../.agents/guidelines/common-tasks.md
+    rm -f ../.agents/guidelines/project-structure-expectations.md
     # Remove JVM-specific scripts
     rm -f ../.agents/scripts/protect-version-file.sh
     rm -f ../.agents/scripts/publish-version-gate.sh
