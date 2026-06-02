@@ -27,8 +27,13 @@ SHARED_PATH=".agents/shared"
 
 # --- preflight -----------------------------------------------------------------
 
-if [ ! -d ".git" ] && ! git rev-parse --git-dir >/dev/null 2>&1; then
-  echo "Error: run this from the repository root (no Git repo detected here)." >&2
+TOPLEVEL=$(git rev-parse --show-toplevel 2>/dev/null) || {
+  echo "Error: not inside a Git repository." >&2
+  exit 1
+}
+if [ "$TOPLEVEL" != "$(pwd -P)" ]; then
+  echo "Error: run this from the repository ROOT ($TOPLEVEL), not a subdirectory —" >&2
+  echo "       all paths (.agents/shared, symlinks) are created relative to the CWD." >&2
   exit 1
 fi
 # Note: a pre-existing `.agents/` is NOT required — this script bootstraps it
@@ -151,7 +156,10 @@ fi
 
 # --- 5. stage the rest, report -------------------------------------------------
 
-git add .gitmodules "$SHARED_PATH" 2>/dev/null || true
+# Stage .gitmodules and the symlinks (already added by `link`) — but NOT the
+# submodule gitlink. `git submodule add` recorded the initial pin; re-staging the
+# floated commit would commit a pin bump on every run, the churn we're avoiding.
+git add .gitmodules 2>/dev/null || true
 
 cat <<'EOF'
 
