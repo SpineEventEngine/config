@@ -36,7 +36,7 @@ itself consumes this submodule (it dogfoods the same setup).
 Per-repo content stays local and is never overwritten: `docs/project.md`,
 `.agents/memory/`, and `.agents/tasks/`.
 
-Read [`.agents/guidelines/jvm-project.md`](.agents/guidelines/jvm-project.md) for
+Read [`.agents/guidelines/jvm-project.md`](../.agents/guidelines/jvm-project.md) for
 build stack, coding style, tests, and versioning.
 
 [agents-repo]: https://github.com/SpineEventEngine/agents

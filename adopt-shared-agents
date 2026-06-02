@@ -64,6 +64,20 @@ remove_tracked ".agents/guidelines"
 remove_tracked ".claude/commands"
 remove_tracked ".claude/agents"
 
+# A consumer migrating from the old copied layout also has the pre-regroup
+# guideline files tracked flat under `.agents/` (e.g. `.agents/_TOC.md`,
+# `.agents/safety-rules.md`). They now come from the submodule via
+# `.agents/guidelines`, so remove the stale flat copies. `project.md` is handled
+# separately below; `memory/` and `tasks/` are repo-local and left untouched.
+for stale in advanced-safety-rules.md coding-guidelines.md common-tasks.md \
+             documentation-guidelines.md documentation-tasks.md jvm-project.md \
+             project-structure-expectations.md quick-reference-card.md \
+             refactoring-guidelines.md running-builds.md safety-rules.md \
+             testing.md version-policy.md _TOC.md project.template.md \
+             widow-runt-orphan.jpg; do
+  remove_tracked ".agents/$stale"
+done
+
 # --- 2. add the floating submodule --------------------------------------------
 
 if [ -f .gitmodules ] && git config -f .gitmodules --get "submodule.$SHARED_PATH.url" >/dev/null 2>&1; then
@@ -96,10 +110,11 @@ link ".agents/guidelines" "shared/guidelines"
 link ".claude/commands"   "../.agents/shared/claude/commands"
 link ".claude/agents"     "../.agents/shared/claude/agents"
 
-# These already point at ../.agents/skills in every repo; ensure they exist
-# (they resolve through the new .agents/skills symlink — a harmless 2-hop chain).
-[ -e ".claude/skills" ] || link ".claude/skills" "../.agents/skills"
-[ -e ".junie/skills" ]  || link ".junie/skills"  "../.agents/skills"
+# Recreate these unconditionally — the `link` helper replaces any stale real
+# directory left by an old copy-based setup (otherwise Claude/Junie would keep
+# using a stale local copy). They resolve through the new `.agents/skills` symlink.
+link ".claude/skills" "../.agents/skills"
+link ".junie/skills"  "../.agents/skills"
 
 # --- 4. project.md -> docs/project.md -----------------------------------------
 
