@@ -45,8 +45,14 @@ fi
 # are left untouched (no `rm -rf .agents`).
 # ---------------------------------------------------------------------------
 
+# Pass the canonical remote explicitly. `adopt-shared-agents` honours an
+# `AGENTS_URL` environment variable, but `migrate` runs automatically as part of
+# `./config/pull`; an ambient `AGENTS_URL` (in a shell or CI env) must not
+# silently redirect a consumer to an unintended fork. An explicit argument wins
+# over the env var, keeping automatic pulls deterministic.
+AGENTS_URL_CANONICAL="https://github.com/SpineEventEngine/agents.git"
 echo "Setting up shared agent content (.agents/shared submodule + symlinks)"
-if ! ( cd .. && bash ./config/adopt-shared-agents ); then
+if ! ( cd .. && bash ./config/adopt-shared-agents "$AGENTS_URL_CANONICAL" ); then
   echo "ERROR: shared-agents setup failed — aborting to avoid a half-migrated repo." >&2
   echo "       Fix the cause reported above and re-run \`./config/pull\`." >&2
   exit 1
