@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+
+################################################################################
+#
+# One-time migration: switch a repository from COPIED shared agent content to a
+# floating Git submodule + symlinks.
+#
+# Run ONCE per repository, from the repository ROOT (the dir whose `.agents/`
+# you are converting). Works for both consumer repos and the `config` repo
+# itself (dogfooding).
+#
+# It is safe to re-run: each step is guarded and skips work already done.
+#
+# Prerequisite: the shared repo `SpineEventEngine/agents` must already exist and
+# be reachable (this script clones it as a submodule). Override the URL with the
+# AGENTS_URL environment variable or the first argument.
+#
+# This script STAGES its changes but never commits — review `git status` and the
+# diff, then commit yourself.
+#
+################################################################################
+
+set -euo pipefail
+
+AGENTS_URL="${1:-${AGENTS_URL:-git@github.com:SpineEventEngine/agents.git}}"
+SHARED_PATH=".agents/shared"
+
+# --- preflight -----------------------------------------------------------------
+
+if [ ! -d ".git" ] && ! git rev-parse --git-dir >/dev/null 2>&1; then
+  echo "Error: run this from the repository root (no Git repo detected here)." >&2
+  exit 1
+fi
+if [ ! -d ".agents" ]; then
+  echo "Error: no '.agents' directory here — nothing to convert." >&2
+  exit 1
+fi
+
+echo "Shared repo URL : $AGENTS_URL"
+echo "Submodule path  : $SHARED_PATH"
+
+# Verify the remote is reachable before touching anything.
+if ! git ls-remote "$AGENTS_URL" >/dev/null 2>&1; then
+  echo "Error: cannot reach '$AGENTS_URL'." >&2
+  echo "       Create SpineEventEngine/agents first, or pass the correct URL." >&2
+  exit 1
+fi
+
+# --- 1. remove the copied real content ----------------------------------------
+
+remove_tracked() {
+  # Remove a path from the working tree + index only if it is currently tracked
+  # as a real file/dir (not already our submodule/symlink).
+  local path="$1"
+  if git ls-files --error-unmatch "$path" >/dev/null 2>&1; then
+    if [ ! -L "$path" ]; then
+      echo "Removing copied '$path'"
+      git rm -r --quiet "$path"
+    fi
+  fi
+}
+
+remove_tracked ".agents/skills"
+remove_tracked ".agents/scripts"
+remove_tracked ".agents/guidelines"
+remove_tracked ".claude/commands"
+remove_tracked ".claude/agents"
+
+# --- 2. add the floating submodule --------------------------------------------
+
+if [ -f .gitmodules ] && git config -f .gitmodules --get "submodule.$SHARED_PATH.url" >/dev/null 2>&1; then
+  echo "Submodule '$SHARED_PATH' already registered — updating."
+else
+  echo "Adding submodule '$SHARED_PATH' (tracking master)"
+  git submodule add -b master "$AGENTS_URL" "$SHARED_PATH"
+fi
+
+# Float to latest and never let the gitlink show dirty / be committed as a pin bump.
+git config -f .gitmodules "submodule.$SHARED_PATH.update" checkout
+git config -f .gitmodules "submodule.$SHARED_PATH.ignore" all
+git submodule update --init --remote "$SHARED_PATH"
+
+# --- 3. (re)create the symlinks ------------------------------------------------
+
+link() {
+  # link <link-path> <target>  — create/refresh a symlink, replacing any stale one.
+  local link_path="$1" target="$2"
+  rm -rf "$link_path"
+  mkdir -p "$(dirname "$link_path")"
+  ln -s "$target" "$link_path"
+  git add "$link_path"
+  echo "Linked $link_path -> $target"
+}
+
+link ".agents/skills"     "shared/skills"
+link ".agents/scripts"    "shared/scripts"
+link ".agents/guidelines" "shared/guidelines"
+link ".claude/commands"   "../.agents/shared/claude/commands"
+link ".claude/agents"     "../.agents/shared/claude/agents"
+
+# These already point at ../.agents/skills in every repo; ensure they exist
+# (they resolve through the new .agents/skills symlink — a harmless 2-hop chain).
+[ -e ".claude/skills" ] || link ".claude/skills" "../.agents/skills"
+[ -e ".junie/skills" ]  || link ".junie/skills"  "../.agents/skills"
+
+# --- 4. project.md -> docs/project.md -----------------------------------------
+
+if [ -e ".agents/project.md" ] && [ ! -L ".agents/project.md" ]; then
+  echo "Moving .agents/project.md -> docs/project.md"
+  mkdir -p docs
+  git mv ".agents/project.md" "docs/project.md"
+  link ".agents/project.md" "../docs/project.md"
+elif [ ! -e ".agents/project.md" ] && [ -f "$SHARED_PATH/guidelines/project.template.md" ]; then
+  echo "Seeding docs/project.md from the shared template"
+  mkdir -p docs
+  cp "$SHARED_PATH/guidelines/project.template.md" "docs/project.md"
+  git add "docs/project.md"
+  link ".agents/project.md" "../docs/project.md"
+fi
+
+# --- 5. stage the rest, report -------------------------------------------------
+
+git add .gitmodules "$SHARED_PATH" 2>/dev/null || true
+
+cat <<'EOF'
+
+Done — changes are STAGED, not committed.
+
+Next:
+  1. Review:  git status  &&  git diff --cached
+  2. Confirm skills resolve:  ls -L .agents/skills .agents/guidelines .claude/commands
+  3. Commit on your branch when satisfied.
+
+From now on, refresh shared skills with:
+  git submodule update --remote .agents/shared
+EOF
