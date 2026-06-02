@@ -57,6 +57,13 @@ remove_tracked() {
   local path="$1"
   if git ls-files --error-unmatch "$path" >/dev/null 2>&1; then
     if [ ! -L "$path" ]; then
+      # Fail fast (matching `link`): a tracked dir holding untracked, non-ignored
+      # files would lose them when it is later replaced — refuse up front.
+      if [ -n "$(git ls-files --others --exclude-standard -- "$path")" ]; then
+        echo "Error: '$path' contains untracked files (not in Git)." >&2
+        echo "       Move them aside and re-run, so nothing is lost." >&2
+        exit 1
+      fi
       echo "Removing copied '$path'"
       git rm -r --quiet "$path"
     fi
