@@ -1,4 +1,0 @@
-interface:
-  display_name: "Kotlin Engineer"
-  short_description: "Kotlin 2.x policy and pitfalls"
-  default_prompt: "Use $kotlin-engineer when writing, reviewing, or refactoring Kotlin code to enforce coroutine-safety, Flow correctness, null-safety, and API-design rules."

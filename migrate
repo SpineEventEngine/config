@@ -33,14 +33,51 @@ if [ -d "../buildSrc/src/main/kotlin/io/spine/dependency" ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Shared agent content — skills, scripts, guidelines, Claude commands/agents.
+#
+# Done FIRST, before any files are copied: `adopt-shared-agents` verifies the
+# `SpineEventEngine/agents` remote is reachable before it mutates anything, so an
+# offline / no-access failure aborts the whole migrate before the parent repo is
+# touched (no partial migration). The content is NOT copied — it is a floating
+# submodule at `.agents/shared` exposed via symlinks. The script is idempotent: it
+# bootstraps a new consumer, converts one with the old copied files, or floats an
+# existing one to `agents@master`. Repo-local `.agents/memory` and `.agents/tasks`
+# are left untouched (no `rm -rf .agents`).
+# ---------------------------------------------------------------------------
+
+# Pass the canonical remote explicitly. `adopt-shared-agents` honours an
+# `AGENTS_URL` environment variable, but `migrate` runs automatically as part of
+# `./config/pull`; an ambient `AGENTS_URL` (in a shell or CI env) must not
+# silently redirect a consumer to an unintended fork. An explicit argument wins
+# over the env var, keeping automatic pulls deterministic.
+AGENTS_URL_CANONICAL="https://github.com/SpineEventEngine/agents.git"
+echo "Setting up shared agent content (.agents/shared submodule + symlinks)"
+if ! ( cd .. && bash ./config/adopt-shared-agents "$AGENTS_URL_CANONICAL" ); then
+  echo "ERROR: shared-agents setup failed — aborting to avoid a half-migrated repo." >&2
+  echo "       Fix the cause reported above and re-run \`./config/pull\`." >&2
+  exit 1
+fi
+
+# ---------------------------------------------------------------------------
 # Common — applies to every repository
 # ---------------------------------------------------------------------------
+
+# Copies the file or directory passed as the first parameter to the upper
+# directory, only if such a file or directory does not yet exist there.
+function initialize() {
+  if [ ! -e ../"$1" ]; then
+      echo "Creating $1"
+      cp -R "$1" ..
+  fi
+}
 
 echo "Updating IDEA configuration"
 cp -R .idea ..
 
 echo "Updating Contributor's Guide"
-cp CONTRIBUTING.md ..
+# CONTRIBUTING.md is identical org-wide and static; copy it only if the repo
+# does not already have one (don't clobber a deliberately customized copy).
+initialize CONTRIBUTING.md
 
 echo "Updating Contributor Covenant"
 cp CODE_OF_CONDUCT.md ..
@@ -52,19 +89,11 @@ echo "Updating \`CLAUDE.md\`"
 cp CLAUDE.md ..
 
 echo "Updating Junie guidelines"
-rm -rf ../.junie
-if [ -d ".junie" ]; then
-    cp -R .junie ..
-fi
-
-# Copies the file or directory passed as the first parameter to the upper
-# directory, only if such a file or directory does not yet exist there.
-function initialize() {
-  if [ ! -e ../"$1" ]; then
-      echo "Creating $1"
-      cp -R "$1" ..
-  fi
-}
+# Copy only the tracked guideline file. The `.junie/skills` symlink is created
+# by `adopt-shared-agents` (run earlier in this script), and any repo-local
+# `.junie/memory` is left untouched rather than wiped.
+mkdir -p ../.junie
+cp .junie/guidelines.md ../.junie/guidelines.md
 
 initialize .gitattributes
 initialize .gitignore
@@ -74,103 +103,23 @@ echo "Updating GitHub Copilot instructions"
 cp .github/copilot-instructions.md ../.github/copilot-instructions.md
 
 # ---------------------------------------------------------------------------
-# .agents directory
+# Claude settings — the commands/agents/skills come from the submodule above;
+# only the permission settings are repo configuration distributed by `config`.
 # ---------------------------------------------------------------------------
 
-echo "Updating \`.agents\` directory"
-# Preserve any repo-specific project.md before overwriting .agents.
-PRESERVE_PROJECT_MD=""
-if [ -f "../.agents/project.md" ]; then
-  PRESERVE_PROJECT_MD=$(mktemp -t project.XXXXXX)
-  cp -a "../.agents/project.md" "$PRESERVE_PROJECT_MD"
-fi
-rm -rf ../.agents
-if [ -d ".agents" ]; then
-    cp -R .agents ..
-fi
-if [ -n "$PRESERVE_PROJECT_MD" ] && [ -f "$PRESERVE_PROJECT_MD" ]; then
-  mkdir -p ../.agents
-  cp -a "$PRESERVE_PROJECT_MD" "../.agents/project.md"
-  rm -f "$PRESERVE_PROJECT_MD"
-elif [ -d "../.agents" ] && [ -f ".agents/project.template.md" ]; then
-  cp .agents/project.template.md ../.agents/project.md
-fi
-
-# Prune JVM-specific items only on Hugo-only repos. JVM repos (including
-# those that also host Hugo docs) keep the full set.
+echo "Updating Claude settings"
+mkdir -p ../.claude
 if [ "$IS_HUGO_DOCS" = "true" ] && [ "$IS_JVM" = "false" ]; then
-    # Remove JVM-specific skills
-    rm -rf ../.agents/skills/api-discovery
-    rm -rf ../.agents/skills/bump-gradle
-    rm -rf ../.agents/skills/bump-version
-    rm -rf ../.agents/skills/dependency-audit
-    rm -rf ../.agents/skills/dependency-update
-    rm -rf ../.agents/skills/java-to-kotlin
-    rm -rf ../.agents/skills/kotlin-review
-    rm -rf ../.agents/skills/raise-coverage
-    # Remove dead-link TOC (references JVM-specific files pruned above)
-    rm -f ../.agents/_TOC.md
-    # Remove JVM-specific guidelines
-    rm -f ../.agents/jvm-project.md
-    rm -f ../.agents/quick-reference-card.md
-    rm -f ../.agents/coding-guidelines.md
-    rm -f ../.agents/testing.md
-    rm -f ../.agents/version-policy.md
-    rm -f ../.agents/project-overview.md
-    rm -f ../.agents/running-builds.md
-    rm -f ../.agents/refactoring-guidelines.md
-    rm -f ../.agents/common-tasks.md
-    rm -f ../.agents/project-structure-expectations.md
-    # Remove JVM-specific scripts
-    rm -f ../.agents/scripts/protect-version-file.sh
-    rm -f ../.agents/scripts/publish-version-gate.sh
-    rm -rf ../.agents/scripts/api-discovery
-    # Remove JVM-specific task file
-    rm -f ../.agents/tasks/api-discovery.md
-fi
-
-# ---------------------------------------------------------------------------
-# .claude directory
-# ---------------------------------------------------------------------------
-
-echo "Updating \`.claude\` directory"
-rm -rf ../.claude
-if [ -d ".claude" ]; then
-    cp -a .claude ..
-fi
-
-# Prune JVM-specific items only on Hugo-only repos; apply Hugo settings.
-# JVM repos (including those that also host Hugo docs) keep the full set.
-if [ "$IS_HUGO_DOCS" = "true" ] && [ "$IS_JVM" = "false" ]; then
-    # Remove JVM-specific commands
-    rm -f ../.claude/commands/bump-gradle.md
-    rm -f ../.claude/commands/bump-version.md
-    rm -f ../.claude/commands/dependency-update.md
-    rm -f ../.claude/commands/java-to-kotlin.md
-    rm -f ../.claude/commands/raise-coverage.md
-    rm -f ../.claude/commands/run-build.md
-    # Remove JVM-specific skills
-    rm -rf ../.claude/skills/api-discovery
-    rm -rf ../.claude/skills/bump-gradle
-    rm -rf ../.claude/skills/bump-version
-    rm -rf ../.claude/skills/dependency-audit
-    rm -rf ../.claude/skills/dependency-update
-    rm -rf ../.claude/skills/java-to-kotlin
-    rm -rf ../.claude/skills/kotlin-review
-    rm -rf ../.claude/skills/raise-coverage
-    # Remove JVM-specific agents
-    rm -f ../.claude/agents/kotlin-review.md
-    rm -f ../.claude/agents/dependency-audit.md
-    # Use Hugo-specific Claude settings; drop settings.local.json (which
-    # references version-bumped commands not present in Hugo repos)
+    # Hugo-only repos use the Hugo-tuned permission set.
     cp .claude/settings-hugo.json ../.claude/settings.json
     rm -f ../.claude/settings.local.json
-    # Remove the template — it has been applied as settings.json above
-    rm -f ../.claude/settings-hugo.json
 else
-    # The Hugo-only settings template has no use in JVM or mixed repos
-    rm -f ../.claude/settings-hugo.json
+    cp .claude/settings.json ../.claude/settings.json
+    cp .claude/settings.local.json ../.claude/settings.local.json
 fi
+# settings-hugo.json is a config-internal template (applied as settings.json for
+# Hugo-only repos), never distributed as-is; drop any stale copy an older migrate left.
+rm -f ../.claude/settings-hugo.json
 
 # ---------------------------------------------------------------------------
 # Hugo-specific

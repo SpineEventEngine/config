@@ -1,0 +1,232 @@
+#!/usr/bin/env bash
+
+################################################################################
+#
+# One-time migration: switch a repository from COPIED shared agent content to a
+# floating Git submodule + symlinks.
+#
+# Run ONCE per repository, from the repository ROOT (the dir whose `.agents/`
+# you are converting). Works for both consumer repos and the `config` repo
+# itself (dogfooding).
+#
+# It is safe to re-run: each step is guarded and skips work already done.
+#
+# Prerequisite: the shared repo `SpineEventEngine/agents` must already exist and
+# be reachable (this script clones it as a submodule). Override the URL with the
+# AGENTS_URL environment variable or the first argument.
+#
+# This script STAGES its changes but never commits — review `git status` and the
+# diff, then commit yourself.
+#
+################################################################################
+
+set -euo pipefail
+
+AGENTS_URL="${1:-${AGENTS_URL:-https://github.com/SpineEventEngine/agents.git}}"
+SHARED_PATH=".agents/shared"
+
+# --- preflight -----------------------------------------------------------------
+
+TOPLEVEL=$(git rev-parse --show-toplevel 2>/dev/null) || {
+  echo "Error: not inside a Git repository." >&2
+  exit 1
+}
+if [ "$TOPLEVEL" != "$(pwd -P)" ]; then
+  echo "Error: run this from the repository ROOT ($TOPLEVEL), not a subdirectory —" >&2
+  echo "       all paths (.agents/shared, symlinks) are created relative to the CWD." >&2
+  exit 1
+fi
+# Note: a pre-existing `.agents/` is NOT required — this script bootstraps it
+# (submodule + symlinks), so it works on a brand-new consumer too.
+
+echo "Shared repo URL : $AGENTS_URL"
+echo "Submodule path  : $SHARED_PATH"
+
+# Verify the remote is reachable before touching anything.
+if ! git ls-remote "$AGENTS_URL" >/dev/null 2>&1; then
+  echo "Error: cannot reach '$AGENTS_URL'." >&2
+  echo "       Create SpineEventEngine/agents first, or pass the correct URL." >&2
+  exit 1
+fi
+
+# --- 1. remove the copied real content ----------------------------------------
+
+remove_tracked() {
+  # Remove a path from the working tree + index only if it is currently tracked
+  # as a real file/dir (not already our submodule/symlink).
+  local path="$1"
+  if git ls-files --error-unmatch "$path" >/dev/null 2>&1; then
+    if [ ! -L "$path" ]; then
+      # Fail fast (matching `link`): a tracked dir holding untracked, non-ignored
+      # files would lose them when it is later replaced — refuse up front.
+      if [ -n "$(git ls-files --others --exclude-standard -- "$path")" ]; then
+        echo "Error: '$path' contains untracked files (not in Git)." >&2
+        echo "       Move them aside and re-run, so nothing is lost." >&2
+        exit 1
+      fi
+      echo "Removing copied '$path'"
+      git rm -r --quiet "$path"
+    fi
+  fi
+}
+
+remove_tracked ".agents/skills"
+remove_tracked ".agents/scripts"
+remove_tracked ".agents/guidelines"
+remove_tracked ".claude/commands"
+remove_tracked ".claude/agents"
+
+# A consumer migrating from the old copied layout also has the pre-regroup
+# guideline files tracked flat under `.agents/` (e.g. `.agents/_TOC.md`,
+# `.agents/safety-rules.md`). They now come from the submodule via
+# `.agents/guidelines`, so remove the stale flat copies. `project.md` is handled
+# separately below; `memory/` and `tasks/` are repo-local and left untouched.
+for stale in advanced-safety-rules.md coding-guidelines.md common-tasks.md \
+             documentation-guidelines.md documentation-tasks.md jvm-project.md \
+             project-structure-expectations.md quick-reference-card.md \
+             refactoring-guidelines.md running-builds.md safety-rules.md \
+             testing.md version-policy.md _TOC.md project.template.md \
+             widow-runt-orphan.jpg; do
+  remove_tracked ".agents/$stale"
+done
+
+# --- 2. add the floating submodule --------------------------------------------
+
+NEWLY_ADDED=false
+if [ -f .gitmodules ] && git config -f .gitmodules --get "submodule.$SHARED_PATH.url" >/dev/null 2>&1; then
+  echo "Submodule '$SHARED_PATH' already registered — updating."
+else
+  # `git submodule add` aborts with an opaque error ("already exists in the
+  # index" / "already exists and is not a valid git repo") if the path is present
+  # on disk or in the index but absent from .gitmodules — e.g. a stray manual
+  # clone or a half-finished previous run. Detect that here and fail clearly.
+  if [ -e "$SHARED_PATH" ] || git ls-files --error-unmatch "$SHARED_PATH" >/dev/null 2>&1; then
+    echo "Error: '$SHARED_PATH' exists but is not a registered submodule." >&2
+    echo "       Remove it and re-run: 'rm -rf $SHARED_PATH' (and 'git rm --cached $SHARED_PATH' if it is staged)." >&2
+    exit 1
+  fi
+  echo "Adding submodule '$SHARED_PATH' (tracking master)"
+  git submodule add -b master "$AGENTS_URL" "$SHARED_PATH"
+  NEWLY_ADDED=true
+fi
+
+# Float to latest and never let the gitlink show dirty / be committed as a pin bump.
+# Set url and branch unconditionally so an already-registered submodule pointing at a
+# different URL/branch (or lacking one) is corrected before `--remote` runs;
+# `git submodule sync` propagates the .gitmodules url into the active .git/config.
+git config -f .gitmodules "submodule.$SHARED_PATH.url" "$AGENTS_URL"
+git config -f .gitmodules "submodule.$SHARED_PATH.branch" master
+git config -f .gitmodules "submodule.$SHARED_PATH.update" checkout
+git config -f .gitmodules "submodule.$SHARED_PATH.ignore" all
+git submodule sync -- "$SHARED_PATH"
+git submodule update --init --remote "$SHARED_PATH"
+
+# --- 3. (re)create the symlinks ------------------------------------------------
+
+link() {
+  # link <link-path> <target> — create/refresh a symlink.
+  # A non-symlink already in the way is removed only if it is TRACKED (recoverable
+  # via Git — e.g. an old copied directory). Untracked content is never destroyed:
+  # the script stops and asks the user to move it aside first.
+  local link_path="$1" target="$2"
+  if [ -e "$link_path" ] && [ ! -L "$link_path" ]; then
+    if git ls-files --error-unmatch "$link_path" >/dev/null 2>&1; then
+      # A tracked DIRECTORY can also hold untracked files that the `rm -rf` below
+      # would destroy — refuse if any exist (gitignored cruft is allowed).
+      if [ -n "$(git ls-files --others --exclude-standard -- "$link_path")" ]; then
+        echo "Error: '$link_path' contains untracked files (not in Git)." >&2
+        echo "       Move them aside and re-run, so nothing is lost." >&2
+        exit 1
+      fi
+      git rm -r --quiet "$link_path"
+    else
+      echo "Error: '$link_path' exists as untracked content (not in Git)." >&2
+      echo "       Move it aside and re-run, so nothing is lost." >&2
+      exit 1
+    fi
+  fi
+  rm -rf "$link_path"   # at this point only a symlink (or nothing) remains
+  mkdir -p "$(dirname "$link_path")"
+  ln -s "$target" "$link_path"
+  git add "$link_path"
+  echo "Linked $link_path -> $target"
+}
+
+link ".agents/skills"     "shared/skills"
+link ".agents/scripts"    "shared/scripts"
+link ".agents/guidelines" "shared/guidelines"
+link ".claude/commands"   "../.agents/shared/claude/commands"
+link ".claude/agents"     "../.agents/shared/claude/agents"
+
+# Recreate these unconditionally — the `link` helper replaces any stale real
+# directory left by an old copy-based setup (otherwise Claude/Junie would keep
+# using a stale local copy). They resolve through the new `.agents/skills` symlink.
+link ".claude/skills" "../.agents/skills"
+link ".junie/skills"  "../.agents/skills"
+
+# --- 4. project.md -> docs/project.md -----------------------------------------
+# docs/project.md is repo-local and must survive migrations: seed it from the
+# shared template only when it is absent, and never overwrite an existing one.
+
+mkdir -p docs
+if [ -e ".agents/project.md" ] && [ ! -L ".agents/project.md" ]; then
+  # Legacy real .agents/project.md — relocate to docs/, unless one already exists.
+  # It may be tracked (a committed legacy copy) or untracked (someone drafted it
+  # but never committed). Use git mv/rm for the tracked case to preserve history,
+  # and plain mv/rm + `git add` for the untracked one — `git mv`/`git rm` would
+  # abort on an untracked path and take the whole migration down with it.
+  if git ls-files --error-unmatch ".agents/project.md" >/dev/null 2>&1; then
+    tracked_project=true
+  else
+    tracked_project=false
+  fi
+  if [ -e "docs/project.md" ]; then
+    echo "Keeping existing docs/project.md; removing legacy .agents/project.md"
+    if [ "$tracked_project" = true ]; then
+      git rm -q ".agents/project.md"
+    else
+      rm -f ".agents/project.md"
+    fi
+  else
+    echo "Moving .agents/project.md -> docs/project.md"
+    if [ "$tracked_project" = true ]; then
+      git mv ".agents/project.md" "docs/project.md"
+    else
+      mv ".agents/project.md" "docs/project.md"
+      git add "docs/project.md"
+    fi
+  fi
+elif [ ! -e "docs/project.md" ] && [ -f "$SHARED_PATH/guidelines/project.template.md" ]; then
+  echo "Seeding docs/project.md from the shared template"
+  cp "$SHARED_PATH/guidelines/project.template.md" "docs/project.md"
+  git add "docs/project.md"
+fi
+
+# Point .agents/project.md at docs/project.md when we have one (and it isn't already linked).
+if [ -e "docs/project.md" ] && [ ! -L ".agents/project.md" ]; then
+  link ".agents/project.md" "../docs/project.md"
+fi
+
+# --- 5. stage the rest, report -------------------------------------------------
+
+# Stage .gitmodules and the symlinks (the symlinks were already added by `link`).
+# The submodule gitlink is staged ONCE — only when the submodule was just added —
+# re-staged here after the `--remote` float so the initial committed pin matches the
+# checked-out commit. On reruns it is NOT re-staged, so floated pins never churn.
+git add .gitmodules 2>/dev/null || true
+if [ "$NEWLY_ADDED" = true ]; then
+  git add "$SHARED_PATH" 2>/dev/null || true
+fi
+
+cat <<'EOF'
+
+Done — changes are STAGED, not committed.
+
+Next:
+  1. Review:  git status  &&  git diff --cached
+  2. Confirm skills resolve:  ls -L .agents/skills .agents/guidelines .claude/commands
+  3. Commit on your branch when satisfied.
+
+From now on, refresh shared skills with:
+  git submodule update --remote .agents/shared
+EOF

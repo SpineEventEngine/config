@@ -36,21 +36,30 @@ The following files will be copied:
 
 ### AI agent configuration
 
-The `pull` script also propagates AI-agent configuration into the consuming project:
+The `pull` script also wires up AI-agent configuration:
 
- * `AGENTS.md` and `CLAUDE.md` — entry points that direct any agent to `.agents/_TOC.md`.
- * `.agents/` — coding guidelines, safety rules, testing policy, project structure expectations,
-   and per-task skill definitions under `.agents/skills/<skill-name>/SKILL.md`.
- * `.claude/` — Claude Code configuration:
-    * `settings.json` — permission allowlist tuned for the Gradle/Git workflow.
-    * `commands/*.md` — slash commands such as `/bump-version`, `/java-to-kotlin`,
-      `/update-copyright`. Each wraps the corresponding skill in `.agents/skills/`.
-    * `agents/*.md` — subagents (e.g. `kotlin-reviewer`).
-    * `skills` — symlink to `../.agents/skills` so Claude Code picks up the same skills.
- * `.junie/` — JetBrains Junie guidelines, if present.
+ * `AGENTS.md` and `CLAUDE.md` — copied entry points that direct any agent to
+   `.agents/guidelines/_TOC.md`.
+ * Shared **skills, scripts, and guidelines are _not_ copied.** They live in the
+   [`SpineEventEngine/agents`][agents-repo] repository, mounted as a floating Git submodule
+   at `.agents/shared` (tracking `master`) and exposed through symlinks: `.agents/skills`,
+   `.agents/scripts`, `.agents/guidelines`, `.claude/commands`, and `.claude/agents` — plus
+   `.claude/skills` and `.junie/skills`, which alias `.agents/skills`. `pull`
+   runs the idempotent [`adopt-shared-agents`](./adopt-shared-agents) script, which sets up
+   the submodule on the first run and floats it to the latest `agents@master` on every
+   subsequent run — so shared skills update everywhere with **no file churn** in consumer
+   pull requests.
+ * `.claude/settings.json` — the permission allowlist distributed by `config` (Hugo-only
+   repos receive a Hugo-tuned variant). JVM and mixed repos also get `settings.local.json`;
+   Hugo-only repos do not.
+ * `.junie/guidelines.md` — JetBrains Junie guidelines.
 
-The single source of truth for each workflow is its `SKILL.md` in `.agents/skills/`; slash
-commands and subagents are thin wrappers that point Claude Code at those files.
+Per-repo content is never overwritten: `docs/project.md` (linked from `.agents/project.md`),
+`.agents/memory/`, and `.agents/tasks/`.
+
+The single source of truth for each workflow is its `SKILL.md` in the
+[`agents`][agents-repo] repository; the Claude slash commands
+and subagents are thin wrappers that point Claude Code at those files.
  
 ## Checking updated configuration
 
@@ -106,6 +115,7 @@ These scripts are copied by the `pull` script when `config` is applied to a new 
   * [GitHub: Working with submodules][working-with-submodules]
   * [Pro Git: Git Tools - Git Submodules][submodule-tools]
   
+[agents-repo]: https://github.com/SpineEventEngine/agents
 [base]: https://github.com/SpineEventEngine/base
 [base-types]: https://github.com/SpineEventEngine/base-types
 [core-java]: https://github.com/SpineEventEngine/core-java

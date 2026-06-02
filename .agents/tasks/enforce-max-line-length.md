@@ -108,7 +108,7 @@ repo policy, not Must-fix.
 Six `.agents/` Markdown files. No code or build changes. New lines
 wrap at the configured limit.
 
-### 1. `.agents/coding-guidelines.md`
+### 1. `.agents/guidelines/coding-guidelines.md`
 
 - [ ] Add a new top-level `## Line length` section, placed immediately
       after the existing "Text formatting" section. The canonical
@@ -134,7 +134,7 @@ wrap at the configured limit.
     file-scope).
   - Scope exclusions: generated sources; changed lines only.
 
-### 2. `.agents/documentation-guidelines.md`
+### 2. `.agents/guidelines/documentation-guidelines.md`
 
 - [ ] Append one bullet to "Commenting guidelines":
 
@@ -145,7 +145,7 @@ wrap at the configured limit.
 
   Single sentence; no duplication of the canonical section.
 
-### 3. `.agents/quick-reference-card.md`
+### 3. `.agents/guidelines/quick-reference-card.md`
 
 - [ ] Rewrap the existing 135-char line 3 so the card itself respects
       the rule it now advertises.
