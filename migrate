@@ -36,11 +36,22 @@ fi
 # Common — applies to every repository
 # ---------------------------------------------------------------------------
 
+# Copies the file or directory passed as the first parameter to the upper
+# directory, only if such a file or directory does not yet exist there.
+function initialize() {
+  if [ ! -e ../"$1" ]; then
+      echo "Creating $1"
+      cp -R "$1" ..
+  fi
+}
+
 echo "Updating IDEA configuration"
 cp -R .idea ..
 
 echo "Updating Contributor's Guide"
-cp CONTRIBUTING.md ..
+# CONTRIBUTING.md is identical org-wide and static; copy it only if the repo
+# does not already have one (don't clobber a deliberately customized copy).
+initialize CONTRIBUTING.md
 
 echo "Updating Contributor Covenant"
 cp CODE_OF_CONDUCT.md ..
@@ -57,15 +68,6 @@ echo "Updating Junie guidelines"
 # untouched rather than wiped.
 mkdir -p ../.junie
 cp .junie/guidelines.md ../.junie/guidelines.md
-
-# Copies the file or directory passed as the first parameter to the upper
-# directory, only if such a file or directory does not yet exist there.
-function initialize() {
-  if [ ! -e ../"$1" ]; then
-      echo "Creating $1"
-      cp -R "$1" ..
-  fi
-}
 
 initialize .gitattributes
 initialize .gitignore
