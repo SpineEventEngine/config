@@ -43,7 +43,8 @@ The `pull` script also wires up AI-agent configuration:
  * Shared **skills, scripts, and guidelines are _not_ copied.** They live in the
    [`SpineEventEngine/agents`][agents-repo] repository, mounted as a floating Git submodule
    at `.agents/shared` (tracking `master`) and exposed through symlinks: `.agents/skills`,
-   `.agents/scripts`, `.agents/guidelines`, `.claude/commands`, and `.claude/agents`. `pull`
+   `.agents/scripts`, `.agents/guidelines`, `.claude/commands`, and `.claude/agents` — plus
+   `.claude/skills` and `.junie/skills`, which alias `.agents/skills`. `pull`
    runs the idempotent [`adopt-shared-agents`](./adopt-shared-agents) script, which sets up
    the submodule on the first run and floats it to the latest `agents@master` on every
    subsequent run — so shared skills update everywhere with **no file churn** in consumer
