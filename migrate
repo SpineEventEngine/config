@@ -110,6 +110,9 @@ else
     cp .claude/settings.json ../.claude/settings.json
     cp .claude/settings.local.json ../.claude/settings.local.json
 fi
+# settings-hugo.json is a config-internal template (applied as settings.json for
+# Hugo-only repos), never distributed as-is; drop any stale copy an older migrate left.
+rm -f ../.claude/settings-hugo.json
 
 # ---------------------------------------------------------------------------
 # Hugo-specific

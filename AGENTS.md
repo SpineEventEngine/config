@@ -17,7 +17,7 @@ requirements file (e.g. `jvm-project.md`), read that too.
 Shared skills, scripts, and guidelines come from the `.agents/shared` submodule (the
 [`agents`][agents-repo] repository) exposed via symlinks.
 `./config/pull` initializes and floats it automatically; on a fresh clone that skips
-`pull`, run `git submodule update --init --remote --recursive`.
+`pull`, run `git submodule update --init --remote .agents/shared`.
 
 ## Commit and history safety
 

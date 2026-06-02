@@ -88,11 +88,14 @@ else
 fi
 
 # Float to latest and never let the gitlink show dirty / be committed as a pin bump.
-# Set `branch` unconditionally so an already-registered submodule that lacks it (or
-# points elsewhere) is corrected to track `master` before `--remote` runs.
+# Set url and branch unconditionally so an already-registered submodule pointing at a
+# different URL/branch (or lacking one) is corrected before `--remote` runs;
+# `git submodule sync` propagates the .gitmodules url into the active .git/config.
+git config -f .gitmodules "submodule.$SHARED_PATH.url" "$AGENTS_URL"
 git config -f .gitmodules "submodule.$SHARED_PATH.branch" master
 git config -f .gitmodules "submodule.$SHARED_PATH.update" checkout
 git config -f .gitmodules "submodule.$SHARED_PATH.ignore" all
+git submodule sync -- "$SHARED_PATH"
 git submodule update --init --remote "$SHARED_PATH"
 
 # --- 3. (re)create the symlinks ------------------------------------------------
