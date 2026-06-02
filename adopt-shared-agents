@@ -140,17 +140,27 @@ link ".claude/skills" "../.agents/skills"
 link ".junie/skills"  "../.agents/skills"
 
 # --- 4. project.md -> docs/project.md -----------------------------------------
+# docs/project.md is repo-local and must survive migrations: seed it from the
+# shared template only when it is absent, and never overwrite an existing one.
 
+mkdir -p docs
 if [ -e ".agents/project.md" ] && [ ! -L ".agents/project.md" ]; then
-  echo "Moving .agents/project.md -> docs/project.md"
-  mkdir -p docs
-  git mv ".agents/project.md" "docs/project.md"
-  link ".agents/project.md" "../docs/project.md"
-elif [ ! -e ".agents/project.md" ] && [ -f "$SHARED_PATH/guidelines/project.template.md" ]; then
+  # Legacy real .agents/project.md — relocate to docs/, unless one already exists.
+  if [ -e "docs/project.md" ]; then
+    echo "Keeping existing docs/project.md; removing legacy .agents/project.md"
+    git rm -q ".agents/project.md"
+  else
+    echo "Moving .agents/project.md -> docs/project.md"
+    git mv ".agents/project.md" "docs/project.md"
+  fi
+elif [ ! -e "docs/project.md" ] && [ -f "$SHARED_PATH/guidelines/project.template.md" ]; then
   echo "Seeding docs/project.md from the shared template"
-  mkdir -p docs
   cp "$SHARED_PATH/guidelines/project.template.md" "docs/project.md"
   git add "docs/project.md"
+fi
+
+# Point .agents/project.md at docs/project.md when we have one (and it isn't already linked).
+if [ -e "docs/project.md" ] && [ ! -L ".agents/project.md" ]; then
   link ".agents/project.md" "../docs/project.md"
 fi
 
