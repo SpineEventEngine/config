@@ -33,6 +33,26 @@ if [ -d "../buildSrc/src/main/kotlin/io/spine/dependency" ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Shared agent content — skills, scripts, guidelines, Claude commands/agents.
+#
+# Done FIRST, before any files are copied: `adopt-shared-agents` verifies the
+# `SpineEventEngine/agents` remote is reachable before it mutates anything, so an
+# offline / no-access failure aborts the whole migrate before the parent repo is
+# touched (no partial migration). The content is NOT copied — it is a floating
+# submodule at `.agents/shared` exposed via symlinks. The script is idempotent: it
+# bootstraps a new consumer, converts one with the old copied files, or floats an
+# existing one to `agents@master`. Repo-local `.agents/memory` and `.agents/tasks`
+# are left untouched (no `rm -rf .agents`).
+# ---------------------------------------------------------------------------
+
+echo "Setting up shared agent content (.agents/shared submodule + symlinks)"
+if ! ( cd .. && bash ./config/adopt-shared-agents ); then
+  echo "ERROR: shared-agents setup failed — aborting to avoid a half-migrated repo." >&2
+  echo "       Fix the cause reported above and re-run \`./config/pull\`." >&2
+  exit 1
+fi
+
+# ---------------------------------------------------------------------------
 # Common — applies to every repository
 # ---------------------------------------------------------------------------
 
@@ -75,25 +95,6 @@ initialize .gitignore
 mkdir -p ../.github/workflows
 echo "Updating GitHub Copilot instructions"
 cp .github/copilot-instructions.md ../.github/copilot-instructions.md
-
-# ---------------------------------------------------------------------------
-# Shared agent content — skills, scripts, guidelines, Claude commands/agents.
-#
-# These are NOT copied. They live in the `SpineEventEngine/agents` repository,
-# mounted as a floating Git submodule at `.agents/shared` and exposed through
-# symlinks. `adopt-shared-agents` performs the idempotent setup against the
-# target repo: it bootstraps a brand-new consumer, converts one that still has
-# the old copied files, and floats an already-set-up one to the latest
-# `agents@master`. Repo-local `.agents/memory` and `.agents/tasks` are left
-# untouched (no more `rm -rf .agents`).
-# ---------------------------------------------------------------------------
-
-echo "Setting up shared agent content (.agents/shared submodule + symlinks)"
-if ! ( cd .. && bash ./config/adopt-shared-agents ); then
-  echo "ERROR: shared-agents setup failed — aborting to avoid a half-migrated repo." >&2
-  echo "       Fix the cause reported above and re-run \`./config/pull\`." >&2
-  exit 1
-fi
 
 # ---------------------------------------------------------------------------
 # Claude settings — the commands/agents/skills come from the submodule above;
