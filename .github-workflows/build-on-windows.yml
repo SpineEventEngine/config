@@ -21,12 +21,6 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Sync and update submodules (recursive)
-        shell: pwsh
-        run: |
-          git submodule sync --recursive
-          git submodule update --init --recursive
-
       - uses: actions/setup-java@v4
         with:
           java-version: 17
