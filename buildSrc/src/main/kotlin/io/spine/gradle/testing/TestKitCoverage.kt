@@ -28,7 +28,9 @@ package io.spine.gradle.testing
 
 import io.spine.dependency.test.Jacoco
 import org.gradle.api.Project
+import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.testing.Test
+import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
 
 /**
@@ -48,8 +50,14 @@ import org.gradle.kotlin.dsl.withType
  *     (`build/`[TESTKIT_COVERAGE_DIR]) to the test JVM as system properties.
  *     The `plugin-testlib` harness reads these and writes a `gradle.properties`
  *     into the worker's Gradle user home that adds `-javaagent:…` to the worker JVM.
- *  3. Wipes the exec directory before each run so stale worker coverage from
- *     a previous run does not accumulate.
+ *  3. Wipes the exec directory once per build invocation — through a dedicated
+ *     [CLEAN_TASK] `Delete` task that every `Test` task depends on — so stale
+ *     worker coverage from a previous run does not accumulate. The cleanup is
+ *     **not** done in each task's `doFirst`: a module may declare more than one
+ *     TestKit `Test` task, and since the workers append to a single per-module
+ *     exec file, a per-task wipe would erase the coverage of every task but the
+ *     last one to run. A single shared clean lets the sequentially-run tasks
+ *     accumulate into the same file.
  *
  * The produced `.exec` files are merged into the Kover reports by
  * [io.spine.gradle.report.coverage.KoverConfig]. The agent emits binary
@@ -70,11 +78,19 @@ fun Project.enableTestKitCoverage() {
     val agentPath = agent.elements.map { it.single().asFile.absolutePath }
     val execDir = layout.buildDirectory.dir(TESTKIT_COVERAGE_DIR)
 
+    // Wipe the shared exec directory once, before any `Test` task runs, rather
+    // than in each task's `doFirst`. With several TestKit `Test` tasks per module
+    // appending to the same exec file, a per-task wipe would keep only the last
+    // task's coverage.
+    val cleanCoverage = tasks.register<Delete>(CLEAN_TASK) {
+        delete(execDir)
+    }
+
     tasks.withType<Test>().configureEach {
+        dependsOn(cleanCoverage)
         inputs.files(agent).withPropertyName(AGENT_CONFIGURATION)
         doFirst {
             val dir = execDir.get().asFile
-            dir.deleteRecursively()
             dir.mkdirs()
             systemProperty(AGENT_PROPERTY, agentPath.get())
             systemProperty(EXEC_DIR_PROPERTY, dir.absolutePath)
@@ -94,6 +110,16 @@ fun Project.enableTestKitCoverage() {
  * @see io.spine.gradle.report.coverage.KoverConfig
  */
 internal const val TESTKIT_COVERAGE_DIR: String = "jacoco-testkit"
+
+/**
+ * The name of the `Delete` task that wipes the [TESTKIT_COVERAGE_DIR] once per
+ * build invocation, before any TestKit `Test` task runs.
+ *
+ * Every `Test` task configured by [Project.enableTestKitCoverage] depends on this
+ * task, so the shared exec directory is cleaned exactly once even when a module
+ * declares several TestKit `Test` tasks.
+ */
+private const val CLEAN_TASK: String = "cleanTestKitCoverage"
 
 /**
  * The name of the system property carrying the absolute path to the JaCoCo
