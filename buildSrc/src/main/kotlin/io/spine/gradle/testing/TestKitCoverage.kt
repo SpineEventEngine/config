@@ -62,6 +62,13 @@ import org.gradle.kotlin.dsl.withType
  *        several TestKit `Test` tasks, only the first to run clears the
  *        directory. The workers append to a single per-module exec file, so the
  *        remaining tasks accumulate into it instead of erasing one another.
+ *  4. Marks the `Test` tasks non-cacheable. The worker `.exec` data is flushed
+ *     out-of-process on worker-daemon shutdown, *after* the task action
+ *     completes, so it cannot be declared as a task output and captured by the
+ *     build cache. Were the task left cacheable, a cache hit would skip
+ *     execution and restore no exec files, leaving Kover with no TestKit
+ *     coverage. An up-to-date (non-cache) run is unaffected: the previous run's
+ *     files remain on disk and the guarded `doFirst` never deletes them.
  *
  * The produced `.exec` files are merged into the Kover reports by
  * [io.spine.gradle.report.coverage.KoverConfig]. The agent emits binary
@@ -89,6 +96,10 @@ fun Project.enableTestKitCoverage() {
 
     tasks.withType<Test>().configureEach {
         inputs.files(agent).withPropertyName(AGENT_CONFIGURATION)
+        outputs.cacheIf(
+            "TestKit worker coverage is produced out-of-process and cannot be a " +
+                    "declared task output; a cache hit would drop it."
+        ) { false }
         doFirst {
             val dir = execDir.get().asFile
             if (cleaned.compareAndSet(false, true)) {
