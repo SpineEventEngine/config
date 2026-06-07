@@ -49,7 +49,6 @@ private val localDependencies = buildMap {
     // Older `local` deps.
     mv(older, new, "Logging")
     mv(older, new, "McJava")
-    mv(older, new, "ProtoData")
     mv(older, new, "ProtoTap")
     mv(older, new, "Spine")
     mv(older, new, "Validation")
@@ -59,7 +58,6 @@ private val localDependencies = buildMap {
      mv(interim, new, "CoreJava")
      mv(interim, new, "Logging")
      mv(interim, new, "McJava")
-     mv(interim, new, "ProtoData")
      mv(interim, new, "ProtoTap")
      mv(interim, new, "Spine")
      mv(interim, new, "ToolBase")
