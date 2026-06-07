@@ -10,6 +10,7 @@ See [README.md](README.md) for the format and routing rules.
 ## Project (durable context & rationale)
 
 - [spine-compiler-replaces-protodata](project/spine-compiler-replaces-protodata.md) — ProtoData is archived; Spine Compiler (`compiler` repo, `io.spine.compiler`) supersedes it as the active code-generation plugin.
+- [plugin-testkit-assertions-live-in-tool-base](project/plugin-testkit-assertions-live-in-tool-base.md) — Generic Gradle-plugin functional-test assertions (testkit-truth) belong in tool-base/plugin-testlib, not per-plugin `*-testlib` modules.
 
 ## Reference (external systems)
 
