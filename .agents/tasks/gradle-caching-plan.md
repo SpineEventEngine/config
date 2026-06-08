@@ -144,7 +144,7 @@ org.gradle.configuration-cache.problems=warn
 ```
 
 - Start in **warn** mode so configuration-cache-incompatible tasks **do not fail** the build.
-- Spine relies on many custom Gradle plugins and code-generation tasks (Protobuf / model compiler
+- Spine relies on many custom Gradle plugins and code-generation tasks (Protobuf / Spine Compiler
   / etc.) that may not yet be configuration-cache compatible. Warn mode surfaces problems without
   breaking builds.
 - Where feasible, fix incompatibilities in **`buildSrc`** (the shared build logic). If problems are
