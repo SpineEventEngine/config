@@ -22,7 +22,8 @@ jobs:
         with:
           java-version: 17
           distribution: zulu
-          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Check version is not yet published
         shell: bash

@@ -25,7 +25,8 @@ jobs:
         with:
           java-version: 17
           distribution: zulu
-          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v6
 
       # See: https://github.com/al-cheb/configure-pagefile-action
       - name: Configure Pagefile

@@ -16,7 +16,8 @@ jobs:
         with:
           java-version: 17
           distribution: zulu
-          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Build project and run tests
         shell: bash
