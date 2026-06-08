@@ -80,10 +80,10 @@ val tempFolder = File("./tmp")
 ConfigTester(config, tasks, tempFolder)
     .addRepo(SpineRepos.baseTypes)  // Builds `base-types` at `master`.
     .addRepo(SpineRepos.base)       // Builds `base` at `master`.
-    .addRepo(SpineRepos.coreJava)   // Builds `core-java` at `master`.
+    .addRepo(SpineRepos.coreJvm)    // Builds `core-jvm` at `master`.
 
     // This is how one builds a specific branch of some repository:
-    // .addRepo(SpineRepos.coreJava, Branch("grpc-concurrency-fixes"))
+    // .addRepo(SpineRepos.coreJvm, Branch("grpc-concurrency-fixes"))
 
     // Register the produced task under the selected name to invoke manually upon need.
     .registerUnder("buildDependants")
@@ -93,7 +93,7 @@ The [`build.gradle.kts`](./build.gradle.kts) is already tuned to test changes
 against these projects: 
  * [`base`][base],
  * [`base-types`][base-types], and
- * [`core-java`][core-java].
+ * [`core-jvm`][core-jvm].
 
 This takes slightly over half an hour, depending on the local configuration.
 If you need to change the list of repositories, please update `addRepo()` calls to `ConifigTester`.
@@ -118,6 +118,6 @@ These scripts are copied by the `pull` script when `config` is applied to a new 
 [agents-repo]: https://github.com/SpineEventEngine/agents
 [base]: https://github.com/SpineEventEngine/base
 [base-types]: https://github.com/SpineEventEngine/base-types
-[core-java]: https://github.com/SpineEventEngine/core-java
+[core-jvm]: https://github.com/SpineEventEngine/core-jvm
 [working-with-submodules]: https://blog.github.com/2016-02-01-working-with-submodules
 [submodule-tools]: https://git-scm.com/book/en/v2/Git-Tools-Submodules 
