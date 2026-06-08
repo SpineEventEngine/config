@@ -34,8 +34,7 @@ jobs:
 
       - name: Build project and run tests
         shell: cmd
-        # For the reason on `--no-daemon` see https://github.com/actions/cache/issues/454
-        run: gradlew.bat build --stacktrace --no-daemon
+        run: gradlew.bat build --stacktrace
 
       # See: https://github.com/marketplace/actions/junit-report-action
       - name: Publish Test Report
