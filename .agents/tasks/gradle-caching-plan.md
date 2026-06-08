@@ -149,7 +149,7 @@ org.gradle.configuration-cache.problems=warn
   breaking builds.
 - Where feasible, fix incompatibilities in **`buildSrc`** (the shared build logic). If problems are
   extensive, **leave configuration cache in warn mode or defer Phase 3 entirely** — do **not**
-  switch to strict/fail mode until `buildDependants` is clean.
+  switch to strict/fail mode until the pilot consumer build is clean.
 - (On Gradle < 8.1 the stable property differs; do not guess — check the wrapper version from
   Phase 0 and use the matching property name, or skip this phase.)
 
@@ -165,22 +165,23 @@ Documented for completeness only. If pursued later:
 
 ## Verification / acceptance criteria
 
-`config` ships `ConfigTester`, wired into `build.gradle.kts` as the `buildDependants` task, which
-checks out and builds the dependant repos (`base`, `base-types`, `core-jvm`) against the **local**
-`config`. Use it as the gate for every phase:
+Verification rests entirely on a **real CI run in a pilot consumer repo**. The only thing that
+proves the caching layers actually work is a `setup-gradle` run on a GitHub-hosted runner, and the
+only workflow doing a meaningful build is the consumer repos' `build-on-ubuntu.yml`. There is no
+local gate for this task: the workflow switch and the `gradle.properties` flags land in `config`
+first, then the **pilot rollout** (see *Rollout* below) produces the evidence — the pilot *is* the
+verification, not a precondition to it.
 
-```bash
-./gradlew clean buildDependants   # ~30+ minutes; builds base, base-types, core-jvm with local config
-```
+For each phase, after the pilot repo has bumped the `config` submodule and run `./config/pull`,
+inspect its `build-on-ubuntu` run:
 
-Acceptance for each phase:
-
-1. `buildDependants` **passes** with the change applied.
-2. **Cache reuse is observable:** run a dependant build twice; the second run shows many tasks as
-   `FROM-CACHE` / `UP-TO-DATE`.
-3. **CI evidence:** in a workflow run, the `setup-gradle` **Job Summary** reports cache entries
-   restored/saved; compare overall job wall-clock **before vs after**.
-4. **Phase 3 specifically:** `buildDependants` completes with configuration cache enabled (warn mode
+1. **Build is green** with the new `config` applied (workflow switch + `gradle.properties` flags).
+2. **Cache is active:** the `setup-gradle` **Job Summary** reports cache entries restored/saved. The
+   first run on the default branch *writes* the cache; later runs — and PR branches reading the
+   default-branch cache — *restore* it, with many tasks shown as `FROM-CACHE` / `UP-TO-DATE`.
+3. **CI is no slower — ideally faster:** compare overall job wall-clock **before vs after** across a
+   couple of runs once the cache is warm.
+4. **Phase 3 specifically:** the pilot build completes with configuration cache enabled (warn mode
    acceptable). Record any remaining configuration-cache problems in the PR description.
 
 ## Rollout
@@ -196,5 +197,5 @@ Acceptance for each phase:
 - `setup-gradle` docs: https://github.com/gradle/actions/blob/main/docs/setup-gradle.md
 - Gradle Build Cache: https://docs.gradle.org/current/userguide/build_cache.html
 - Gradle Configuration Cache: https://docs.gradle.org/current/userguide/configuration_cache.html
-- `config` README (pull mechanism, `.github-workflows`, `ConfigTester`/`buildDependants`):
+- `config` README (pull mechanism, `.github-workflows`):
   https://github.com/SpineEventEngine/config
