@@ -166,11 +166,11 @@ Documented for completeness only. If pursued later:
 ## Verification / acceptance criteria
 
 `config` ships `ConfigTester`, wired into `build.gradle.kts` as the `buildDependants` task, which
-checks out and builds the dependant repos (`base`, `base-types`, `core-java`) against the **local**
+checks out and builds the dependant repos (`base`, `base-types`, `core-jvm`) against the **local**
 `config`. Use it as the gate for every phase:
 
 ```bash
-./gradlew clean buildDependants   # ~30+ minutes; builds base, base-types, core-java with local config
+./gradlew clean buildDependants   # ~30+ minutes; builds base, base-types, core-jvm with local config
 ```
 
 Acceptance for each phase:
