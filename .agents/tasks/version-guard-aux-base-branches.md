@@ -32,9 +32,10 @@ branches stay out of the release cycle.
 - [x] `IncrementGuard.kt`: enable the task only for `pull_request` events
       whose `GITHUB_BASE_REF` ends with `master`/`main`; drop the
       `push`-event logic; update KDoc; keep the decision a pure function.
-- [x] `increment-guard.yml`: trigger on `pull_request` with base filter
-      `'**master'`/`'**main'` instead of `push` to all branches.
-- [x] `ensure-reports-updated.yml`: same base filter, so PRs into
+- [x] `increment-guard.yml`: trigger on `pull_request` (instead of `push`
+      to all branches) and skip the job unless the base branch ends with
+      `master`/`main`.
+- [x] `ensure-reports-updated.yml`: same job-level base gate, so PRs into
       auxiliary branches do not require report updates.
 - [x] Add `IncrementGuardTest` for the decision function.
 - [x] Run buildSrc tests and detekt.
@@ -43,3 +44,7 @@ branches stay out of the release cycle.
 
 - 2026-06-10 — drafted and started.
 - 2026-06-10 — implemented; buildSrc tests and detekt pass.
+- 2026-06-10 — review (PR #686): replaced the `branches` filters with
+  job-level `if` conditions — a workflow skipped by branch filtering
+  leaves a required check `Pending` (blocking the PR), while a skipped
+  job satisfies it.
