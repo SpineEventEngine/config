@@ -1,12 +1,19 @@
-# Ensures that the current lib version is not yet published but executing the Gradle
+# Ensures that the current lib version is not yet published by executing the Gradle
 # `checkVersionIncrement` task.
+#
+# The check runs only for pull requests targeting a default (`master`/`main`) or
+# a release-line (e.g. `2.x-jdk8-master`) branch. It is the responsibility of a branch
+# which aims to merge into such a branch to bump the version. Auxiliary branches
+# do not deal with the versions in the release cycle and are not guarded.
 
 name: Version Guard
 
 on:
-  push:
+  pull_request:
     branches:
-      - '**'
+      # Default and release-line branches, e.g. `master`, `main`, `2.x-jdk8-master`.
+      - '**master'
+      - '**main'
 
 jobs:
   check:
