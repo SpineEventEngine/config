@@ -256,6 +256,20 @@ internal class DependencyWriterSpec {
     }
 
     @Test
+    fun `omit the version of a dependency that declares none`() {
+        subproject("a-bom").declare("api", "io.grpc:grpc-stub")
+        subproject("b-lib").declare("api", SPINE_BASE)
+
+        val out = StringWriter()
+        DependencyWriter.of(rootProject).writeXmlTo(out)
+        val xml = out.toString()
+
+        xml shouldContain "<artifactId>grpc-stub</artifactId>"
+        xml shouldNotContain "<version>null</version>"
+        xml shouldContain "<version>2.0.0</version>"
+    }
+
+    @Test
     fun `write a production dependency as 'compile' even when it is also used in tests`() {
         subproject("a-tests").declare("testImplementation", SPINE_BASE)
         subproject("b-lib").declare("api", SPINE_BASE)
