@@ -181,6 +181,15 @@ if [ "$IS_JVM" = "true" ]; then
       rm -f "$PRESERVE_TMP"
     fi
 
+    # Remove dependency objects that `config` has retired. `cp -R buildSrc ..`
+    # overlays the current sources but never deletes files dropped from `config`,
+    # so a consumer that received these earlier keeps a stale copy that no longer
+    # compiles against the rest of `buildSrc`. ProtoData was superseded by Spine
+    # Compiler (`io.spine.compiler`); McJava by CoreJvm Compiler (`io.spine.core-jvm`).
+    echo "Removing retired dependency objects (ProtoData, McJava)"
+    rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/ProtoData.kt
+    rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/McJava.kt
+
     echo "Updating GitHub workflows (JVM)"
     cp -a .github-workflows/. ../.github/workflows
     cp -a .github/workflows/. ../.github/workflows
