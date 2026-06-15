@@ -21,7 +21,7 @@ jobs:
 
       # `build` does not run Dokka — its tasks are gated to the publishing
       # graph — so `dokkaGenerate` is appended to surface documentation
-      # warnings here, during PR review, instead of in the post-merge
+      # warnings on each push, before merge, instead of only in the post-merge
       # `Publish` job. `failOnWarning` is enabled in the Dokka setup.
       - name: Build project, run tests, and check documentation
         shell: bash
