@@ -112,12 +112,13 @@ private constructor(
          *  * Compares the scope of the dependency first. Dependency with a lower scope priority
          *  number goes first.
          *
-         *  * For dependencies with the same scope does the lexicographical group name comparison.
-         *
-         *  * For dependencies within the same group, does the lexicographical artifact
+         *  * For dependencies with the **same scope** does the lexicographical group
          *  name comparison.
          *
-         *  * For dependencies with the same artifact name, does the lexicographical artifact
+         *  * For dependencies within the **same group**, does the lexicographical artifact
+         *  name comparison.
+         *
+         *  * For dependencies with the **same artifact name**, does the lexicographical artifact
          *  version comparison.
          */
         private val COMPARATOR: Comparator<ScopedDependency> =
