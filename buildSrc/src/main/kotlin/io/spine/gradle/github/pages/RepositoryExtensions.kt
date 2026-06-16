@@ -1,5 +1,5 @@
 /*
- * Copyright 2025, TeamDev. All rights reserved.
+ * Copyright 2026, TeamDev. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ import org.gradle.api.Project
  *
  * The repository's GitHub SSH URL is derived from the `REPO_SLUG` environment
  * variable. The [branch][Branch.documentation] dedicated to publishing documentation
- * is automatically checked out in this repository. Also, the username and the email
- * of the git user are automatically configured.
+ * is automatically checked out in this repository, and created if it does not exist
+ * yet. Also, the username and the email of the git user are automatically configured.
  *
  * The username is set to `"UpdateGitHubPages Plugin"`, and the email is derived from
  * the `FORMAL_GIT_HUB_PAGES_AUTHOR` environment variable.

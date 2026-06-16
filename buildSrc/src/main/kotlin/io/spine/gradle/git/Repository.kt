@@ -1,5 +1,5 @@
 /*
- * Copyright 2025, TeamDev. All rights reserved.
+ * Copyright 2026, TeamDev. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ import org.gradle.api.Project
  *   This configuration determines what ends up in the `author` and `committer` fields of a commit.
  * @property currentBranch The currently checked-out branch.
  */
+@Suppress("TooManyFunctions") // A cohesive wrapper over many small `git` commands.
 class Repository private constructor(
     private val project: Project,
     private val sshUrl: String,
@@ -86,12 +87,98 @@ class Repository private constructor(
      * Checks out the branch by its name.
      *
      * IMPORTANT. The branch must exist in the upstream repository.
+     * Use [checkoutOrCreate] to check out a branch that may not exist yet.
      */
     fun checkout(branch: String) {
         repoExecute("git", "checkout", branch)
         repoExecute("git", "pull")
 
         currentBranch = branch
+    }
+
+    /**
+     * Checks out the [branch], creating it in the remote repository if it does
+     * not exist yet.
+     *
+     * If the branch is already present on the remote, it is [checked out][checkout]
+     * as usual. Otherwise, it is created as an orphan branch with an empty initial
+     * commit and pushed to the remote, so that subsequent commits with the
+     * documentation have a branch to append to.
+     *
+     * Creating the branch on the fly makes the very first documentation publication
+     * of a repository self-sufficient: the [documentation branch][Branch.documentation]
+     * no longer needs to be created manually beforehand.
+     */
+    fun checkoutOrCreate(branch: String) {
+        if (remoteHasBranch(branch)) {
+            checkout(branch)
+        } else {
+            createOrphanBranch(branch)
+        }
+    }
+
+    /**
+     * Tells whether the remote repository has a branch with the given [name].
+     *
+     * Relies on `git ls-remote` returning an empty output with a zero exit code
+     * when the branch is absent, so the check does not raise an exception.
+     */
+    private fun remoteHasBranch(name: String): Boolean {
+        val output = repoExecute("git", "ls-remote", "--heads", "origin", name)
+        return output.isNotBlank()
+    }
+
+    /**
+     * Creates the [branch] as an orphan branch with an empty initial commit and
+     * pushes it to the remote.
+     *
+     * `git switch --orphan` starts a new history with an empty working tree, so
+     * the source code of the default branch does not leak into the created branch.
+     */
+    private fun createOrphanBranch(branch: String) {
+        repoExecute("git", "switch", "--orphan", branch)
+        repoExecute(
+            "git",
+            "commit",
+            "--allow-empty",
+            "--message=Initialize the `$branch` branch."
+        )
+        currentBranch = branch
+        pushNewBranch(branch)
+    }
+
+    /**
+     * Pushes the just-created [branch] to the remote, setting up the upstream tracking.
+     *
+     * If the push is rejected because a concurrently running publication created
+     * the branch first (e.g., another module publishing documentation in the same
+     * parallel build), the remote branch is [adopted][adoptRemoteBranch] instead.
+     * Otherwise, the failure is genuine, and the original exception is rethrown.
+     */
+    private fun pushNewBranch(branch: String) {
+        try {
+            repoExecute("git", "push", "--set-upstream", "origin", branch)
+        } catch (e: IllegalStateException) {
+            // `Cli.execute` surfaces every non-zero `git` exit as an
+            // `IllegalStateException`, so this branch handles a rejected push.
+            // If the branch now exists on the remote, another module won the
+            // creation race and we adopt its branch; otherwise the failure is
+            // genuine and is rethrown.
+            repoExecute("git", "fetch", "origin")
+            if (!remoteHasBranch(branch)) {
+                throw e
+            }
+            adoptRemoteBranch(branch)
+        }
+    }
+
+    /**
+     * Discards the local orphan branch in favour of the same-named branch that
+     * already exists on the remote, keeping the local branch in sync with it.
+     */
+    private fun adoptRemoteBranch(branch: String) {
+        repoExecute("git", "reset", "--hard", "origin/$branch")
+        repoExecute("git", "branch", "--set-upstream-to=origin/$branch", branch)
     }
 
     /**
@@ -171,7 +258,7 @@ class Repository private constructor(
             repo.configureUser(user)
 
             if (branch != Branch.master) {
-                repo.checkout(branch)
+                repo.checkoutOrCreate(branch)
             }
 
             return repo
