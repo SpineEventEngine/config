@@ -111,6 +111,13 @@ class Repository private constructor(
      */
     fun checkoutOrCreate(branch: String) {
         if (remoteHasBranch(branch)) {
+            // `remoteHasBranch` queries the remote directly via `git ls-remote`,
+            // which does not populate `refs/remotes/origin/*`. In a parallel
+            // build another module may have created the branch after this clone,
+            // so fetch first to make the `origin/$branch` ref available;
+            // otherwise `git checkout` cannot guess it and fails with a
+            // pathspec error.
+            repoExecute("git", "fetch", "origin")
             checkout(branch)
         } else {
             createOrphanBranch(branch)

@@ -2,29 +2,55 @@
 
 ################################################################################
 #
-# This script pulls the project configuration files from a remote Git repository.
+# Pulls the shared project configuration from the `config` repository and floats
+# every Git submodule — `config` itself, the shared `agents` submodule, and any
+# added in the future — to the tip of its tracked branch, leaving each ON the
+# branch rather than in a detached `HEAD`.
 #
 # The code of the script assumes that:
 #
 #   1. The project uses this code as a Git sub-module installed in the `config`
 #      directory under the project root.
 #
-#   2. The script is called from the root of the project.
+#   2. The script is called from the root of the project, i.e. `./config/pull`.
 #
 ################################################################################
 
-# Update the module with reference to the latest version.
-# In this state there is no current branch.
-git submodule update
+# ---------------------------------------------------------------------------
+# Float every submodule to the latest commit of its tracked branch.
+#
+# `git submodule update` alone only restores the commit each submodule is
+# *pinned* to in the superproject; it never advances to a branch tip, and it
+# leaves the submodule in a detached `HEAD`. To get the latest of every module
+# we check out its tracked branch (read from `.gitmodules`, defaulting to
+# `master`) and fast-forward it to `origin/<branch>`.
+#
+# `--recursive` descends into nested submodules (e.g. `config`'s own `agents`),
+# so any submodule added later is floated automatically — no edit needed here.
+# A fast-forward-only merge keeps each module a clean descendant of its remote
+# and fails loudly if a local commit ever diverged, rather than silently
+# creating a merge commit.
+# ---------------------------------------------------------------------------
 
-# Make the `config` dir current.
+echo "Floating submodules to the latest of their tracked branches"
+git submodule sync --recursive \
+    || { echo "Error: 'git submodule sync' failed."; exit 1; }
+git submodule update --init --recursive \
+    || { echo "Error: 'git submodule update --init' failed."; exit 1; }
+git submodule --quiet foreach --recursive '
+    branch=$(git config -f "$toplevel/.gitmodules" --get "submodule.$name.branch" 2>/dev/null || echo master)
+    echo "  $displaypath -> origin/$branch"
+    git fetch --quiet origin "$branch" \
+        && git checkout --quiet "$branch" \
+        && git merge --quiet --ff-only "origin/$branch"
+' || { echo "Error: failed to float a submodule to its branch tip."; exit 1; }
+
+# ---------------------------------------------------------------------------
+# Apply the shared files from the now-current `config`.
+# `migrate` must run with the `config` directory as the working directory.
+# ---------------------------------------------------------------------------
+
 cd ./config || { echo "Error: 'config' directory is missing."; exit 1; }
-
-# Set the current branch to `master`.
-git checkout master
-
-echo "Pulling changes from remote repo"
-git pull
 
 # Handle file operations related to the migration from the previous version(s).
 source migrate
