@@ -127,6 +127,14 @@ git config -f .gitmodules "submodule.$SHARED_PATH.ignore" all
 git submodule sync -- "$SHARED_PATH"
 git submodule update --init --remote "$SHARED_PATH"
 
+# `.gitmodules` is only the template: the *active* update strategy lives in
+# `.git/config` (where it takes precedence), and `git submodule init`/`sync` copy
+# it there only when absent — an existing entry is left untouched. A repo first
+# initialized under the old `update = checkout` would otherwise keep that value
+# locally, so a bare `git submodule update` would still detach/rewind the
+# submodule despite the `.gitmodules` change above. Force the active strategy.
+git config "submodule.$SHARED_PATH.update" merge
+
 # Leave the submodule checked out ON `master`, not in a detached `HEAD`. The
 # `--remote` update above checks out the branch *tip* detached; pointing the local
 # `master` at that tip keeps the working tree on a branch — less confusing, and the
