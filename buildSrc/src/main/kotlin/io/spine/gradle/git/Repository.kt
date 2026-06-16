@@ -132,11 +132,14 @@ class Repository private constructor(
     /**
      * Tells whether the remote repository has a branch with the given [name].
      *
-     * Relies on `git ls-remote` returning an empty output with a zero exit code
-     * when the branch is absent, so the check does not raise an exception.
+     * Queries the fully-qualified ref `refs/heads/$name` rather than the bare
+     * [name]: `git ls-remote` treats a bare name as a tail glob and would also
+     * match a namespaced branch such as `feature/$name`. Relies on `git ls-remote`
+     * returning an empty output with a zero exit code when the branch is absent,
+     * so the check does not raise an exception.
      */
     private fun remoteHasBranch(name: String): Boolean {
-        val output = repoExecute("git", "ls-remote", "--heads", "origin", name)
+        val output = repoExecute("git", "ls-remote", "--heads", "origin", "refs/heads/$name")
         return output.isNotBlank()
     }
 
