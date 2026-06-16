@@ -90,7 +90,7 @@ private constructor(
                         "artifactId" { xml.text(dependency.name) }
                         // A BOM-managed dependency carries no explicit version.
                         // Omit the element rather than emit `<version>null</version>`,
-                        // which is not a valid Maven version.
+                        // since `null` is not a valid Maven version.
                         dependency.version?.let { version ->
                             "version" { xml.text(version) }
                         }
