@@ -101,15 +101,20 @@ class Repository private constructor(
      * not exist yet.
      *
      * If the branch is already present on the remote, it is [checked out][checkout]
-     * as usual. Otherwise, it is created as an orphan branch with an empty initial
-     * commit and pushed to the remote, so that subsequent commits with the
+     * as usual. Otherwise, it is created as an orphan branch seeded with
+     * [initialFiles] and pushed to the remote, so that subsequent commits with the
      * documentation have a branch to append to.
      *
      * Creating the branch on the fly makes the very first documentation publication
      * of a repository self-sufficient: the [documentation branch][Branch.documentation]
      * no longer needs to be created manually beforehand.
+     *
+     * @param branch the name of the branch to check out or create.
+     * @param initialFiles the files — paths relative to the repository root mapped
+     *   to their content — to add to the initial commit when the branch is created.
+     *   Ignored when the branch already exists.
      */
-    fun checkoutOrCreate(branch: String) {
+    fun checkoutOrCreate(branch: String, initialFiles: Map<String, String> = emptyMap()) {
         if (remoteHasBranch(branch)) {
             // `remoteHasBranch` queries the remote directly via `git ls-remote`,
             // which does not populate `refs/remotes/origin/*`. In a parallel
@@ -120,7 +125,7 @@ class Repository private constructor(
             repoExecute("git", "fetch", "origin")
             checkout(branch)
         } else {
-            createOrphanBranch(branch)
+            createOrphanBranch(branch, initialFiles)
         }
     }
 
@@ -136,14 +141,20 @@ class Repository private constructor(
     }
 
     /**
-     * Creates the [branch] as an orphan branch with an empty initial commit and
+     * Creates the [branch] as an orphan branch seeded with [initialFiles] and
      * pushes it to the remote.
      *
      * `git switch --orphan` starts a new history with an empty working tree, so
      * the source code of the default branch does not leak into the created branch.
+     * The [initialFiles] are written into this clean tree and staged before the
+     * initial commit, which stays `--allow-empty` to support seeding no files.
      */
-    private fun createOrphanBranch(branch: String) {
+    private fun createOrphanBranch(branch: String, initialFiles: Map<String, String>) {
         repoExecute("git", "switch", "--orphan", branch)
+        initialFiles.forEach { (path, content) ->
+            location.toFile().resolve(path).writeText(content)
+            repoExecute("git", "add", path)
+        }
         repoExecute(
             "git",
             "commit",
@@ -248,7 +259,8 @@ class Repository private constructor(
          * See [configureUser] documentation for more information.
          *
          * Performs checkout of the branch in case it was passed.
-         * By default, [master][Branch.master] is checked out.
+         * By default, [master][Branch.master] is checked out. A non-default branch
+         * that does not exist yet is created and seeded with [initialFiles].
          *
          * @throws IllegalArgumentException if SSH URL is an empty string.
          */
@@ -257,6 +269,7 @@ class Repository private constructor(
             sshUrl: String,
             user: UserInfo,
             branch: String = Branch.master,
+            initialFiles: Map<String, String> = emptyMap(),
         ): Repository {
             require(sshUrl.isNotBlank()) { "SSH URL cannot be an empty string." }
 
@@ -265,7 +278,7 @@ class Repository private constructor(
             repo.configureUser(user)
 
             if (branch != Branch.master) {
-                repo.checkoutOrCreate(branch)
+                repo.checkoutOrCreate(branch, initialFiles)
             }
 
             return repo
