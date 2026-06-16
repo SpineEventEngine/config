@@ -88,7 +88,12 @@ private constructor(
                     "dependency" {
                         "groupId" { xml.text(dependency.group) }
                         "artifactId" { xml.text(dependency.name) }
-                        "version" { xml.text(dependency.version) }
+                        // A BOM-managed dependency carries no explicit version.
+                        // Omit the element rather than emit `<version>null</version>`,
+                        // since `null` is not a valid Maven version.
+                        dependency.version?.let { version ->
+                            "version" { xml.text(version) }
+                        }
                         if (scopedDep.hasDefinedScope()) {
                             "scope" { xml.text(scopedDep.scopeName()) }
                         }

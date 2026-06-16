@@ -337,7 +337,7 @@ val buildToolConfigurations: Array<String> = arrayOf(
 )
 
 /**
- * Make the `sourcesJar` task accept duplicated input which seems to occur
+ * Make the `sourcesJar` task accept duplicated input, which seems to occur
  * somewhere inside Protobuf Gradle Plugin.
  */
 fun Project.allowDuplicationInSourcesJar() {
