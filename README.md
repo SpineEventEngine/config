@@ -22,10 +22,13 @@ Run the following command from the root of your project:
 ./config/pull
 ```
 
-`pull` floats **every** Git submodule — `config` itself, the shared
-[`agents`][agents-repo] submodule, and any added later — to the tip of its
-tracked branch (`master` by default), leaving each *on* the branch rather than
-in a detached `HEAD`. It then copies the shared files into your project.
+`pull` updates `config` to the tip of `origin/master`, then floats the
+**config-managed** submodules — the shared [`agents`][agents-repo] submodule and
+any shared submodule added later (those declaring a tracked `branch` in
+`.gitmodules`) — to their branch tip, leaving each *on* the branch rather than in
+a detached `HEAD`. Submodules your repository owns (a Hugo theme, a vendored
+library) declare no tracked branch and are left untouched. It then copies the
+shared files into your project.
 
 > **Use `./config/pull`, not `git submodule update --recursive`.** A bare
 > `git submodule update` restores the commit each submodule is *pinned* to in

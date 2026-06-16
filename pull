@@ -2,10 +2,19 @@
 
 ################################################################################
 #
-# Pulls the shared project configuration from the `config` repository and floats
-# every Git submodule — `config` itself, the shared `agents` submodule, and any
-# added in the future — to the tip of its tracked branch, leaving each ON the
+# Pulls the shared project configuration from the `config` repository and brings
+# the config-managed submodules up to date.
+#
+# It updates `config` itself to the tip of `origin/master`, then floats every
+# *config-managed* submodule — those declared with a tracked `branch` in
+# `.gitmodules` (the shared `agents` submodule at `.agents/shared`, and any shared
+# submodule added in the future) — to the tip of that branch, leaving each on the
 # branch rather than in a detached `HEAD`.
+#
+# Submodules the consumer owns (a Hugo theme, a vendored library, ...) declare no
+# tracked branch and are deliberately left untouched: this script never advances
+# or resets them, and a failure floating one shared submodule is warned about, not
+# fatal, so it can never take down the whole pull.
 #
 # The code of the script assumes that:
 #
@@ -17,37 +26,41 @@
 ################################################################################
 
 # ---------------------------------------------------------------------------
-# Float every submodule to the latest commit of its tracked branch.
-#
-# `git submodule update` alone only restores the commit each submodule is
-# *pinned* to in the superproject; it never advances to a branch tip, and it
-# leaves the submodule in a detached `HEAD`. To get the latest of every module
-# we check out its tracked branch (read from `.gitmodules`, defaulting to
-# `master`) and fast-forward it to `origin/<branch>`.
-#
-# `--recursive` descends into nested submodules (e.g. `config`'s own `agents`),
-# so any submodule added later is floated automatically — no edit needed here.
-# A fast-forward-only merge keeps each module a clean descendant of its remote
-# and fails loudly if a local commit ever diverged, rather than silently
-# creating a merge commit.
+# 1. Bring `config` itself to the tip of `origin/master`, on the `master`
+#    branch (not a detached `HEAD`). Pulling here also refreshes `migrate`,
+#    which is sourced from the updated `config` below.
 # ---------------------------------------------------------------------------
 
-echo "Floating submodules to the latest of their tracked branches"
-git submodule sync --recursive \
-    || { echo "Error: 'git submodule sync' failed."; exit 1; }
-git submodule update --init --recursive \
-    || { echo "Error: 'git submodule update --init' failed."; exit 1; }
-git submodule --quiet foreach --recursive '
-    branch=$(git config -f "$toplevel/.gitmodules" --get "submodule.$name.branch" 2>/dev/null || echo master)
-    echo "  $displaypath -> origin/$branch"
-    git fetch --quiet origin "$branch" \
-        && git checkout --quiet "$branch" \
-        && git merge --quiet --ff-only "origin/$branch"
-' || { echo "Error: failed to float a submodule to its branch tip."; exit 1; }
+echo "Updating 'config' to the latest 'master'"
+( cd ./config && git checkout master && git pull --ff-only ) \
+    || { echo "Error: failed to update the 'config' submodule."; exit 1; }
 
 # ---------------------------------------------------------------------------
-# Apply the shared files from the now-current `config`.
-# `migrate` must run with the `config` directory as the working directory.
+# 2. Float the config-managed submodules to the tip of their tracked branch.
+#    A submodule is "config-managed" when its `.gitmodules` entry declares a
+#    `branch` (set up by `adopt-shared-agents`); consumer-owned submodules have
+#    none and are skipped. `--ff-only` keeps each a clean descendant of its
+#    remote; any failure is warned about, never fatal.
+# ---------------------------------------------------------------------------
+
+if [ -f .gitmodules ]; then
+    git config -f .gitmodules --get-regexp '^submodule\..*\.branch$' 2>/dev/null \
+    | while read -r key branch; do
+        name=${key#submodule.}; name=${name%.branch}
+        path=$(git config -f .gitmodules --get "submodule.$name.path") || continue
+        echo "Floating '$path' -> origin/$branch"
+        git submodule sync -- "$path" >/dev/null 2>&1 || true
+        git submodule update --init -- "$path" >/dev/null 2>&1 || true
+        ( cd "$path" \
+            && git fetch --quiet origin "$branch" \
+            && git checkout --quiet "$branch" \
+            && git merge --quiet --ff-only "origin/$branch" ) \
+        || echo "  WARNING: could not float '$path' to origin/$branch; left as-is." >&2
+    done
+fi
+
+# ---------------------------------------------------------------------------
+# 3. Apply the shared files. `migrate` runs with `config` as the working dir.
 # ---------------------------------------------------------------------------
 
 cd ./config || { echo "Error: 'config' directory is missing."; exit 1; }
