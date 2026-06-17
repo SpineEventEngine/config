@@ -22,7 +22,20 @@ Run the following command from the root of your project:
 ./config/pull
 ```
 
-It will get the latest code from the remote repo and then copy the shared files into your project.
+`pull` updates `config` to the tip of `origin/master`, then floats the
+**config-managed** submodules — the shared [`agents`][agents-repo] submodule and
+any shared submodule added later (those declaring a tracked `branch` in
+`.gitmodules`) — to their branch tip, leaving each *on* the branch rather than in
+a detached `HEAD`. Submodules your repository owns (a Hugo theme, a vendored
+library) declare no tracked branch and are left untouched. It then copies the
+shared files into your project.
+
+> **Use `./config/pull`, not `git submodule update --recursive`.** A bare
+> `git submodule update` restores the commit each submodule is *pinned* to in
+> your superproject and will roll the shared submodules **backward**; only
+> `pull` (or `git submodule update --remote`) advances them to the latest
+> `master`.
+
 The following files will be copied:
 
  * `.idea` — shared IntelliJ IDEA settings.
@@ -46,9 +59,9 @@ The `pull` script also wires up AI-agent configuration:
    `.agents/scripts`, `.agents/guidelines`, `.claude/commands`, and `.claude/agents` — plus
    `.claude/skills` and `.junie/skills`, which alias `.agents/skills`. `pull`
    runs the idempotent [`adopt-shared-agents`](./adopt-shared-agents) script, which sets up
-   the submodule on the first run and floats it to the latest `agents@master` on every
-   subsequent run — so shared skills update everywhere with **no file churn** in consumer
-   pull requests.
+   the submodule on the first run and floats it to the latest `agents@master` (checked out
+   *on* `master`, not a detached `HEAD`) on every subsequent run — so shared skills update
+   everywhere with **no file churn** in consumer pull requests.
  * `.claude/settings.json` — the permission allowlist distributed by `config` (Hugo-only
    repos receive a Hugo-tuned variant). JVM and mixed repos also get `settings.local.json`;
    Hugo-only repos do not.

@@ -114,12 +114,33 @@ fi
 # Set url and branch unconditionally so an already-registered submodule pointing at a
 # different URL/branch (or lacking one) is corrected before `--remote` runs;
 # `git submodule sync` propagates the .gitmodules url into the active .git/config.
+#
+# `update = merge` (not `checkout`) keeps the float robust: a later *bare*
+# `git submodule update` then merges the pinned (older) commit into the checked-out
+# `master` — an already-up-to-date no-op — instead of rewinding `master` to the
+# stale pin. It does mean `update` integrates onto a branch, which is exactly the
+# on-`master` state established just below.
 git config -f .gitmodules "submodule.$SHARED_PATH.url" "$AGENTS_URL"
 git config -f .gitmodules "submodule.$SHARED_PATH.branch" master
-git config -f .gitmodules "submodule.$SHARED_PATH.update" checkout
+git config -f .gitmodules "submodule.$SHARED_PATH.update" merge
 git config -f .gitmodules "submodule.$SHARED_PATH.ignore" all
 git submodule sync -- "$SHARED_PATH"
 git submodule update --init --remote "$SHARED_PATH"
+
+# `.gitmodules` is only the template: the *active* update strategy lives in
+# `.git/config` (where it takes precedence), and `git submodule init`/`sync` copy
+# it there only when absent — an existing entry is left untouched. A repo first
+# initialized under the old `update = checkout` would otherwise keep that value
+# locally, so a bare `git submodule update` would still detach/rewind the
+# submodule despite the `.gitmodules` change above. Force the active strategy.
+git config "submodule.$SHARED_PATH.update" merge
+
+# Leave the submodule checked out ON `master`, not in a detached `HEAD`. The
+# `--remote` update above checks out the branch *tip* detached; pointing the local
+# `master` at that tip keeps the working tree on a branch — less confusing, and the
+# precondition for the `update = merge` resilience noted above. `ignore = all`
+# already hides the advanced commit from status/diff, so this never churns PRs.
+git -C "$SHARED_PATH" checkout -q -B master origin/master
 
 # --- 3. (re)create the symlinks ------------------------------------------------
 
