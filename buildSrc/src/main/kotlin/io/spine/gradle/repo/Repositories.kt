@@ -31,6 +31,7 @@ package io.spine.gradle.repo
 import io.spine.gradle.publish.PublishingRepos
 import java.net.URI
 import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.api.artifacts.repositories.ArtifactRepository
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.kotlin.dsl.maven
 
@@ -119,8 +120,13 @@ fun RepositoryHandler.standardToSpineSdk() {
     // `org.jetbrains:annotations`) resolve here and never reach a less reliable
     // mirror like `cache-redirector.jetbrains.com`.
     //
-    mavenCentral()
-    gradlePluginPortal()
+    // `io.spine.*` modules are served only by the Spine repositories below, so
+    // they are excluded here. Otherwise Gradle would query Central / the Plugin
+    // Portal for every Spine module first, adding pointless lookups and making
+    // Spine resolution depend on the health of repositories that never host it.
+    //
+    mavenCentral { excludeSpine() }
+    gradlePluginPortal { excludeSpine() }
 
     spineArtifacts()
 
@@ -192,6 +198,20 @@ private object Repos {
 private fun MavenArtifactRepository.includeSpineOnly() {
     content {
         includeGroupByRegex("io\\.spine.*")
+    }
+}
+
+/**
+ * Excludes Spine artifact groups from this repository.
+ *
+ * `io.spine.*` modules are published only to the Spine repositories (each scoped
+ * via [includeSpineOnly]). Excluding them from a general-purpose repository keeps
+ * Gradle from querying it — and depending on its health — for coordinates it
+ * never hosts.
+ */
+private fun ArtifactRepository.excludeSpine() {
+    content {
+        excludeGroupByRegex("io\\.spine.*")
     }
 }
 
