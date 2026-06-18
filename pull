@@ -41,6 +41,14 @@ echo "Updating 'config' to the latest 'master'"
 #    `branch` (set up by `adopt-shared-agents`); consumer-owned submodules have
 #    none and are skipped. `--ff-only` keeps each a clean descendant of its
 #    remote; any failure is warned about, never fatal.
+#
+#    For each such submodule we also re-assert the active update strategy from
+#    `.gitmodules` into `.git/config`. `.gitmodules` is only a template: Git
+#    copies `update` into the active config once, at first `git submodule init`,
+#    and never again — so a clone initialized before `update = merge` was adopted
+#    stays on `checkout` forever, and a bare `git submodule update` would then
+#    detach the float back to the pinned commit. Re-syncing here makes the policy
+#    converge on every pull instead of only on fresh clones.
 # ---------------------------------------------------------------------------
 
 if [ -f .gitmodules ]; then
@@ -51,6 +59,9 @@ if [ -f .gitmodules ]; then
         echo "Floating '$path' -> origin/$branch"
         git submodule sync -- "$path" >/dev/null 2>&1 || true
         git submodule update --init -- "$path" >/dev/null 2>&1 || true
+        # Converge the active update strategy with `.gitmodules` (see note above).
+        strategy=$(git config -f .gitmodules --get "submodule.$name.update" 2>/dev/null) \
+            && git config "submodule.$name.update" "$strategy"
         ( cd "$path" \
             && git fetch --quiet origin "$branch" \
             && git checkout --quiet "$branch" \

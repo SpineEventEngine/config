@@ -88,6 +88,14 @@ cp AGENTS.md ..
 echo "Updating \`CLAUDE.md\`"
 cp CLAUDE.md ..
 
+echo "Updating \`init-submodules\`"
+# A plain tracked file at the consumer ROOT — deliberately NOT inside a submodule
+# — so a fresh `git worktree` always checks it out and can bootstrap the `config`
+# and `.agents/shared` submodules that a worktree starts without. A `SessionStart`
+# hook in `.claude/settings.json` runs it automatically.
+cp init-submodules ..
+chmod +x ../init-submodules
+
 echo "Updating Junie guidelines"
 # Copy only the tracked guideline file. The `.junie/skills` symlink is created
 # by `adopt-shared-agents` (run earlier in this script), and any repo-local
