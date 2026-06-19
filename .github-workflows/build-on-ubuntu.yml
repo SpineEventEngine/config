@@ -6,7 +6,6 @@ jobs:
   build:
     name: Build on Ubuntu
     runs-on: ubuntu-latest
-    timeout-minutes: 90   # Avoid premature job termination on slow runners.
     concurrency:  # Avoid canceling in-progress runs for the same branch.
       group: ubuntu-ci-${{ github.ref }}
       cancel-in-progress: false
