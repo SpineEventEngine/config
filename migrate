@@ -129,11 +129,17 @@ cp .github/copilot-instructions.md ../.github/copilot-instructions.md
 
 # Names of distributed workflows a repo-specific variant stands in for, gathered
 # from `config:replaces` directives in the consumer's own workflows (one per line).
-OVERRIDDEN=$(grep -rhoE 'config:replaces[[:space:]]+[A-Za-z0-9._-]+' \
-             ../.github/workflows 2>/dev/null | awk '{print $2}' | sort -u)
+# The directive is a YAML *comment*, so the pattern is anchored to a comment line
+# (optional leading whitespace, then `#`) — this avoids an accidental match on the
+# literal string appearing inside a workflow's values. The filename is the last
+# whitespace-separated field of the match, regardless of spacing after `#`.
+OVERRIDDEN=$(grep -rhoE '^[[:space:]]*#[[:space:]]*config:replaces[[:space:]]+[A-Za-z0-9._-]+' \
+             ../.github/workflows 2>/dev/null | awk '{print $NF}' | sort -u)
 if [ -n "$OVERRIDDEN" ]; then
     echo "Repo-specific workflow overrides detected; not distributing:"
-    printf '  %s\n' $OVERRIDDEN
+    printf '%s\n' "$OVERRIDDEN" | while IFS= read -r wf; do
+        echo "  $wf"
+    done
 fi
 
 # Whether the distributed workflow named by $1 is replaced by a repo-specific
