@@ -123,12 +123,36 @@ as such cannot be placed under `.github/workflows`.
 
 These scripts are copied by the `pull` script when `config` is applied to a new repository.
 
+### Replacing a distributed workflow in a single repository
+
+Occasionally a repository needs a CI workflow that diverges from the uniform one
+distributed here — for example, [`gcloud-java`][gcloud-java] decrypts a
+service-account key on Ubuntu and skips the Datastore-emulator suites on the
+Windows runner. Keep the repo-specific variant under a **distinct name** (e.g.
+`build-on-ubuntu-gcloud.yml`) and add a directive comment naming the distributed
+file it stands in for:
+
+```yaml
+# config:replaces build-on-ubuntu.yml
+name: Ubuntu CI with Google Cloud SDK
+```
+
+`migrate` reads these `config:replaces` directives and will not copy the named
+generic workflow into that repository, so only the repo-specific variant runs.
+The directive is an ordinary YAML comment, so GitHub Actions ignores it.
+
+`migrate` never deletes a generic workflow the repository already committed: when
+you first introduce a variant, delete the generic file (e.g. `build-on-ubuntu.yml`)
+by hand once. From then on, `./config/pull` leaves the variant in place and does
+not re-add the generic.
+
 ## Further reading
 
   * [GitHub: Working with submodules][working-with-submodules]
   * [Pro Git: Git Tools - Git Submodules][submodule-tools]
   
 [agents-repo]: https://github.com/SpineEventEngine/agents
+[gcloud-java]: https://github.com/SpineEventEngine/gcloud-java
 [base]: https://github.com/SpineEventEngine/base
 [base-types]: https://github.com/SpineEventEngine/base-types
 [core-jvm]: https://github.com/SpineEventEngine/core-jvm

@@ -111,6 +111,59 @@ echo "Updating GitHub Copilot instructions"
 cp .github/copilot-instructions.md ../.github/copilot-instructions.md
 
 # ---------------------------------------------------------------------------
+# Repo-specific workflow overrides
+#
+# A consumer repository sometimes needs a CI workflow that diverges from the
+# uniform one `config` distributes — e.g. `gcloud-java` decrypts a service-account
+# key and skips the Datastore-emulator suites on the Windows runner. Such a repo
+# keeps its own variant under a distinct name (e.g. `build-on-ubuntu-gcloud.yml`)
+# and marks it with a directive comment — ignored by GitHub Actions — naming the
+# distributed file it stands in for:
+#
+#     # config:replaces build-on-ubuntu.yml
+#
+# `migrate` then refrains from copying that generic workflow here, so only the
+# repo-specific variant runs. It does NOT delete a generic file the consumer has
+# already committed: that one-time cleanup is left to the developer.
+# ---------------------------------------------------------------------------
+
+# Names of distributed workflows a repo-specific variant stands in for, gathered
+# from `config:replaces` directives in the consumer's own workflows (one per line).
+# The directive is a YAML *comment*, so the pattern is anchored to a comment line
+# (optional leading whitespace, then `#`) — this avoids an accidental match on the
+# literal string appearing inside a workflow's values. The filename is the last
+# whitespace-separated field of the match, regardless of spacing after `#`.
+OVERRIDDEN=$(grep -rhoE '^[[:space:]]*#[[:space:]]*config:replaces[[:space:]]+[A-Za-z0-9._-]+' \
+             ../.github/workflows 2>/dev/null | awk '{print $NF}' | sort -u)
+if [ -n "$OVERRIDDEN" ]; then
+    echo "Repo-specific workflow overrides detected; not distributing:"
+    printf '%s\n' "$OVERRIDDEN" | while IFS= read -r wf; do
+        echo "  $wf"
+    done
+fi
+
+# Whether the distributed workflow named by $1 is replaced by a repo-specific
+# variant in the consumer (per a `config:replaces` directive).
+function is_overridden() {
+    printf '%s\n' "$OVERRIDDEN" | grep -qxF "$1"
+}
+
+# Copies every workflow from the source directory ($1) into the consumer's
+# `.github/workflows`, skipping any the consumer has chosen to replace.
+function copy_workflows() {
+    local f name
+    for f in "$1"/*; do
+        [ -e "$f" ] || continue
+        name=$(basename "$f")
+        if is_overridden "$name"; then
+            echo "Skipping '$name' (replaced by a repo-specific workflow)"
+            continue
+        fi
+        cp -a "$f" ../.github/workflows/
+    done
+}
+
+# ---------------------------------------------------------------------------
 # Claude settings — the commands/agents/skills come from the submodule above;
 # only the permission settings are repo configuration distributed by `config`.
 # ---------------------------------------------------------------------------
@@ -139,7 +192,11 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
     cp lychee.toml ..
 
     echo "Updating GitHub workflows (Hugo)"
-    cp .github/workflows/check-links.yml ../.github/workflows/
+    if is_overridden check-links.yml; then
+        echo "Skipping 'check-links.yml' (replaced by a repo-specific workflow)"
+    else
+        cp .github/workflows/check-links.yml ../.github/workflows/
+    fi
 
     # On a Hugo-only repo, remove any JVM workflows that may be present from
     # a previous non-Hugo pull. On a repo that is also JVM, leave them — the
@@ -199,8 +256,8 @@ if [ "$IS_JVM" = "true" ]; then
     rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/McJava.kt
 
     echo "Updating GitHub workflows (JVM)"
-    cp -a .github-workflows/. ../.github/workflows
-    cp -a .github/workflows/. ../.github/workflows
+    copy_workflows .github-workflows
+    copy_workflows .github/workflows
     rm -f ../.github/workflows/detekt-code-analysis.yml # config-only workflow
 
     echo "Updating Gradle Wrapper"
