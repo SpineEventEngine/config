@@ -15,6 +15,14 @@ jobs:
   build:
     name: Build on Ubuntu
     runs-on: ubuntu-latest
+
+    # Hoisted to a job-level env so the coverage-upload step can gate on it.
+    # Forked and Dependabot pull requests run without repository secrets, so
+    # the token is empty there. The `secrets` context is not available in a
+    # step `if:`, but `env` is.
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
     concurrency:  # Avoid canceling in-progress runs for the same branch.
       group: ubuntu-ci-${{ github.ref }}
       cancel-in-progress: false
@@ -58,9 +66,14 @@ jobs:
           report_paths: '**/build/test-results/**/TEST-*.xml'
           require_tests: true # will fail workflow if test reports not found
 
+      # Skipped on forked and Dependabot PRs, where `CODECOV_TOKEN` is empty:
+      # otherwise the tokenless upload fails, and `fail_ci_if_error: true`
+      # would turn that into a red build on an otherwise-healthy PR. Coverage
+      # gating is not meaningful in those contexts anyway.
       - name: Upload code coverage report
+        if: env.CODECOV_TOKEN != ''
         uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ env.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
