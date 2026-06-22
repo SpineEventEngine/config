@@ -1,6 +1,15 @@
 name: Ubuntu CI
 
-on: push
+# Triggers:
+#   * push to `master` — refreshes the Codecov baseline. `Publish` runs
+#     `publish -x test` and uploads no coverage, so this build is the only
+#     source of master coverage that `target: auto` in `.codecov.yml` compares
+#     pull requests against.
+#   * pull_request — gates a change on its merge result, not the branch tip.
+on:
+  push:
+    branches: [master]
+  pull_request:
 
 jobs:
   build:
@@ -36,8 +45,8 @@ jobs:
 
       # `build` does not run Dokka — its tasks are gated to the publishing
       # graph — so `dokkaGenerate` is appended to surface documentation
-      # warnings on each push, before merge, instead of only in the post-merge
-      # `Publish` job. `failOnWarning` is enabled in the Dokka setup.
+      # warnings before merge, instead of only in the post-merge `Publish`
+      # job. `failOnWarning` is enabled in the Dokka setup.
       - name: Check documentation
         run: ./gradlew dokkaGenerate --stacktrace
 
