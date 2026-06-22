@@ -1,14 +1,18 @@
 name: Ubuntu CI
 
 # Triggers:
-#   * push to `master` — refreshes the Codecov baseline. `Publish` runs
-#     `publish -x test` and uploads no coverage, so this build is the only
-#     source of master coverage that `target: auto` in `.codecov.yml` compares
-#     pull requests against.
+#   * push to a default or release-line branch — those ending in `master` or
+#     `main`, the same set `increment-guard.yml` guards as PR bases (e.g.
+#     `master`, `2.x-jdk8-master`). These post-merge runs are the only source
+#     of base-branch coverage, since `Publish` runs `publish -x test` and
+#     uploads none; `target: auto` in `.codecov.yml` compares each pull request
+#     against its base baseline.
 #   * pull_request — gates a change on its merge result, not the branch tip.
 on:
   push:
-    branches: [master]
+    branches:
+      - '**master'
+      - '**main'
   pull_request:
 
 jobs:
