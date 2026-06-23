@@ -68,11 +68,16 @@ fi
 
 locals=$(mktemp)
 # Repo-local extras = pattern lines OUTSIDE any managed block (non-blank,
-# non-comment), minus any line already in the shared baseline, de-duplicated.
+# non-comment), de-duplicated. A line duplicating a POSITIVE baseline pattern is
+# dropped (it is already in the managed block), but a repo-local NEGATION (`!...`)
+# is kept even when the baseline lists the same exception: a consumer may re-state
+# it after their own broad ignore (e.g. `*.jar` then `!gradle-wrapper.jar`), and
+# dropping it would silently re-ignore the exception. De-dup only against the
+# baseline's non-negation lines (process substitution feeds those to `grep -f`).
 awk -v b="$begin" -v e="$end" '
   $0==b {inb=1; next} $0==e {inb=0; next}
   !inb && $0 !~ /^[[:space:]]*#/ && $0 ~ /[^[:space:]]/ {print}
-' "$dest" | grep -vxF -f "$src" | awk '!seen[$0]++' > "$locals"
+' "$dest" | grep -vxF -f <(grep -v '^!' "$src") | awk '!seen[$0]++' > "$locals"
 {
   printf '%s\n' "$begin"; cat "$src"; printf '%s\n' "$end"
   if [ -s "$locals" ]; then

@@ -109,6 +109,8 @@ git -C "$consumer" config user.name  test
   printf '%s\n' '!spine-dev.json'
   printf '%s\n' 'my-build-output/'
   printf '%s\n' 'generated/*.gpg'
+  printf '%s\n' '*.jar'
+  printf '%s\n' '!gradle-wrapper.jar'
 } > "$consumer/.gitignore"
 
 # --- Run the merge. -----------------------------------------------------------
@@ -121,6 +123,8 @@ for f in "${secrets[@]}"; do : > "$f"; done
 : > keep.gpg
 mkdir -p my-build-output && : > my-build-output/artifact.txt
 mkdir -p generated && : > generated/secret.gpg
+: > gradle-wrapper.jar
+: > other.jar
 
 # (1) Every decrypted credential must be ignored despite the repo-local negations.
 for f in "${secrets[@]}"; do
@@ -161,6 +165,16 @@ if git check-ignore -q generated/secret.gpg; then
   pass "repo-local 'generated/*.gpg' honored (trailer did not re-include it)"
 else
   f-ail "repo-local 'generated/*.gpg' overridden by the secret trailer"
+fi
+
+# (3c) A repo-local broad ignore plus an exception that ALSO appears in the
+# baseline must survive: `*.jar` + `!gradle-wrapper.jar`. The de-dup drops only
+# positive duplicates, keeping the negation, so the wrapper jar stays committable
+# while other jars are ignored.
+if git check-ignore -q other.jar && ! git check-ignore -q gradle-wrapper.jar; then
+  pass "repo-local '*.jar' + '!gradle-wrapper.jar' exception preserved"
+else
+  f-ail "repo-local '!gradle-wrapper.jar' exception dropped (wrapper jar wrongly ignored)"
 fi
 
 # --- (4) Idempotency: re-running yields byte-identical output. -----------------
