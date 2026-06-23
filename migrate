@@ -71,57 +71,6 @@ function initialize() {
   fi
 }
 
-# Merges config's shared `.gitignore` into the consumer's, PRESERVING the
-# consumer's own entries instead of overwriting them. The shared baseline is
-# wrapped in a managed block; repo-local patterns (a consumer's own decrypted-key
-# paths, a Hugo theme's build output, ...) are kept in a trailing section and
-# carried across every pull.
-#
-# This replaces the previous unconditional `cp -a .gitignore ..`, which silently
-# dropped a consumer's secret-ignore patterns on every pull — the root cause of a
-# decrypted service-account key being re-exposed and committed. The merge is
-# idempotent: re-running only refreshes the managed block.
-function update_gitignore() {
-  local src=".gitignore" dest="../.gitignore" locals out
-  local begin='# >>> shared config (managed by ./config/pull -- do not edit inside this block) >>>'
-  local end='# <<< shared config <<<'
-  # Build into a sibling temp file and `mv` into place: a same-directory rename is
-  # atomic, so an interrupted or failed run can never leave the consumer with a
-  # truncated or empty `.gitignore`.
-  out=$(mktemp "${dest}.XXXXXX") || { echo "update_gitignore: cannot create temp file." >&2; return 1; }
-  if [ ! -f "$dest" ]; then
-    { printf '%s\n' "$begin"; cat "$src"; printf '%s\n' "$end"; } > "$out"
-    mv "$out" "$dest"
-    return
-  fi
-  locals=$(mktemp)
-  # Repo-local extras = pattern lines OUTSIDE any managed block (non-blank,
-  # non-comment), minus any line already in the shared baseline, de-duplicated.
-  awk -v b="$begin" -v e="$end" '
-    $0==b {inb=1; next} $0==e {inb=0; next}
-    !inb && $0 !~ /^[[:space:]]*#/ && $0 ~ /[^[:space:]]/ {print}
-  ' "$dest" | grep -vxF -f "$src" | awk '!seen[$0]++' > "$locals"
-  {
-    printf '%s\n' "$begin"; cat "$src"; printf '%s\n' "$end"
-    if [ -s "$locals" ]; then
-      printf '\n%s\n' '# --- repo-local entries (preserved across ./config/pull) ---'
-      cat "$locals"
-    fi
-    # Re-assert the secret ignores LAST: gitignore is last-match-wins, so a
-    # preserved repo-local negation (e.g. `!*.json` or `!spine-dev.json`)
-    # appended above must not be able to un-ignore a decrypted credential.
-    # This trailer is the final word. The awk pulls the Secrets section out of
-    # the baseline `$src` — from the `# Secrets ...` header through the closing
-    # `!*.gpg` line — anchored on the ASCII prefix `^# Secrets` rather than the
-    # em-dash in the full header (which is locale-fragile). The section ends in
-    # the baseline's own `!*.gpg`, so encrypted `*.gpg` forms stay committable.
-    printf '\n%s\n' '# --- secret ignores re-asserted last so a repo-local negation cannot un-ignore a credential ---'
-    awk '/^# Secrets/{f=1} f{print} /^!\*\.gpg$/{f=0}' "$src"
-  } > "$out"
-  mv "$out" "$dest"
-  rm -f "$locals"
-}
-
 echo "Updating IDEA configuration"
 cp -R .idea ..
 
@@ -157,7 +106,7 @@ cp .junie/guidelines.md ../.junie/guidelines.md
 initialize .gitattributes
 
 echo "Merging .gitignore (shared baseline + preserved repo-local entries)"
-update_gitignore
+bash scripts/update-gitignore.sh
 
 mkdir -p ../.github/workflows
 echo "Updating GitHub Copilot instructions"
@@ -292,8 +241,8 @@ if [ "$IS_JVM" = "true" ]; then
 
     cp -a gradle.properties ..
     # NOTE: `.gitignore` is intentionally NOT copied here. It is merged once, for
-    # every repo, by `update_gitignore` in the common section above — preserving
-    # repo-local entries instead of clobbering them.
+    # every repo, by `scripts/update-gitignore.sh` in the common section above —
+    # preserving repo-local entries instead of clobbering them.
 
     echo "Updating Gradle \`buildSrc\`"
 

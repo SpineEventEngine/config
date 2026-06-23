@@ -27,7 +27,7 @@
 #
 
 # ---------------------------------------------------------------------------
-# Regression test for `update_gitignore` in `config/migrate`.
+# Regression test for `config/scripts/update-gitignore.sh` (called by `migrate`).
 #
 # `update_gitignore` writes the shared `.gitignore` baseline inside a managed
 # block, then preserves a consumer's own repo-local pattern lines in a trailing
@@ -63,7 +63,7 @@ set -eo pipefail
 # (scripts/ lives directly under it), so the test works regardless of CWD.
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 config_dir="$(cd "$script_dir/.." && pwd)"
-migrate="$config_dir/migrate"
+script="$config_dir/scripts/update-gitignore.sh"
 baseline="$config_dir/.gitignore"
 
 BEGIN='# >>> shared config (managed by ./config/pull -- do not edit inside this block) >>>'
@@ -73,8 +73,8 @@ fail=0
 pass() { echo "PASS: $1"; }
 f-ail() { echo "FAIL: $1" >&2; fail=1; }
 
-# --- Pre-flight: the function and baseline must be present. --------------------
-[ -f "$migrate" ]  || { echo "FAIL: cannot find migrate at $migrate" >&2; exit 1; }
+# --- Pre-flight: the script and baseline must be present. ---------------------
+[ -f "$script" ]   || { echo "FAIL: cannot find update-gitignore.sh at $script" >&2; exit 1; }
 [ -f "$baseline" ] || { echo "FAIL: cannot find baseline at $baseline" >&2; exit 1; }
 
 # --- Guard the baseline invariants the re-assertion relies on. -----------------
@@ -85,16 +85,6 @@ f-ail() { echo "FAIL: $1" >&2; fail=1; }
 # silently weakens — so assert their presence here.
 grep -qE '^# Secrets'  "$baseline" || f-ail "baseline lost its '# Secrets' header line"
 grep -qxF '!*.gpg'     "$baseline" || f-ail "baseline lost its trailing '!*.gpg' negation"
-
-# --- Load the REAL update_gitignore from the live migrate file. ----------------
-# A top-level function body ends at a closing brace in column 0; the inner
-# `{ ... } > "$dest"` blocks are indented, so anchoring on ^} is correct.
-func="$(awk '/^function update_gitignore\(\) \{/{p=1} p{print} p&&/^\}/{exit}' "$migrate")"
-case "$func" in
-  *'mv "$out" "$dest"'*) : ;;  # sanity: captured the whole body (atomic write), not just the signature
-  *) echo "FAIL: could not extract update_gitignore body from $migrate" >&2; exit 1 ;;
-esac
-eval "$func"
 
 # --- Build a sandbox mirroring migrate's assumed layout. ----------------------
 # update_gitignore hardcodes src=".gitignore", dest="../.gitignore" relative to
@@ -122,7 +112,7 @@ git -C "$consumer" config user.name  test
 } > "$consumer/.gitignore"
 
 # --- Run the merge. -----------------------------------------------------------
-( cd "$consumer/config" && update_gitignore )
+( cd "$consumer/config" && bash "$script" )
 
 # --- Assert real ignore status. -----------------------------------------------
 cd "$consumer"
@@ -164,7 +154,7 @@ fi
 
 # --- (4) Idempotency: re-running yields byte-identical output. -----------------
 cp "$consumer/.gitignore" "$work/first.gitignore"
-( cd "$consumer/config" && update_gitignore )
+( cd "$consumer/config" && bash "$script" )
 if diff -q "$work/first.gitignore" "$consumer/.gitignore" >/dev/null; then
   pass "merge is idempotent (2nd run identical)"
 else
@@ -172,7 +162,7 @@ else
   diff "$work/first.gitignore" "$consumer/.gitignore" >&2 || true
 fi
 # A third run guards against slow drift (e.g. the trailer re-entering locals).
-( cd "$consumer/config" && update_gitignore )
+( cd "$consumer/config" && bash "$script" )
 if diff -q "$work/first.gitignore" "$consumer/.gitignore" >/dev/null; then
   pass "merge is idempotent (3rd run identical)"
 else
