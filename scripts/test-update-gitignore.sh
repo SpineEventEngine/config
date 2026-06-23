@@ -91,7 +91,7 @@ grep -qxF '!*.gpg'     "$baseline" || f-ail "baseline lost its trailing '!*.gpg'
 # `{ ... } > "$dest"` blocks are indented, so anchoring on ^} is correct.
 func="$(awk '/^function update_gitignore\(\) \{/{p=1} p{print} p&&/^\}/{exit}' "$migrate")"
 case "$func" in
-  *'> "$dest"'*) : ;;  # sanity: we captured the whole body, not just the signature
+  *'mv "$out" "$dest"'*) : ;;  # sanity: captured the whole body (atomic write), not just the signature
   *) echo "FAIL: could not extract update_gitignore body from $migrate" >&2; exit 1 ;;
 esac
 eval "$func"

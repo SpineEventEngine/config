@@ -82,11 +82,16 @@ function initialize() {
 # decrypted service-account key being re-exposed and committed. The merge is
 # idempotent: re-running only refreshes the managed block.
 function update_gitignore() {
-  local src=".gitignore" dest="../.gitignore" locals
+  local src=".gitignore" dest="../.gitignore" locals out
   local begin='# >>> shared config (managed by ./config/pull -- do not edit inside this block) >>>'
   local end='# <<< shared config <<<'
+  # Build into a sibling temp file and `mv` into place: a same-directory rename is
+  # atomic, so an interrupted or failed run can never leave the consumer with a
+  # truncated or empty `.gitignore`.
+  out=$(mktemp "${dest}.XXXXXX") || { echo "update_gitignore: cannot create temp file." >&2; return 1; }
   if [ ! -f "$dest" ]; then
-    { printf '%s\n' "$begin"; cat "$src"; printf '%s\n' "$end"; } > "$dest"
+    { printf '%s\n' "$begin"; cat "$src"; printf '%s\n' "$end"; } > "$out"
+    mv "$out" "$dest"
     return
   fi
   locals=$(mktemp)
@@ -112,7 +117,8 @@ function update_gitignore() {
     # the baseline's own `!*.gpg`, so encrypted `*.gpg` forms stay committable.
     printf '\n%s\n' '# --- secret ignores re-asserted last so a repo-local negation cannot un-ignore a credential ---'
     awk '/^# Secrets/{f=1} f{print} /^!\*\.gpg$/{f=0}' "$src"
-  } > "$dest"
+  } > "$out"
+  mv "$out" "$dest"
   rm -f "$locals"
 }
 
