@@ -102,6 +102,16 @@ function update_gitignore() {
       printf '\n%s\n' '# --- repo-local entries (preserved across ./config/pull) ---'
       cat "$locals"
     fi
+    # Re-assert the secret ignores LAST: gitignore is last-match-wins, so a
+    # preserved repo-local negation (e.g. `!*.json` or `!spine-dev.json`)
+    # appended above must not be able to un-ignore a decrypted credential.
+    # This trailer is the final word. The awk pulls the Secrets section out of
+    # the baseline `$src` — from the `# Secrets ...` header through the closing
+    # `!*.gpg` line — anchored on the ASCII prefix `^# Secrets` rather than the
+    # em-dash in the full header (which is locale-fragile). The section ends in
+    # the baseline's own `!*.gpg`, so encrypted `*.gpg` forms stay committable.
+    printf '\n%s\n' '# --- secret ignores re-asserted last so a repo-local negation cannot un-ignore a credential ---'
+    awk '/^# Secrets/{f=1} f{print} /^!\*\.gpg$/{f=0}' "$src"
   } > "$dest"
   rm -f "$locals"
 }
