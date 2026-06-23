@@ -104,7 +104,12 @@ mkdir -p ../.junie
 cp .junie/guidelines.md ../.junie/guidelines.md
 
 initialize .gitattributes
-initialize .gitignore
+
+echo "Merging .gitignore (shared baseline + preserved repo-local entries)"
+# Fail closed: if the merge cannot write the consumer `.gitignore`, abort the pull
+# rather than continue and silently leave the secret-ignore patterns uninstalled.
+bash scripts/update-gitignore.sh \
+    || { echo "ERROR: '.gitignore' merge failed — aborting so secret ignores are not silently skipped." >&2; exit 1; }
 
 mkdir -p ../.github/workflows
 echo "Updating GitHub Copilot instructions"
@@ -162,6 +167,20 @@ function copy_workflows() {
         cp -a "$f" ../.github/workflows/
     done
 }
+
+# ---------------------------------------------------------------------------
+# Secret-scan workflow — distributed to EVERY repository (JVM, Hugo, or plain) so
+# a leaked credential fails CI even when the local nets are bypassed. Lives in the
+# common section (before the type-specific branches) and honors the same
+# `config:replaces` override mechanism as the other workflows.
+# ---------------------------------------------------------------------------
+echo "Updating secret-scan workflow"
+mkdir -p ../.github/workflows
+if is_overridden secret-scan.yml; then
+    echo "Skipping 'secret-scan.yml' (replaced by a repo-specific workflow)"
+else
+    cp .github/workflows/secret-scan.yml ../.github/workflows/
+fi
 
 # ---------------------------------------------------------------------------
 # Claude settings — the commands/agents/skills come from the submodule above;
@@ -224,7 +243,9 @@ if [ "$IS_JVM" = "true" ]; then
     cp .codecov.yml ..
 
     cp -a gradle.properties ..
-    cp -a .gitignore ..
+    # NOTE: `.gitignore` is intentionally NOT copied here. It is merged once, for
+    # every repo, by `scripts/update-gitignore.sh` in the common section above —
+    # preserving repo-local entries instead of clobbering them.
 
     echo "Updating Gradle \`buildSrc\`"
 
@@ -268,6 +289,24 @@ if [ "$IS_JVM" = "true" ]; then
 fi
 
 cd ..
+
+# ---------------------------------------------------------------------------
+# Route Git hooks to the shared, version-controlled hooks directory so the
+# secret-scan `pre-commit` hook guards EVERY commit — any agent, any human. The
+# path resolves through `.agents/scripts` -> the shared `agents` submodule, so the
+# hook floats with it and needs no per-clone copy. Set only when `core.hooksPath`
+# is unset or already ours, so a repo's own hooks configuration is never hijacked.
+# ---------------------------------------------------------------------------
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    desired_hooks=".agents/scripts/git-hooks"
+    current_hooks=$(git config --local --get core.hooksPath 2>/dev/null || true)
+    if [ -z "$current_hooks" ] || [ "$current_hooks" = "$desired_hooks" ]; then
+        git config --local core.hooksPath "$desired_hooks"
+        echo "Git hooks routed to '$desired_hooks' (secret-scan pre-commit active)."
+    else
+        echo "Leaving existing core.hooksPath ('$current_hooks') untouched." >&2
+    fi
+fi
 
 if [ "$IS_JVM" = "true" ]; then
     echo "Adding \`buildSrc\` sources to Git..."
