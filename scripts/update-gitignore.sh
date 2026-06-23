@@ -79,15 +79,16 @@ awk -v b="$begin" -v e="$end" '
     printf '\n%s\n' '# --- repo-local entries (preserved across ./config/pull) ---'
     cat "$locals"
   fi
-  # Re-assert the secret ignores LAST: gitignore is last-match-wins, so a
-  # preserved repo-local negation appended above must not be able to un-ignore a
-  # decrypted credential. The awk pulls the Secrets section out of the baseline
-  # `$src` — from the `# Secrets ...` header through the closing `!*.gpg` line —
-  # anchored on the ASCII prefix `^# Secrets` rather than the em-dash in the full
-  # header (which is locale-fragile). The section ends in the baseline's own
-  # `!*.gpg`, so encrypted `*.gpg` forms stay committable.
+  # Re-assert the secret ignore PATTERNS as the final word: gitignore is
+  # last-match-wins, so a preserved repo-local negation (e.g. `!*.json`) above must
+  # not un-ignore a decrypted credential. Only the POSITIVE patterns are re-listed —
+  # comments and the baseline's own `!*.gpg` negation are skipped, so this trailer
+  # cannot override a consumer's repo-local `*.gpg` ignore (the managed block keeps
+  # encrypted `*.gpg` committable by default). The Secrets section spans the
+  # `# Secrets` header (ASCII-anchored, not the locale-fragile em-dash) up to the
+  # `!*.gpg` line that closes it.
   printf '\n%s\n' '# --- secret ignores re-asserted last so a repo-local negation cannot un-ignore a credential ---'
-  awk '/^# Secrets/{f=1} f{print} /^!\*\.gpg$/{f=0}' "$src"
+  awk '/^# Secrets/{f=1} /^!\*\.gpg$/{f=0} f && $0 !~ /^[[:space:]]*#/ && $0 !~ /^!/ && $0 ~ /[^[:space:]]/' "$src"
 } > "$out"
 mv "$out" "$dest"
 rm -f "$locals"

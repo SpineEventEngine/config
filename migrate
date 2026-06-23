@@ -106,7 +106,10 @@ cp .junie/guidelines.md ../.junie/guidelines.md
 initialize .gitattributes
 
 echo "Merging .gitignore (shared baseline + preserved repo-local entries)"
-bash scripts/update-gitignore.sh
+# Fail closed: if the merge cannot write the consumer `.gitignore`, abort the pull
+# rather than continue and silently leave the secret-ignore patterns uninstalled.
+bash scripts/update-gitignore.sh \
+    || { echo "ERROR: '.gitignore' merge failed — aborting so secret ignores are not silently skipped." >&2; exit 1; }
 
 mkdir -p ../.github/workflows
 echo "Updating GitHub Copilot instructions"

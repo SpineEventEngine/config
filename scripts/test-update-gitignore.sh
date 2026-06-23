@@ -78,11 +78,10 @@ f-ail() { echo "FAIL: $1" >&2; fail=1; }
 [ -f "$baseline" ] || { echo "FAIL: cannot find baseline at $baseline" >&2; exit 1; }
 
 # --- Guard the baseline invariants the re-assertion relies on. -----------------
-# The trailer extracts the Secrets section with
-#   awk '/^# Secrets/{f=1} f{print} /^!\*\.gpg$/{f=0}'
-# which needs a `# Secrets` header line and a closing `!*.gpg` line. If either
-# disappears (or `!*.gpg` stops being the last secret line), the protection
-# silently weakens — so assert their presence here.
+# The trailer re-lists the Secrets section's positive patterns, anchored on a
+# `# Secrets` header line to start and the closing `!*.gpg` line to mark the
+# section end. If either disappears (or `!*.gpg` stops closing the section), the
+# protection silently weakens — so assert their presence here.
 grep -qE '^# Secrets'  "$baseline" || f-ail "baseline lost its '# Secrets' header line"
 grep -qxF '!*.gpg'     "$baseline" || f-ail "baseline lost its trailing '!*.gpg' negation"
 
@@ -109,6 +108,7 @@ git -C "$consumer" config user.name  test
   printf '%s\n' '!*.json'
   printf '%s\n' '!spine-dev.json'
   printf '%s\n' 'my-build-output/'
+  printf '%s\n' 'generated/*.gpg'
 } > "$consumer/.gitignore"
 
 # --- Run the merge. -----------------------------------------------------------
@@ -120,6 +120,7 @@ secrets=(spine-dev.json my-sa.json my-service-account-x.json my.secret.propertie
 for f in "${secrets[@]}"; do : > "$f"; done
 : > keep.gpg
 mkdir -p my-build-output && : > my-build-output/artifact.txt
+mkdir -p generated && : > generated/secret.gpg
 
 # (1) Every decrypted credential must be ignored despite the repo-local negations.
 for f in "${secrets[@]}"; do
@@ -150,6 +151,16 @@ if git check-ignore -q my-build-output/artifact.txt; then
   pass "benign repo-local rule 'my-build-output/' honored"
 else
   f-ail "benign repo-local rule 'my-build-output/' was dropped"
+fi
+
+# (3b) A repo-local *scoped* `.gpg` ignore must survive: the secret trailer
+# re-asserts only positive patterns (not the baseline `!*.gpg`), so it must NOT
+# re-include a consumer's own `generated/*.gpg` artifacts. (`keep.gpg` at the root
+# stays committable above — the managed block's `!*.gpg` still applies there.)
+if git check-ignore -q generated/secret.gpg; then
+  pass "repo-local 'generated/*.gpg' honored (trailer did not re-include it)"
+else
+  f-ail "repo-local 'generated/*.gpg' overridden by the secret trailer"
 fi
 
 # --- (4) Idempotency: re-running yields byte-identical output. -----------------
