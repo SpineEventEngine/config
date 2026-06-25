@@ -19,19 +19,25 @@ name: Version Guard
 
 on:
   pull_request:
-    # `ready_for_review` is added so that converting a draft to ready re-runs the
-    # guard against the current base. The default activity types
-    # (`opened`, `synchronize`, `reopened`) do not fire on that transition, which
-    # would otherwise let a draft that went stale while in draft become mergeable
-    # with a stale-green `Version Guard` status.
-    types: [opened, synchronize, reopened, ready_for_review]
+    # Beyond the default activity types (`opened`, `synchronize`, `reopened`), two more are
+    # needed because they change what the guard must compare against without a new head SHA,
+    # which would otherwise leave a stale-green `Version Guard` status mergeable:
+    #   * `ready_for_review` — a draft that went stale while in draft becomes ready; and
+    #   * `edited` — the base branch is retargeted (e.g. a release line -> `master`), so the
+    #     strict comparison must be recomputed against the new base.
+    types: [opened, synchronize, reopened, ready_for_review, edited]
 
 jobs:
   check:
     name: Check version increment
     runs-on: ubuntu-latest
-    # Default and release-line branches, e.g. `master`, `main`, `2.x-jdk8-master`.
-    if: endsWith(github.base_ref, 'master') || endsWith(github.base_ref, 'main')
+    # Default and release-line branches, e.g. `master`, `main`, `2.x-jdk8-master`. For an
+    # `edited` event, run only when the base actually changed (a retarget carries
+    # `changes.base.ref.from`); title/body edits carry no `changes.base` and are skipped, so
+    # the guard is not rebuilt needlessly.
+    if: >-
+      (endsWith(github.base_ref, 'master') || endsWith(github.base_ref, 'main'))
+      && (github.event.action != 'edited' || github.event.changes.base.ref.from != '')
 
     # `statuses: write` lets the job publish the `Version Guard` commit status that
     # branch protection requires.
