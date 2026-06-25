@@ -28,6 +28,7 @@ package io.spine.gradle.publish
 
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.spine.gradle.publish.IncrementGuard.Companion.localPublishPlanned
 import io.spine.gradle.publish.IncrementGuard.Companion.mustVerify
 import io.spine.gradle.publish.IncrementGuard.Companion.shouldCheckVersion
 import org.gradle.api.Project
@@ -110,6 +111,33 @@ class IncrementGuardTest {
             // E.g. a push to `master` or a tag build running integration tests: the
             // version is already published, so re-verifying it would fail the build.
             mustVerify(ciPullRequest = false, onCi = true, localPublish = true) shouldBe false
+        }
+    }
+
+    @Nested
+    inner class `detect a Maven Local publish` {
+
+        @Test
+        fun `for the task's own project`() {
+            val project = guardedProject()
+            val publish = project.tasks
+                .register("publishFooPublicationToMavenLocal", PublishToMavenLocal::class.java)
+                .get()
+
+            localPublishPlanned(listOf(publish), project) shouldBe true
+        }
+
+        @Test
+        fun `but not when only a sibling project publishes`() {
+            val root = ProjectBuilder.builder().build()
+            val lib = ProjectBuilder.builder().withParent(root).withName("lib").build()
+            val app = ProjectBuilder.builder().withParent(root).withName("app").build()
+            app.pluginManager.apply("maven-publish")
+            val appPublish = app.tasks
+                .register("publishFooPublicationToMavenLocal", PublishToMavenLocal::class.java)
+                .get()
+
+            localPublishPlanned(listOf(appPublish), lib) shouldBe false
         }
     }
 
