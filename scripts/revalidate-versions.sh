@@ -69,10 +69,13 @@ discover_key() {
     echo "versionToPublish"
     return
   fi
+  # `|| true`: a no-match `grep` exits 1 and, with `pipefail`, fails the whole
+  # pipeline; without this the `set -e` script would abort instead of falling
+  # back to `versionToPublish` below.
   # shellcheck disable=SC2086
   keys=$(grep -hE '^[[:space:]]*version[[:space:]]*=[[:space:]]*extra[[:space:]]*\[[[:space:]]*["'"'"'][^"'"'"']+["'"'"']' $files 2>/dev/null \
       | sed -nE 's/.*extra[[:space:]]*\[[[:space:]]*["'"'"']([^"'"'"']+)["'"'"'].*/\1/p' \
-      | sort -u)
+      | sort -u || true)
   if [ "$(printf '%s' "$keys" | grep -c .)" = "1" ]; then
     printf '%s' "$keys"
   else
@@ -85,21 +88,24 @@ discover_key() {
 # Mirrors `version-bumped.sh`.
 parse_version() {
   local content="$1" name="$2" v src
+  # `|| true` on each pipeline: under `pipefail` a no-match `grep` (or a `grep`
+  # that receives SIGPIPE when `head` closes early) exits non-zero and would
+  # otherwise abort this `set -e` script before the fallback branches run.
   v=$(printf '%s\n' "$content" \
       | grep -E "val[[:space:]]+${name}([[:space:]]*:[[:space:]]*String)?[[:space:]]+by[[:space:]]+extra\(\"" \
-      | head -n1 | sed -nE 's/.*extra\("([^"]+)".*/\1/p')
+      | head -n1 | sed -nE 's/.*extra\("([^"]+)".*/\1/p' || true)
   if [ -n "$v" ]; then printf '%s' "$v"; return 0; fi
   src=$(printf '%s\n' "$content" \
       | grep -E "val[[:space:]]+${name}([[:space:]]*:[[:space:]]*String)?[[:space:]]+by[[:space:]]+extra\(" \
-      | head -n1 | sed -nE 's/.*extra\(([A-Za-z_][A-Za-z0-9_]*)\).*/\1/p')
+      | head -n1 | sed -nE 's/.*extra\(([A-Za-z_][A-Za-z0-9_]*)\).*/\1/p' || true)
   if [ -n "$src" ]; then
     v=$(printf '%s\n' "$content" \
         | grep -E "val[[:space:]]+${src}([[:space:]]*:[[:space:]]*String)?[[:space:]]+by[[:space:]]+extra\(\"" \
-        | head -n1 | sed -nE 's/.*extra\("([^"]+)".*/\1/p')
+        | head -n1 | sed -nE 's/.*extra\("([^"]+)".*/\1/p' || true)
     if [ -z "$v" ]; then
       v=$(printf '%s\n' "$content" \
           | grep -E "val[[:space:]]+${src}([[:space:]]*:[[:space:]]*String)?[[:space:]]*=[[:space:]]*\"" \
-          | head -n1 | sed -nE 's/.*=[[:space:]]*"([^"]+)".*/\1/p')
+          | head -n1 | sed -nE 's/.*=[[:space:]]*"([^"]+)".*/\1/p' || true)
     fi
     if [ -n "$v" ]; then printf '%s' "$v"; return 0; fi
   fi
