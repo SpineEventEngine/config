@@ -89,7 +89,9 @@ publish-collision check on the publish path. Keep it load-bearing.
       (no JDK/Gradle — pure shell). **Does not write `master`.**
 - [x] NEW `scripts/revalidate-versions.sh` (distributed as `config/scripts/...`,
       run via `bash` so it needs no exec bit): reads the base version,
-      `gh pr list --base "$BASE_REF" --state open --limit 200` (skips drafts),
+      `gh pr list --base "$BASE_REF" --state open --limit 200` (includes drafts —
+      a stale draft must be marked failed; `increment-guard.yml` also adds the
+      `ready_for_review` trigger so the draft->ready transition re-checks),
       reads each head's `version.gradle.kts` via the contents API, and posts
       `Version Guard = failure` on stale heads. **Comparison uses `sort -V`**,
       consistent with `version-bumped.sh` (qualifier-edge concern does not apply to

@@ -19,6 +19,12 @@ name: Version Guard
 
 on:
   pull_request:
+    # `ready_for_review` is added so that converting a draft to ready re-runs the
+    # guard against the current base. The default activity types
+    # (`opened`, `synchronize`, `reopened`) do not fire on that transition, which
+    # would otherwise let a draft that went stale while in draft become mergeable
+    # with a stale-green `Version Guard` status.
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
   check:
