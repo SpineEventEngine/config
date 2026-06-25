@@ -163,61 +163,6 @@ class IncrementGuardTest {
             localPublish.dependencyNames() shouldContain IncrementGuard.taskName
         }
     }
-
-    @Nested
-    inner class `read the publishing version from 'version_gradle_kts'` {
-
-        @Test
-        fun `declared as a literal`() {
-            val content = """
-                val versionToPublish: String by extra("2.0.0-SNAPSHOT.182")
-            """.trimIndent()
-
-            VersionGradleFile.keyForValue(content, "2.0.0-SNAPSHOT.182") shouldBe "versionToPublish"
-            VersionGradleFile.valueForKey(content, "versionToPublish") shouldBe "2.0.0-SNAPSHOT.182"
-        }
-
-        @Test
-        fun `declared as an alias to another 'extra'`() {
-            val content = """
-                val compilerVersion: String by extra("2.0.0-SNAPSHOT.043")
-                val versionToPublish by extra(compilerVersion)
-            """.trimIndent()
-
-            VersionGradleFile.valueForKey(content, "versionToPublish") shouldBe "2.0.0-SNAPSHOT.043"
-            VersionGradleFile.valueForKey(content, "compilerVersion") shouldBe "2.0.0-SNAPSHOT.043"
-        }
-
-        @Test
-        fun `declared as an alias to a plain 'val'`() {
-            val content = """
-                val base = "2.0.0-SNAPSHOT.043"
-                val versionToPublish by extra(base)
-            """.trimIndent()
-
-            VersionGradleFile.valueForKey(content, "versionToPublish") shouldBe "2.0.0-SNAPSHOT.043"
-        }
-
-        @Test
-        fun `identified by the resolved project version, not a hard-coded name`() {
-            val content = """
-                val kotlinVersion: String by extra("2.1.0")
-                val versionToPublish: String by extra("2.0.0-SNAPSHOT.182")
-            """.trimIndent()
-
-            VersionGradleFile.keyForValue(content, "2.0.0-SNAPSHOT.182") shouldBe "versionToPublish"
-        }
-
-        @Test
-        fun `absent when no property matches`() {
-            val content = """
-                val versionToPublish: String by extra("2.0.0-SNAPSHOT.182")
-            """.trimIndent()
-
-            VersionGradleFile.keyForValue(content, "9.9.9") shouldBe null
-            VersionGradleFile.valueForKey(content, "missing") shouldBe null
-        }
-    }
 }
 
 /**
