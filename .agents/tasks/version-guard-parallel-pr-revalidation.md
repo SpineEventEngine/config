@@ -2,7 +2,7 @@
 slug: version-guard-parallel-pr-revalidation
 branch: improve-version-bump
 owner: claude
-status: draft
+status: in-review
 started: 2026-06-25
 related-memories:
   - config-auto-merge-drops-late-commits
@@ -57,90 +57,84 @@ publish-collision check on the publish path. Keep it load-bearing.
 
 ## Plan
 
-### A. Deterministic PR-time gate (in-task base-compare)
-- [ ] `buildSrc/.../publish/CheckVersionIncrement.kt`: add a base-compare —
-      read base via `Cli(rootDir).execute("git","show","origin/$GITHUB_BASE_REF:version.gradle.kts")`,
-      extract the version literal, compare `project.version` vs base with
-      `VersionComparator`. **Fail when head ≤ base.** Fail-closed on ambiguity
-      (base ref unresolvable / unparseable → `GradleException`). Treat
-      base-file-absent as OK (newly introduced). Keep the existing network
-      "already published?" check too (now a secondary catch on this path).
-- [ ] `report/pom/VersionComparator.kt`: promote from `report.pom`-`internal`
-      to a shared internal location; reuse. **No `sort -V` anywhere.**
-- [ ] `IncrementGuard.kt`: no wiring change (both paths already inherit it);
-      widen the task description from "not yet published" to "advanced vs. base".
-- [ ] `.github-workflows/increment-guard.yml`: make the base tip resolvable —
-      `fetch-depth: 0` **or** a targeted `git fetch --depth=1 origin
-      +refs/heads/$GITHUB_BASE_REF:refs/remotes/origin/$GITHUB_BASE_REF`.
-      (Plain `git fetch origin $BASE` lands in `FETCH_HEAD` and does **not**
-      reliably create `origin/$BASE` — avoid that form.)
+### A. Deterministic PR-time gate (in-task base-compare) — DONE
+- [x] `buildSrc/.../publish/CheckVersionIncrement.kt`: `checkIncrementedAgainstBase()`
+      reads base via `git show origin/$GITHUB_BASE_REF:version.gradle.kts` (a
+      `ProcessBuilder`-based `gitShow` that redirects to temp files — avoids both
+      `Cli`'s newline-stripping and a pipe-buffer deadlock), parses the publishing
+      version with the new `VersionGradleFile` object (key identified by the
+      resolved `project.version` as an oracle, so no hard-coded property name),
+      compares with `VersionComparator`, and **fails when head ≤ base**.
+      Fail-closed on an unresolvable base ref; pass on base-file-absent (newly
+      introduced); skip-with-warning on an unrecognized `version.gradle.kts` shape.
+      The existing network "already published?" check (`checkNotPublished()`) stays.
+- [x] Promoted `VersionComparator` `report.pom` → `io.spine.gradle` (`git mv`,
+      still `internal`); updated `DependencyWriter` import. **No `sort -V` in Kotlin.**
+- [x] `IncrementGuard.kt`: no wiring change needed (both paths inherit the task);
+      class KDoc already accurate.
+- [x] `.github-workflows/increment-guard.yml`: targeted base fetch
+      `git fetch --no-tags --depth=1 origin +refs/heads/$GITHUB_BASE_REF:refs/remotes/origin/$GITHUB_BASE_REF`.
 
-### B. PR path emits the shared `Version Guard` commit status (self-clearing)
-- [ ] `.github-workflows/increment-guard.yml`: add
-      `permissions: { contents: read, statuses: write }`; after the gradle step,
-      `if: always()` POST `state=success|failure, context="Version Guard"` to
-      `github.event.pull_request.head.sha`. This is what makes a re-bump push
-      self-clear (fresh `success` on the new SHA). Job stays gated to
-      `master`/`main`/release-line bases (skipped job ⇒ no status ⇒ fine, since
-      `Version Guard` is not required on auxiliary bases).
+### B. PR path emits the shared `Version Guard` commit status (self-clearing) — DONE
+- [x] `increment-guard.yml`: `permissions: { contents: read, statuses: write }`;
+      `if: always()` step posts `state=success|failure, context="Version Guard"`
+      to the PR head SHA, so a re-bump push self-clears a failure. **Guarded to
+      non-fork PRs** (`github.event.pull_request.head.repo.fork == false`) — forks
+      get a read-only token and are handled by a maintainer.
 
-### C. Active re-validation on push to base (new)
-- [ ] NEW `.github-workflows/revalidate-versions.yml`:
-      `on: push: branches: [master, main, '*-master', '*-main']`;
-      `permissions: { contents: read, statuses: write, pull-requests: read }`;
-      `concurrency: { group: revalidate-versions-${{ github.ref }},
-      cancel-in-progress: true }`; checkout + JDK 17 + Gradle; run the script.
-      **Does not write `master`** (read-only checkout + status POSTs to PR heads).
-- [ ] NEW `config/scripts/revalidate-versions.sh` (config-owned, like
-      `decrypt.sh`): read base version at the new tip; `gh pr list --base
-      "$BASE_REF" --state open --limit 200` (skip drafts — `--limit` matters,
-      `gh` truncates at 30); for each, read the head's `version.gradle.kts` via
-      `gh api repos/$REPO/contents/version.gradle.kts?ref=$sha`; compare via the
-      headless comparator (D); if `head ≤ base`, POST `Version Guard = failure`
-      to that head SHA; leave passing heads untouched. Fork heads the token
-      cannot status stay Pending = blocked (acceptable; out of agent threat model).
+### C. Active re-validation on push to base (new) — DONE
+- [x] NEW `.github-workflows/revalidate-versions.yml`: `on: push` to `'*master'`,
+      `'*main'` (aligned with the PR guard's `endsWith`); least-privilege
+      `permissions`; per-ref `concurrency` + `cancel-in-progress`; checkout only
+      (no JDK/Gradle — pure shell). **Does not write `master`.**
+- [x] NEW `scripts/revalidate-versions.sh` (distributed as `config/scripts/...`,
+      run via `bash` so it needs no exec bit): reads the base version,
+      `gh pr list --base "$BASE_REF" --state open --limit 200` (skips drafts),
+      reads each head's `version.gradle.kts` via the contents API, and posts
+      `Version Guard = failure` on stale heads. **Comparison uses `sort -V`**,
+      consistent with `version-bumped.sh` (qualifier-edge concern does not apply to
+      a project's own successive snapshot numbers) — so the separate headless
+      comparator (old step D) was **dropped** as unnecessary.
 
-### D. Headless `VersionComparator` entry point (no shell math)
-- [ ] buildSrc: add a tiny `main()`/task that compares two version strings with
-      the existing `VersionComparator` and prints/exits `-1|0|1`. Single source
-      of comparison semantics for the PR task, the publish backstop, and the
-      fan-out script.
+### E. Publish notifier — DONE
+- [x] `.github-workflows/publish.yml`: `if: failure()` step emits a `::error::`
+      annotation + runbook. The collision **backstop is the registry's
+      immutability itself** (the #104 publish *failed* — overwrite is rejected), so
+      no redundant pre-publish network probe was added. **No `master` writes.**
 
-### E. Publish backstop + notifier (the actual guarantee)
-- [ ] `.github-workflows/publish.yml`: ensure the fail-closed network
-      "already published?" check runs **before** publish and hard-fails on
-      collision. Harden the fetch: distinguish a genuine 404 (OK) from any other
-      IO error / timeout (fail-closed), add cache-busting. **No `master` writes.**
-- [ ] `.github-workflows/publish.yml`: add an `if: failure()` notifier so the
-      rare red Publish alerts a human/agent to bump `master` and re-run.
+### F. Tests — DONE
+- [x] `IncrementGuardTest.kt`: `VersionGradleFile` parser cases (literal, alias to
+      another `extra`, alias to a plain `val`, oracle-by-value identification,
+      no-match → null). `VersionComparatorSpec` already covers the numeric/qualifier
+      ordering. Shell `parse_version`/`is_stale` exercised locally (literal/alias/plain;
+      `.080==.080`→stale, `.081>.080`→ok, `.100>.99`→ok, `.9<.100`→stale).
 
-### F. Tests
-- [ ] `buildSrc/.../publish/IncrementGuardTest.kt`: pure base-compare cases —
-      `head == base → fail` (the #104 case), `head < base → fail`,
-      `head > base → pass`, base-absent → pass, unparseable → fail-closed.
-- [ ] Comparator entry-point cases (incl. `…SNAPSHOT.100 > .99`, `-RC`/`-SNAPSHOT`
-      qualifier edges that `sort -V` would get wrong).
+### Verify — DONE
+- [x] `JAVA_HOME=17 ./gradlew :buildSrc:build detekt` green (compile + tests + detekt).
+- [x] `kotlin-engineer` + `spine-code-review` run over the diff; all should-fix
+      findings addressed (deadlock-safe `gitShow`, `VersionComparator` promotion,
+      fork-PR status guard, `bash` invocation, branch-glob alignment, doc nits).
 
-### G. Docs
-- [ ] `.agents/shared/guidelines/version-policy.md`: reword the gate from
-      "fails when the version already exists in Maven" to "must be advanced vs.
-      base", with the publish check named as the collision backstop. *(Lives in
-      the `agents` submodule — separate PR there, not in this config branch.)*
+### G. Docs — follow-up (separate `agents`-repo PR, NOT this branch)
+- [ ] `.agents/shared/guidelines/version-policy.md`: reword the gate to "must be
+      advanced vs. base", naming the registry immutability as the collision backstop.
 
 ### H. Manual repo-admin (per consumer repo — cannot be shipped/tested by config)
-- [ ] Require the status context **`Version Guard`** (replacing the old
+- [ ] Require the status context **`Version Guard`** (replace the old
       `Check version increment` check-run requirement).
 - [ ] Leave **"require branches up to date before merging" OFF**.
-- [ ] Document the rare-red-Publish runbook: bump `master` `.NNN → .NNN+1`
-      (via a tiny PR) and re-run Publish. The Publish workflow does not self-heal.
-
-### Verify
-- [ ] `JAVA_HOME=17 ./gradlew :buildSrc:build detekt` green (config has no root
-      `build` task; this is the buildSrc verification per team memory).
-- [ ] Run `kotlin-engineer` + `spine-code-review` (+ `gradle-review`) over the diff.
+- [ ] Runbook for the rare red Publish: bump `master` `.NNN → .NNN+1` (small PR)
+      and re-run Publish — the Publish workflow does not self-heal.
 
 ## Log
 - 2026-06-25 — drafted from the investigation + two adversarial design passes
   (in-task base-compare; commit-status active re-validation; rejected
-  self-heal/commit-back and merge queue per user constraints). Awaiting approval
-  to implement.
+  self-heal/commit-back and merge queue per user constraints).
+- 2026-06-25 — implemented A–F. Build + detekt + tests green; two reviewers
+  (`kotlin-engineer`, `spine-code-review`) approved-with-changes, all should-fix
+  items applied (incl. `VersionComparator` promotion and a deadlock-safe `gitShow`).
+  Refinements vs. the draft: Kotlin parses `version.gradle.kts` directly (oracle by
+  `project.version`) instead of shelling to `version-bumped.sh`; the fan-out uses
+  `sort -V` (headless comparator dropped); the publish backstop is registry
+  immutability (no extra network probe). Status: in-review. Remaining: G (agents
+  repo) and H (repo-admin).

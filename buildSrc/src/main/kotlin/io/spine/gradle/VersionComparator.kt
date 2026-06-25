@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.gradle.report.pom
+package io.spine.gradle
 
 /**
  * Compares dependency version strings by their meaning rather than lexicographically.
