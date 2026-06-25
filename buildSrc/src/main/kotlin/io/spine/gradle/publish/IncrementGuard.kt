@@ -84,6 +84,17 @@ class IncrementGuard : Plugin<Project> {
             onCi: Boolean,
             localPublish: Boolean,
         ): Boolean = ciPullRequest || (!onCi && localPublish)
+
+        /**
+         * Tells whether [tasks] contains a Maven Local publishing task that
+         * belongs to the given [project].
+         *
+         * The scan is limited to [project]'s own publications so that, in a
+         * multi-project build, a sibling module's `publishToMavenLocal` does not
+         * trigger this module's check — which would verify an unrelated version.
+         */
+        internal fun localPublishPlanned(tasks: Iterable<Task>, project: Project): Boolean =
+            tasks.any { it is PublishToMavenLocal && it.project == project }
     }
 
     /**
@@ -153,16 +164,18 @@ class IncrementGuard : Plugin<Project> {
 }
 
 /**
- * Tells whether the current build is going to publish artifacts to Maven Local.
+ * Tells whether the current build is going to publish this task's project to
+ * Maven Local.
  *
  * Integration tests in this and sibling projects consume freshly built artifacts
  * from `~/.m2`. Publishing them under a version that already exists would let those
  * tests pick up a stale artifact, so the version increment must be verified before
  * any local publication runs.
  *
- * The predicate is evaluated lazily as a task `onlyIf` spec, by which point
- * the execution [task graph][org.gradle.api.execution.TaskExecutionGraph] is
- * fully populated.
+ * Only this task's own project is considered: a sibling module's local publish in
+ * the same invocation must not trigger this module's check. The predicate is
+ * evaluated lazily as a task `onlyIf` spec, by which point the execution
+ * [task graph][org.gradle.api.execution.TaskExecutionGraph] is fully populated.
  */
 private fun Task.publishesToMavenLocal(): Boolean =
-    project.gradle.taskGraph.allTasks.any { it is PublishToMavenLocal }
+    IncrementGuard.localPublishPlanned(project.gradle.taskGraph.allTasks, project)
