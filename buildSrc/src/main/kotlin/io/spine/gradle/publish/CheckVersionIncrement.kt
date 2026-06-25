@@ -26,14 +26,9 @@
 
 package io.spine.gradle.publish
 
-import com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import io.spine.gradle.VersionComparator
 import io.spine.gradle.repo.Repository
-import java.io.File
-import java.io.FileNotFoundException
 import java.net.URI
-import java.net.URL
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -209,103 +204,5 @@ open class CheckVersionIncrement : DefaultTask() {
         val ext = rootProject.extensions.findByType(SpinePublishing::class.java)
         val result = ext?.artifactPrefix ?: SpinePublishing.DEFAULT_PREFIX
         return result
-    }
-}
-
-/**
- * A minimal model of a Maven `maven-metadata.xml` document, exposing the published
- * versions of an artifact.
- *
- * Instances are produced by [XmlMapper] from a registry response; only the `<versioning>`
- * element is mapped, and unknown elements are ignored.
- *
- * @property versioning The `<versioning>` element holding the list of published versions.
- *   It is `var` with a default value purely to support deserialization: `buildSrc` uses a
- *   plain [XmlMapper] without the Kotlin module, so Jackson instantiates this class through
- *   the synthesized no-arg constructor and then assigns the property through its setter. The
- *   mutability is required by Jackson, not used by our own code; a `val` would silently
- *   leave the version list empty.
- */
-private data class MavenMetadata(var versioning: Versioning = Versioning()) {
-
-    companion object {
-
-        const val FILE_NAME = "maven-metadata.xml"
-
-        private val mapper = XmlMapper()
-
-        init {
-            mapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false)
-        }
-
-        /**
-         * Fetches the metadata for the repository and parses the document.
-         *
-         * <p>If the document could not be found, assumes that the module was never
-         * released and thus has no metadata.
-         */
-        fun fetchAndParse(url: URL): MavenMetadata? {
-            return try {
-                val metadata = mapper.readValue(url, MavenMetadata::class.java)
-                metadata
-            } catch (_: FileNotFoundException) {
-                null
-            }
-        }
-    }
-}
-
-private data class Versioning(var versions: List<String> = listOf())
-
-private const val VERSION_FILE = "version.gradle.kts"
-
-private data class GitResult(val exitCode: Int, val stdout: String, val stderr: String)
-
-private fun headVersionFile(rootDir: File): String? =
-    File(rootDir, VERSION_FILE).takeIf { it.exists() }?.readText()
-
-/**
- * Reads `version.gradle.kts` from the tip of the `origin/<baseRef>` remote-tracking branch.
- *
- * Returns `null` when the file does not exist at the base — a newly introduced version file.
- * Throws a [GradleException] when the base ref cannot be resolved: the Version Guard workflow
- * is responsible for fetching it, and failing closed surfaces that misconfiguration instead
- * of silently passing the check.
- */
-private fun baseVersionFile(rootDir: File, baseRef: String): String? {
-    val result = gitShow(rootDir, "origin/$baseRef:$VERSION_FILE")
-    if (result.exitCode == 0) {
-        return result.stdout
-    }
-    // `git show` reports a missing path with these phrasings; everything else
-    // (e.g. an unresolvable ref) is a configuration error we must not swallow.
-    val missingPath = result.stderr.contains("does not exist") ||
-            result.stderr.contains("exists on disk, but not in")
-    if (missingPath) {
-        return null
-    }
-    throw GradleException(
-        "Unable to read `$VERSION_FILE` from base `origin/$baseRef` " +
-                "(git exit code ${result.exitCode}): ${result.stderr.trim()}.\n" +
-                "Ensure the Version Guard workflow fetches the base branch before this check."
-    )
-}
-
-private fun gitShow(rootDir: File, spec: String): GitResult {
-    // Redirect to files rather than reading the process pipes sequentially: draining
-    // stdout fully before stderr can deadlock if a stream fills its pipe buffer.
-    val outFile = File.createTempFile("git-show", ".out")
-    val errFile = File.createTempFile("git-show", ".err")
-    try {
-        val exitCode = ProcessBuilder("git", "show", spec)
-            .directory(rootDir)
-            .redirectOutput(outFile)
-            .redirectError(errFile)
-            .start()
-            .waitFor()
-        return GitResult(exitCode, outFile.readText(), errFile.readText())
-    } finally {
-        outFile.delete()
-        errFile.delete()
     }
 }
