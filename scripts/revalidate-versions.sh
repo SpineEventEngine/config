@@ -43,9 +43,9 @@ set -euo pipefail
 # Inputs (env): REPO (owner/name), BASE_REF (the advanced branch), GH_TOKEN.
 #
 # The version-parsing helpers mirror `version-bumped.sh` in the shared `agents` module.
-# Version ordering uses `sort -V` for the numeric release/snapshot cases, with a
-# special-case for "release versus its own pre-release" so the staleness verdict matches
-# the PR-side `VersionComparator` (see `version_gt`).
+# Version ordering matches the PR-side `VersionComparator`: `sort -V` for the numeric
+# release/snapshot cases, lower-cased so textual qualifiers compare case-insensitively,
+# plus a special-case for "release versus its own pre-release" (see `version_gt`).
 
 : "${REPO:?REPO is required}"
 : "${BASE_REF:?BASE_REF is required}"
@@ -115,21 +115,28 @@ parse_version() {
 
 # Is $1 strictly greater than $2, matching the PR-side `VersionComparator`?
 #
-# `sort -V` handles the numeric release/snapshot ordering, but disagrees with
-# `VersionComparator` on a release versus its own pre-release (e.g. `2.0.0` vs
-# `2.0.0-SNAPSHOT.100`): `VersionComparator` ranks the release higher, `sort -V`
-# the snapshot. Special-case that one divergence; for every other shape (different
-# release parts, same `SNAPSHOT.N` qualifier) `sort -V` agrees.
+# `sort -V` handles the numeric release/snapshot ordering, but diverges from
+# `VersionComparator` in two ways, both reconciled here:
+#   * a release outranks its own pre-release (`2.0.0` > `2.0.0-SNAPSHOT.100`),
+#     which `sort -V` reverses — handled by the special-case below; and
+#   * textual qualifiers are compared case-insensitively (`rc` < `SNAPSHOT`),
+#     whereas `sort -V` is case-sensitive (ASCII `SNAPSHOT` < `rc`) — handled by
+#     lower-casing both operands before `sort -V`.
+# For every other shape (different release parts, same `SNAPSHOT.N` qualifier) the
+# two already agree.
 version_gt() {
   local a="$1" b="$2"
-  [ "$a" = "$b" ] && return 1
   local a_rel="${a%%-*}" b_rel="${b%%-*}"
   if [ "$a_rel" = "$b_rel" ]; then
     # A release (no `-qualifier`) outranks its pre-release.
     [ "$a" = "$a_rel" ] && [ "$b" != "$b_rel" ] && return 0
     [ "$a" != "$a_rel" ] && [ "$b" = "$b_rel" ] && return 1
   fi
-  [ "$(printf '%s\n%s\n' "$a" "$b" | sort -V | tail -n1)" = "$a" ]
+  local la lb
+  la=$(printf '%s' "$a" | tr '[:upper:]' '[:lower:]')
+  lb=$(printf '%s' "$b" | tr '[:upper:]' '[:lower:]')
+  [ "$la" = "$lb" ] && return 1
+  [ "$(printf '%s\n%s\n' "$la" "$lb" | sort -V | tail -n1)" = "$la" ]
 }
 
 # `head <= base` ? Returns 0 (stale) when head is not strictly greater than base.
