@@ -76,7 +76,7 @@ open class CheckVersionIncrement : DefaultTask() {
                     """
                     The version `$version` is already published to the Maven repository `$repoUrl`.
                     Try incrementing the library version.
-                    All available versions are: ${versions?.joinToString(separator = ", ")}.
+                    All available versions are: ${versions.joinToString(separator = ", ")}.
 
                     To disable this check, run Gradle with `-x $name`.
                     """.trimIndent()
