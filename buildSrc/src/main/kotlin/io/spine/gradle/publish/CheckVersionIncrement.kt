@@ -212,6 +212,20 @@ open class CheckVersionIncrement : DefaultTask() {
     }
 }
 
+/**
+ * A minimal model of a Maven `maven-metadata.xml` document, exposing the published
+ * versions of an artifact.
+ *
+ * Instances are produced by [XmlMapper] from a registry response; only the `<versioning>`
+ * element is mapped, and unknown elements are ignored.
+ *
+ * @property versioning The `<versioning>` element holding the list of published versions.
+ *   It is `var` with a default value purely to support deserialization: `buildSrc` uses a
+ *   plain [XmlMapper] without the Kotlin module, so Jackson instantiates this class through
+ *   the synthesized no-arg constructor and then assigns the property through its setter. The
+ *   mutability is required by Jackson, not used by our own code; a `val` would silently
+ *   leave the version list empty.
+ */
 private data class MavenMetadata(var versioning: Versioning = Versioning()) {
 
     companion object {
