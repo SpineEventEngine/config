@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.gradle.publish
+package io.spine.gradle
 
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.DisplayName

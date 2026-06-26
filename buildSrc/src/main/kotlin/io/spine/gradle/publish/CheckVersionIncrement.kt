@@ -27,6 +27,7 @@
 package io.spine.gradle.publish
 
 import io.spine.gradle.VersionComparator
+import io.spine.gradle.VersionGradleFile
 import io.spine.gradle.repo.Repository
 import java.net.URI
 import org.gradle.api.DefaultTask
@@ -101,8 +102,8 @@ open class CheckVersionIncrement : DefaultTask() {
                 `$baseVersion` (base `$baseRef`).
 
                 A pull request that merges into `$baseRef` must increment the version in
-                `$VERSION_FILE`. Publishing runs on every push to the base branch, so a
-                non-incremented version would collide with the already-published artifact.
+                `${VersionGradleFile.NAME}`. Publishing runs on every push to the base branch,
+                so a non-incremented version would collide with the already-published artifact.
 
                 Bump the version (e.g. run `/bump-version`) and push again.
 
@@ -118,25 +119,25 @@ open class CheckVersionIncrement : DefaultTask() {
      *
      * Returns `null` (skipping the check) when the publishing-version property cannot be
      * identified in the working-tree `version.gradle.kts`, or when the base branch has no
-     * comparable value (the file is absent or newly introduced). Throws via [baseVersionFile]
-     * when the base ref itself cannot be resolved.
+     * comparable value (the file is absent or newly introduced). Throws via
+     * [VersionGradleFile.contentInBase] when the base ref itself cannot be resolved.
      */
     private fun baseVersionToCompare(baseRef: String): String? {
-        val headContent = headVersionFile(project.rootDir)
+        val headContent = VersionGradleFile.contentUnder(project.rootDir)
         val key = headContent?.let { VersionGradleFile.keyForValue(it, version) }
         if (key == null) {
             logger.warn(
                 "Could not identify the publishing-version property matching `$version` in " +
-                    "`$VERSION_FILE`; skipping the base-branch increment check."
+                    "`${VersionGradleFile.NAME}`; skipping the base-branch increment check."
             )
             return null
         }
-        val baseContent = baseVersionFile(project.rootDir, baseRef)
+        val baseContent = VersionGradleFile.contentInBase(project.rootDir, baseRef)
         val baseVersion = baseContent?.let { VersionGradleFile.valueForKey(it, key) }
         if (baseVersion == null) {
             logger.info(
-                "No comparable `$key` in `$VERSION_FILE` on base `$baseRef` (absent or newly " +
-                    "introduced); skipping the base-branch increment check."
+                "No comparable `$key` in `${VersionGradleFile.NAME}` on base `$baseRef` " +
+                    "(absent or newly introduced); skipping the base-branch increment check."
             )
         }
         return baseVersion

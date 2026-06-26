@@ -24,15 +24,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.gradle.publish
+package io.spine.gradle
 
 import java.io.File
 import org.gradle.api.GradleException
 
 /**
- * Resolves the string values of `extra` properties declared in a `version.gradle.kts` file.
+ * Reads a `version.gradle.kts` file and resolves the `extra` properties it declares.
  *
- * Handles the shapes used across Spine repositories (see the `bump-version` skill):
+ * [contentUnder] and [contentInBase] read the file (from the working tree or a base branch);
+ * [keyForValue] and [valueForKey] resolve its `extra` properties. The following declaration
+ * shapes are handled (see the `bump-version` skill):
  *
  *  1. a literal: `val versionToPublish: String by extra("2.0.0-SNAPSHOT.182")`;
  *  2. an alias to another `extra`: `val versionToPublish by extra(compilerVersion)` paired
@@ -48,6 +50,11 @@ import org.gradle.api.GradleException
  * which the caller treats as "publishing version not identified" and skips the check.
  */
 internal object VersionGradleFile {
+
+    /**
+     * The name of a `version.gradle.kts` file.
+     */
+    const val NAME = "version.gradle.kts"
 
     private val literalExtra =
         Regex("""val\s+(\w+)\s*(?::\s*String)?\s+by\s+extra\(\s*"([^"]+)"\s*\)""")
@@ -86,60 +93,58 @@ internal object VersionGradleFile {
      * The resolved value of the property named [key], or `null` if it is absent.
      */
     fun valueForKey(content: String, key: String): String? = parse(content)[key]
-}
 
-internal const val VERSION_FILE = "version.gradle.kts"
+    /**
+     * Reads `version.gradle.kts` from [rootDir], or `null` when it is absent.
+     */
+    fun contentUnder(rootDir: File): String? =
+        File(rootDir, NAME).takeIf { it.exists() }?.readText()
 
-private data class GitResult(val exitCode: Int, val stdout: String, val stderr: String)
-
-/**
- * Reads `version.gradle.kts` from the project root, or `null` when it is absent.
- */
-internal fun headVersionFile(rootDir: File): String? =
-    File(rootDir, VERSION_FILE).takeIf { it.exists() }?.readText()
-
-/**
- * Reads `version.gradle.kts` from the tip of the `origin/<baseRef>` remote-tracking branch.
- *
- * Returns `null` when the file does not exist at the base — a newly introduced version file.
- * Throws a [GradleException] when the base ref cannot be resolved: the Version Guard workflow
- * is responsible for fetching it, and failing closed surfaces that misconfiguration instead
- * of silently passing the check.
- */
-internal fun baseVersionFile(rootDir: File, baseRef: String): String? {
-    val result = gitShow(rootDir, "origin/$baseRef:$VERSION_FILE")
-    if (result.exitCode == 0) {
-        return result.stdout
+    /**
+     * Reads `version.gradle.kts` from the tip of the `origin/<baseRef>` remote-tracking branch.
+     *
+     * Returns `null` when the file does not exist at the base — a newly introduced version file.
+     * Throws a [GradleException] when the base ref cannot be resolved: the Version Guard workflow
+     * is responsible for fetching it, and failing closed surfaces that misconfiguration instead
+     * of silently passing the check.
+     */
+    fun contentInBase(rootDir: File, baseRef: String): String? {
+        val result = gitShow(rootDir, "origin/$baseRef:$NAME")
+        if (result.exitCode == 0) {
+            return result.stdout
+        }
+        // `git show` reports a missing path with these phrasings; everything else
+        // (e.g. an unresolvable ref) is a configuration error we must not swallow.
+        val missingPath = result.stderr.contains("does not exist") ||
+                result.stderr.contains("exists on disk, but not in")
+        if (missingPath) {
+            return null
+        }
+        throw GradleException(
+            "Unable to read `$NAME` from base `origin/$baseRef` " +
+                    "(git exit code ${result.exitCode}): ${result.stderr.trim()}.\n" +
+                    "Ensure the Version Guard workflow fetches the base branch before this check."
+        )
     }
-    // `git show` reports a missing path with these phrasings; everything else
-    // (e.g. an unresolvable ref) is a configuration error we must not swallow.
-    val missingPath = result.stderr.contains("does not exist") ||
-            result.stderr.contains("exists on disk, but not in")
-    if (missingPath) {
-        return null
-    }
-    throw GradleException(
-        "Unable to read `$VERSION_FILE` from base `origin/$baseRef` " +
-                "(git exit code ${result.exitCode}): ${result.stderr.trim()}.\n" +
-                "Ensure the Version Guard workflow fetches the base branch before this check."
-    )
-}
 
-private fun gitShow(rootDir: File, spec: String): GitResult {
-    // Redirect to files rather than reading the process pipes sequentially: draining
-    // stdout fully before stderr can deadlock if a stream fills its pipe buffer.
-    val outFile = File.createTempFile("git-show", ".out")
-    val errFile = File.createTempFile("git-show", ".err")
-    try {
-        val exitCode = ProcessBuilder("git", "show", spec)
-            .directory(rootDir)
-            .redirectOutput(outFile)
-            .redirectError(errFile)
-            .start()
-            .waitFor()
-        return GitResult(exitCode, outFile.readText(), errFile.readText())
-    } finally {
-        outFile.delete()
-        errFile.delete()
+    private fun gitShow(rootDir: File, spec: String): GitResult {
+        // Redirect to files rather than reading the process pipes sequentially: draining
+        // stdout fully before stderr can deadlock if a stream fills its pipe buffer.
+        val outFile = File.createTempFile("git-show", ".out")
+        val errFile = File.createTempFile("git-show", ".err")
+        try {
+            val exitCode = ProcessBuilder("git", "show", spec)
+                .directory(rootDir)
+                .redirectOutput(outFile)
+                .redirectError(errFile)
+                .start()
+                .waitFor()
+            return GitResult(exitCode, outFile.readText(), errFile.readText())
+        } finally {
+            outFile.delete()
+            errFile.delete()
+        }
     }
+
+    private data class GitResult(val exitCode: Int, val stdout: String, val stderr: String)
 }
