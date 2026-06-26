@@ -32,6 +32,7 @@ import io.kotest.matchers.shouldBe
 import io.spine.gradle.publish.IncrementGuard.Companion.localPublishPlanned
 import io.spine.gradle.publish.IncrementGuard.Companion.mustVerify
 import io.spine.gradle.publish.IncrementGuard.Companion.shouldCheckVersion
+import io.spine.gradle.publish.IncrementGuard.Companion.shouldCompareToBase
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
@@ -112,6 +113,33 @@ class IncrementGuardTest {
             // E.g. a push to `master` or a tag build running integration tests: the
             // version is already published, so re-verifying it would fail the build.
             mustVerify(ciPullRequest = false, onCi = true, localPublish = true) shouldBe false
+        }
+    }
+
+    @Nested
+    inner class `compare against the base branch` {
+
+        @Test
+        fun `inside the Version Guard workflow with a base branch`() {
+            shouldCompareToBase(underVersionGuard = true, baseRef = "master") shouldBe true
+            shouldCompareToBase(underVersionGuard = true, baseRef = "2.x-jdk8-master") shouldBe true
+        }
+    }
+
+    @Nested
+    inner class `not compare against the base branch` {
+
+        @Test
+        fun `outside the Version Guard workflow`() {
+            // The Ubuntu/Windows CI builds pull the task in via `publishToMavenLocal`,
+            // but they never fetch the base ref, so `VERSION_GUARD` is unset.
+            shouldCompareToBase(underVersionGuard = false, baseRef = "master") shouldBe false
+        }
+
+        @Test
+        fun `when no base branch is present`() {
+            shouldCompareToBase(underVersionGuard = true, baseRef = null) shouldBe false
+            shouldCompareToBase(underVersionGuard = true, baseRef = "") shouldBe false
         }
     }
 
