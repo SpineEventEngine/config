@@ -70,8 +70,12 @@ publish-collision check on the publish path. Keep it load-bearing.
       The existing network "already published?" check (`checkNotPublished()`) stays.
 - [x] Promoted `VersionComparator` `report.pom` → `io.spine.gradle` (`git mv`,
       still `internal`); updated `DependencyWriter` import. **No `sort -V` in Kotlin.**
-- [x] `IncrementGuard.kt`: no wiring change needed (both paths inherit the task);
-      class KDoc already accurate.
+- [x] `IncrementGuard.kt`: **wiring change was needed** (see 2026-06-26 log). The
+      task was a `dependsOn` of `check`, so the new base-compare ran in *every*
+      `./gradlew build` — including `build-on-ubuntu.yml`, which never fetches the
+      base ref — and failed closed. The `check` dependency was removed; the CI check
+      now runs only via the `Version Guard` workflow (which fetches the base) and
+      before `publishToMavenLocal` (which does not base-compare).
 - [x] `.github-workflows/increment-guard.yml`: targeted base fetch
       `git fetch --no-tags --depth=1 origin +refs/heads/$GITHUB_BASE_REF:refs/remotes/origin/$GITHUB_BASE_REF`.
 
@@ -140,3 +144,14 @@ publish-collision check on the publish path. Keep it load-bearing.
   `sort -V` (headless comparator dropped); the publish backstop is registry
   immutability (no extra network probe). Status: in-review. Remaining: G (agents
   repo) and H (repo-admin).
+- 2026-06-26 — **regression fix.** Applying this config to `compiler` broke its
+  Ubuntu CI: `checkVersionIncrement` was a `dependsOn` of `check`, so `./gradlew
+  build` ran the new base-compare in `build-on-ubuntu.yml`, which does a shallow
+  checkout and never fetches `origin/master` — `git show origin/master:...` →
+  exit 128 → fail-closed. Windows CI survived only by accident (`fetch-depth: 0`).
+  The draft's "no wiring change needed (both paths inherit the task)" missed that
+  the `check` path also fires in the plain build workflows, not just the dedicated
+  `Version Guard` one. Fix: dropped `tasks.check.dependsOn(checkVersion)` so the
+  base-compare runs only where the base ref is guaranteed — the `Version Guard`
+  workflow (fetches base) and `publishToMavenLocal` (local; no base-compare).
+  Added a regression test asserting `check` does **not** depend on the task.
