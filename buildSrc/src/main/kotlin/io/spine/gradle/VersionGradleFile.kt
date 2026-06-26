@@ -132,8 +132,8 @@ internal object VersionGradleFile {
  * The outcome of a `git` invocation: its [exitCode] and the captured [stdout] and [stderr].
  *
  * @property exitCode The process exit code; `0` on success.
- * @property stdout The captured standard output.
- * @property stderr The captured standard error.
+ * @property stdout The captured standard output stream.
+ * @property stderr The captured standard error stream.
  */
 private data class GitResult(val exitCode: Int, val stdout: String, val stderr: String)
 
