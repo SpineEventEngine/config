@@ -126,25 +126,25 @@ internal object VersionGradleFile {
                     "Ensure the Version Guard workflow fetches the base branch before this check."
         )
     }
+}
 
-    private fun gitShow(rootDir: File, spec: String): GitResult {
-        // Redirect to files rather than reading the process pipes sequentially: draining
-        // stdout fully before stderr can deadlock if a stream fills its pipe buffer.
-        val outFile = File.createTempFile("git-show", ".out")
-        val errFile = File.createTempFile("git-show", ".err")
-        try {
-            val exitCode = ProcessBuilder("git", "show", spec)
-                .directory(rootDir)
-                .redirectOutput(outFile)
-                .redirectError(errFile)
-                .start()
-                .waitFor()
-            return GitResult(exitCode, outFile.readText(), errFile.readText())
-        } finally {
-            outFile.delete()
-            errFile.delete()
-        }
+private data class GitResult(val exitCode: Int, val stdout: String, val stderr: String)
+
+private fun gitShow(rootDir: File, spec: String): GitResult {
+    // Redirect to files rather than reading the process pipes sequentially: draining
+    // stdout fully before stderr can deadlock if a stream fills its pipe buffer.
+    val outFile = File.createTempFile("git-show", ".out")
+    val errFile = File.createTempFile("git-show", ".err")
+    try {
+        val exitCode = ProcessBuilder("git", "show", spec)
+            .directory(rootDir)
+            .redirectOutput(outFile)
+            .redirectError(errFile)
+            .start()
+            .waitFor()
+        return GitResult(exitCode, outFile.readText(), errFile.readText())
+    } finally {
+        outFile.delete()
+        errFile.delete()
     }
-
-    private data class GitResult(val exitCode: Int, val stdout: String, val stderr: String)
 }
