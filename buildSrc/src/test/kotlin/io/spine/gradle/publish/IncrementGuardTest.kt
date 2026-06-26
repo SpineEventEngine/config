@@ -27,6 +27,7 @@
 package io.spine.gradle.publish
 
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.spine.gradle.publish.IncrementGuard.Companion.localPublishPlanned
 import io.spine.gradle.publish.IncrementGuard.Companion.mustVerify
@@ -145,14 +146,6 @@ class IncrementGuardTest {
     inner class `make 'checkVersionIncrement' a dependency of` {
 
         @Test
-        fun `the 'check' task`() {
-            val project = guardedProject()
-            val check = project.tasks.getByName("check")
-
-            check.dependencyNames() shouldContain IncrementGuard.taskName
-        }
-
-        @Test
         fun `every Maven Local publishing task`() {
             val project = guardedProject()
             val localPublish = project.tasks.register(
@@ -161,6 +154,22 @@ class IncrementGuardTest {
             ).get()
 
             localPublish.dependencyNames() shouldContain IncrementGuard.taskName
+        }
+    }
+
+    @Nested
+    inner class `keep 'checkVersionIncrement' out of` {
+
+        @Test
+        fun `the 'check' lifecycle task`() {
+            // The CI check runs via the `Version Guard` workflow, which fetches the
+            // base branch first. Wiring it into `check` would run it in every
+            // `./gradlew build`, where `origin/<base>` is absent and the fail-closed
+            // base comparison would break the build.
+            val project = guardedProject()
+            val check = project.tasks.getByName("check")
+
+            check.dependencyNames() shouldNotContain IncrementGuard.taskName
         }
     }
 }
