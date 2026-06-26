@@ -24,40 +24,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.test
+package io.spine.dependency.lib
 
 /**
- * Testcontainers for Java — provides throwaway, lightweight instances of databases and other
- * services running in Docker containers.
+ * HikariCP — a fast, lightweight JDBC connection pool.
  *
- * The modules below are versioned and released together, so a single [version] applies to all
- * of them.
+ * The JDBC storage uses it to pool database connections.
  *
- * @see <a href="https://github.com/testcontainers/testcontainers-java">
- *     Testcontainers for Java at GitHub</a>
+ * @see <a href="https://github.com/brettwooldridge/HikariCP">HikariCP at GitHub</a>
  */
 @Suppress("unused", "ConstPropertyName")
-object Testcontainers {
-    private const val version = "1.21.4"
-    private const val group = "org.testcontainers"
-
-    /**
-     * The core Testcontainers library.
-     */
-    const val lib = "$group:testcontainers:$version"
-
-    /**
-     * The JUnit 5 (Jupiter) integration.
-     */
-    const val junitJupiter = "$group:junit-jupiter:$version"
-
-    /**
-     * The Google Cloud (GCP) emulator container support.
-     */
-    const val gcloud = "$group:gcloud:$version"
-
-    /**
-     * The MySQL container support.
-     */
-    const val mySql = "$group:mysql:$version"
+object Hikari {
+    private const val version = "5.0.1"
+    const val lib = "com.zaxxer:HikariCP:$version"
 }

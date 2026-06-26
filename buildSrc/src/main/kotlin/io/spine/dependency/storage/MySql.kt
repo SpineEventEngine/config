@@ -24,40 +24,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.test
+package io.spine.dependency.storage
 
 /**
- * Testcontainers for Java — provides throwaway, lightweight instances of databases and other
- * services running in Docker containers.
+ * MySQL Connector/J — the official JDBC driver for MySQL.
  *
- * The modules below are versioned and released together, so a single [version] applies to all
- * of them.
+ * Used by the MySQL-based storage tests. Note the modern `com.mysql:mysql-connector-j`
+ * coordinates, which superseded the legacy `mysql:mysql-connector-java` artifact.
  *
- * @see <a href="https://github.com/testcontainers/testcontainers-java">
- *     Testcontainers for Java at GitHub</a>
+ * @see <a href="https://github.com/mysql/mysql-connector-j">MySQL Connector/J at GitHub</a>
  */
 @Suppress("unused", "ConstPropertyName")
-object Testcontainers {
-    private const val version = "1.21.4"
-    private const val group = "org.testcontainers"
-
-    /**
-     * The core Testcontainers library.
-     */
-    const val lib = "$group:testcontainers:$version"
-
-    /**
-     * The JUnit 5 (Jupiter) integration.
-     */
-    const val junitJupiter = "$group:junit-jupiter:$version"
-
-    /**
-     * The Google Cloud (GCP) emulator container support.
-     */
-    const val gcloud = "$group:gcloud:$version"
-
-    /**
-     * The MySQL container support.
-     */
-    const val mySql = "$group:mysql:$version"
+object MySql {
+    private const val version = "9.7.0"
+    const val connector = "com.mysql:mysql-connector-j:$version"
 }

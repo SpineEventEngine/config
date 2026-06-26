@@ -24,40 +24,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.test
+package io.spine.dependency.lib
 
 /**
- * Testcontainers for Java — provides throwaway, lightweight instances of databases and other
- * services running in Docker containers.
+ * QueryDSL — a framework for constructing type-safe SQL-like queries in Java.
  *
- * The modules below are versioned and released together, so a single [version] applies to all
- * of them.
+ * The JDBC storage uses the SQL module to build database queries.
  *
- * @see <a href="https://github.com/testcontainers/testcontainers-java">
- *     Testcontainers for Java at GitHub</a>
+ * @see <a href="https://github.com/querydsl/querydsl">QueryDSL at GitHub</a>
  */
 @Suppress("unused", "ConstPropertyName")
-object Testcontainers {
-    private const val version = "1.21.4"
-    private const val group = "org.testcontainers"
+object QueryDsl {
+    private const val version = "5.1.0"
+    private const val group = "com.querydsl"
 
     /**
-     * The core Testcontainers library.
+     * The SQL module of QueryDSL.
      */
-    const val lib = "$group:testcontainers:$version"
-
-    /**
-     * The JUnit 5 (Jupiter) integration.
-     */
-    const val junitJupiter = "$group:junit-jupiter:$version"
-
-    /**
-     * The Google Cloud (GCP) emulator container support.
-     */
-    const val gcloud = "$group:gcloud:$version"
-
-    /**
-     * The MySQL container support.
-     */
-    const val mySql = "$group:mysql:$version"
+    const val sql = "$group:querydsl-sql:$version"
 }

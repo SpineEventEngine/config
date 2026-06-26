@@ -24,40 +24,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.test
+package io.spine.dependency.storage
 
 /**
- * Testcontainers for Java — provides throwaway, lightweight instances of databases and other
- * services running in Docker containers.
+ * The H2 Database Engine — a fast, in-memory/embedded SQL database used for exercising
+ * the JDBC storage in tests.
  *
- * The modules below are versioned and released together, so a single [version] applies to all
- * of them.
- *
- * @see <a href="https://github.com/testcontainers/testcontainers-java">
- *     Testcontainers for Java at GitHub</a>
+ * @see <a href="https://github.com/h2database/h2database">H2 Database Engine at GitHub</a>
+ * @see <a href="https://h2database.com/">H2 Database Engine site</a>
  */
 @Suppress("unused", "ConstPropertyName")
-object Testcontainers {
-    private const val version = "1.21.4"
-    private const val group = "org.testcontainers"
-
-    /**
-     * The core Testcontainers library.
-     */
-    const val lib = "$group:testcontainers:$version"
-
-    /**
-     * The JUnit 5 (Jupiter) integration.
-     */
-    const val junitJupiter = "$group:junit-jupiter:$version"
-
-    /**
-     * The Google Cloud (GCP) emulator container support.
-     */
-    const val gcloud = "$group:gcloud:$version"
-
-    /**
-     * The MySQL container support.
-     */
-    const val mySql = "$group:mysql:$version"
+object H2 {
+    private const val version = "2.4.240"
+    const val lib = "com.h2database:h2:$version"
 }
