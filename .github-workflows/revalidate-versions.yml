@@ -19,12 +19,13 @@ name: Revalidate Versions
 
 on:
   push:
-    # Matches the PR guard's `endsWith(base_ref, 'master'|'main')`: `*master` also
-    # matches a bare `master`. Keeping the two definitions of "release-line branch"
-    # identical ensures every branch guarded on the PR side is also revalidated here.
+    # Matches the PR guard's `endsWith(base_ref, 'master'|'main')` and the same scope as
+    # `build-on-ubuntu.yml`. `**` (unlike `*`) also crosses `/`, so slash-named release
+    # lines such as `release/2.x-master` are covered. Keeping these definitions identical
+    # ensures every branch guarded on the PR side is also revalidated here.
     branches:
-      - '*master'
-      - '*main'
+      - '**master'
+      - '**main'
 
 permissions:
   contents: read
