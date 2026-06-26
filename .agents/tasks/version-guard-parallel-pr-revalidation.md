@@ -155,3 +155,18 @@ publish-collision check on the publish path. Keep it load-bearing.
   base-compare runs only where the base ref is guaranteed — the `Version Guard`
   workflow (fetches base) and `publishToMavenLocal` (local; no base-compare).
   Added a regression test asserting `check` does **not** depend on the task.
+- 2026-06-26 — **regression fix, take 2 (the real one).** The `check` removal was
+  necessary but not sufficient: in `compiler`, `./gradlew build` still pulls
+  `checkVersionIncrement` into the graph via `publishToMavenLocal` (integration
+  tests consume fresh `~/.m2` artifacts), so Ubuntu CI hit the same exit-128
+  base-compare error. Root cause was deeper: the base-compare was gated on
+  `GITHUB_BASE_REF`, which GitHub sets in **every** PR build (Ubuntu/Windows CI
+  *and* the Version Guard workflow) — but only the Version Guard workflow fetches
+  the base. Fix: gate `checkIncrementedAgainstBase` on an explicit `VERSION_GUARD`
+  env var set **only** by `increment-guard.yml` (the one workflow that fetches the
+  base). New tested predicate `IncrementGuard.shouldCompareToBase(underVersionGuard,
+  baseRef)`. Outside the guard the comparison is skipped and `checkNotPublished`
+  stays the guard; inside it, fail-closed is preserved. `check` stays decoupled
+  (take 1) — harmless now, but a cleaner home for the check. Lesson:
+  `GITHUB_BASE_REF` is **not** a "this is the version-guard job" signal; it is
+  ambient in all PR builds. Distinguish the guard context explicitly.

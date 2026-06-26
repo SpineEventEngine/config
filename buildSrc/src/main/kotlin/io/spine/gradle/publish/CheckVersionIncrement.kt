@@ -41,11 +41,12 @@ import org.gradle.api.tasks.TaskAction
  *
  * Two independent checks run:
  *
- *  1. [checkIncrementedAgainstBase] — for a GitHub Actions pull request, the project
- *     [version] must be strictly greater than the version declared by `version.gradle.kts`
- *     on the PR's base branch. This is deterministic and network-independent: it catches a
- *     behavior-changing PR that forgot to bump, and two parallel PRs that bumped to the
- *     same value, regardless of what is (or is not yet) published.
+ *  1. [checkIncrementedAgainstBase] — inside the dedicated `Version Guard` workflow, the
+ *     project [version] must be strictly greater than the version declared by
+ *     `version.gradle.kts` on the PR's base branch. This is deterministic and
+ *     network-independent: it catches a behavior-changing PR that forgot to bump, and two
+ *     parallel PRs that bumped to the same value, regardless of what is (or is not yet)
+ *     published.
  *  2. [checkNotPublished] — the [version] must not already exist in the target Maven
  *     repository, so a publication cannot overwrite an immutable artifact.
  *
@@ -75,12 +76,15 @@ open class CheckVersionIncrement : DefaultTask() {
      * Verifies that the project [version] is strictly greater than the version declared by
      * `version.gradle.kts` on the pull request's base branch.
      *
-     * The check applies only inside a GitHub Actions pull request (when `GITHUB_BASE_REF`
-     * is set); local Maven Local publishes rely on [checkNotPublished] instead. The base
-     * branch tip is read with `git show origin/<base>:version.gradle.kts`, so the Version
-     * Guard workflow must fetch the base ref before running the task.
+     * The comparison reads the base branch tip with `git show origin/<base>:version.gradle.kts`,
+     * so it runs **only inside the dedicated `Version Guard` workflow** — the one context that
+     * fetches the base ref and signals it via the `VERSION_GUARD` environment variable (see
+     * [IncrementGuard.shouldCompareToBase]). Every other build skips it: a shallow CI checkout
+     * (e.g. the Ubuntu/Windows builds, which pull this task in via `publishToMavenLocal`) has
+     * no base ref to read, and local publishes are not pull requests. Those rely on
+     * [checkNotPublished] instead.
      *
-     * Failure modes are deliberately asymmetric:
+     * Within the `Version Guard` workflow, failure modes are deliberately asymmetric:
      *  - base ref unresolvable — **fail closed** (a workflow misconfiguration must not pass
      *    silently);
      *  - `version.gradle.kts` absent on base — treated as a newly introduced file (**pass**);
@@ -90,11 +94,17 @@ open class CheckVersionIncrement : DefaultTask() {
      */
     private fun checkIncrementedAgainstBase() {
         val baseRef = System.getenv("GITHUB_BASE_REF")
-        if (baseRef.isNullOrBlank()) {
-            // Not a GitHub Actions pull request; `checkNotPublished` is the relevant guard.
+        if (!IncrementGuard.shouldCompareToBase(underVersionGuard(), baseRef)) {
+            logger.info(
+                "Skipping the base-branch increment comparison: it runs only inside the " +
+                    "`Version Guard` workflow, which fetches the base branch. " +
+                    "`checkNotPublished` remains the active guard here."
+            )
             return
         }
-        val baseVersion = baseVersionToCompare(baseRef)
+        val baseVersion = baseVersionToCompare(
+            checkNotNull(baseRef) { "`shouldCompareToBase` guarantees a non-blank base ref." }
+        )
         if (baseVersion != null && VersionComparator.compare(version, baseVersion) <= 0) {
             throw GradleException(
                 """
@@ -112,6 +122,17 @@ open class CheckVersionIncrement : DefaultTask() {
             )
         }
     }
+
+    /**
+     * Tells whether the build runs inside the dedicated `Version Guard` workflow.
+     *
+     * That workflow fetches the base branch before invoking this task and signals it by
+     * setting the `VERSION_GUARD` environment variable to `true`. The variable is the
+     * authoritative marker that `origin/<base>` is present, so the base-branch comparison
+     * may run; see [IncrementGuard.shouldCompareToBase].
+     */
+    private fun underVersionGuard(): Boolean =
+        "true".equals(System.getenv("VERSION_GUARD"))
 
     /**
      * Resolves the base-branch publishing version to compare [version] against, or `null`

@@ -68,6 +68,12 @@ jobs:
       - name: Check version increment
         id: guard
         shell: bash
+        # `VERSION_GUARD` enables the strict base-branch comparison in `checkVersionIncrement`.
+        # Only this workflow fetches the base ref (the step above), so the comparison is gated
+        # to it: other CI builds pull the task in via `publishToMavenLocal` on a shallow
+        # checkout and must not attempt to read `origin/<base>`.
+        env:
+          VERSION_GUARD: "true"
         run: ./gradlew checkVersionIncrement --stacktrace
 
       # Publish the verdict as the `Version Guard` commit status on the PR head. Posting it
