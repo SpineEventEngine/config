@@ -1,5 +1,5 @@
 /*
- * Copyright 2025, TeamDev. All rights reserved.
+ * Copyright 2026, TeamDev. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,14 @@ fun doForceVersions(configurations: ConfigurationContainer) {
  */
 fun NamedDomainObjectContainer<Configuration>.forceVersions() {
     all {
+        // Dokka resolves its own generator/plugin classpath, whose dependency
+        // versions are pinned by Dokka itself and legitimately differ from the
+        // project's (for example, Jackson). Applying our version forcing and
+        // conflict failure to those configurations breaks `dokkaGenerate`, so
+        // leave Dokka's own configurations to resolve on their own.
+        if (name.startsWith("dokka")) {
+            return@all
+        }
         resolutionStrategy {
             failOnVersionConflict()
             cacheChangingModulesFor(0, "seconds")
