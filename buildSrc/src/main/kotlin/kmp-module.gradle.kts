@@ -83,6 +83,12 @@ fun Project.forceConfigurations() {
     with(configurations) {
         forceVersions()
         all {
+            // Dokka resolves its own generator/plugin classpath, whose dependency
+            // versions are pinned by Dokka itself (e.g. Jackson). Don't force the
+            // project's versions onto it — that breaks `dokkaGenerate`.
+            if (name.startsWith("dokka")) {
+                return@all
+            }
             resolutionStrategy {
                 val cfg = this@all
                 val rs = this@resolutionStrategy
