@@ -24,23 +24,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.local
+package io.spine.dependency.storage
 
 /**
- * Spine Base module.
+ * MySQL Connector/J — the official JDBC driver for MySQL.
  *
- * @see <a href="https://github.com/SpineEventEngine/base-libraries">spine-base-libraries</a>
+ * Used by the MySQL-based storage tests. Note the modern `com.mysql:mysql-connector-j`
+ * coordinates, which superseded the legacy `mysql:mysql-connector-java` artifact.
+ *
+ * @see <a href="https://github.com/mysql/mysql-connector-j">MySQL Connector/J at GitHub</a>
  */
-@Suppress("ConstPropertyName", "unused")
-object Base {
-    const val version = "2.0.0-SNAPSHOT.421"
-    const val versionForBuildScript = "2.0.0-SNAPSHOT.421"
-    const val group = Spine.group
-    private const val prefix = "spine"
-    const val libModule = "$prefix-base"
-    const val lib = "$group:$libModule:$version"
-    const val libForBuildScript = "$group:$libModule:$versionForBuildScript"
-    const val annotations = "$group:$prefix-annotations:$version"
-    const val environment = "$group:$prefix-environment:$version"
-    const val format = "$group:$prefix-format:$version"
+@Suppress("unused", "ConstPropertyName")
+object MySql {
+    private const val version = "9.7.0"
+    const val connector = "com.mysql:mysql-connector-j:$version"
 }
