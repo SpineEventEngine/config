@@ -24,23 +24,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.local
+package io.spine.dependency.storage
 
 /**
- * Spine Base module.
+ * HyperSQL DataBase (HSQLDB) — a relational database engine written in Java, used in its
+ * in-memory mode for exercising the JDBC storage in tests.
  *
- * @see <a href="https://github.com/SpineEventEngine/base-libraries">spine-base-libraries</a>
+ * HSQLDB is hosted on SourceForge rather than GitHub.
+ *
+ * @see <a href="https://hsqldb.org/">HyperSQL Database site</a>
  */
-@Suppress("ConstPropertyName", "unused")
-object Base {
-    const val version = "2.0.0-SNAPSHOT.421"
-    const val versionForBuildScript = "2.0.0-SNAPSHOT.421"
-    const val group = Spine.group
-    private const val prefix = "spine"
-    const val libModule = "$prefix-base"
-    const val lib = "$group:$libModule:$version"
-    const val libForBuildScript = "$group:$libModule:$versionForBuildScript"
-    const val annotations = "$group:$prefix-annotations:$version"
-    const val environment = "$group:$prefix-environment:$version"
-    const val format = "$group:$prefix-format:$version"
+@Suppress("unused", "ConstPropertyName")
+object HsqlDb {
+    private const val version = "2.7.4"
+    const val lib = "org.hsqldb:hsqldb:$version"
 }

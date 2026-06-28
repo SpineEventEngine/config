@@ -24,23 +24,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.local
+package io.spine.dependency.storage
 
 /**
- * Spine Base module.
+ * QueryDSL — a framework for constructing type-safe SQL-like queries in Java.
  *
- * @see <a href="https://github.com/SpineEventEngine/base-libraries">spine-base-libraries</a>
+ * The JDBC storage uses the SQL module to build database queries.
+ *
+ * @see <a href="https://github.com/querydsl/querydsl">QueryDSL at GitHub</a>
  */
-@Suppress("ConstPropertyName", "unused")
-object Base {
-    const val version = "2.0.0-SNAPSHOT.421"
-    const val versionForBuildScript = "2.0.0-SNAPSHOT.421"
-    const val group = Spine.group
-    private const val prefix = "spine"
-    const val libModule = "$prefix-base"
-    const val lib = "$group:$libModule:$version"
-    const val libForBuildScript = "$group:$libModule:$versionForBuildScript"
-    const val annotations = "$group:$prefix-annotations:$version"
-    const val environment = "$group:$prefix-environment:$version"
-    const val format = "$group:$prefix-format:$version"
+@Suppress("unused", "ConstPropertyName")
+object QueryDsl {
+    private const val version = "5.1.0"
+    private const val group = "com.querydsl"
+
+    /**
+     * The SQL module of QueryDSL.
+     */
+    const val sql = "$group:querydsl-sql:$version"
 }
