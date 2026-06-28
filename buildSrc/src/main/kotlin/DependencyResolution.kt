@@ -30,6 +30,7 @@ import io.spine.dependency.build.Dokka
 import io.spine.dependency.build.ErrorProne
 import io.spine.dependency.build.FindBugs
 import io.spine.dependency.build.JSpecify
+import io.spine.dependency.isDokka
 import io.spine.dependency.lib.Asm
 import io.spine.dependency.lib.AutoCommon
 import io.spine.dependency.lib.AutoService
@@ -73,12 +74,7 @@ fun doForceVersions(configurations: ConfigurationContainer) {
  */
 fun NamedDomainObjectContainer<Configuration>.forceVersions() {
     all {
-        // Dokka resolves its own generator/plugin classpath, whose dependency
-        // versions are pinned by Dokka itself and legitimately differ from the
-        // project's (for example, Jackson). Applying our version forcing and
-        // conflict failure to those configurations breaks `dokkaGenerate`, so
-        // leave Dokka's own configurations to resolve on their own.
-        if (name.startsWith("dokka")) {
+        if (isDokka) {
             return@all
         }
         resolutionStrategy {

@@ -25,6 +25,7 @@
  */
 
 import io.spine.dependency.boms.BomsPlugin
+import io.spine.dependency.isDokka
 import io.spine.dependency.lib.Jackson
 import io.spine.dependency.lib.Kotlin
 import io.spine.dependency.local.Reflect
@@ -83,10 +84,7 @@ fun Project.forceConfigurations() {
     with(configurations) {
         forceVersions()
         all {
-            // Dokka resolves its own generator/plugin classpath, whose dependency
-            // versions are pinned by Dokka itself (e.g. Jackson). Don't force the
-            // project's versions onto it — that breaks `dokkaGenerate`.
-            if (name.startsWith("dokka")) {
+            if (isDokka) {
                 return@all
             }
             resolutionStrategy {
