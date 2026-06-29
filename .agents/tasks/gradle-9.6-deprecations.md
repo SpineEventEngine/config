@@ -16,10 +16,11 @@ until upstream ships Gradle-9.x-compatible releases.
 
 ## Context
 
-Reproduce from the `config` repo root (the root build applies these plugins):
+Reproduce from the `config` repo root (the root build applies these plugins),
+using a JDK 17 toolchain — point `JAVA_HOME` at a JDK 17 install for your OS
+(e.g. on macOS `export JAVA_HOME=$(/usr/libexec/java_home -v 17)`):
 
 ```bash
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 ./gradlew help --warning-mode all --stacktrace
 ```
 
