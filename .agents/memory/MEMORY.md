@@ -6,6 +6,7 @@ See [README.md](README.md) for the format and routing rules.
 ## Feedback (validated patterns & corrections)
 
 - [copilot-review-request](feedback/copilot-review-request.md) — GraphQL `requestReviews` with `botIds: ["BOT_kgDOCnlnWA"]`; REST endpoint silently no-ops on re-requests.
+- [kdoc-no-issue-references](feedback/kdoc-no-issue-references.md) — Don't cite tracker issue numbers in KDoc/source doc comments unless essential.
 
 ## Project (durable context & rationale)
 
