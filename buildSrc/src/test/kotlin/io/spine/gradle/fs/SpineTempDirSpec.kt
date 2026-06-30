@@ -35,15 +35,20 @@ import org.junit.jupiter.api.Test
 class SpineTempDirSpec {
 
     @Test
-    fun `expose a base directory under the system temporary directory`() {
-        val tempDir = System.getProperty("java.io.tmpdir")
-        val expected = Path.of(tempDir, LazyTempPath::class.java.packageName)
+    fun `place its per-JVM directory under the package-named namespace`() {
+        val namespace = Path.of(
+            System.getProperty("java.io.tmpdir"),
+            LazyTempPath::class.java.packageName
+        )
 
-        SpineTempDir.path shouldBe expected
+        SpineTempDir.path.parent shouldBe namespace
     }
 
     @Test
-    fun `create the base directory on access`() {
-        SpineTempDir.path.toFile().exists() shouldBe true
+    fun `create the directory on access`() {
+        val directory = SpineTempDir.path.toFile()
+
+        directory.exists() shouldBe true
+        directory.isDirectory shouldBe true
     }
 }

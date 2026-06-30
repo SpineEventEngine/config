@@ -43,8 +43,9 @@ import java.nio.file.WatchService
  * created instance of [Path] created with [createTempDirectory].
  *
  * The directory is created under the [shared base directory][SpineTempDir], which is removed
- * when the JVM shuts down. So, even if the directory is not deleted explicitly, it does not
- * outlive the build process.
+ * when the JVM — the Gradle daemon — shuts down. Build tasks delete their own directories
+ * eagerly as the primary cleanup; this shutdown removal is a safety net, so a directory does
+ * not outlive the daemon even when a build fails before its eager cleanup runs.
  */
 @Suppress("TooManyFunctions")
 class LazyTempPath(private val prefix: String) : Path {

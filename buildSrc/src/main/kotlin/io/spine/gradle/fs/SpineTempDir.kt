@@ -27,46 +27,53 @@
 package io.spine.gradle.fs
 
 import java.nio.file.Files.createDirectories
+import java.nio.file.Files.createTempDirectory
 import java.nio.file.Path
 
 /**
- * The common parent directory for the temporary directories created by the build.
+ * A per-JVM parent directory for the temporary directories created by the build.
  *
- * The directory is created [lazily][path] under the system temporary directory
- * (`java.io.tmpdir`) and is named after the package of [LazyTempPath], so that any
- * leftover files are easy to attribute.
+ * The directory is created [lazily][path] under a common, attributable namespace —
+ * `<java.io.tmpdir>/io.spine.gradle.fs`, named after the package of [LazyTempPath] — so
+ * that leftover files are easy to attribute. Within that namespace, each JVM gets its own
+ * subdirectory named after the process id, so concurrent Gradle daemons never delete one
+ * another's temporary files.
  *
- * Upon creation, the directory is scheduled for recursive removal when the JVM shuts
- * down. This is a safety net should the explicit cleanup performed by the build tasks
- * not run — for example, when a build fails before reaching it. Grouping every temporary
- * directory under a single root also keeps the number of registered shutdown hooks at
- * one, regardless of how many temporary directories the build creates.
+ * Upon creation, the per-JVM directory is scheduled for recursive removal when the JVM
+ * shuts down. This is a safety net should the explicit cleanup performed by the build
+ * tasks not run — for example, when a build fails before reaching it. The shared namespace
+ * directory itself is intentionally left in place: deleting it on shutdown could wipe
+ * directories still in use by another JVM running on the same machine.
  *
  * @see LazyTempPath
  */
 internal object SpineTempDir {
 
     /**
-     * The name of the base directory, derived from the package of [LazyTempPath].
+     * The per-JVM directory, created on the first access and removed on JVM shutdown.
      */
-    private val name: String = LazyTempPath::class.java.packageName
+    val path: Path by lazy { createPerJvmDir() }
 
-    /**
-     * The base directory, created on the first access and removed on JVM shutdown.
-     */
-    val path: Path by lazy { createAndScheduleRemoval() }
-
-    private fun createAndScheduleRemoval(): Path {
-        val baseDir = Path.of(systemTempDir(), name)
-        createDirectories(baseDir)
-        deleteRecursivelyOnShutdown(baseDir)
-        return baseDir
+    private fun createPerJvmDir(): Path {
+        val namespace = Path.of(systemTempDir(), LazyTempPath::class.java.packageName)
+        createDirectories(namespace)
+        // A per-JVM directory keeps concurrent Gradle daemons from deleting one another's
+        // files when their shutdown hooks fire. The PID makes a leftover directory easy
+        // to attribute; `createTempDirectory` adds a random suffix so that a reused PID
+        // still yields a unique directory.
+        val pid = ProcessHandle.current().pid()
+        val jvmDir = createTempDirectory(namespace, "$pid-")
+        deleteRecursivelyOnShutdown(jvmDir)
+        return jvmDir
     }
 
     /**
      * Obtains the value of the system property pointing to the temporary directory.
      */
-    private fun systemTempDir(): String = System.getProperty("java.io.tmpdir")
+    private fun systemTempDir(): String =
+        checkNotNull(System.getProperty("java.io.tmpdir")) {
+            "The `java.io.tmpdir` system property is not set."
+        }
 
     /**
      * Requests the recursive removal of the given [directory] when the JVM shuts down.

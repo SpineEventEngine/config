@@ -47,3 +47,7 @@ dir recursively via a single JVM shutdown hook.
 - 2026-06-30 — reviewers APPROVE; applied their feedback: log on shutdown-hook
   delete failure, KDoc "folder"→"directory", split `SpineTempDir` test into its
   own spec. Rebuilt green.
+- 2026-06-30 — addressed Copilot review on PR #722: per-JVM subdirectory under the
+  `io.spine.gradle.fs` namespace so concurrent daemons don't delete each other's
+  temp files; null-safe `java.io.tmpdir`; clarified the JVM/daemon cleanup wording
+  in `LazyTempPath` KDoc. Rebuilt green (6/6 fs tests).
