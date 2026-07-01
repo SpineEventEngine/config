@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# Copyright 2023, TeamDev. All rights reserved.
+# Copyright 2026, TeamDev. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ do
   jenv local 1.8
 
   # The version that will show up in Dokka-generated documentation.
-  echo "val versionToPublish: String by extra(\"$version\")" >> "../version.gradle.kts"
+  echo "extra.set(\"versionToPublish\", \"$version\")" >> "../version.gradle.kts"
 
   for path in $(echo "$paths" | tr "," "\n")
   do
