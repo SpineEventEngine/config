@@ -276,6 +276,16 @@ if [ "$IS_JVM" = "true" ]; then
     rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/ProtoData.kt
     rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/McJava.kt
 
+    # Remove the retired vanilla-JaCoCo script plugins for the same reason as the
+    # dependency objects above: `config` no longer ships them, but `cp -R buildSrc ..`
+    # cannot delete a consumer's stale copy from an earlier pull. Coverage is now
+    # configured via Kover by the `jvm-module` / `kmp-module` conventions; the
+    # `raise-coverage` skill migrates existing consumers. See
+    # .agents/skills/raise-coverage/references/migrate-to-kover.md.
+    echo "Removing retired JaCoCo script plugins (jacoco-kotlin-jvm, jacoco-kmm-jvm)"
+    rm -f ../buildSrc/src/main/kotlin/jacoco-kotlin-jvm.gradle.kts
+    rm -f ../buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts
+
     echo "Updating GitHub workflows (JVM)"
     copy_workflows .github-workflows
     copy_workflows .github/workflows

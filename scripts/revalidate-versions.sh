@@ -85,25 +85,45 @@ discover_key() {
 }
 
 # Parses the version literal for the given key out of `version.gradle.kts` content.
-# Handles a direct literal and one alias hop (via another `extra` or a plain `val`).
-# Mirrors `version-bumped.sh`.
+# Handles a direct literal and one alias hop (via another `extra` or a plain `val`), in
+# both the current `extra.set("key", …)` spelling and the legacy `by extra(…)` delegate
+# that Gradle deprecated. Mirrors `version-bumped.sh`.
 parse_version() {
   local content="$1" name="$2" v src
   # `|| true` on each pipeline: under `pipefail` a no-match `grep` (or a `grep`
   # that receives SIGPIPE when `head` closes early) exits non-zero and would
   # otherwise abort this `set -e` script before the fallback branches run.
+  # Shape 1 — literal. Current `extra.set` spelling first, then legacy `by extra`.
   v=$(printf '%s\n' "$content" \
-      | grep -E "val[[:space:]]+${name}([[:space:]]*:[[:space:]]*String)?[[:space:]]+by[[:space:]]+extra\(\"" \
-      | head -n1 | sed -nE 's/.*extra\("([^"]+)".*/\1/p' || true)
-  if [ -n "$v" ]; then printf '%s' "$v"; return 0; fi
-  src=$(printf '%s\n' "$content" \
-      | grep -E "val[[:space:]]+${name}([[:space:]]*:[[:space:]]*String)?[[:space:]]+by[[:space:]]+extra\(" \
-      | head -n1 | sed -nE 's/.*extra\(([A-Za-z_][A-Za-z0-9_]*)\).*/\1/p' || true)
-  if [ -n "$src" ]; then
+      | grep -E "extra\.set\([[:space:]]*\"${name}\"[[:space:]]*,[[:space:]]*\"" \
+      | head -n1 | sed -nE 's/.*extra\.set\([^,]*,[[:space:]]*"([^"]+)".*/\1/p' || true)
+  if [ -z "$v" ]; then
     v=$(printf '%s\n' "$content" \
-        | grep -E "val[[:space:]]+${src}([[:space:]]*:[[:space:]]*String)?[[:space:]]+by[[:space:]]+extra\(\"" \
+        | grep -E "val[[:space:]]+${name}([[:space:]]*:[[:space:]]*String)?[[:space:]]+by[[:space:]]+extra\(\"" \
         | head -n1 | sed -nE 's/.*extra\("([^"]+)".*/\1/p' || true)
+  fi
+  if [ -n "$v" ]; then printf '%s' "$v"; return 0; fi
+  # Shapes 2 & 3 — alias. Extract the source identifier, current spelling then legacy.
+  src=$(printf '%s\n' "$content" \
+      | grep -E "extra\.set\([[:space:]]*\"${name}\"[[:space:]]*,[[:space:]]*[A-Za-z_]" \
+      | head -n1 | sed -nE 's/.*extra\.set\([^,]*,[[:space:]]*([A-Za-z_][A-Za-z0-9_]*)[[:space:]]*\).*/\1/p' || true)
+  if [ -z "$src" ]; then
+    src=$(printf '%s\n' "$content" \
+        | grep -E "val[[:space:]]+${name}([[:space:]]*:[[:space:]]*String)?[[:space:]]+by[[:space:]]+extra\(" \
+        | head -n1 | sed -nE 's/.*extra\(([A-Za-z_][A-Za-z0-9_]*)\).*/\1/p' || true)
+  fi
+  if [ -n "$src" ]; then
+    # Source literal — `extra.set` spelling, then legacy `by extra`.
+    v=$(printf '%s\n' "$content" \
+        | grep -E "extra\.set\([[:space:]]*\"${src}\"[[:space:]]*,[[:space:]]*\"" \
+        | head -n1 | sed -nE 's/.*extra\.set\([^,]*,[[:space:]]*"([^"]+)".*/\1/p' || true)
     if [ -z "$v" ]; then
+      v=$(printf '%s\n' "$content" \
+          | grep -E "val[[:space:]]+${src}([[:space:]]*:[[:space:]]*String)?[[:space:]]+by[[:space:]]+extra\(\"" \
+          | head -n1 | sed -nE 's/.*extra\("([^"]+)".*/\1/p' || true)
+    fi
+    if [ -z "$v" ]; then
+      # Source plain val — `val SRC[: String]? = "X"`.
       v=$(printf '%s\n' "$content" \
           | grep -E "val[[:space:]]+${src}([[:space:]]*:[[:space:]]*String)?[[:space:]]*=[[:space:]]*\"" \
           | head -n1 | sed -nE 's/.*=[[:space:]]*"([^"]+)".*/\1/p' || true)
