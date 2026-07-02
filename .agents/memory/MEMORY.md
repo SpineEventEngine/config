@@ -14,6 +14,7 @@ See [README.md](README.md) for the format and routing rules.
 - [porting-buildsrc-from-consumer-repos](project/porting-buildsrc-from-consumer-repos.md) — To back-port buildSrc improvements from a consumer repo, diff after its last "Update `config`" commit; consumer-owned files never port.
 - [config-build-verification](project/config-build-verification.md) — config root has no `build` task; verify buildSrc via `./gradlew :buildSrc:test detekt` with JAVA_HOME exported.
 - [plugin-testkit-assertions-live-in-tool-base](project/plugin-testkit-assertions-live-in-tool-base.md) — Generic Gradle-plugin functional-test assertions (testkit-truth) belong in tool-base/plugin-testlib, not per-plugin `*-testlib` modules.
+- [gradle-10-third-party-deprecations](project/gradle-10-third-party-deprecations.md) — Three deprecation nags under Gradle 9.6 come from Detekt, Kover, and Gradle Doctor, not our build logic; no released fixes yet — don't chase them in `buildSrc`.
 
 ## Reference (external systems)
 

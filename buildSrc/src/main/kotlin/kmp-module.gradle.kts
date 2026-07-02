@@ -109,7 +109,6 @@ fun Project.forceConfigurations() {
  * It configures KMP, in which Kotlin for JVM is only one of
  * possible targets.
  */
-@Suppress("UNUSED_VARIABLE") // Avoid warnings for source set vars.
 kotlin {
     // Enables explicit API mode for any Kotlin sources within the module.
     explicitApi()
@@ -127,9 +126,8 @@ kotlin {
 
     // Dependencies are specified per-target.
     // Please note, common sources are implicitly available in all targets.
-    @Suppress("unused") // source set `val`s are used implicitly.
     sourceSets {
-        val commonTest by getting {
+        getByName("commonTest") {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
@@ -137,7 +135,7 @@ kotlin {
                 implementation(Kotest.frameworkEngine)
             }
         }
-        val jvmTest by getting {
+        getByName("jvmTest") {
             dependencies {
                 implementation(dependencies.enforcedPlatform(JUnit.bom))
                 implementation(TestLib.lib)

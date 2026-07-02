@@ -62,8 +62,7 @@ private val about = ""
 /**
  * Configure Jacoco task with custom input from this Kotlin Multiplatform project.
  */
-@Suppress("unused")
-val jacocoTestReport: JacocoReport by tasks.getting(JacocoReport::class) {
+tasks.named<JacocoReport>("jacocoTestReport") {
 
     val classFiles = File("$buildDirectory/classes/kotlin/jvm/")
         .walkBottomUp()

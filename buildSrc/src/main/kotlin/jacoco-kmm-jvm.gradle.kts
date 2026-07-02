@@ -25,8 +25,6 @@
  */
 
 import java.io.File
-import org.gradle.kotlin.dsl.getValue
-import org.gradle.kotlin.dsl.getting
 import org.gradle.kotlin.dsl.jacoco
 import org.gradle.testing.jacoco.tasks.JacocoReport
 
@@ -69,8 +67,7 @@ private val about = ""
  * Configure the Jacoco task with custom input a KMM project
  * to which this convention plugin is applied.
  */
-@Suppress("unused")
-val jacocoTestReport: JacocoReport by tasks.getting(JacocoReport::class) {
+tasks.named<JacocoReport>("jacocoTestReport") {
     val buildDir = project.layout.buildDirectory.get().asFile.absolutePath
     val classFiles = File("${buildDir}/classes/kotlin/jvm/")
         .walkBottomUp()
