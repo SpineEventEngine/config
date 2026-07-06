@@ -28,14 +28,15 @@ package io.spine.gradle.report.coverage
 
 import io.spine.dependency.test.Jacoco
 import io.spine.dependency.test.Kover
-import io.spine.gradle.testing.COMPILER_COVERAGE_DIR
 import io.spine.gradle.testing.TESTKIT_COVERAGE_DIR
+import io.spine.gradle.testing.isSpineCompilerLaunchTask
 import java.io.File
 import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
 import org.gradle.api.Project
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -265,12 +266,26 @@ class KoverConfig private constructor(
      * aggregated production modules. Resolved at task-graph time, after the
      * launch tasks have written them.
      *
+     * The files are the `.exec` outputs that each subproject's **currently
+     * configured** `launch*SpineCompiler` tasks still declare — read from the task
+     * outputs, not by scanning the coverage directory. A stale exec left in an
+     * un-`clean`ed workspace is therefore never credited, whether its launch task
+     * was removed or the module simply stopped enabling the helper (in which case
+     * the task no longer declares the exec as an output). Filtering by the `exec`
+     * extension drops any non-coverage outputs the compiler task may also declare.
+     *
      * @see io.spine.gradle.testing.enableSpineCompilerCoverage
      */
     private fun rootCompilerExecFilesProvider(): Provider<Iterable<File>> =
         rootProject.provider {
             rootProject.subprojects.asSequence()
-                .flatMap { execFiles(it, COMPILER_COVERAGE_DIR).asSequence() }
+                .flatMap { sub ->
+                    sub.tasks.withType(JavaExec::class.java)
+                        .matching { it.isSpineCompilerLaunchTask() }
+                        .asSequence()
+                        .flatMap { it.outputs.files.asSequence() }
+                }
+                .filter { it.isFile && it.extension == "exec" }
                 .toList()
         }
 
@@ -319,11 +334,13 @@ class KoverConfig private constructor(
  * directory under the [project]'s `build` directory, or an empty list if the
  * module produced none.
  *
- * Serves both out-of-process coverage collectors: the Gradle TestKit workers
- * write into [TESTKIT_COVERAGE_DIR] when a module opts in via
- * [io.spine.gradle.testing.enableTestKitCoverage], and the forked Spine
- * Compiler JVMs write into [COMPILER_COVERAGE_DIR] when a module opts in via
- * [io.spine.gradle.testing.enableSpineCompilerCoverage].
+ * Used for the Gradle TestKit workers, which write into [TESTKIT_COVERAGE_DIR]
+ * when a module opts in via [io.spine.gradle.testing.enableTestKitCoverage]. A
+ * directory scan is safe there because the exec directory is wiped once per build
+ * (see `enableTestKitCoverage`); the Spine Compiler collector instead gathers its
+ * files from the current launch tasks (see
+ * [io.spine.gradle.testing.enableSpineCompilerCoverage]), because its cacheable
+ * tasks cannot wipe the directory.
  */
 private fun execFiles(project: Project, dirName: String): List<File> {
     val dir = project.layout.buildDirectory.dir(dirName).get().asFile

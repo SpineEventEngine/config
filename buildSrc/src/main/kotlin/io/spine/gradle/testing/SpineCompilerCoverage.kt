@@ -134,8 +134,12 @@ fun Project.enableSpineCompilerCoverage() {
  * Tells whether this is one of the `launch[<SourceSet>]SpineCompiler` tasks that
  * fork the Spine Compiler — matched by name to avoid a compile-time dependency on
  * the compiler Gradle plugin's task types.
+ *
+ * `internal` so [io.spine.gradle.report.coverage.KoverConfig] can collect the exec
+ * files of the **current** launch tasks (rather than scanning the directory) and
+ * thereby ignore stale execs from removed tasks.
  */
-private fun Task.isSpineCompilerLaunchTask(): Boolean =
+internal fun Task.isSpineCompilerLaunchTask(): Boolean =
     name.startsWith(LAUNCH_TASK_PREFIX) && name.endsWith(LAUNCH_TASK_SUFFIX)
 
 /**
