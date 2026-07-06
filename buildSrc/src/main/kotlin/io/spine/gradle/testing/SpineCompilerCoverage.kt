@@ -66,9 +66,13 @@ import org.gradle.kotlin.dsl.withType
  *     as a task output — which is why that helper must instead disable caching.
  *
  * The agent is attached from a `doFirst` action rather than a `jvmArgumentProviders`
- * entry so that its absolute path stays out of the task's input fingerprint: the
- * exec content depends on the compiler's own inputs (which drive what code runs), so
- * keying up-to-dateness and the cache on those inputs is exactly right.
+ * entry so that its *absolute path* — machine-specific, under the Gradle user home —
+ * stays out of the task's input fingerprint, where it would break build-cache reuse
+ * across machines. The agent *coordinate* ([Jacoco.agent]) is instead declared as an
+ * `inputs.property`, so bumping the JaCoCo version invalidates the launch tasks and
+ * regenerates the exec — a stale exec from an incompatible agent can never survive an
+ * `UP-TO-DATE` skip or a `FROM-CACHE` hit. The exec content otherwise depends on the
+ * compiler's own inputs, which already key up-to-dateness.
  *
  * The produced `.exec` files are merged into the **root** Kover report by
  * [io.spine.gradle.report.coverage.KoverConfig]. Only classes the root aggregation
@@ -99,6 +103,10 @@ fun Project.enableSpineCompilerCoverage() {
     launchTasks.configureEach {
         val taskName = name
         val execFile = execDir.map { it.file("$taskName.exec") }
+        // Track the agent *coordinate*, not the resolved absolute path, so a JaCoCo
+        // version bump invalidates the task and regenerates the exec while the cache
+        // key stays machine-independent — see the KDoc.
+        inputs.property(JACOCO_AGENT_INPUT, Jacoco.agent)
         // Captured as a task output so the build cache stores and restores it —
         // see the KDoc for why a synchronous `JavaExec` can declare its agent exec
         // while a TestKit worker cannot.
@@ -151,6 +159,13 @@ internal const val COMPILER_COVERAGE_DIR: String = "jacoco-compiler"
  * agent JAR.
  */
 private const val AGENT_CONFIGURATION: String = "spineCompilerJacocoAgent"
+
+/**
+ * The name of the task input property that records the JaCoCo agent coordinate
+ * ([Jacoco.agent]), so a version bump invalidates the `launch*SpineCompiler` tasks
+ * and their cached `.exec` outputs.
+ */
+private const val JACOCO_AGENT_INPUT: String = "jacocoAgentCoordinate"
 
 private const val LAUNCH_TASK_PREFIX: String = "launch"
 private const val LAUNCH_TASK_SUFFIX: String = "SpineCompiler"
