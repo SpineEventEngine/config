@@ -26,3 +26,15 @@ filter) and repo-local convention plugins/helpers living in X's `buildSrc`
 `PatchGeneratedTemplateString.kt`). Cross-check direction on each remaining
 file — if `config` HEAD is newer (version bumps), the consumer copy is stale,
 not improved.
+
+Two port-time adaptations recur (both hit the validation#317 port):
+
+- `config` runs detekt over `buildSrc`; consumer repos do not. A port that
+  was green in the consumer repo can fail here (e.g. `TooManyFunctions`,
+  top-level threshold 11 per file). Fix by refactoring — merge copy-paste
+  helpers, reuse an existing `config` helper the consumer-side author did
+  not know about (e.g. `consumesCoverageBinaryReports()` from
+  `SiblingCoverage.kt`) — never by suppressing.
+- Generalize consumer-specific KDoc (module names such as `java`/`context`,
+  plugin names such as `JavaValidationPlugin`): `config` distributes these
+  files to every repo, where such references mean nothing.
