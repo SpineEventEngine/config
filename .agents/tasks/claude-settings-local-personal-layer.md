@@ -22,8 +22,9 @@ Outcome: `config` treats `settings.local.json` as strictly personal — a pull n
 creates, overwrites, or deletes it — while preserving the useful auto-approvals in the
 shared templates, gitignoring the file in consumers, and un-tracking `config`'s own copy
 so the repo dogfoods the contract. Same-PR follow-on (confirmed with the user): add
-`"plansDirectory": ".agents/tasks"` to both templates so plan/status docs default into
-the repo-local, non-clobbered task dir org-wide.
+`"plansDirectory": ".claude/plans"` to both templates so Claude Code's ephemeral,
+harness-slugged plan-mode files default into a gitignored scratch dir (durable,
+meaningfully-named task docs stay in `.agents/tasks/`).
 
 ## Changes
 
@@ -75,8 +76,10 @@ Update the AI-agent-config bullet: `settings.local.json` is no longer distribute
 it as Claude Code's gitignored, per-developer personal layer that `pull` never touches.
 
 ### 6. `plansDirectory` (confirmed: include now)
-Add top-level `"plansDirectory": ".agents/tasks"` to both `.claude/settings.json` and
-`.claude/settings-hugo.json`.
+Add top-level `"plansDirectory": ".claude/plans"` to both `.claude/settings.json` and
+`.claude/settings-hugo.json`, and gitignore `/.claude/plans/` in the baseline. Ephemeral
+plan-mode files (harness-assigned random slugs) go to this gitignored scratch dir;
+durable task docs stay meaningfully-named under `.agents/tasks/`.
 
 ## Out of scope / caveat
 A consumer that already committed the old config-distributed `settings.local.json` keeps
