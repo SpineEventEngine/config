@@ -29,7 +29,8 @@ the repo-local, non-clobbered task dir org-wide.
 
 ### 1. `migrate` — stop touching `settings.local.json` (lines ~185–202)
 - Delete the Hugo-branch `rm -f ../.claude/settings.local.json` (~line 195).
-- Delete the else-branch `cp .claude/settings.local.json ../.claude/settings.local.json` (~line 198).
+- Delete the else-branch `cp .claude/settings.local.json ../.claude/settings.local.json`
+  (~line 198).
 - Rewrite the block comment (~lines 185–188) to explain that `settings.local.json` is
   the per-developer personal layer a pull must never create/overwrite/delete, and that
   org-wide permissions live in the two shared templates.
@@ -48,9 +49,10 @@ rm -f ../.claude/settings-hugo.json
 
 ### 2. Move the genuinely-shared permissions into the shared templates
 Drop `Bash(echo "exit=$?")`. Distribute the rest:
-- `.claude/settings.json` `allow`: add `Bash(.agents/skills/version-bumped/scripts/version-bumped.sh)`
-  (next to the existing `.agents/skills/.../update_copyright.py` entry) **and** `Skill(pre-pr)`,
-  `Skill(pre-pr:*)` (appended after `Bash(./config/migrate)`).
+- `.claude/settings.json` `allow`: add
+  `Bash(.agents/skills/version-bumped/scripts/version-bumped.sh)` (next to the existing
+  `.agents/skills/.../update_copyright.py` entry) **and** `Skill(pre-pr)`, `Skill(pre-pr:*)`
+  (appended after `Bash(./config/migrate)`).
 - `.claude/settings-hugo.json` `allow`: add `Skill(pre-pr)`, `Skill(pre-pr:*)` only.
   Not `version-bumped` — a pure-Hugo repo has no `version.gradle.kts`; a Hugo **and** JVM
   repo takes the else branch and receives `settings.json`, so it still gets the guard.
@@ -93,6 +95,6 @@ one-time cleanup could be a later follow-up if wanted.
   (a) no `settings.local.json` is produced, (b) the merged `.gitignore` contains
   `/.claude/settings.local.json`, (c) `settings.json` carries the moved permissions +
   `plansDirectory`.
-- `git status` + `git diff --staged` to show the un-tracking and every edit. **Stage only —
-  do not commit or push** (the planning file under `.agents/tasks/` is a work artifact and is
-  not part of the PR).
+- `git status` + `git diff --cached` confirmed the un-tracking and every edit before
+  committing. Per `AGENTS.md`, this plan file is committed as the tracked task doc under
+  `.agents/tasks/` during the work and is deleted on merge to master.
