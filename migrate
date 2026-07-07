@@ -354,7 +354,11 @@ fi
 #     (which `git add -A` re-adds) instead of ignored. The merge already ran
 #     above; scrub the negation from its result.
 #  2. Untrack any copy an earlier pull committed. `--cached` keeps the working
-#     file; the `git ls-files` guard makes a re-run a quiet no-op.
+#     file; `--force` overrides `git rm`'s up-to-date check so a consumer that
+#     staged `misc.xml` IDE churn (its index differing from both HEAD and the
+#     work tree) is still migrated — otherwise `git rm` fails and, as `migrate`
+#     runs without `set -e`, silently leaves the file tracked. The `git ls-files`
+#     guard makes a re-run a quiet no-op.
 # ---------------------------------------------------------------------------
 if [ -f .gitignore ] && grep -qxF '!.idea/misc.xml' .gitignore; then
     echo "Dropping the retired '!.idea/misc.xml' negation from .gitignore"
@@ -368,7 +372,7 @@ fi
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
    && git ls-files --error-unmatch .idea/misc.xml >/dev/null 2>&1; then
     echo "Untracking '.idea/misc.xml' (now project-local, git-ignored)"
-    git rm --cached --quiet .idea/misc.xml
+    git rm --cached --force --quiet .idea/misc.xml
 fi
 
 if [ "$IS_JVM" = "true" ]; then
