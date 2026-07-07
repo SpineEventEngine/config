@@ -177,6 +177,10 @@ __pycache__/
 # Claude working files
 /.claude/worktrees/
 
+# Personal, per-developer Claude Code settings overrides (never committed;
+# the distributed `.claude/settings.json` is the shared, committed layer).
+/.claude/settings.local.json
+
 # Auto-downloaded Lychee binary used by the `check-links` skill.
 /.agents/skills/check-links/.cache/
 

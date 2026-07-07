@@ -207,6 +207,14 @@ fi
 # ---------------------------------------------------------------------------
 # Claude settings — the commands/agents/skills come from the submodule above;
 # only the permission settings are repo configuration distributed by `config`.
+#
+# `settings.json` is the SHARED, committed permission layer (org-wide defaults);
+# for a Hugo-only repo the Hugo-tuned `settings-hugo.json` is applied under that
+# name. `settings.local.json` is deliberately NOT distributed: in Claude Code it
+# is the gitignored, per-developer personal-override layer (precedence
+# user < project < local), so a `./config/pull` must never create, overwrite, or
+# delete it — doing either wiped a developer's personal overrides and forced the
+# file into Git. Org-wide permissions belong in the two shared templates above.
 # ---------------------------------------------------------------------------
 
 echo "Updating Claude settings"
@@ -214,10 +222,8 @@ mkdir -p ../.claude
 if [ "$IS_HUGO_DOCS" = "true" ] && [ "$IS_JVM" = "false" ]; then
     # Hugo-only repos use the Hugo-tuned permission set.
     cp .claude/settings-hugo.json ../.claude/settings.json
-    rm -f ../.claude/settings.local.json
 else
     cp .claude/settings.json ../.claude/settings.json
-    cp .claude/settings.local.json ../.claude/settings.local.json
 fi
 # settings-hugo.json is a config-internal template (applied as settings.json for
 # Hugo-only repos), never distributed as-is; drop any stale copy an older migrate left.
