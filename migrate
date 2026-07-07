@@ -72,7 +72,29 @@ function initialize() {
 }
 
 echo "Updating IDEA configuration"
+# Preserve a project's `.idea/misc.xml` (do not overwrite it). It is project-local
+# — the per-project JDK name plus IDEA's own churn — so it is ignored and untracked
+# further below; letting this shared `.idea` overlay clobber it with config's copy
+# would defeat that (the reset is git-silent, but still resets the consumer's JDK
+# on every pull). Config's copy still seeds a consumer that has none yet, carrying
+# the shared `EntryPointsManager` / nullness defaults; an existing project-local
+# copy wins. Same approach as `module.gradle.kts` below.
+DEST_MISC="../.idea/misc.xml"
+MISC_PRESERVE_TMP=""
+if [ -f "$DEST_MISC" ]; then
+  echo "Preserving existing \`.idea/misc.xml\`"
+  MISC_PRESERVE_TMP=$(mktemp -t misc.XXXXXX)
+  cp -a "$DEST_MISC" "$MISC_PRESERVE_TMP"
+fi
+
 cp -R .idea ..
+
+# Restore preserved `.idea/misc.xml`, if any.
+if [ -n "$MISC_PRESERVE_TMP" ] && [ -f "$MISC_PRESERVE_TMP" ]; then
+  echo "Restoring existing \`.idea/misc.xml\`"
+  cp -a "$MISC_PRESERVE_TMP" "$DEST_MISC"
+  rm -f "$MISC_PRESERVE_TMP"
+fi
 
 echo "Updating Contributor's Guide"
 # CONTRIBUTING.md is identical org-wide and static; copy it only if the repo
