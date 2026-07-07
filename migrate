@@ -213,8 +213,8 @@ fi
 # name. `settings.local.json` is deliberately NOT distributed: in Claude Code it
 # is the gitignored, per-developer personal-override layer (precedence
 # user < project < local), so a `./config/pull` must never create, overwrite, or
-# delete it — doing either wiped a developer's personal overrides and forced the
-# file into Git. Org-wide permissions belong in the two shared templates above.
+# delete it — doing any of these wiped a developer's personal overrides or forced
+# the file into Git. Org-wide permissions belong in the two shared templates above.
 # ---------------------------------------------------------------------------
 
 echo "Updating Claude settings"
