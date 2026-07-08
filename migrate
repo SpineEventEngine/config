@@ -72,7 +72,29 @@ function initialize() {
 }
 
 echo "Updating IDEA configuration"
+# Preserve a project's `.idea/misc.xml` (do not overwrite it). It is project-local
+# — the per-project JDK name plus IDEA's own churn — so it is ignored and untracked
+# further below; letting this shared `.idea` overlay clobber it with config's copy
+# would defeat that (the reset is git-silent, but still resets the consumer's JDK
+# on every pull). Config's copy still seeds a consumer that has none yet, carrying
+# the shared `EntryPointsManager` / nullness defaults; an existing project-local
+# copy wins. Same approach as `module.gradle.kts` below.
+DEST_MISC="../.idea/misc.xml"
+MISC_PRESERVE_TMP=""
+if [ -f "$DEST_MISC" ]; then
+  echo "Preserving existing \`.idea/misc.xml\`"
+  MISC_PRESERVE_TMP=$(mktemp -t misc.XXXXXX)
+  cp -a "$DEST_MISC" "$MISC_PRESERVE_TMP"
+fi
+
 cp -R .idea ..
+
+# Restore preserved `.idea/misc.xml`, if any.
+if [ -n "$MISC_PRESERVE_TMP" ] && [ -f "$MISC_PRESERVE_TMP" ]; then
+  echo "Restoring existing \`.idea/misc.xml\`"
+  cp -a "$MISC_PRESERVE_TMP" "$DEST_MISC"
+  rm -f "$MISC_PRESERVE_TMP"
+fi
 
 echo "Updating Contributor's Guide"
 # CONTRIBUTING.md is identical org-wide and static; copy it only if the repo
@@ -316,6 +338,41 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     else
         echo "Leaving existing core.hooksPath ('$current_hooks') untouched." >&2
     fi
+fi
+
+# ---------------------------------------------------------------------------
+# Make `.idea/misc.xml` project-local. It carries the per-project JDK name and
+# IDEA's own churn (entry-point list indices, external-storage toggles), so a
+# tracked copy collides with the consumer's local IDE state on every
+# `./config/pull`. Two steps:
+#
+#  1. Drop any surviving `!.idea/misc.xml` negation. The shared baseline no
+#     longer rescues the file, but `update-gitignore.sh` preserves a legacy
+#     raw-copied `.gitignore`'s negations into the repo-local block, so the
+#     retired rescue can outlive the baseline and — `.gitignore` being
+#     last-match-wins — un-ignore the file, leaving it `?? .idea/misc.xml`
+#     (which `git add -A` re-adds) instead of ignored. The merge already ran
+#     above; scrub the negation from its result.
+#  2. Untrack any copy an earlier pull committed. `--cached` keeps the working
+#     file; `--force` overrides `git rm`'s up-to-date check so a consumer that
+#     staged `misc.xml` IDE churn (its index differing from both HEAD and the
+#     work tree) is still migrated — otherwise `git rm` fails and, as `migrate`
+#     runs without `set -e`, silently leaves the file tracked. The `git ls-files`
+#     guard makes a re-run a quiet no-op.
+# ---------------------------------------------------------------------------
+if [ -f .gitignore ] && grep -qxF '!.idea/misc.xml' .gitignore; then
+    echo "Dropping the retired '!.idea/misc.xml' negation from .gitignore"
+    gi_tmp=$(mktemp ./.gitignore.XXXXXX)
+    if grep -vxF '!.idea/misc.xml' .gitignore > "$gi_tmp"; then
+        mv "$gi_tmp" .gitignore
+    else
+        rm -f "$gi_tmp"
+    fi
+fi
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+   && git ls-files --error-unmatch .idea/misc.xml >/dev/null 2>&1; then
+    echo "Untracking '.idea/misc.xml' (now project-local, git-ignored)"
+    git rm --cached --force --quiet .idea/misc.xml
 fi
 
 if [ "$IS_JVM" = "true" ]; then
