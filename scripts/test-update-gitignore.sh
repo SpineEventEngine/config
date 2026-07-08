@@ -80,6 +80,9 @@ git -C "$consumer" config user.name  test
   printf '%s\n' '!gradle-wrapper.jar'
   printf '%s\n' '!debug.log'
   printf '%s\n' '*.log'
+  # A retired baseline negation an earlier first-migration baked into repo-local;
+  # the steady-state merge must strip it so `.idea/misc.xml` stays ignored.
+  printf '%s\n' '!.idea/misc.xml'
   # A consumer comment that merely BEGINS like the legacy secret trailer, plus a
   # real entry after it. The legacy match is exact, so this comment is preserved
   # and the entry survives (regression guard for the start-anchored to-EOF drop).
@@ -103,6 +106,7 @@ mkdir -p generated && : > generated/secret.gpg
 : > info.log
 : > creds.secret.properties.gpg
 mkdir -p keep-me-ignored && : > keep-me-ignored/x
+mkdir -p .idea && : > .idea/misc.xml
 
 # (1) Every decrypted credential must be ignored despite the repo-local negations.
 for f in "${secrets[@]}"; do
@@ -194,6 +198,21 @@ if git check-ignore -q keep-me-ignored/x; then
   pass "look-alike legacy comment preserved; following entry 'keep-me-ignored/' survived"
 else
   f-ail "look-alike legacy comment triggered to-EOF drop; 'keep-me-ignored/' lost"
+fi
+
+# (3h) A retired baseline negation baked into repo-local (`!.idea/misc.xml`) must be
+# stripped so the baseline's `.idea/*.xml` ignore wins. The secret trailer does NOT
+# cover it (misc.xml is not a secret glob), so without stripping it would re-expose the
+# per-developer IDEA project file.
+if git check-ignore -q .idea/misc.xml; then
+  pass "retired '!.idea/misc.xml' stripped from repo-local (.idea/misc.xml stays ignored)"
+else
+  f-ail "retired '!.idea/misc.xml' survived in repo-local (.idea/misc.xml re-exposed)"
+fi
+if grep -qxF '!.idea/misc.xml' "$consumer/.gitignore"; then
+  f-ail "retired '!.idea/misc.xml' still present in the merged .gitignore"
+else
+  pass "retired '!.idea/misc.xml' removed from the merged .gitignore"
 fi
 
 # --- (4) Idempotency: re-running yields byte-identical output. -----------------
@@ -310,6 +329,40 @@ if diff -q "$work/c3-first.gitignore" "$consumer3/.gitignore" >/dev/null; then
 else
   f-ail "fresh consumer: not idempotent"
   diff "$work/c3-first.gitignore" "$consumer3/.gitignore" >&2 || true
+fi
+
+# --- (8) First-migration retired negation: a legacy raw copy carrying the OLD ------
+# baseline's `!.idea/misc.xml`. The bootstrap keeps consumer negations, so without the
+# retired-negation filter this stale `!` lands in repo-local (after the managed block)
+# and re-includes `.idea/misc.xml`. It must be stripped; a genuine consumer line beside
+# it must still survive.
+consumer4="$work/consumer4"
+mkdir -p "$consumer4/config"
+cp "$baseline" "$consumer4/config/.gitignore"
+git -C "$consumer4" init -q
+git -C "$consumer4" config user.email test@example.com
+git -C "$consumer4" config user.name  test
+# Legacy raw copy of an OLDER baseline: current baseline + the retired negation it used
+# to carry + a genuine consumer line. No managed markers.
+{ cat "$baseline"; printf '%s\n' '!.idea/misc.xml' 'my-own-cache/'; } > "$consumer4/.gitignore"
+
+( cd "$consumer4/config" && bash "$script" )
+
+mkdir -p "$consumer4/.idea" && : > "$consumer4/.idea/misc.xml"
+if git -C "$consumer4" check-ignore -q .idea/misc.xml; then
+  pass "first-migration strips retired '!.idea/misc.xml' (.idea/misc.xml stays ignored)"
+else
+  f-ail "first-migration kept retired '!.idea/misc.xml' (.idea/misc.xml re-exposed)"
+fi
+if git -C "$consumer4" check-ignore -q my-own-cache/x; then
+  pass "first-migration preserved the genuine consumer line beside the filtered negation"
+else
+  f-ail "first-migration dropped the genuine consumer line"
+fi
+if grep -qxF '!.idea/misc.xml' "$consumer4/.gitignore"; then
+  f-ail "first-migration left the retired '!.idea/misc.xml' in the merged file"
+else
+  pass "first-migration removed the retired '!.idea/misc.xml' from the merged file"
 fi
 
 echo

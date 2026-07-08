@@ -62,9 +62,10 @@ The `pull` script also wires up AI-agent configuration:
    the submodule on the first run and floats it to the latest `agents@master` (checked out
    *on* `master`, not a detached `HEAD`) on every subsequent run — so shared skills update
    everywhere with **no file churn** in consumer pull requests.
- * `.claude/settings.json` — the permission allowlist distributed by `config` (Hugo-only
-   repos receive a Hugo-tuned variant). JVM and mixed repos also get `settings.local.json`;
-   Hugo-only repos do not.
+ * `.claude/settings.json` — the shared, committed permission allowlist distributed by
+   `config` (Hugo-only repos receive a Hugo-tuned variant). `.claude/settings.local.json`
+   is **not** distributed: it is Claude Code's gitignored, per-developer personal-override
+   layer, so `pull` never creates, overwrites, or deletes it.
  * `.junie/guidelines.md` — JetBrains Junie guidelines.
 
 Per-repo content is never overwritten: `docs/project.md` (linked from `.agents/project.md`),
