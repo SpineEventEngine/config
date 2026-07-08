@@ -87,6 +87,21 @@ if [ -f "$DEST_MISC" ]; then
   cp -a "$DEST_MISC" "$MISC_PRESERVE_TMP"
 fi
 
+# Preserve a project's `.idea/copyright/profiles_settings.xml` (do not overwrite it).
+# It selects the default copyright profile, which is project-specific: proprietary
+# repositories keep `TeamDev Proprietary`, while the open-source SDK repositories keep
+# `TeamDev Open-Source`. Letting config's copy clobber it silently re-licenses the
+# consumer's headers (the `update-copyright` hook then applies the wrong notice on the
+# next edit). Config's copy still seeds a consumer that has none yet; an existing
+# project-local copy wins. Same approach as `.idea/misc.xml` above.
+DEST_COPYRIGHT="../.idea/copyright/profiles_settings.xml"
+COPYRIGHT_PRESERVE_TMP=""
+if [ -f "$DEST_COPYRIGHT" ]; then
+  echo "Preserving existing \`.idea/copyright/profiles_settings.xml\`"
+  COPYRIGHT_PRESERVE_TMP=$(mktemp -t copyright.XXXXXX)
+  cp -a "$DEST_COPYRIGHT" "$COPYRIGHT_PRESERVE_TMP"
+fi
+
 cp -R .idea ..
 
 # Restore preserved `.idea/misc.xml`, if any.
@@ -94,6 +109,13 @@ if [ -n "$MISC_PRESERVE_TMP" ] && [ -f "$MISC_PRESERVE_TMP" ]; then
   echo "Restoring existing \`.idea/misc.xml\`"
   cp -a "$MISC_PRESERVE_TMP" "$DEST_MISC"
   rm -f "$MISC_PRESERVE_TMP"
+fi
+
+# Restore preserved `.idea/copyright/profiles_settings.xml`, if any.
+if [ -n "$COPYRIGHT_PRESERVE_TMP" ] && [ -f "$COPYRIGHT_PRESERVE_TMP" ]; then
+  echo "Restoring existing \`.idea/copyright/profiles_settings.xml\`"
+  cp -a "$COPYRIGHT_PRESERVE_TMP" "$DEST_COPYRIGHT"
+  rm -f "$COPYRIGHT_PRESERVE_TMP"
 fi
 
 echo "Updating Contributor's Guide"
