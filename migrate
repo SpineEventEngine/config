@@ -87,6 +87,24 @@ if [ -f "$DEST_MISC" ]; then
   cp -a "$DEST_MISC" "$MISC_PRESERVE_TMP"
 fi
 
+# Preserve a project's `.idea/copyright/profiles_settings.xml` (do not overwrite it).
+# It selects the default copyright profile, which is project-specific: proprietary
+# repositories keep `TeamDev Proprietary`, while the open-source SDK repositories keep
+# `TeamDev Open-Source`. Letting config's copy clobber it silently re-licenses the
+# consumer's headers (the `update-copyright` hook then applies the wrong notice on the
+# next edit). Config's copy still seeds a consumer that has none yet; an existing
+# project-local copy wins. Unlike `.idea/misc.xml`, this preservation fails closed
+# (aborts on a copy error): a silently switched default copyright profile re-licenses
+# the consumer's source headers, so we must never continue past a failure here.
+DEST_COPYRIGHT="../.idea/copyright/profiles_settings.xml"
+COPYRIGHT_PRESERVE_TMP=""
+if [ -f "$DEST_COPYRIGHT" ]; then
+  echo "Preserving existing \`.idea/copyright/profiles_settings.xml\`"
+  COPYRIGHT_PRESERVE_TMP=$(mktemp -t copyright.XXXXXX)
+  cp -a "$DEST_COPYRIGHT" "$COPYRIGHT_PRESERVE_TMP" \
+    || { echo "ERROR: failed to back up '$DEST_COPYRIGHT' — aborting so the consumer's default copyright profile is not silently switched." >&2; exit 1; }
+fi
+
 cp -R .idea ..
 
 # Restore preserved `.idea/misc.xml`, if any.
@@ -94,6 +112,17 @@ if [ -n "$MISC_PRESERVE_TMP" ] && [ -f "$MISC_PRESERVE_TMP" ]; then
   echo "Restoring existing \`.idea/misc.xml\`"
   cp -a "$MISC_PRESERVE_TMP" "$DEST_MISC"
   rm -f "$MISC_PRESERVE_TMP"
+fi
+
+# Restore preserved `.idea/copyright/profiles_settings.xml`, if any. Fails closed for
+# the same reason as the preservation above — ensure the parent dir exists and abort
+# if the restore copy fails, so the pull never silently changes the default profile.
+if [ -n "$COPYRIGHT_PRESERVE_TMP" ] && [ -f "$COPYRIGHT_PRESERVE_TMP" ]; then
+  echo "Restoring existing \`.idea/copyright/profiles_settings.xml\`"
+  mkdir -p "$(dirname "$DEST_COPYRIGHT")"
+  cp -a "$COPYRIGHT_PRESERVE_TMP" "$DEST_COPYRIGHT" \
+    || { echo "ERROR: failed to restore '$DEST_COPYRIGHT' — aborting so the pull does not silently change the default copyright profile." >&2; exit 1; }
+  rm -f "$COPYRIGHT_PRESERVE_TMP"
 fi
 
 echo "Updating Contributor's Guide"
