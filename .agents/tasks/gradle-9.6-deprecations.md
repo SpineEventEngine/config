@@ -77,8 +77,12 @@ Notes:
     release.
 - The Kover-plugin-internal call above is **distinct** from `config`'s own
   `Project`-notation usage in `KoverConfig.kt:172`
-  (`rootProject.project(sub.path)`), which is addressed in a separate change.
-  Fixing `KoverConfig` does not clear the plugin-internal warning.
+  (`rootProject.project(sub.path)` passed to `dependencies.add`), which is
+  addressed in a separate change. Fixing `KoverConfig` does not clear the
+  plugin-internal warning, and bumping Kover will not fix `KoverConfig`.
+  The `KoverConfig` call fires only in consumer builds whose subprojects
+  apply Kover, so it never shows up in `config`'s own runs — the checklist
+  below keeps it visible until the separate change lands.
 
 Decision: do **not** suppress globally via `org.gradle.warning.mode=none` — that
 would also hide `config`'s own future deprecations, defeating the purpose of
@@ -113,7 +117,15 @@ this branch. Tolerate the two warnings (non-fatal on 9.6) and bump when fixed.
       `buildSrc/src/main/kotlin/io/spine/dependency/test/Kover.kt` via the
       `dependency-update` flow, re-run the cold-`buildSrc` reproduce command,
       confirm the dependency-notation warning is gone.
-- [ ] Once all three clear, flip this task to `done` and delete it.
+- [ ] Confirm the separate change fixing `config`-owned `KoverConfig.kt:172`
+      (a `Project` passed as dependency notation — the same Gradle 10
+      failure, config-owned rather than plugin-internal) has landed on
+      `master`. As of 2026-07-10 it has **not**; if it stalls, fix it from
+      this tracker instead.
+- [ ] Close only when the three plugin warnings are gone **and** the
+      `KoverConfig` item above is done, verified by a warning-free
+      cold-cache run of both reproduce commands; then flip this task to
+      `done` and delete it.
 
 ## Log
 
@@ -135,6 +147,11 @@ this branch. Tolerate the two warnings (non-fatal on 9.6) and bump when fixed.
   distinct from `config`'s own `KoverConfig.kt` usage (handled separately).
   Nothing to bump — all three plugins already at their latest releases;
   still `blocked` on upstream.
+- 2026-07-10 — Review follow-up on PR #732 (Codex): made the `config`-owned
+  `KoverConfig.kt:172` `Project`-notation call an explicit checklist item and
+  part of the exit criterion, so this tracker cannot be closed while that
+  Gradle 10 breakage is unfixed. It is being fixed in a separate change,
+  which has not landed on `master` yet.
 - NOTE: this tracker is blocked on external releases and is expected to outlive
   the `address-deprecations` branch merge — do not delete it on merge; keep it
   (or promote the fact to `.agents/memory/`) until all bumps land.
