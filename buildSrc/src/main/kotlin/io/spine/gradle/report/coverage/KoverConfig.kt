@@ -38,6 +38,7 @@ import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
+import org.gradle.kotlin.dsl.project
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
@@ -169,7 +170,10 @@ class KoverConfig private constructor(
     }
 
     private fun addAggregationDependency(sub: Project) {
-        rootProject.dependencies.add("kover", rootProject.project(sub.path))
+        // Pass the project path, not the `Project` instance: using a `Project`
+        // object as a dependency notation is deprecated since Gradle 9.
+        val dependencies = rootProject.dependencies
+        dependencies.add("kover", dependencies.project(sub.path))
     }
 
     /**
