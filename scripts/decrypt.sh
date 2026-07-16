@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 
-#
-# Copyright 2023, TeamDev. All rights reserved.
+# Copyright 2026, TeamDev. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+# https://www.apache.org/licenses/LICENSE-2.0
 #
 # Redistribution and use in source and/or binary forms, with or without
 # modification, must retain the above copyright notice and the following
@@ -24,15 +23,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-
-# Decrypts a file via `gpg`.
-#
-# Params:
-#   1. The secret passphrase used when encrypting the file.
-#   2. The encrypted file.
-#   3. The path where the decrypted file should go.
-#
 
 if [ "$#" -ne 3 ]; then
     echo "Usage: decrypt.sh <passphrase> <encrypted file> <target file>"

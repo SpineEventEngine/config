@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 
-#
-# Copyright 2023, TeamDev. All rights reserved.
+# Copyright 2026, TeamDev. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+# https://www.apache.org/licenses/LICENSE-2.0
 #
 # Redistribution and use in source and/or binary forms, with or without
 # modification, must retain the above copyright notice and the following
@@ -24,16 +23,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-
-#
-# How to use this script:
-#  1. Commit the changes you were working on to your branch.
-#  2. Update the `config` submodule to fetch the latest version of the script.
-#  3. Run the script. It will create a new branch from `master` automatically.
-#  4. The script lets you edit the `version.gradle.kts` file if it exists and commits it.
-#  5. In GitHub, press the `Create & pull request` button.
-#
 
 echo "Checking out 'master'..."
 

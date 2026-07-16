@@ -24,20 +24,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# This script is a part of a GitHub Actions workflow.
-#
-# Its purpose is to prevent PRs from leaving dependency report files
-# from being untouched. In case any of these files are not updated, it exits with an error code 1.
-# Otherwise, exits with a success code 0.
-#
-# In its implementation, the script relies into the environment variables set by GitHub Actions.
-# See https://docs.github.com/en/actions/reference/environment-variables.
-
-
-# Detects if the file with the passed name has been updated in this changeset.
-#
-# Exits with the code 1, if such a file has NOT been modified.
-# Does nothing, if any modification was found.
 function ensureUpdated() {
 	modificationCount=$(git diff --name-only remotes/origin/$GITHUB_BASE_REF...remotes/origin/$GITHUB_HEAD_REF | grep -F -x "$1" | wc -l)
 	if [ "$modificationCount" -eq "0" ];
