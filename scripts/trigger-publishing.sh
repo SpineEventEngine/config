@@ -24,6 +24,24 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# This script triggers the build of the https://github.com/SpineEventEngine/publishing.
+#
+# The `publishing` repository advances the versions of other Spine libraries to the new version
+# of the repository invoking this script.
+#
+# Execute this script after a successful `master` branch build, e.g.
+# ```
+# after_success:
+# if [[ $TRAVIS_BRANCH == master ]] && [[ $TRAVIS_PULL_REQUEST == false ]]; then
+#     chmod +x ./scripts/trigger-publishing.sh
+#     sh ./scripts/trigger-publishing.sh
+# fi
+# ```
+#
+# This script relies on the "TRAVIS_TOKEN" env variable being set.
+#
+# More: https://docs.travis-ci.com/user/triggering-builds
+
 body="{
        \"request\": {
          \"branch\": \"master\"

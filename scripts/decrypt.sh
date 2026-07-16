@@ -24,6 +24,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Decrypts a file via `gpg`.
+#
+# Params:
+#   1. The secret passphrase used when encrypting the file.
+#   2. The encrypted file.
+#   3. The path where the decrypted file should go.
+#
+
 if [ "$#" -ne 3 ]; then
     echo "Usage: decrypt.sh <passphrase> <encrypted file> <target file>"
     exit 1

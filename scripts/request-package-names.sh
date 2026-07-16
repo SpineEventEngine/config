@@ -24,6 +24,19 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Requests GitHub to retrieve package names published from a specific repository
+# in the Apache Maven registry on GitHub Packages.
+#
+# Parameters:
+#   1. The GitHub access token with the "read:packages" permission.
+#   2. The name of the repository from which the packages were published.
+#   3. The organization that owns the packages.
+#   4. The file path where the package names should be written.
+#
+# The output is a file containing a JSON array of package names. For example:
+# `["io.spine.config.package1","io.spine.config.package2"]`.
+#
+
 if [ "$#" -ne 4 ]; then
     echo "Usage: request-package-names.sh <GitHub token> <repo name> <repo owner name> <output file>"
     exit 1

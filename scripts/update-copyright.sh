@@ -24,6 +24,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#
+# How to use this script:
+#  1. Commit the changes you were working on to your branch.
+#  2. Update the `config` submodule to fetch the latest version of the script.
+#  3. Run the script. It will create a new branch from `master` automatically.
+#  4. The script lets you edit the `version.gradle.kts` file if it exists and commits it.
+#  5. In GitHub, press the `Create & pull request` button.
+#
+
 echo "Checking out 'master'..."
 
 git checkout master
