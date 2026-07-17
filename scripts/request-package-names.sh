@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-#
-# Copyright 2024, TeamDev. All rights reserved.
+# Copyright 2026, TeamDev. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +23,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
 
 # Requests GitHub to retrieve package names published from a specific repository
 # in the Apache Maven registry on GitHub Packages.
