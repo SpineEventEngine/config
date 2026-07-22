@@ -24,7 +24,7 @@ the target repository.
   [`dokka-for-java.gradle.kts`][dokka-for-java] script.
 
 
-- The script modifies the parent directory during its run. At the end, of its run the script reverts 
+- The script modifies the parent directory during its run. At the end of its run, the script reverts 
   the directory to the initial state.
 
 ### Prerequisites

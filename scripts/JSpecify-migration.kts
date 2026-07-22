@@ -32,7 +32,7 @@ private data class ClassName(val qualifiedName: String) {
 }
 
 /**
- * Creates a replacement API migration instruction
+ * Creates a replacement API migration instruction.
  */
 private fun MutableMap<ClassName, ClassName>.migrate(
     oldClass: String,

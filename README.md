@@ -110,7 +110,7 @@ against these projects:
  * [`core-jvm`][core-jvm].
 
 This takes slightly over half an hour, depending on the local configuration.
-If you need to change the list of repositories, please update `addRepo()` calls to `ConifigTester`.
+If you need to change the list of repositories, please update `addRepo()` calls to `ConfigTester`.
 
 The command to start the build process is:
 ```bash

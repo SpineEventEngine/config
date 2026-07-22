@@ -27,7 +27,7 @@
 import java.io.File
 
 /**
- * Creates a pair of old dependency name and a new one.
+ * Creates a pair of an old dependency name and a new one.
  */
 private fun MutableMap<String, String>.mv(
     oldPackage: String,

@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This is a template file for an actual script which should be
+// This is a template file for an actual script that should be
 // defined by a project to which `config` is applied.
 //
 // The reason for having this file is that it is referenced as

@@ -53,7 +53,7 @@ spinePublishing {
     customPublishing = true
 }
 
-/** The ID of the far JAR artifact. */
+/** The ID of the fat JAR artifact. */
 private val projectArtifact = project.name.replace(":", "")
 
 publishing {
