@@ -411,6 +411,27 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
 fi
 
 if [ "$IS_JVM" = "true" ]; then
+    # Remove stale root-level dependency reports. The `pom.xml` and
+    # `dependencies.md` dependency reports are now generated under
+    # `docs/dependencies` (see `PomGenerator` and `LicenseReporter` in
+    # `buildSrc`); the legacy copies left at the repository root are stale
+    # duplicates that the Codex and Copilot CI reviewers flag on every pull
+    # request. In a Gradle repo a root `pom.xml` is only ever this generated
+    # report (never a real Maven build file), so deleting it is safe. `git rm`
+    # stages the deletion when the file is tracked — the usual case, since the
+    # reports were committed — so the pull's own commit carries the removal; an
+    # untracked working-tree artifact falls back to `rm -f`. Both guards make a
+    # re-run a quiet no-op once the files are gone.
+    for stale_report in pom.xml dependencies.md; do
+        if git ls-files --error-unmatch "$stale_report" >/dev/null 2>&1; then
+            echo "Removing stale root dependency report '$stale_report' (now under docs/dependencies)"
+            git rm --force --quiet "$stale_report"
+        elif [ -f "$stale_report" ]; then
+            echo "Removing stale root dependency report '$stale_report' (now under docs/dependencies)"
+            rm -f "$stale_report"
+        fi
+    done
+
     echo "Adding \`buildSrc\` sources to Git..."
     git add ./buildSrc/src
 fi
