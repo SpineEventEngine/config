@@ -72,7 +72,7 @@ internal constructor(
  *
  * The required information is first retrieved from the project.
  * And if a property is missing from the `project`, it is taken from the `extra` extension
- * of project's root project.
+ * of the project's root project.
  */
 internal fun Project.metadata(): ProjectMetadata {
     val groupId = nonEmptyValue(group, "groupId")
