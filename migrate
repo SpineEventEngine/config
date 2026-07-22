@@ -72,7 +72,58 @@ function initialize() {
 }
 
 echo "Updating IDEA configuration"
+# Preserve a project's `.idea/misc.xml` (do not overwrite it). It is project-local
+# — the per-project JDK name plus IDEA's own churn — so it is ignored and untracked
+# further below; letting this shared `.idea` overlay clobber it with config's copy
+# would defeat that (the reset is git-silent, but still resets the consumer's JDK
+# on every pull). Config's copy still seeds a consumer that has none yet, carrying
+# the shared `EntryPointsManager` / nullness defaults; an existing project-local
+# copy wins. Same approach as `module.gradle.kts` below.
+DEST_MISC="../.idea/misc.xml"
+MISC_PRESERVE_TMP=""
+if [ -f "$DEST_MISC" ]; then
+  echo "Preserving existing \`.idea/misc.xml\`"
+  MISC_PRESERVE_TMP=$(mktemp -t misc.XXXXXX)
+  cp -a "$DEST_MISC" "$MISC_PRESERVE_TMP"
+fi
+
+# Preserve a project's `.idea/copyright/profiles_settings.xml` (do not overwrite it).
+# It selects the default copyright profile, which is project-specific: proprietary
+# repositories keep `TeamDev Proprietary`, while the open-source SDK repositories keep
+# `TeamDev Open-Source`. Letting config's copy clobber it silently re-licenses the
+# consumer's headers (the `update-copyright` hook then applies the wrong notice on the
+# next edit). Config's copy still seeds a consumer that has none yet; an existing
+# project-local copy wins. Unlike `.idea/misc.xml`, this preservation fails closed
+# (aborts on a copy error): a silently switched default copyright profile re-licenses
+# the consumer's source headers, so we must never continue past a failure here.
+DEST_COPYRIGHT="../.idea/copyright/profiles_settings.xml"
+COPYRIGHT_PRESERVE_TMP=""
+if [ -f "$DEST_COPYRIGHT" ]; then
+  echo "Preserving existing \`.idea/copyright/profiles_settings.xml\`"
+  COPYRIGHT_PRESERVE_TMP=$(mktemp -t copyright.XXXXXX)
+  cp -a "$DEST_COPYRIGHT" "$COPYRIGHT_PRESERVE_TMP" \
+    || { echo "ERROR: failed to back up '$DEST_COPYRIGHT' — aborting so the consumer's default copyright profile is not silently switched." >&2; exit 1; }
+fi
+
 cp -R .idea ..
+
+# Restore preserved `.idea/misc.xml`, if any.
+if [ -n "$MISC_PRESERVE_TMP" ] && [ -f "$MISC_PRESERVE_TMP" ]; then
+  echo "Restoring existing \`.idea/misc.xml\`"
+  cp -a "$MISC_PRESERVE_TMP" "$DEST_MISC"
+  rm -f "$MISC_PRESERVE_TMP"
+fi
+
+# Restore preserved `.idea/copyright/profiles_settings.xml`, if any. Fails closed for
+# the same reason as the preservation above — ensure the parent dir exists and abort
+# if the restore copy fails, so the pull never silently changes the default profile.
+if [ -n "$COPYRIGHT_PRESERVE_TMP" ] && [ -f "$COPYRIGHT_PRESERVE_TMP" ]; then
+  echo "Restoring existing \`.idea/copyright/profiles_settings.xml\`"
+  mkdir -p "$(dirname "$DEST_COPYRIGHT")"
+  cp -a "$COPYRIGHT_PRESERVE_TMP" "$DEST_COPYRIGHT" \
+    || { echo "ERROR: failed to restore '$DEST_COPYRIGHT' — aborting so the pull does not silently change the default copyright profile." >&2; exit 1; }
+  rm -f "$COPYRIGHT_PRESERVE_TMP"
+fi
 
 echo "Updating Contributor's Guide"
 # CONTRIBUTING.md is identical org-wide and static; copy it only if the repo
@@ -185,6 +236,14 @@ fi
 # ---------------------------------------------------------------------------
 # Claude settings — the commands/agents/skills come from the submodule above;
 # only the permission settings are repo configuration distributed by `config`.
+#
+# `settings.json` is the SHARED, committed permission layer (org-wide defaults);
+# for a Hugo-only repo the Hugo-tuned `settings-hugo.json` is applied under that
+# name. `settings.local.json` is deliberately NOT distributed: in Claude Code it
+# is the gitignored, per-developer personal-override layer (precedence
+# user < project < local), so a `./config/pull` must never create, overwrite, or
+# delete it — doing any of these wiped a developer's personal overrides or forced
+# the file into Git. Org-wide permissions belong in the two shared templates above.
 # ---------------------------------------------------------------------------
 
 echo "Updating Claude settings"
@@ -192,10 +251,8 @@ mkdir -p ../.claude
 if [ "$IS_HUGO_DOCS" = "true" ] && [ "$IS_JVM" = "false" ]; then
     # Hugo-only repos use the Hugo-tuned permission set.
     cp .claude/settings-hugo.json ../.claude/settings.json
-    rm -f ../.claude/settings.local.json
 else
     cp .claude/settings.json ../.claude/settings.json
-    cp .claude/settings.local.json ../.claude/settings.local.json
 fi
 # settings-hugo.json is a config-internal template (applied as settings.json for
 # Hugo-only repos), never distributed as-is; drop any stale copy an older migrate left.
@@ -276,6 +333,16 @@ if [ "$IS_JVM" = "true" ]; then
     rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/ProtoData.kt
     rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/McJava.kt
 
+    # Remove the retired vanilla-JaCoCo script plugins for the same reason as the
+    # dependency objects above: `config` no longer ships them, but `cp -R buildSrc ..`
+    # cannot delete a consumer's stale copy from an earlier pull. Coverage is now
+    # configured via Kover by the `jvm-module` / `kmp-module` conventions; the
+    # `raise-coverage` skill migrates existing consumers. See
+    # .agents/skills/raise-coverage/references/migrate-to-kover.md.
+    echo "Removing retired JaCoCo script plugins (jacoco-kotlin-jvm, jacoco-kmm-jvm)"
+    rm -f ../buildSrc/src/main/kotlin/jacoco-kotlin-jvm.gradle.kts
+    rm -f ../buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts
+
     echo "Updating GitHub workflows (JVM)"
     copy_workflows .github-workflows
     copy_workflows .github/workflows
@@ -306,6 +373,41 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     else
         echo "Leaving existing core.hooksPath ('$current_hooks') untouched." >&2
     fi
+fi
+
+# ---------------------------------------------------------------------------
+# Make `.idea/misc.xml` project-local. It carries the per-project JDK name and
+# IDEA's own churn (entry-point list indices, external-storage toggles), so a
+# tracked copy collides with the consumer's local IDE state on every
+# `./config/pull`. Two steps:
+#
+#  1. Drop any surviving `!.idea/misc.xml` negation. The shared baseline no
+#     longer rescues the file, but `update-gitignore.sh` preserves a legacy
+#     raw-copied `.gitignore`'s negations into the repo-local block, so the
+#     retired rescue can outlive the baseline and — `.gitignore` being
+#     last-match-wins — un-ignore the file, leaving it `?? .idea/misc.xml`
+#     (which `git add -A` re-adds) instead of ignored. The merge already ran
+#     above; scrub the negation from its result.
+#  2. Untrack any copy an earlier pull committed. `--cached` keeps the working
+#     file; `--force` overrides `git rm`'s up-to-date check so a consumer that
+#     staged `misc.xml` IDE churn (its index differing from both HEAD and the
+#     work tree) is still migrated — otherwise `git rm` fails and, as `migrate`
+#     runs without `set -e`, silently leaves the file tracked. The `git ls-files`
+#     guard makes a re-run a quiet no-op.
+# ---------------------------------------------------------------------------
+if [ -f .gitignore ] && grep -qxF '!.idea/misc.xml' .gitignore; then
+    echo "Dropping the retired '!.idea/misc.xml' negation from .gitignore"
+    gi_tmp=$(mktemp ./.gitignore.XXXXXX)
+    if grep -vxF '!.idea/misc.xml' .gitignore > "$gi_tmp"; then
+        mv "$gi_tmp" .gitignore
+    else
+        rm -f "$gi_tmp"
+    fi
+fi
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+   && git ls-files --error-unmatch .idea/misc.xml >/dev/null 2>&1; then
+    echo "Untracking '.idea/misc.xml' (now project-local, git-ignored)"
+    git rm --cached --force --quiet .idea/misc.xml
 fi
 
 if [ "$IS_JVM" = "true" ]; then

@@ -1,5 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "plansDirectory": ".claude/plans",
   "permissions": {
     "allow": [
       "Bash(git status:*)",
@@ -30,7 +31,9 @@
       "Bash(touch:*)",
       "Bash(python3 .agents/skills/update-copyright/scripts/update_copyright.py:*)",
       "Bash(./config/pull)",
-      "Bash(./config/migrate)"
+      "Bash(./config/migrate)",
+      "Skill(pre-pr)",
+      "Skill(pre-pr:*)"
     ],
     "deny": [
       "Bash(git push:*)",

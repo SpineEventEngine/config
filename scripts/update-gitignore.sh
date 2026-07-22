@@ -88,6 +88,16 @@ secret_end='# <<< secret ignores <<<'
 legacy_local_label='# --- repo-local entries (preserved across ./config/pull) ---'
 legacy_secret_label='# --- secret ignores re-asserted last so a repo-local negation cannot un-ignore a credential ---'
 
+# Negations config once shipped as baseline `!`-re-inclusions but has since retired.
+# A legacy raw-copy consumer (first-migration) — or an already-migrated consumer whose
+# repo-local was written by an earlier first-migration — still carries them. Left in the
+# repo-local region they sit AFTER the managed baseline and, gitignore being
+# last-match-wins, re-include a path the current baseline now ignores. Strip them so the
+# baseline's ignore wins. First entry: `!.idea/misc.xml` (the current baseline dropped its
+# `!.idea/misc.xml` re-inclusion to keep the per-machine IDEA project file untracked).
+# Newline-separated; extend as further negations are retired.
+retired_negations='!.idea/misc.xml'
+
 # Positive secret patterns from the baseline's Secrets section: the span from the
 # `# Secrets` header to the closing `!*.gpg`, excluding comments and negations.
 # (The `# Secrets` header and the trailing `!*.gpg` are asserted as invariants by
@@ -131,16 +141,20 @@ fi
 if grep -qxF "$base_begin" "$dest"; then
   # STEADY STATE — the file already carries our markers. Repo-local entries are
   # everything OUTSIDE the managed blocks, preserved VERBATIM and IN ORDER (no
-  # de-duplication, no filtering). Stripped here: the baseline block, the secrets
-  # block, the repo-local markers themselves (their CONTENT is what we keep), and
-  # any legacy pre-marker scaffolding written by intermediate script versions (the
+  # de-duplication, no reordering). Stripped here: the baseline block, the secrets
+  # block, the repo-local markers themselves (their CONTENT is what we keep), any
+  # legacy pre-marker scaffolding written by intermediate script versions (the
   # `legacy_local_label` and a `legacy_secret_label` trailer that always ran to
-  # end-of-file), matched EXACTLY — so an already-migrated consumer converts to the
-  # marker format exactly once, and a look-alike consumer comment is never dropped.
+  # end-of-file), matched EXACTLY, and any retired baseline negation (see
+  # `retired_negations`) that would otherwise re-include a now-ignored path — so an
+  # already-migrated consumer converts to the marker format exactly once, and a
+  # look-alike consumer comment is never dropped.
   awk -v bb="$base_begin" -v eb="$base_end" \
       -v sb="$secret_begin" -v se="$secret_end" \
       -v lb="$local_begin"  -v le="$local_end" \
-      -v lll="$legacy_local_label" -v lsl="$legacy_secret_label" '
+      -v lll="$legacy_local_label" -v lsl="$legacy_secret_label" \
+      -v rn="$retired_negations" '
+    BEGIN { k = split(rn, r, "\n"); for (i = 1; i <= k; i++) if (r[i] != "") retired[r[i]] = 1 }
     $0 == bb  { inb = 1; next }
     inb       { if ($0 == eb) inb = 0; next }
     $0 == sb  { ins = 1; next }
@@ -149,6 +163,7 @@ if grep -qxF "$base_begin" "$dest"; then
     legacy    { next }
     $0 == lb || $0 == le { next }
     $0 == lll { next }
+    $0 in retired { next }
     { print }
   ' "$dest" | trim_blank_edges > "$locals"
 else
@@ -156,16 +171,22 @@ else
   # with the consumer's own lines appended). One-time best-effort bootstrap: drop
   # lines duplicating a baseline POSITIVE pattern (already in the managed block),
   # keep every negation (a consumer may re-state an exception such as
-  # `!gradle-wrapper.jar` after their own broad ignore) and every custom line.
-  # Keeping negations means a raw baseline copy carries the baseline's OWN
-  # negations (e.g. `!*.gpg`) into the repo-local block on this one pull — cosmetic
-  # and harmless (they re-include already-included paths), and dropping them would
-  # reintroduce the order-sensitive de-dup this rewrite removed, so we don't.
-  # After this run writes the markers, the exact steady-state path above takes
-  # over. `|| true`: a pure raw copy leaves no custom lines, and `grep -v` exits 1
-  # when it selects nothing — not an error here.
+  # `!gradle-wrapper.jar` after their own broad ignore) and every custom line —
+  # EXCEPT a retired baseline negation (see `retired_negations`), which a raw copy
+  # of an older baseline still carries and which, kept in repo-local, would
+  # re-include a path the current baseline now ignores (e.g. `!.idea/misc.xml`).
+  # Keeping the other negations means a raw baseline copy also carries the baseline's
+  # still-current OWN negations (e.g. `!*.gpg`) into the repo-local block on this one
+  # pull — cosmetic and harmless (they re-include already-included paths), and dropping
+  # them wholesale would reintroduce the order-sensitive de-dup this rewrite removed,
+  # so we drop only the retired set. After this run writes the markers, the exact
+  # steady-state path above takes over. `|| true`: a pure raw copy leaves no custom
+  # lines, and `grep -v` exits 1 when it selects nothing — not an error here.
   { grep -vxF -f <(grep -v '^!' "$src") "$dest" || true; } \
-    | awk '!seen[$0]++' | trim_blank_edges > "$locals"
+    | awk -v rn="$retired_negations" \
+        'BEGIN { k = split(rn, r, "\n"); for (i = 1; i <= k; i++) if (r[i] != "") retired[r[i]] = 1 }
+         $0 in retired { next } !seen[$0]++' \
+    | trim_blank_edges > "$locals"
 fi
 
 # Fail closed: re-asserting secrets only matters when there ARE repo-local lines
