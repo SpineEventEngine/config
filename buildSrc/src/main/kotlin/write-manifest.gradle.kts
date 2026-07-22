@@ -99,7 +99,7 @@ val manifestAttributes = mapOf(
 /**
  * Creates a manifest file in `resources` so that it is available for the tests.
  *
- * This task does the same what does the block that configures the `tasks.jar` below.
+ * This task does the same as the block that configures the `tasks.jar` below.
  * We cannot use the manifest file created by the `Jar` task because it's not visible
  * when running tests. We cannot depend on the `Jar` from `resources` because it would
  * form a circular dependency.
