@@ -81,7 +81,7 @@ object LicenseReporter {
      *
      * The task only re-renders already resolved dependency metadata into a small
      * Markdown file, so recomputing it is cheaper than a cache round trip.
-     * Gradle Doctor consistently reports these tasks as
+     * Gradle Doctor consistently reports such tasks as
      * [slower from cache](https://runningcode.github.io/gradle-doctor/slower-from-cache/).
      *
      * Up-to-date checks still apply, so an unchanged project does not re-run the task.
