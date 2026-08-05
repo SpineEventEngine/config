@@ -38,6 +38,8 @@ so config floats stop reverting consumers that already upgraded
 
 - 2026-08-05 — started; scope prescribed by the user request. Commit and
   push are left to the human — changes are staged only.
+- 2026-08-05 — committed and pushed by the human's request as part of
+  PR #740, alongside the `migrate` `ModelCompiler` removal.
 - 2026-08-05 — done and verified: config `./gradlew help` OK;
   gcloud-jvm `:testlib:classes` OK against the synced canonical file
   (byte-identical, so the next float is a no-op there);
