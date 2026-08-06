@@ -114,9 +114,6 @@ object Compiler : Dependency() {
     val gradleApi
         get() = "$group:compiler-gradle-api:$version"
 
-    val cliApi
-        get() = "$group:compiler-cli-api:$version"
-
     val jvmModule = "$group:compiler-jvm"
 
     fun jvm(version: String): String =
@@ -125,8 +122,15 @@ object Compiler : Dependency() {
     val jvm
         get() = jvm(version)
 
+    /**
+     * The all-in-one ("fat") distribution of the Compiler command-line application.
+     *
+     * The artifact is named `compiler-cli-all` because it is published by
+     * the `cliFatJar` publication of the `:cli` module. Keep this name in sync with
+     * the `Artifacts.fatCli()` function of the `compiler-gradle-api` module.
+     */
     val fatCli
-        get() = "$group:compiler-fat-cli:$version"
+        get() = "$group:compiler-cli-all:$version"
 
     val testlib
         get() = "$group:compiler-testlib:$version"
@@ -138,7 +142,6 @@ object Compiler : Dependency() {
             params,
             protocPlugin,
             gradleApi,
-            cliApi,
             jvm,
             fatCli,
             testlib
