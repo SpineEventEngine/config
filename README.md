@@ -142,10 +142,25 @@ name: Ubuntu CI with Google Cloud SDK
 generic workflow into that repository, so only the repo-specific variant runs.
 The directive is an ordinary YAML comment, so GitHub Actions ignores it.
 
-`migrate` never deletes a generic workflow the repository already committed: when
-you first introduce a variant, delete the generic file (e.g. `build-on-ubuntu.yml`)
-by hand once. From then on, `./config/pull` leaves the variant in place and does
-not re-add the generic.
+`migrate` never deletes a generic workflow just because a variant replaced
+it: when you first introduce a variant, delete the generic file
+(e.g. `build-on-ubuntu.yml`) by hand once. From then on, `./config/pull`
+leaves the variant in place and does not re-add the generic.
+
+### Retiring a distributed workflow
+
+Dropping a workflow from this repository is not enough to stop it in the
+consumers — `migrate` overlays files and never deletes them, so every
+repository that received the workflow earlier keeps running it. Retiring one
+therefore takes two steps: delete it here, and add an explicit removal to
+`migrate` (see the `gradle-wrapper-validation.yml` block near the end of that
+script for the pattern). The removal uses `git rm`, so the deletion is staged
+into the pull's own commit.
+
+If the retired workflow was a **required status check** in a repository's
+branch protection, drop it there as well. Otherwise GitHub keeps waiting for
+a status that no workflow will ever report again, and every pull request in
+that repository blocks on it.
 
 ## Further reading
 
