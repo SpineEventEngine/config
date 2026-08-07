@@ -47,8 +47,10 @@ repositories {
 /**
  * The version of Jackson used by `buildSrc`.
  *
- * Please keep this value in sync with [io.spine.dependency.lib.Jackson.version].
- * It is not a requirement but would be good in terms of consistency.
+ * This value is deliberately decoupled from [io.spine.dependency.lib.Jackson.version],
+ * which now points to Jackson 3.x. The `buildSrc` sources still use the Jackson 2.x API
+ * (`com.fasterxml.jackson.*`), so they must stay on a 2.x version until they are migrated
+ * to `tools.jackson.*`. Until then, keep this value on the latest 2.x release.
  */
 val jacksonVersion = "2.18.3"
 
