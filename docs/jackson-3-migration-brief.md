@@ -89,10 +89,11 @@ implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
     - `jackson-datatype-jsr310`
 - Do **not** pin `jackson-annotations` manually. Let the BOM decide; 3.x deliberately consumes a 2.x
   annotations artifact. Report which version the BOM resolves to.
-- `jackson-module-jsonSchema` has no 3.x port and is obsolete. If any module uses it, stop and
-  report — that needs a separate decision, not a mechanical fix.
-- If `jackson-datatype-hibernate` is in use, note that it only reappeared in 3.0.2+; verify
-  availability for 3.2.x.
+- `jackson-module-jsonSchema` was dropped in 3.0 but restored in 3.1. Use
+  `tools.jackson.module:jackson-module-jsonSchema`, or the `-jakarta` variant; the BOM manages
+  both.
+- `jackson-datatype-hibernate` is available: the BOM manages `hibernate4`, `hibernate5`,
+  `hibernate5-jakarta`, `hibernate6`, and `hibernate7` under `tools.jackson.datatype`.
 - Ensure the Java toolchain / `jvmTarget` is 17 or above in every affected module, and check that no
   downstream consumer is still on 11.
 
@@ -346,7 +347,6 @@ substitution:
   dropped entirely, no replacement.
 - `ObjectMapper.canSerialize()` / `canDeserialize()` — removed.
 - `MappingJsonFactory` — removed.
-- `jackson-module-jsonSchema` — obsolete, no 3.x port.
 - `ObjectCodec` — replaced by the `ObjectReadContext` / `ObjectWriteContext` pair; any custom
   streaming integration needs rework.
 - Everything `@Deprecated` as of 2.20 is gone. Before starting, consider building against 2.22.1
