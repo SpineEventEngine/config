@@ -285,7 +285,6 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
         rm -f ../.github/workflows/publish.yml
         rm -f ../.github/workflows/remove-obsolete-artifacts-from-packages.yaml
         rm -f ../.github/workflows/detekt-code-analysis.yml
-        rm -f ../.github/workflows/gradle-wrapper-validation.yml
     fi
 
 fi
@@ -410,6 +409,39 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
    && git ls-files --error-unmatch .idea/misc.xml >/dev/null 2>&1; then
     echo "Untracking '.idea/misc.xml' (now project-local, git-ignored)"
     git rm --cached --force --quiet .idea/misc.xml
+fi
+
+# ---------------------------------------------------------------------------
+# Remove the retired Gradle Wrapper validation workflow. `config` no longer
+# distributes `gradle-wrapper-validation.yml`, but `cp -a` only overlays files —
+# it cannot delete a consumer's copy from an earlier pull, so the workflow would
+# keep running (and keep blocking merges via branch protection) forever.
+#
+# The dedicated `gradle/actions/wrapper-validation` action is redundant for us:
+# every workflow that runs Gradle uses `gradle/actions/setup-gradle`, which
+# validates the wrapper JAR checksum itself. The action's own README says so —
+# "If you are using setup-gradle in your workflows, it is unlikely that you will
+# need to use the wrapper-validation action."
+#
+# Run AFTER the `cd ..` above so `git` resolves against the CONSUMER repository:
+# while the script is still inside `config`, git commands would address the
+# `config` submodule instead. `git rm` stages the deletion — the workflow is a
+# tracked file, so this way the pull's own commit carries the removal rather than
+# leaving it dangling in the working tree. An untracked copy falls back to
+# `rm -f`. Both guards make a re-run a quiet no-op.
+#
+# NOTE: branch protection in each consumer must drop the now-absent
+# "Validate Gradle Wrapper" required check; otherwise its PRs block on a status
+# that will never be reported again.
+# ---------------------------------------------------------------------------
+RETIRED_WORKFLOW=".github/workflows/gradle-wrapper-validation.yml"
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+   && git ls-files --error-unmatch "$RETIRED_WORKFLOW" >/dev/null 2>&1; then
+    echo "Removing retired workflow '$RETIRED_WORKFLOW' (superseded by \`setup-gradle\`)"
+    git rm --force --quiet "$RETIRED_WORKFLOW"
+elif [ -f "$RETIRED_WORKFLOW" ]; then
+    echo "Removing retired workflow '$RETIRED_WORKFLOW' (superseded by \`setup-gradle\`)"
+    rm -f "$RETIRED_WORKFLOW"
 fi
 
 if [ "$IS_JVM" = "true" ]; then
