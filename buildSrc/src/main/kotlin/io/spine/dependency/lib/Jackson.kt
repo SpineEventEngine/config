@@ -75,7 +75,7 @@ object Jackson : DependencyWithBom() {
     @Deprecated(
         "The module was merged into `jackson-databind` in Jackson 3.0" +
                 " and is no longer published.",
-        ReplaceWith("databind"),
+        ReplaceWith("Jackson.databind", "io.spine.dependency.lib.Jackson"),
         level = DeprecationLevel.ERROR
     )
     val moduleParameterNames = "$moduleGroup:jackson-module-parameter-names"
@@ -116,7 +116,7 @@ object Jackson : DependencyWithBom() {
         @Deprecated(
             "The module was merged into `jackson-databind` in Jackson 3.0" +
                     " and is no longer published.",
-            ReplaceWith("Jackson.databind"),
+            ReplaceWith("Jackson.databind", "io.spine.dependency.lib.Jackson"),
             level = DeprecationLevel.ERROR
         )
         val jdk8 = "$group:$infix-jdk8"
@@ -124,7 +124,7 @@ object Jackson : DependencyWithBom() {
         @Deprecated(
             "The module was merged into `jackson-databind` in Jackson 3.0" +
                     " and is no longer published.",
-            ReplaceWith("Jackson.databind"),
+            ReplaceWith("Jackson.databind", "io.spine.dependency.lib.Jackson"),
             level = DeprecationLevel.ERROR
         )
         val dateTime = "$group:$infix-jsr310"
@@ -135,7 +135,7 @@ object Jackson : DependencyWithBom() {
         @Deprecated(
             "Protobuf support is a data format, not a data type." +
                     " The `$infix-protobuf` artifact has never been published.",
-            ReplaceWith("Jackson.DataFormat.protobuf"),
+            ReplaceWith("Jackson.DataFormat.protobuf", "io.spine.dependency.lib.Jackson"),
             level = DeprecationLevel.ERROR
         )
         val protobuf = "$group:$infix-protobuf"

@@ -31,7 +31,7 @@ If a newer `3.2.z` exists, use it and note the change in the final report. Do **
 
 1. **Do not change wire format silently.** Several 3.x defaults alter serialized output (property
    order, enum representation, date representation). Any such change must be either explicitly
-   preserved or explicitly approved. See §7.
+   preserved or explicitly approved. See §8.
 2. **Do not touch `com.fasterxml.jackson.annotation`.** That package and group ID stay on 2.x by
    design in Jackson 3. Blanket search-and-replace across the whole tree is a bug, not a shortcut.
 3. **One repository per change set.** Jackson 2.x and 3.x coexist on a classpath (different group
@@ -56,10 +56,10 @@ Produce a written inventory and show it before making changes:
 3. **Persistence and API boundaries.** Every place Jackson output is written somewhere durable or
    crosses a public contract: stored snapshots, projections, archived event payloads, message queue
    bodies, HTTP response bodies, config files on disk, golden/approval test fixtures. This list
-   drives §7 and is the highest-risk part of the migration.
+   drives §8 and is the highest-risk part of the migration.
 4. Every custom `JsonSerializer` / `JsonDeserializer` / `Module` / `BeanSerializerModifier`
    implementation.
-5. Every `catch` clause that catches `IOException` around a Jackson call (see §8 — this is the
+5. Every `catch` clause that catches `IOException` around a Jackson call (see §9 — this is the
    Kotlin-specific silent hazard).
 
 ---
