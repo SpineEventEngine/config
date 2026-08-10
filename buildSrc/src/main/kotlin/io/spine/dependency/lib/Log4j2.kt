@@ -37,7 +37,8 @@ package io.spine.dependency.lib
  */
 @Suppress("unused", "ConstPropertyName")
 object Log4j2 {
-    private const val version = "2.26.0"
+    const val version = "2.26.1"
+
     const val core = "org.apache.logging.log4j:log4j-core:$version"
 
     /**
@@ -46,9 +47,12 @@ object Log4j2 {
      * Add this artifact when a third-party library logs via SLF4J — such as Micronaut —
      * and its output should reach the Log4j2 backend of the application.
      *
-     * This is the binding for SLF4J 2.x, which [Slf4J] declares. The `log4j-slf4j-impl`
-     * artifact, which serves SLF4J 1.7, must not be on the same classpath.
+     * The artifact is `log4j-slf4j2-impl`, the binding for the SLF4J 2.x that [Slf4J]
+     * declares. Do not substitute `log4j-slf4j-impl`: it binds SLF4J 1.7 only, and
+     * under SLF4J 2.x it registers no provider, which leaves the logging silently
+     * unbound instead of failing the build.
+     *
+     * @see <a href="https://logging.apache.org/log4j/2.x/log4j-slf4j2-impl/">Log4j2 SLF4J 2.x binding</a>
      */
-    // https://central.sonatype.com/artifact/org.apache.logging.log4j/log4j-slf4j2-impl
     const val slf4j2Bridge = "org.apache.logging.log4j:log4j-slf4j2-impl:$version"
 }
