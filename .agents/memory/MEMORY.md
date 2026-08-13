@@ -16,6 +16,7 @@ See [README.md](README.md) for the format and routing rules.
 - [config-build-verification](project/config-build-verification.md) — config root has no `build` task; verify buildSrc via `./gradlew :buildSrc:test detekt` with JAVA_HOME exported.
 - [plugin-testkit-assertions-live-in-tool-base](project/plugin-testkit-assertions-live-in-tool-base.md) — Generic Gradle-plugin functional-test assertions (testkit-truth) belong in tool-base/plugin-testlib, not per-plugin `*-testlib` modules.
 - [gradle-10-third-party-deprecations](project/gradle-10-third-party-deprecations.md) — Two Gradle 9.6 deprecation nags come from Detekt and Gradle Doctor (not our build logic) — don't chase them in `buildSrc`; Kover's was fixed by bumping to 0.9.9.
+- [pom-report-per-project-collectors](project/pom-report-per-project-collectors.md) — `generatePom` must never resolve other projects' configurations; capturing `rootComponent` `Provider`s does not help — per-project collector tasks are the working design.
 
 ## Reference (external systems)
 
