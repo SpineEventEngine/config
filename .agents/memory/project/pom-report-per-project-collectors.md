@@ -21,8 +21,7 @@ the root task's `doLast`, swallowed the lock failure at `info`, and fell back to
 declared versions — producing a `pom.xml` that differed between `gradle build`
 and `gradle generatePom` and emitting false "several versions" warnings
 (discovered in `compiler`, task `pom-report-cross-project-resolution`). Both the
-direct and the captured-`Provider` variants were disproved empirically on
-Gradle 9.6.1.
+direct and the captured-`Provider` variants were disproved empirically on Gradle 9.6.1.
 
 **How to apply:** when changing the pom report or porting it, keep resolution
 inside each project's own task. Keep the full `isCanBeResolved` configuration

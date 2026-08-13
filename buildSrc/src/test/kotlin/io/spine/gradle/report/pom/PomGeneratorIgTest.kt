@@ -147,6 +147,11 @@ internal class PomGeneratorIgTest {
 
         result.output shouldContain
                 "The project uses several versions of `$CONFLICTING_LIB` dependency."
+        // A module that fails to resolve is genuinely unreconciled, too:
+        // both declared versions fall back into the report, and the conflict
+        // between them is legitimately warned about.
+        result.output shouldContain
+                "The project uses several versions of `$STRICT_LIB` dependency."
         result.output shouldNotContain "several versions of `$FORCED_LIB`"
     }
 

@@ -4,6 +4,8 @@ branch: fix-pom-report-resolution
 owner: claude
 status: in-review
 started: 2026-08-12
+related-memories:
+  - pom-report-per-project-collectors
 ---
 
 ## Goal
@@ -130,8 +132,7 @@ Roughly 40 configurations per subproject are skipped in the standalone run.
       (`ResolvedVersions.kt`) resolves only the configurations of its own
       project — lock-safe by construction — and writes `group:name=version`
       lines under `build/pom/`; `generatePom` depends on the collectors and
-      merges their outputs. Mirrors the `LicenseReporter` per-project +
-      merge-task structure.
+      merges their outputs. Mirrors the `LicenseReporter` per-project + merge-task structure.
 - [x] ~~Narrow the set of configurations consulted~~ — **rejected, on
       purpose**: declared dependencies are collected from *all* configurations,
       so dropping resolution of plugin-owned ones would fall back to declared
@@ -141,8 +142,7 @@ Roughly 40 configurations per subproject are skipped in the standalone run.
       in one module, version-less in another), so with resolution narrowed to
       the four source-set classpaths the report would again warn and emit
       version-less entries. The full `isCanBeResolved` scope is kept; the cost
-      concern is addressed by the collectors running in parallel, one per
-      project.
+      concern is addressed by the collectors running in parallel, one per project.
 - [x] Stop the silent degradation: the catch is **removed entirely**. Probed
       empirically on Gradle 9.6.1: reading a resolution graph is lenient — an
       unresolvable module, a `failOnVersionConflict()` casualty, and even a
