@@ -153,7 +153,7 @@ object Jackson : DependencyWithBom() {
         val javaXMoney = "$group:$infix-javax-money"
 
         // https://github.com/FasterXML/jackson-datatypes-misc/tree/3.x/moneta
-        val moneta = "$group:jackson-datatype-moneta"
+        val moneta = "$group:$infix-moneta"
 
         override val modules = listOf(
             guava,
