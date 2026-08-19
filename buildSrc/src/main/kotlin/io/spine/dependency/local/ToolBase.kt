@@ -45,7 +45,7 @@ object ToolBase {
      *
      * The artifact is no longer published as of `2.0.0-SNAPSHOT.420`. Replace it
      * with the modules a project actually uses: [archive], [code], [fs],
-     * [javaCode], [jsCode], [dartCode], [kotlinCode], or [protoCode].
+     * [javaCode], [kotlinCode], or [protoCode].
      *
      * `io.spine.tools.OsFamily`, which this module also carried, now lives in
      * Base Libraries as `io.spine.environment.OsFamily`.
@@ -58,8 +58,6 @@ object ToolBase {
     const val fs = "$group:fs:$version"
 
     const val javaCode = "$group:java-code:$version"
-    const val jsCode = "$group:js-code:$version"
-    const val dartCode = "$group:dart-code:$version"
     const val kotlinCode = "$group:kotlin-code:$version"
     const val protoCode = "$group:proto-code:$version"
 
