@@ -59,22 +59,53 @@ object CoreJvmCompiler {
     const val pluginId = "io.spine.core-jvm"
 
     /**
-     * The library with the [dogfoodingVersion].
+     * The library carrying the CoreJvm Gradle Plugin with the [dogfoodingVersion].
+     *
+     * For the versions published before the split of the `plugins` module of
+     * CoreJvm Compiler, the plugin classes come with the fat JAR artifact.
+     * Once the [dogfoodingVersion] is bumped to a version published after
+     * the split — `2.0.0-SNAPSHOT.090` or later — switch this property
+     * to [gradlePluginLib].
      */
     val pluginLib = pluginLib(dogfoodingVersion)
 
     /**
-     * The name of the published fat JAR artifact.
+     * The name of the published fat JAR artifact with the Spine Compiler plugins.
      */
     const val fatJarArtifact = "core-jvm-plugins"
 
     /**
-     * The library with the given [version].
+     * The name of the published artifact with the CoreJvm Gradle Plugin.
+     *
+     * The artifact exists since version `2.0.0-SNAPSHOT.090`. Its POM declares
+     * a runtime dependency on [the fat JAR][fatJarArtifact].
      */
-    fun pluginLib(version: String): String = "$group:core-jvm-plugins:$version"
+    const val gradlePluginArtifact = "core-jvm-gradle-plugin"
+
+    /**
+     * The library with the given [version].
+     *
+     * For the versions published after the split of the `plugins` module,
+     * prefer [gradlePluginLib] for the Gradle plugin, and [fatJarLib] for
+     * the fat JAR with the Compiler plugins.
+     */
+    fun pluginLib(version: String): String = fatJarLib(version)
+
+    /**
+     * The fat JAR library with the given [version].
+     */
+    fun fatJarLib(version: String): String = "$group:$fatJarArtifact:$version"
+
+    /**
+     * The CoreJvm Gradle Plugin library with the given [version].
+     *
+     * Only versions published after the split of the `plugins` module —
+     * `2.0.0-SNAPSHOT.090` or later — provide this artifact.
+     */
+    fun gradlePluginLib(version: String): String = "$group:$gradlePluginArtifact:$version"
 
     /**
      * The artifact reference for forcing in configurations.
      */
-    val pluginsArtifact: String = pluginLib(version)
+    val pluginsArtifact: String = fatJarLib(version)
 }
