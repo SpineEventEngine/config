@@ -93,10 +93,16 @@ legacy_secret_label='# --- secret ignores re-asserted last so a repo-local negat
 # repo-local was written by an earlier first-migration — still carries them. Left in the
 # repo-local region they sit AFTER the managed baseline and, gitignore being
 # last-match-wins, re-include a path the current baseline now ignores. Strip them so the
-# baseline's ignore wins. First entry: `!.idea/misc.xml` (the current baseline dropped its
-# `!.idea/misc.xml` re-inclusion to keep the per-machine IDEA project file untracked).
-# Newline-separated; extend as further negations are retired.
-retired_negations='!.idea/misc.xml'
+# baseline's ignore wins. Both current entries are IDEA project files the baseline once
+# re-included and now keeps ignored because the IDE rewrites them on its own:
+# `!.idea/misc.xml` (per-project JDK name) and `!.idea/kotlinc.xml` (Kotlin compiler
+# settings — JVM target, bundled plugin version).
+# Newline-separated; extend as further negations are retired. The list reaches `awk`
+# through the ENVIRONMENT, not `-v`: an `-v` assignment runs escape processing and
+# cannot carry an embedded newline, so a multi-entry list fails there with
+# "newline in string". `ENVIRON[]` passes the value through verbatim.
+retired_negations='!.idea/misc.xml
+!.idea/kotlinc.xml'
 
 # Positive secret patterns from the baseline's Secrets section: the span from the
 # `# Secrets` header to the closing `!*.gpg`, excluding comments and negations.
@@ -149,12 +155,13 @@ if grep -qxF "$base_begin" "$dest"; then
   # `retired_negations`) that would otherwise re-include a now-ignored path — so an
   # already-migrated consumer converts to the marker format exactly once, and a
   # look-alike consumer comment is never dropped.
+  RETIRED_NEGATIONS="$retired_negations" \
   awk -v bb="$base_begin" -v eb="$base_end" \
       -v sb="$secret_begin" -v se="$secret_end" \
       -v lb="$local_begin"  -v le="$local_end" \
-      -v lll="$legacy_local_label" -v lsl="$legacy_secret_label" \
-      -v rn="$retired_negations" '
-    BEGIN { k = split(rn, r, "\n"); for (i = 1; i <= k; i++) if (r[i] != "") retired[r[i]] = 1 }
+      -v lll="$legacy_local_label" -v lsl="$legacy_secret_label" '
+    BEGIN { k = split(ENVIRON["RETIRED_NEGATIONS"], r, "\n")
+            for (i = 1; i <= k; i++) if (r[i] != "") retired[r[i]] = 1 }
     $0 == bb  { inb = 1; next }
     inb       { if ($0 == eb) inb = 0; next }
     $0 == sb  { ins = 1; next }
@@ -183,8 +190,9 @@ else
   # steady-state path above takes over. `|| true`: a pure raw copy leaves no custom
   # lines, and `grep -v` exits 1 when it selects nothing — not an error here.
   { grep -vxF -f <(grep -v '^!' "$src") "$dest" || true; } \
-    | awk -v rn="$retired_negations" \
-        'BEGIN { k = split(rn, r, "\n"); for (i = 1; i <= k; i++) if (r[i] != "") retired[r[i]] = 1 }
+    | RETIRED_NEGATIONS="$retired_negations" awk \
+        'BEGIN { k = split(ENVIRON["RETIRED_NEGATIONS"], r, "\n")
+                 for (i = 1; i <= k; i++) if (r[i] != "") retired[r[i]] = 1 }
          $0 in retired { next } !seen[$0]++' \
     | trim_blank_edges > "$locals"
 fi
