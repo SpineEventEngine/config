@@ -24,20 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.spine.dependency.lib
-
-import io.spine.dependency.Dependency
-
 /**
- * Palantir Java Format.
+ * Anchors this build so that Gradle does not search parent directories for
+ * a settings file.
  *
- * @see <a href="https://github.com/palantir/palantir-java-format">GitHub Repo</a>
+ * Without it, checking `config` out inside a superproject that has its own
+ * settings file (such as `SpineEventEngine/summit`) makes Gradle bind this
+ * directory to that build and fail with "is not part of the build defined by
+ * settings file ...".
+ *
+ * The name matches the one Gradle previously derived from the project
+ * directory, so nothing else about the build changes.
  */
-object PalantirJavaFormat : Dependency() {
-
-    override val group = "com.palantir.javaformat"
-    override val version = "2.97.0"
-    override val modules: List<String> = listOf("$group:palantir-java-format")
-
-    val lib = artifact(modules[0])
-}
+rootProject.name = "config"
