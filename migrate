@@ -72,20 +72,26 @@ function initialize() {
 }
 
 echo "Updating IDEA configuration"
-# Preserve a project's `.idea/misc.xml` (do not overwrite it). It is project-local
-# — the per-project JDK name plus IDEA's own churn — so it is ignored and untracked
-# further below; letting this shared `.idea` overlay clobber it with config's copy
-# would defeat that (the reset is git-silent, but still resets the consumer's JDK
-# on every pull). Config's copy still seeds a consumer that has none yet, carrying
-# the shared `EntryPointsManager` / nullness defaults; an existing project-local
-# copy wins. Same approach as `module.gradle.kts` below.
-DEST_MISC="../.idea/misc.xml"
-MISC_PRESERVE_TMP=""
-if [ -f "$DEST_MISC" ]; then
-  echo "Preserving existing \`.idea/misc.xml\`"
-  MISC_PRESERVE_TMP=$(mktemp -t misc.XXXXXX)
-  cp -a "$DEST_MISC" "$MISC_PRESERVE_TMP"
-fi
+# Preserve a project's IDE-managed `.idea` files (do not overwrite them). Both are
+# project-local — `misc.xml` carries the per-project JDK name plus IDEA's own churn,
+# `kotlinc.xml` the Kotlin compiler settings (JVM target, bundled plugin version) —
+# so both are ignored and untracked further below; letting this shared `.idea` overlay
+# clobber them with config's copies would defeat that (the reset is git-silent, but
+# still resets the consumer's JDK and Kotlin settings on every pull). Config tracks
+# neither file, so its copies are whatever the puller's own checkout happens to hold.
+# Such a copy still seeds a consumer that has none yet; an existing project-local copy
+# wins. Same approach as `module.gradle.kts` below.
+IDE_LOCAL_FILES=(.idea/misc.xml .idea/kotlinc.xml)
+IDE_LOCAL_TMP=()
+for ide_local in "${IDE_LOCAL_FILES[@]}"; do
+  preserved=""
+  if [ -f "../$ide_local" ]; then
+    echo "Preserving existing \`$ide_local\`"
+    preserved=$(mktemp -t "$(basename "$ide_local")".XXXXXX)
+    cp -a "../$ide_local" "$preserved"
+  fi
+  IDE_LOCAL_TMP+=("$preserved")
+done
 
 # Preserve a project's `.idea/copyright/profiles_settings.xml` (do not overwrite it).
 # It selects the default copyright profile, which is project-specific: proprietary
@@ -107,12 +113,16 @@ fi
 
 cp -R .idea ..
 
-# Restore preserved `.idea/misc.xml`, if any.
-if [ -n "$MISC_PRESERVE_TMP" ] && [ -f "$MISC_PRESERVE_TMP" ]; then
-  echo "Restoring existing \`.idea/misc.xml\`"
-  cp -a "$MISC_PRESERVE_TMP" "$DEST_MISC"
-  rm -f "$MISC_PRESERVE_TMP"
-fi
+# Restore the preserved IDE-managed `.idea` files, if any.
+for i in "${!IDE_LOCAL_FILES[@]}"; do
+  ide_local="${IDE_LOCAL_FILES[$i]}"
+  preserved="${IDE_LOCAL_TMP[$i]}"
+  if [ -n "$preserved" ] && [ -f "$preserved" ]; then
+    echo "Restoring existing \`$ide_local\`"
+    cp -a "$preserved" "../$ide_local"
+    rm -f "$preserved"
+  fi
+done
 
 # Restore preserved `.idea/copyright/profiles_settings.xml`, if any. Fails closed for
 # the same reason as the preservation above — ensure the parent dir exists and abort
@@ -377,39 +387,48 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 # ---------------------------------------------------------------------------
-# Make `.idea/misc.xml` project-local. It carries the per-project JDK name and
-# IDEA's own churn (entry-point list indices, external-storage toggles), so a
-# tracked copy collides with the consumer's local IDE state on every
-# `./config/pull`. Two steps:
+# Make the IDE-managed `.idea` project files project-local:
 #
-#  1. Drop any surviving `!.idea/misc.xml` negation. The shared baseline no
-#     longer rescues the file, but `update-gitignore.sh` preserves a legacy
+#   * `.idea/misc.xml`    — the per-project JDK name plus IDEA's own churn
+#                           (entry-point list indices, external-storage toggles).
+#   * `.idea/kotlinc.xml` — the Kotlin compiler settings IDEA rewrites on its own
+#                           (JVM target, bundled Kotlin plugin version).
+#
+# IDEA rewrites both without the developer touching them, so a tracked copy
+# collides with the consumer's local IDE state on every `./config/pull`. Two
+# steps per file:
+#
+#  1. Drop any surviving `!<file>` negation. The shared baseline no longer
+#     rescues these files, but `update-gitignore.sh` preserves a legacy
 #     raw-copied `.gitignore`'s negations into the repo-local block, so the
 #     retired rescue can outlive the baseline and — `.gitignore` being
-#     last-match-wins — un-ignore the file, leaving it `?? .idea/misc.xml`
-#     (which `git add -A` re-adds) instead of ignored. The merge already ran
-#     above; scrub the negation from its result.
+#     last-match-wins — un-ignore the file, leaving it `?? <file>` (which
+#     `git add -A` re-adds) instead of ignored. The merge already ran above;
+#     scrub the negation from its result. Kept in step with the
+#     `retired_negations` list in `scripts/update-gitignore.sh`.
 #  2. Untrack any copy an earlier pull committed. `--cached` keeps the working
 #     file; `--force` overrides `git rm`'s up-to-date check so a consumer that
-#     staged `misc.xml` IDE churn (its index differing from both HEAD and the
-#     work tree) is still migrated — otherwise `git rm` fails and, as `migrate`
-#     runs without `set -e`, silently leaves the file tracked. The `git ls-files`
+#     staged IDE churn (the index differing from both HEAD and the work tree)
+#     is still migrated — otherwise `git rm` fails and, as `migrate` runs
+#     without `set -e`, silently leaves the file tracked. The `git ls-files`
 #     guard makes a re-run a quiet no-op.
 # ---------------------------------------------------------------------------
-if [ -f .gitignore ] && grep -qxF '!.idea/misc.xml' .gitignore; then
-    echo "Dropping the retired '!.idea/misc.xml' negation from .gitignore"
-    gi_tmp=$(mktemp ./.gitignore.XXXXXX)
-    if grep -vxF '!.idea/misc.xml' .gitignore > "$gi_tmp"; then
-        mv "$gi_tmp" .gitignore
-    else
-        rm -f "$gi_tmp"
+for ide_file in .idea/misc.xml .idea/kotlinc.xml; do
+    if [ -f .gitignore ] && grep -qxF "!$ide_file" .gitignore; then
+        echo "Dropping the retired '!$ide_file' negation from .gitignore"
+        gi_tmp=$(mktemp ./.gitignore.XXXXXX)
+        if grep -vxF "!$ide_file" .gitignore > "$gi_tmp"; then
+            mv "$gi_tmp" .gitignore
+        else
+            rm -f "$gi_tmp"
+        fi
     fi
-fi
-if git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
-   && git ls-files --error-unmatch .idea/misc.xml >/dev/null 2>&1; then
-    echo "Untracking '.idea/misc.xml' (now project-local, git-ignored)"
-    git rm --cached --force --quiet .idea/misc.xml
-fi
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+       && git ls-files --error-unmatch "$ide_file" >/dev/null 2>&1; then
+        echo "Untracking '$ide_file' (now project-local, git-ignored)"
+        git rm --cached --force --quiet "$ide_file"
+    fi
+done
 
 # ---------------------------------------------------------------------------
 # Remove the retired Gradle Wrapper validation workflow. `config` no longer
