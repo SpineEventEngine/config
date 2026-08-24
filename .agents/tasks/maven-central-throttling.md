@@ -136,6 +136,26 @@ for the network.
 
 ### Phase 2 — Shared offline stub fixture  (`tool-base`)
 
+**On hold (2026-08-21) — upstream fix in flight.** The root cause is now
+filed as [gradle/gradle#38915], and [gradle/gradle#38918] — an open
+community PR, `Fixes #38915` — replaces `TestInMemoryCacheFactory` with
+`DefaultCacheFactory` in `ProjectBuilder` services, so stub projects would
+reuse the real dependency cache. If it lands, the fixture rollout below
+shrinks to a Gradle wrapper upgrade (`bump-gradle`) across repos, and
+`core-jvm-compiler` keeps its local fixture merely as a zero-network
+guarantee rather than a necessity.
+
+Hold conditions:
+
+- Keep `core-jvm-compiler`'s local fixture as is; do NOT migrate
+  `compiler`/`validation` onto the pattern yet.
+- Re-check the PR's state before starting any item below. As of filing it
+  is untriaged (no milestone, external contributor), so the timeline is
+  uncertain — do not wait indefinitely.
+- Resume this phase as planned if the PR is rejected, stalls past a
+  quarter, or another `ProjectBuilder`-driven block occurs before a fixed
+  Gradle release is adopted here.
+
 - [ ] Promote the `StubResolution` pattern into `plugin-testlib`, so that
       `compiler`, `validation`, and `core-jvm-compiler` share one
       implementation: offline enforcement, the stub-repository property,
@@ -248,7 +268,14 @@ incident. Then **stop making requests** from that machine and wait.
   Phase 2). Confirmed upstream context: [gradle/gradle#37880] tracks the
   repository-error-aborts-resolution behavior (cause 3), and no public Gradle
   source documents the `ProjectBuilder` in-memory-cache behavior (cause 1).
+- 2026-08-21 — filed [gradle/gradle#38915] for cause 1 (the
+  `ProjectBuilder` in-memory-cache behavior); [gradle/gradle#38918]
+  appeared the same day fixing it via `DefaultCacheFactory`. **Phase 2
+  rollout put on hold** pending the PR's fate — see the note under
+  Phase 2 for the hold and resume conditions.
 
 [faq]: https://central.sonatype.org/faq/429-error/
 [core-jvm-compiler#111]: https://github.com/SpineEventEngine/core-jvm-compiler/pull/111
 [gradle/gradle#37880]: https://github.com/gradle/gradle/issues/37880
+[gradle/gradle#38915]: https://github.com/gradle/gradle/issues/38915
+[gradle/gradle#38918]: https://github.com/gradle/gradle/pull/38918
