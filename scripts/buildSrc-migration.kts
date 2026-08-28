@@ -72,7 +72,6 @@ private val libraries = buildMap {
     mv(old, new, "Aedile")
     mv(old, new, "Clikt")
     mv(old, new, "ApacheHttp")
-    mv(old, new, "AppEngine")
     mv(old, new, "Auto")
     mv(old, new, "BouncyCastle")
     mv(old, new, "Caffeine")
