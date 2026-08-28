@@ -35,6 +35,6 @@ package io.spine.dependency.build
  */
 @Suppress("ConstPropertyName")
 object JSpecify {
-    const val version = "1.0.0"
+    const val version = "1.0.1"
     const val annotations = "org.jspecify:jspecify:$version"
 }

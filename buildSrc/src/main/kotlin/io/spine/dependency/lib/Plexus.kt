@@ -43,6 +43,6 @@ object Plexus {
      *
      * @see <a href="https://github.com/codehaus-plexus/plexus-utils/releases/tag/plexus-utils-4.0.0">plexus-utils-4.0.0</a>
      */
-    private const val version = "4.0.3"
+    private const val version = "4.1.0"
     const val utils = "org.codehaus.plexus:plexus-utils:$version"
 }

@@ -35,7 +35,7 @@ object ErrorProne {
      * The version 2.43.0 requires JDK 21.
      * https://github.com/google/error-prone/releases/tag/v2.43.0
      */
-    private const val version = "2.42.0"
+    private const val version = "2.50.0"
 
     const val group = "com.google.errorprone"
 
@@ -61,7 +61,7 @@ object ErrorProne {
          * When the plugin is used as a library (e.g., in tools), its version and the library
          * artifacts are of importance.
          */
-        const val version = "5.1.0"
+        const val version = "5.1.1"
         const val lib = "net.ltgt.gradle:gradle-errorprone-plugin:$version"
     }
 }
