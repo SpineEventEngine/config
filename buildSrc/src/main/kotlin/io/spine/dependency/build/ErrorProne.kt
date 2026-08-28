@@ -35,7 +35,7 @@ object ErrorProne {
      * The version 2.43.0 requires JDK 21.
      * https://github.com/google/error-prone/releases/tag/v2.43.0
      */
-    private const val version = "2.50.0"
+    private const val version = "2.42.0"
 
     const val group = "com.google.errorprone"
 

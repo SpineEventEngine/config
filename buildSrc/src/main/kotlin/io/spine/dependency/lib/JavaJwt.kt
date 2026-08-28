@@ -40,7 +40,7 @@ object JavaJwt {
      * There's a v4.x.x series (e.g., https://github.com/auth0/java-jwt/releases/tag/4.4.0), but
      * it introduces breaking changes. Consider upgrading to it when we're ready to migrate.
      */
-    private const val version = "4.6.0"
+    private const val version = "3.19.4"
 
     const val lib = "com.auth0:java-jwt:$version"
 }
