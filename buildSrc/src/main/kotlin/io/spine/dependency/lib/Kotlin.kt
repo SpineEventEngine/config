@@ -35,8 +35,7 @@ import io.spine.dependency.DependencyWithBom
 object Kotlin : DependencyWithBom() {
 
     /**
-     * This is the version of Kotlin we use for writing code that does not
-     * depend on Gradle.
+     * This is the version of Kotlin we use for writing code that does not depend on Gradle.
      */
     @Suppress("MemberVisibilityCanBePrivate") // used directly from the outside.
     const val runtimeVersion = "2.4.10"
@@ -52,8 +51,8 @@ object Kotlin : DependencyWithBom() {
      * `org.jetbrains.kotlin:kotlin-compiler-embeddable` artifact that packages
      * the compiler for use inside another application.
      *
-     * Despite the name, it is not the version of
-     * [Kotlin embedded into Gradle](https://docs.gradle.org/current/userguide/compatibility.html#kotlin),
+     * Despite the name, it is not the version of Kotlin
+     * [embedded into Gradle](https://docs.gradle.org/current/userguide/compatibility.html#kotlin),
      * which the Gradle version determines on its own.
      */
     const val embeddedVersion = "2.4.10"
