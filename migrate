@@ -344,6 +344,13 @@ if [ "$IS_JVM" = "true" ]; then
     rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/ModelCompiler.kt
     rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/local/McJava.kt
 
+    # Remove the retired `AppEngine` dependency object for the same reason. App Engine
+    # is not a target platform of the SDK: nothing in the organization depends on
+    # `appengine-api-1.0-sdk`, and the only App Engine deployment (`delivery-server`)
+    # declares the Gradle plugin version in its own `buildSrc`.
+    echo "Removing the retired \`AppEngine\` dependency object"
+    rm -f ../buildSrc/src/main/kotlin/io/spine/dependency/lib/AppEngine.kt
+
     # Remove the retired vanilla-JaCoCo script plugins for the same reason as the
     # dependency objects above: `config` no longer ships them, but `cp -R buildSrc ..`
     # cannot delete a consumer's stale copy from an earlier pull. Coverage is now
