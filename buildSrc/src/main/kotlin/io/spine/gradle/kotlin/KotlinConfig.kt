@@ -69,11 +69,20 @@ fun KotlinCommonCompilerOptions.setFreeCompilerArgs() {
         // Native code cannot use the API anyway.
         optIns.add("kotlin.io.path.ExperimentalPathApi")
     }
+    // `-Xcontext-parameters` is deliberately absent. Context parameters are
+    // no longer experimental in the Kotlin version we pin, so at its default
+    // language version (2.4) the flag only produces
+    // "The argument '-Xcontext-parameters' is redundant for the current
+    // language version 2.4."
+    //
+    // Re-add it if Kotlin is ever downgraded below 2.4, or if a compilation
+    // that uses context parameters pins a lower language version. The
+    // precompiled script plugins compile at the language version Gradle
+    // embeds, but they do not use the feature.
     freeCompilerArgs.addAll(
         listOf(
             "-Xskip-prerelease-check",
             "-Xexpect-actual-classes",
-            "-Xcontext-parameters",
             "-opt-in=" + optIns.joinToString(separator = ","),
         )
     )
