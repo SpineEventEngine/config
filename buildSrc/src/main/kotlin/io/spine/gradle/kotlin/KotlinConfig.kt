@@ -52,6 +52,9 @@ fun KotlinJvmProjectExtension.applyJvmToolchain(version: String) =
 
 /**
  * Opts-in to experimental features that we use in our codebase.
+ *
+ * One flag is deliberately withheld rather than passed — see the comment on
+ * `-Xcontext-parameters` in the body.
  */
 @Suppress("unused")
 fun KotlinCommonCompilerOptions.setFreeCompilerArgs() {
