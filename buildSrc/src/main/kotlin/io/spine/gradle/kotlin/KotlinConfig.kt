@@ -76,9 +76,13 @@ fun KotlinCommonCompilerOptions.setFreeCompilerArgs() {
     // language version 2.4."
     //
     // Re-add it if Kotlin is ever downgraded below 2.4, or if a compilation
-    // that uses context parameters pins a lower language version. The
-    // precompiled script plugins compile at the language version Gradle
-    // embeds, but they do not use the feature.
+    // this function configures pins a lower language version while using the
+    // feature. (Precompiled script plugins compile against the Kotlin that
+    // Gradle embeds and are not configured here.)
+    //
+    // The same applies to the `-X` flags below on every Kotlin bump: once a
+    // feature stabilises, its flag starts reporting itself as redundant.
+    // `-Xexpect-actual-classes` is the next one on that path.
     freeCompilerArgs.addAll(
         listOf(
             "-Xskip-prerelease-check",
