@@ -52,6 +52,9 @@ fun KotlinJvmProjectExtension.applyJvmToolchain(version: String) =
 
 /**
  * Opts-in to experimental features that we use in our codebase.
+ *
+ * One flag is deliberately withheld rather than passed — see the comment on
+ * `-Xcontext-parameters` in the body.
  */
 @Suppress("unused")
 fun KotlinCommonCompilerOptions.setFreeCompilerArgs() {
@@ -69,11 +72,23 @@ fun KotlinCommonCompilerOptions.setFreeCompilerArgs() {
         // Native code cannot use the API anyway.
         optIns.add("kotlin.io.path.ExperimentalPathApi")
     }
+    // `-Xcontext-parameters` is deliberately absent. Context parameters are
+    // no longer experimental in the Kotlin version we pin, so at its default
+    // language version (2.4) the flag only produces
+    // "The argument '-Xcontext-parameters' is redundant for the current
+    // language version 2.4."
+    //
+    // Re-add it if Kotlin is ever downgraded below 2.4, or if a compilation
+    // this function configures pins a lower language version while using the
+    // feature. (Precompiled script plugins compile against the Kotlin that
+    // Gradle embeds and are not configured here.)
+    //
+    // Re-check these flags on a Kotlin bump: when the compiler reports one as
+    // redundant, drop it.
     freeCompilerArgs.addAll(
         listOf(
             "-Xskip-prerelease-check",
             "-Xexpect-actual-classes",
-            "-Xcontext-parameters",
             "-opt-in=" + optIns.joinToString(separator = ","),
         )
     )
