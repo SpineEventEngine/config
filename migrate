@@ -96,7 +96,7 @@ done
 # Preserve a project's `.idea/copyright/profiles_settings.xml` (do not overwrite it).
 # It selects the default copyright profile, which is project-specific: proprietary
 # repositories keep `TeamDev Proprietary`, while an open-source repository names the
-# notice it has adopted — `CodeMatters Open-Source`, or `TeamDev Open-Source` until it
+# profile it has adopted — `CodeMatters Open-Source`, or `TeamDev Open-Source` until it
 # migrates. Config ships both open-source profiles side by side precisely so a consumer
 # can move between them on its own schedule, which leaves this file as the only thing
 # deciding which of them applies. Letting config's copy clobber it silently re-licenses
