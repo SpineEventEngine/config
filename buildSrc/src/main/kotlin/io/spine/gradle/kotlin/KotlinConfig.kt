@@ -83,9 +83,8 @@ fun KotlinCommonCompilerOptions.setFreeCompilerArgs() {
     // feature. (Precompiled script plugins compile against the Kotlin that
     // Gradle embeds and are not configured here.)
     //
-    // The same applies to the `-X` flags below on every Kotlin bump: once a
-    // feature stabilises, its flag starts reporting itself as redundant.
-    // `-Xexpect-actual-classes` is the next one on that path.
+    // Re-check these flags on a Kotlin bump: when the compiler reports one as
+    // redundant, drop it.
     freeCompilerArgs.addAll(
         listOf(
             "-Xskip-prerelease-check",
