@@ -225,7 +225,8 @@ internal class PomGeneratorIgTest {
             // `isCanBeResolved` filter in `resolvedVersions()` — the fixture
             // would stop covering the failing-configuration case while the
             // test still passed.
-            val unresolvable by configurations.creating { isCanBeResolved = true }
+            val unresolvable =
+                configurations.create("unresolvable") { isCanBeResolved = true }
             unresolvable.resolutionStrategy.failOnVersionConflict()
         """.trimIndent()
         val dependencies = buildString {
