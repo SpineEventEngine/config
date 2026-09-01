@@ -95,10 +95,13 @@ done
 
 # Preserve a project's `.idea/copyright/profiles_settings.xml` (do not overwrite it).
 # It selects the default copyright profile, which is project-specific: proprietary
-# repositories keep `TeamDev Proprietary`, while the open-source SDK repositories keep
-# `TeamDev Open-Source`. Letting config's copy clobber it silently re-licenses the
-# consumer's headers (the `update-copyright` hook then applies the wrong notice on the
-# next edit). Config's copy still seeds a consumer that has none yet; an existing
+# repositories keep `TeamDev Proprietary`, while an open-source repository names the
+# notice it has adopted — `CodeMatters Open-Source`, or `TeamDev Open-Source` until it
+# migrates. Config ships both open-source profiles side by side precisely so a consumer
+# can move between them on its own schedule, which leaves this file as the only thing
+# deciding which of them applies. Letting config's copy clobber it silently re-licenses
+# the consumer's headers (the `update-copyright` hook then applies the wrong notice on
+# the next edit). Config's copy still seeds a consumer that has none yet; an existing
 # project-local copy wins. Unlike `.idea/misc.xml`, this preservation fails closed
 # (aborts on a copy error): a silently switched default copyright profile re-licenses
 # the consumer's source headers, so we must never continue past a failure here.
