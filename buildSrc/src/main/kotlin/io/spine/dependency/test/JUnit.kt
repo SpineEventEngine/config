@@ -88,8 +88,13 @@ object JUnit : DependencyWithBom() {
          *
          * So when we use JUnit as a platform, this property should be picked up
          * for the dependencies automatically.
+         *
+         * Since JUnit 6 the platform shares the version line of JUnit itself,
+         * so this property mirrors [JUnit.version] rather than repeating it.
+         * Under JUnit 5 the two differed — the platform was `1.x` while
+         * Jupiter was `5.x`.
          */
-        override val version: String = "6.1.3"
+        override val version: String = JUnit.version
         override val group = "org.junit.platform"
 
         private const val infix = "junit-platform"
