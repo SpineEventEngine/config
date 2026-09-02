@@ -219,7 +219,14 @@ internal class PomGeneratorIgTest {
             }
         """.trimIndent()
         val unresolvable = """
-            val unresolvable by configurations.creating
+            // `isCanBeResolved` is stated rather than inherited: the legacy
+            // role it would otherwise get is a deprecation candidate, and if
+            // the default changes this configuration would be skipped by the
+            // `isCanBeResolved` filter in `resolvedVersions()` — the fixture
+            // would stop covering the failing-configuration case while the
+            // test still passed.
+            val unresolvable =
+                configurations.create("unresolvable") { isCanBeResolved = true }
             unresolvable.resolutionStrategy.failOnVersionConflict()
         """.trimIndent()
         val dependencies = buildString {
