@@ -80,10 +80,10 @@ object Dokka {
     object SpineExtensions {
         private const val group = Spine.toolsGroup
 
-        const val version = "2.0.0-SNAPSHOT.8"
+        const val version = "2.0.0-SNAPSHOT.9"
 
         /**
-         * The artifact dropped its `spine-` prefix in `2.0.0-SNAPSHOT.8`, to
+         * The artifact dropped its `spine-` prefix in `2.0.0-SNAPSHOT.9`, to
          * match the other tool artifacts. Earlier versions are published as
          * `spine-dokka-extensions`.
          */
