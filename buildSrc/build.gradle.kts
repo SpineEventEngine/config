@@ -40,8 +40,12 @@ repositories {
  * (`com.fasterxml.jackson.*`), so they must stay on a 2.x version until they are migrated
  * to `tools.jackson.*`. Any maintained 2.x release will do — bump this only when `buildSrc`
  * itself needs a fix from a later 2.x, not to track the newest one.
+ *
+ * The lower bound is a security one: `jackson-core` and `jackson-databind` below `2.18.9`
+ * are exposed to published advisories, three of them rated `high` — `GHSA-r7wm-3cxj-wff9`,
+ * `GHSA-rmj7-2vxq-3g9f`, and `GHSA-j3rv-43j4-c7qm`. Do not move this below `2.18.9`.
  */
-val jacksonVersion = "2.18.3"
+val jacksonVersion = "2.18.10"
 
 /**
  * The version of Google Artifact Registry used by `buildSrc`.
