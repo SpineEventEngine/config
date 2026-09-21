@@ -18,7 +18,7 @@ package io.spine.dependency.build
 @Suppress("unused", "ConstPropertyName")
 object ErrorProne {
     /**
-     * This is the last version which is compatible with Java 17.
+     * This is the last version that is compatible with Java 17.
      *
      * The version 2.43.0 requires JDK 21.
      * https://github.com/google/error-prone/releases/tag/v2.43.0
