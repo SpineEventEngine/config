@@ -9,6 +9,20 @@ jobs:
     name: Publish to Maven repositories
     runs-on: ubuntu-latest
 
+    # This block is exhaustive: a scope missing here is set to `none`, not
+    # left at the default. `packages: write` is what `GITHUB_TOKEN` needs to
+    # publish to GitHub Packages — it is used as the Maven password, see
+    # `GitHubPackages.kt`. The last three serve the attestation: `id-token`
+    # mints the OIDC token Sigstore issues a signing certificate against,
+    # `attestations` persists the result, and `artifact-metadata` records the
+    # artifact storage entry.
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+
     steps:
       - uses: actions/checkout@v6
         with:
@@ -54,9 +68,17 @@ jobs:
         run: cat ./gradle-plugin-portal.secret.properties >> ./gradle.properties
 
       - name: Publish artifacts to Maven
+        id: publish
         # Since we're in the `master` branch already, this means that tests of a PR passed.
         # So, no need to run the tests again when publishing.
-        run: ./gradlew publish -x test --stacktrace
+        #
+        # `publicationChecksums` shares this invocation on purpose. In one of its own
+        # it would rebuild whatever is not up to date, and a producer that emits
+        # different bytes on each run would leave the manifest describing files other
+        # than the ones uploaded here — provenance that cannot verify what was
+        # published. Within a single invocation each producer runs at most once, so
+        # the digests and the uploads are of the same bytes.
+        run: ./gradlew publish publicationChecksums -x test --stacktrace
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FORMAL_GIT_HUB_PAGES_AUTHOR: developers@spine.io
@@ -71,11 +93,42 @@ jobs:
       # overwrite — but the fix needs a human/agent, so make the failure loud and
       # actionable instead of a quiet red run.
       - name: Report a failed publication
-        if: failure()
+        if: failure() && steps.publish.outcome == 'failure'
         shell: bash
         run: |
-          echo "::error title=Publish failed::Publishing to Maven failed on the base branch. If this is a version collision, the version is already published (immutable). Bump 'version.gradle.kts' on the base branch (e.g. via a small PR) and re-run this workflow."
-          echo "Publish failed. If the cause is a version collision:"
+          echo "::error title=Publish failed::Publishing to Maven, or computing the attestation manifest, failed on the base branch. Read the Gradle output to see which task failed - the two need opposite responses."
+          echo "If ':publish' failed on a version collision, the version is already"
+          echo "published and immutable:"
           echo "  1. Bump 'version.gradle.kts' on the base branch to the next free version."
           echo "  2. Re-run this 'Publish' workflow."
           echo "Stale duplicate bumps are normally caught before merge by 'revalidate-versions.yml'."
+          echo
+          echo "If ':publicationChecksums' failed instead, the artifacts are published"
+          echo "and intact, and only their attestation is missing. Do NOT bump the"
+          echo "version: re-publishing an immutable one cannot succeed, and this"
+          echo "workflow publishes before it attests, so a plain re-run stops there."
+          echo "Fix the manifest failure and publish the next version to attest it."
+
+      # Last, so that it runs only once both the publication and the manifest
+      # have succeeded — it has no `if:`, and a step without one is skipped once
+      # the job has failed.
+      #
+      # A failure here leaves the artifacts published but unattested, and that is
+      # deliberately not recovered in place: a re-run starts from `publish`, which
+      # cannot republish an immutable version, so it never reaches this step
+      # again. Publish the next version instead — it carries its own attestation,
+      # and the unattested one stays as it is.
+      #
+      # An attest-only path was considered and rejected. It would have to
+      # reproduce the published bytes exactly, which a build that is not
+      # bit-for-bit reproducible cannot promise; it would instead attest whatever
+      # it happened to rebuild, as though that were what consumers resolve.
+      # A missing attestation is a gap, but a wrong one is a false statement.
+      - name: Attest the published artifacts
+        uses: actions/attest@v4
+        with:
+          # Digests and names are taken from this file verbatim — the action
+          # does not read the artifacts. `publicationChecksums` derives both
+          # from the Maven publications, which are the only place the mapping
+          # from a file on disk to its published name is known.
+          subject-checksums: build/attestation/subject-checksums.txt

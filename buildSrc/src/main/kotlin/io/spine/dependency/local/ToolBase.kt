@@ -25,8 +25,8 @@ package io.spine.dependency.local
 @Suppress("ConstPropertyName", "unused")
 object ToolBase {
     const val group = Spine.toolsGroup
-    const val version = "2.0.0-SNAPSHOT.422"
-    const val dogfoodingVersion = "2.0.0-SNAPSHOT.422"
+    const val version = "2.0.0-SNAPSHOT.423"
+    const val dogfoodingVersion = "2.0.0-SNAPSHOT.423"
 
     /**
      * The former all-in-one module, split into the focused modules below.
