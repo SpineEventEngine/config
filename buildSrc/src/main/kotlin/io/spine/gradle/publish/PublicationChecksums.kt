@@ -320,6 +320,7 @@ private fun Project.publishedArtifacts(): Map<String, String> {
     }
 
     mavenPublications().forEach { publication ->
+        publication.rejectMavenSnapshot()
         val base = "${publication.artifactId}-${publication.version}"
         publication.artifacts.forEach { artifact ->
             val classifier = artifact.classifier?.takeIf { it.isNotEmpty() }
@@ -353,6 +354,28 @@ private fun Project.moduleFileOf(publication: MavenPublication): File? =
         ?.get()
         ?.asFile
         ?.takeIf { it.exists() }
+
+/**
+ * Fails if this publication has a Maven snapshot version.
+ *
+ * Maven treats a version ending in `-SNAPSHOT` as mutable and deploys it under
+ * a timestamped name — `spine-base-1.2.3-20260923.165835-1.jar` — assigned at
+ * upload time. The names derived here would then belong to no uploaded file,
+ * and the attestation would describe artifacts nobody can resolve.
+ *
+ * The version policy of the SDK does not produce such versions: an interim
+ * version is `MAJOR.MINOR.PATCH-SNAPSHOT.NUMBER`, which does not end in
+ * `-SNAPSHOT` and is published as an ordinary immutable release. This guards
+ * the case anyway, because the alternative to failing is a signed statement
+ * about files that were never published.
+ */
+private fun MavenPublication.rejectMavenSnapshot() {
+    check(!version.endsWith("-SNAPSHOT")) {
+        "Cannot attest `$artifactId`: Maven deploys the snapshot version" +
+                " `$version` under a timestamped name that this manifest cannot" +
+                " predict. Interim versions use the `-SNAPSHOT.<number>` form."
+    }
+}
 
 /**
  * Returns the part of the name of a `generate...` task that identifies

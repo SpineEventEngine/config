@@ -17,6 +17,7 @@ package io.spine.gradle.publish
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldStartWith
 import java.io.File
 import java.security.MessageDigest
@@ -162,6 +163,27 @@ internal class PublicationChecksumsIgTest {
         names shouldContain "spine-api-$version.pom"
         names shouldContain "spine-api-$version.module"
         names shouldContain "spine-api-$version-sources.jar"
+    }
+
+    /**
+     * Maven deploys a version ending in `-SNAPSHOT` under a timestamped name
+     * assigned at upload time, so the names derived from the publication belong
+     * to no uploaded file. Naming files that were never published is the one
+     * outcome worse than not attesting at all, so the build stops instead.
+     */
+    @Test
+    fun `refuse a Maven snapshot version`() {
+        val script = file("build.gradle.kts")
+        script.writeText(
+            script.readText().replace("version = \"$version\"", "version = \"1.0.0-SNAPSHOT\"")
+        )
+
+        val result = GradleRunner.create()
+            .withProjectDir(projectDir)
+            .withArguments(aggregator, "--stacktrace")
+            .buildAndFail()
+
+        result.output shouldContain "1.0.0-SNAPSHOT"
     }
 
     /**
