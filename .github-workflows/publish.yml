@@ -9,6 +9,20 @@ jobs:
     name: Publish to Maven repositories
     runs-on: ubuntu-latest
 
+    # This block is exhaustive: a scope missing here is granted to `none`, not
+    # left at the default. `packages: write` is what `GITHUB_TOKEN` needs to
+    # publish to GitHub Packages — it is used as the Maven password, see
+    # `GitHubPackages.kt`. The last three serve the attestation: `id-token`
+    # mints the OIDC token Sigstore issues a signing certificate against,
+    # `attestations` persists the result, and `artifact-metadata` records the
+    # artifact storage entry.
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+
     steps:
       - uses: actions/checkout@v6
         with:
@@ -56,7 +70,9 @@ jobs:
       - name: Publish artifacts to Maven
         # Since we're in the `master` branch already, this means that tests of a PR passed.
         # So, no need to run the tests again when publishing.
-        run: ./gradlew publish -x test --stacktrace
+        # `publicationChecksums` runs in the same invocation so that the manifest
+        # it writes describes the very files this step uploads.
+        run: ./gradlew publish publicationChecksums -x test --stacktrace
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FORMAL_GIT_HUB_PAGES_AUTHOR: developers@spine.io
@@ -79,3 +95,17 @@ jobs:
           echo "  1. Bump 'version.gradle.kts' on the base branch to the next free version."
           echo "  2. Re-run this 'Publish' workflow."
           echo "Stale duplicate bumps are normally caught before merge by 'revalidate-versions.yml'."
+
+      # Last on purpose. The reporter above is `if: failure()` and speaks about
+      # version collisions; running the attestation before it would make an
+      # attestation failure print a misleading publication-collision message.
+      # A failure here means the artifacts are published but unattested, which
+      # a re-run of this workflow corrects.
+      - name: Attest the published artifacts
+        uses: actions/attest@v4
+        with:
+          # Digests and names are taken from this file verbatim — the action
+          # does not read the artifacts. `publicationChecksums` derives both
+          # from the Maven publications, which is the only place the mapping
+          # from a file on disk to its published name is known.
+          subject-checksums: build/attestation/subject-checksums.txt

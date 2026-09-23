@@ -324,6 +324,7 @@ open class SpinePublishing(private val project: Project) {
             val jarFlags = JarFlags.create(project.name, testJar)
             project.setUpPublishing(jarFlags)
         }
+        PublicationChecksums.registerTasks(project, projectsToPublish)
     }
 
     /**
