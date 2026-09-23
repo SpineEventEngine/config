@@ -68,11 +68,10 @@ jobs:
         run: cat ./gradle-plugin-portal.secret.properties >> ./gradle.properties
 
       - name: Publish artifacts to Maven
+        id: publish
         # Since we're in the `master` branch already, this means that tests of a PR passed.
         # So, no need to run the tests again when publishing.
-        # `publicationChecksums` runs in the same invocation so that the manifest
-        # it writes describes the very files this step uploads.
-        run: ./gradlew publish publicationChecksums -x test --stacktrace
+        run: ./gradlew publish -x test --stacktrace
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FORMAL_GIT_HUB_PAGES_AUTHOR: developers@spine.io
@@ -81,13 +80,22 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ./maven-publisher.json
           NPM_TOKEN: ${{ secrets.NPM_SECRET }}
 
+      # A step of its own so that its failure is reported as itself rather than as
+      # a publication failure: the two have nothing in common and the advice below
+      # for a collision would send the reader the wrong way entirely. Publishing
+      # does not modify the artifacts it uploads, so digests taken afterwards
+      # describe the files that were published.
+      - name: Compute the attestation manifest
+        id: manifest
+        run: ./gradlew publicationChecksums --stacktrace
+
       # A failed publication on `master` is most often a version collision: a stale
       # duplicate bump merged before `revalidate-versions.yml` could turn it red (the
       # narrow auto-merge race). The artifact is safe — the registry rejects the
       # overwrite — but the fix needs a human/agent, so make the failure loud and
       # actionable instead of a quiet red run.
       - name: Report a failed publication
-        if: failure()
+        if: failure() && steps.publish.outcome == 'failure'
         shell: bash
         run: |
           echo "::error title=Publish failed::Publishing to Maven failed on the base branch. If this is a version collision, the version is already published (immutable). Bump 'version.gradle.kts' on the base branch (e.g. via a small PR) and re-run this workflow."
@@ -96,7 +104,18 @@ jobs:
           echo "  2. Re-run this 'Publish' workflow."
           echo "Stale duplicate bumps are normally caught before merge by 'revalidate-versions.yml'."
 
-      # Last on purpose. The reporter above is `if: failure()` and speaks about
+      # The artifacts are published at this point; only their attestation is missing.
+      # Nothing needs re-publishing — re-running this workflow recomputes the manifest
+      # and attests the same files.
+      - name: Report a failed manifest
+        if: failure() && steps.manifest.outcome == 'failure'
+        shell: bash
+        run: |
+          echo "::error title=Attestation manifest failed::The artifacts were published, but the checksum manifest was not written, so they are unattested. This is NOT a version collision - do not bump 'version.gradle.kts'. Re-run this workflow to attest the published artifacts."
+          echo "The artifacts are published and intact; only the attestation is missing."
+          echo "Re-run this 'Publish' workflow to produce it."
+
+      # Last on purpose. The reporters above are `if: failure()` and speak about
       # version collisions; running the attestation before it would make an
       # attestation failure print a misleading publication-collision message.
       # A failure here means the artifacts are published but unattested, which
