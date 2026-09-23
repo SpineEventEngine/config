@@ -23,19 +23,19 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
 /**
- * Verifies that the checksum tasks survive a module configuring `spinePublishing`
- * on its own, alongside the root project.
+ * Verifies the checksum tasks against builds that configure `spinePublishing`
+ * more than once.
  *
- * This is a supported arrangement rather than an exotic one: a module with a
- * custom publication opens the extension with `customPublishing = true` — as
- * `uber-jar-module.gradle.kts` does — and the same module must also appear in
- * the root extension's `modulesWithCustomPublishing`, or its publication is
- * ignored. Both calls run `configured()` against the same module, so registering
- * a task unconditionally fails the build while it is still being configured,
- * which no amount of test coverage over a single-extension build would reveal.
+ * Repeated configuration is supported rather than exotic — the extension is
+ * reused across calls, and a module with a custom publication opens it on its
+ * own while still appearing in the root extension's `modulesWithCustomPublishing`.
+ * Each call runs `configured()` again, so the tasks are registered against a
+ * project that may already have them, with a set of published projects that may
+ * have grown. Neither failure shows up in a build that configures the extension
+ * once, which is every other fixture here.
  */
-@DisplayName("`publicationChecksums` task should, with a custom publication,")
-internal class PublicationChecksumsCustomPublishingIgTest {
+@DisplayName("`publicationChecksums` task should, on repeated configuration,")
+internal class PublicationChecksumsReconfigurationIgTest {
 
     @TempDir
     lateinit var projectDir: File
@@ -107,6 +107,90 @@ internal class PublicationChecksumsCustomPublishingIgTest {
 
         result.task(":publicationChecksums")?.outcome shouldBe TaskOutcome.SUCCESS
     }
+
+
+    /**
+     * A second call registers a collector for the module it adds, while the
+     * aggregator is already there. Unless the aggregator reads the projects it
+     * merges through something that outlives one call, that module is collected
+     * and then left out of the manifest — the silent narrowing this whole
+     * arrangement exists to prevent.
+     */
+    @Test
+    fun `merge the modules added by a later call`() {
+        file("settings.gradle.kts").writeText(
+            """
+            rootProject.name = "regrown-sample"
+            include("first", "second")
+            """.trimIndent()
+        )
+        file("build.gradle.kts").writeText(
+            """
+            buildscript {
+                dependencies {
+                    classpath(files(
+            ${buildSrcClasspath()}
+                    ))
+                }
+            }
+
+            import io.spine.gradle.publish.spinePublishing
+
+            allprojects {
+                group = "io.spine.sample"
+                version = "1.0.0"
+            }
+
+            subprojects {
+                apply(plugin = "java-library")
+                apply(plugin = "maven-publish")
+                tasks.register("dokkaGeneratePublicationJavadoc")
+            }
+
+            spinePublishing {
+                modules = setOf("first")
+                destinations = emptySet()
+            }
+
+            spinePublishing {
+                modules = setOf("first", "second")
+                destinations = emptySet()
+            }
+            """.trimIndent()
+        )
+        sourceFile("first")
+        sourceFile("second")
+
+        runGradle(PublicationChecksums.aggregatorTaskName)
+
+        val names = manifestNames()
+        names.any { it.startsWith("spine-first-") } shouldBe true
+        names.any { it.startsWith("spine-second-") } shouldBe true
+    }
+
+    private fun manifestNames(): List<String> =
+        file("build/attestation/subject-checksums.txt")
+            .readLines()
+            .filter { it.isNotBlank() }
+            .map { it.substringAfter("  ").trim() }
+
+    private fun sourceFile(module: String) {
+        file("$module/src/main/java/sample/$module/Stub.java").apply {
+            parentFile.mkdirs()
+            writeText(
+                """
+                package sample.$module;
+                public class Stub {}
+                """.trimIndent()
+            )
+        }
+    }
+
+    private fun runGradle(vararg args: String) =
+        GradleRunner.create()
+            .withProjectDir(projectDir)
+            .withArguments(*args, "--stacktrace")
+            .build()
 
     private fun file(relativePath: String): File = projectDir.resolve(relativePath)
 

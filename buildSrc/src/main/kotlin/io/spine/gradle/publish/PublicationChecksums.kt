@@ -164,12 +164,18 @@ internal object PublicationChecksums {
         // avoid, and it is what makes a task incompatible with the configuration
         // cache. The providers stay lazy, so a project may still reconfigure its
         // build directory afterwards.
-        val sources = published.map { collectorOutput(it) }
+        //
+        // The list belongs to the project rather than to this call, because the
+        // task is registered once while `registerTasks` may run several times —
+        // see `getOrRegister`. Were the action to close over one call's projects,
+        // a later call adding a module would register its collector and still
+        // leave it out of the manifest.
+        val sources = host.attestationSources()
+        sources += published.map { collectorOutput(it) }
         val target = host.layout.buildDirectory.file(aggregatePath)
-        host.tasks.getOrRegister(aggregatorTaskName) {
+        val aggregator = host.tasks.getOrRegister(aggregatorTaskName) {
             group = SpineTaskGroup.name
             description = "Writes the digests of all published artifacts for attestation"
-            dependsOn(collectors)
             mustRunAfter(host.tasks.cleanTask())
             doLast {
                 val merged = sources
@@ -190,6 +196,12 @@ internal object PublicationChecksums {
                 file.writeText(merged.joinToString(separator = "\n", postfix = "\n"))
                 logger.lifecycle("Wrote ${merged.size} attestation subject(s) to `$file`.")
             }
+        }
+        // Applied on every call, including the one that registered the task, so
+        // that collectors added by a later call are run before the merge reads
+        // the files they write.
+        aggregator.configure {
+            dependsOn(collectors)
         }
     }
 
@@ -263,6 +275,24 @@ private fun TaskContainer.getOrRegister(
 private fun TaskContainer.cleanTask(): TaskCollection<Task> = named { it == "clean" }
 
 /**
+ * Returns the manifests the aggregator of this project merges, accumulated
+ * across every call of [PublicationChecksums.registerTasks] for it.
+ *
+ * The list is attached to the project, so that it lives exactly as long as
+ * the build does. Holding it in the object registering the tasks would share
+ * it between builds, which reuse a Gradle daemon and its class loaders.
+ */
+@Suppress("UNCHECKED_CAST" /* The property is written here and nowhere else. */)
+private fun Project.attestationSources(): MutableList<Provider<RegularFile>> {
+    val key = "io.spine.gradle.publish.attestationSources"
+    val properties = extensions.extraProperties
+    if (!properties.has(key)) {
+        properties.set(key, mutableListOf<Provider<RegularFile>>())
+    }
+    return properties.get(key) as MutableList<Provider<RegularFile>>
+}
+
+/**
  * Returns the Maven publications of this project, or an empty collection if
  * the project does not publish.
  */
@@ -308,7 +338,7 @@ private fun Project.publishedArtifacts(): Map<String, String> {
  */
 private fun Project.pomFileOf(publication: MavenPublication): File? =
     tasks.withType(GenerateMavenPom::class.java)
-        .findByName(publication.pomTaskName())
+        .findByName("generatePomFileFor${publication.taskSuffix()}")
         ?.destination
         ?.takeIf { it.exists() }
 
@@ -318,24 +348,11 @@ private fun Project.pomFileOf(publication: MavenPublication): File? =
  */
 private fun Project.moduleFileOf(publication: MavenPublication): File? =
     tasks.withType(GenerateModuleMetadata::class.java)
-        .findByName(publication.metadataTaskName())
+        .findByName("generateMetadataFileFor${publication.taskSuffix()}")
         ?.outputFile
         ?.get()
         ?.asFile
         ?.takeIf { it.exists() }
-
-/**
- * Returns the name of the task generating the POM of this publication.
- */
-private fun MavenPublication.pomTaskName(): String =
-    "generatePomFileFor${taskSuffix()}"
-
-/**
- * Returns the name of the task generating the Gradle module metadata of
- * this publication.
- */
-private fun MavenPublication.metadataTaskName(): String =
-    "generateMetadataFileFor${taskSuffix()}"
 
 /**
  * Returns the part of the name of a `generate...` task that identifies
