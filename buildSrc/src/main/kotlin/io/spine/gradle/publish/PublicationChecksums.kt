@@ -74,6 +74,14 @@ internal object PublicationChecksums {
     private const val aggregatePath = "attestation/subject-checksums.txt"
 
     /**
+     * Separates a digest from the name of its subject, as `sha256sum` writes it.
+     *
+     * The action reads the name as everything after the first space, dropping one
+     * further `*` or space, so the two-space form leaves the name intact.
+     */
+    private const val digestSeparator = "  "
+
+    /**
      * Registers the [collector][registerCollectorIn] tasks in the given
      * [published] projects, and the [aggregator][registerAggregatorIn] task in
      * the [root] project.
@@ -119,7 +127,17 @@ internal object PublicationChecksums {
      *
      * The task merges the manifests written by the [collectors] into a single
      * file in the `sha256sum` format, which `actions/attest` accepts as its
-     * `subject-checksums` input.
+     * `subject-checksums` input, ordered by subject name so that two runs of the
+     * same build produce a file that can be compared line by line.
+     *
+     * A manifest missing at merge time fails the task. Every collector writes
+     * unconditionally, so an absent one means the subject set is incomplete —
+     * and an attestation that silently covers less than it appears to is worse
+     * than none.
+     *
+     * The task orders itself after `clean` for the reason given in
+     * [registerCollectorIn]: it writes under the build directory that `clean`
+     * removes.
      */
     private fun registerAggregatorIn(
         root: Project,
@@ -130,14 +148,20 @@ internal object PublicationChecksums {
             group = SpineTaskGroup.name
             description = "Writes the digests of all published artifacts for attestation"
             dependsOn(collectors)
+            mustRunAfter(root.tasks.matching { it.name == "clean" })
             doLast {
                 val merged = published
                     .map { collectorOutput(it) }
-                    .filter { it.exists() }
+                    .onEach {
+                        check(it.exists()) {
+                            "No checksum manifest at `$it`." +
+                                    " The attestation would omit a published module."
+                        }
+                    }
                     .flatMap { it.readLines() }
                     .filter { it.isNotBlank() }
                     .distinct()
-                    .sorted()
+                    .sortedBy { it.substringAfter(digestSeparator) }
                 val file = root.layout.buildDirectory.file(aggregatePath).get().asFile
                 file.parentFile.mkdirs()
                 file.writeText(merged.joinToString(separator = "\n", postfix = "\n"))
@@ -154,7 +178,7 @@ internal object PublicationChecksums {
         artifacts.entries
             .sortedBy { it.key }
             .joinToString(separator = "\n", postfix = "\n") { (name, digest) ->
-                "$digest  $name"
+                "$digest$digestSeparator$name"
             }
 }
 

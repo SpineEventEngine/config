@@ -126,6 +126,20 @@ internal class PublicationChecksumsIgTest {
         manifest shouldContainExactly publishedFileNames()
     }
 
+    /**
+     * Each line of the manifest starts with a 64-character digest, so ordering
+     * the raw lines orders them by that digest — which is to say, arbitrarily.
+     * The per-project collectors sort by name, and a manifest that two runs of
+     * the same build can be compared line by line has to do the same.
+     */
+    @Test
+    fun `order the manifest by subject name`() {
+        runGradle("publicationChecksums")
+
+        val names = manifestEntries().map { it.name }
+        names shouldBe names.sorted()
+    }
+
     @Test
     fun `record the digest of each published file`() {
         runGradle("publicationChecksums", "publishAllPublicationsToStageRepository")
