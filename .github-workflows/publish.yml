@@ -113,13 +113,17 @@ jobs:
       # have succeeded — it has no `if:`, and a step without one is skipped once
       # the job has failed.
       #
-      # A failure here leaves the artifacts published but unattested, and this
-      # workflow has no way back to them: a re-run starts from `publish`, which
+      # A failure here leaves the artifacts published but unattested, and that is
+      # deliberately not recovered in place: a re-run starts from `publish`, which
       # cannot republish an immutable version, so it never reaches this step
-      # again. Those artifacts stay unattested until the next version is
-      # published. Attesting them would need a path that skips publication and
-      # reproduces the same bytes, which is not something this workflow can
-      # promise for a build that is not bit-for-bit reproducible.
+      # again. Publish the next version instead — it carries its own attestation,
+      # and the unattested one stays as it is.
+      #
+      # An attest-only path was considered and rejected. It would have to
+      # reproduce the published bytes exactly, which a build that is not
+      # bit-for-bit reproducible cannot promise; it would instead attest whatever
+      # it happened to rebuild, as though that were what consumers resolve.
+      # A missing attestation is a gap, but a wrong one is a false statement.
       - name: Attest the published artifacts
         uses: actions/attest@v4
         with:

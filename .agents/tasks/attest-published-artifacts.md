@@ -91,6 +91,10 @@ Closes [#602][issue-602].
 - Attestation runs per `master` merge (`publish.yml` is `on: push`), i.e. per
   snapshot, not per release. Intended, but it is a volume change.
 - Rollout is staged: consumers pick this up only on their next `./config/pull`.
+- An attestation failing after a successful publication is **not** recovered in
+  place. Decided on 2026-09-23: publish the next version instead. An attest-only
+  path would have to reproduce the published bytes, which this build cannot
+  promise, and would otherwise attest whatever it rebuilt.
 
 ## Log
 
