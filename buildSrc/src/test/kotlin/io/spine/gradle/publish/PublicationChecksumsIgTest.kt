@@ -170,9 +170,15 @@ internal class PublicationChecksumsIgTest {
      * assigned at upload time, so the names derived from the publication belong
      * to no uploaded file. Naming files that were never published is the one
      * outcome worse than not attesting at all, so the build stops instead.
+     *
+     * The run below asks to publish, not merely to collect, because that is the
+     * order the distributed workflow uses. Rejecting the version only once the
+     * collector runs would let the upload happen first and leave behind the
+     * published-but-unattested artifacts the check exists to prevent — so the
+     * assertion is that nothing reached the repository at all.
      */
     @Test
-    fun `refuse a Maven snapshot version`() {
+    fun `refuse a Maven snapshot version before anything is published`() {
         val script = file("build.gradle.kts")
         script.writeText(
             script.readText().replace("version = \"$version\"", "version = \"1.0.0-SNAPSHOT\"")
@@ -180,10 +186,13 @@ internal class PublicationChecksumsIgTest {
 
         val result = GradleRunner.create()
             .withProjectDir(projectDir)
-            .withArguments(aggregator, "--stacktrace")
+            .withArguments(
+                "publishAllPublicationsToStageRepository", aggregator, "--stacktrace"
+            )
             .buildAndFail()
 
         result.output shouldContain "1.0.0-SNAPSHOT"
+        file("staged").exists() shouldBe false
     }
 
     /**

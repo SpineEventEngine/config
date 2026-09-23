@@ -115,9 +115,20 @@ internal object PublicationChecksums {
      * The task orders itself after `clean` — Gradle does not order the two
      * otherwise, so in a `gradle clean build` invocation a late-running `clean`
      * could delete a freshly written manifest.
+     *
+     * A version Maven would deploy under a timestamped name is rejected while
+     * the project is still being configured, rather than when this task runs.
+     * The distributed workflow asks for `publish` and `publicationChecksums` in
+     * one invocation, and Gradle may upload before it reaches the collector, so
+     * a check inside the task would fail only after the artifacts were already
+     * published — leaving exactly the published-but-unattested state the check
+     * exists to prevent.
      */
-    private fun registerCollectorIn(project: Project): TaskProvider<Task> =
-        project.tasks.getOrRegister(collectorTaskName) {
+    private fun registerCollectorIn(project: Project): TaskProvider<Task> {
+        project.afterEvaluate {
+            mavenPublications().forEach { it.rejectMavenSnapshot() }
+        }
+        return project.tasks.getOrRegister(collectorTaskName) {
             group = SpineTaskGroup.name
             description = "Computes the digests of the artifacts published by " +
                     "the `${project.name}` project"
@@ -135,6 +146,7 @@ internal object PublicationChecksums {
                 file.writeText(serialize(project.publishedArtifacts()))
             }
         }
+    }
 
     /**
      * Registers the [aggregatorTaskName] task in [host].
