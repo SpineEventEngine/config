@@ -9,7 +9,7 @@ jobs:
     name: Publish to Maven repositories
     runs-on: ubuntu-latest
 
-    # This block is exhaustive: a scope missing here is granted to `none`, not
+    # This block is exhaustive: a scope missing here is set to `none`, not
     # left at the default. `packages: write` is what `GITHUB_TOKEN` needs to
     # publish to GitHub Packages — it is used as the Maven password, see
     # `GitHubPackages.kt`. The last three serve the attestation: `id-token`
@@ -115,16 +115,15 @@ jobs:
           echo "The artifacts are published and intact; only the attestation is missing."
           echo "Re-run this 'Publish' workflow to produce it."
 
-      # Last on purpose. The reporters above are `if: failure()` and speak about
-      # version collisions; running the attestation before it would make an
-      # attestation failure print a misleading publication-collision message.
-      # A failure here means the artifacts are published but unattested, which
-      # a re-run of this workflow corrects.
+      # Last, so that it runs only once both the publication and the manifest
+      # have succeeded — it has no `if:`, and a step without one is skipped once
+      # the job has failed. A failure here leaves the artifacts published but
+      # unattested, which a re-run of this workflow corrects.
       - name: Attest the published artifacts
         uses: actions/attest@v4
         with:
           # Digests and names are taken from this file verbatim — the action
           # does not read the artifacts. `publicationChecksums` derives both
-          # from the Maven publications, which is the only place the mapping
+          # from the Maven publications, which are the only place the mapping
           # from a file on disk to its published name is known.
           subject-checksums: build/attestation/subject-checksums.txt

@@ -20,16 +20,24 @@ import java.security.MessageDigest
 import java.util.Locale
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Provider
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.tasks.GenerateMavenPom
 import org.gradle.api.publish.tasks.GenerateModuleMetadata
+import org.gradle.api.tasks.TaskCollection
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 
 /**
  * Writes a manifest of the artifacts published by this build, so that GitHub
  * Actions can attest their build provenance.
+ *
+ * Usage:
+ * ```
+ * PublicationChecksums.registerTasks(project, projectsToPublish)
+ * ```
  *
  * ## Why Gradle computes the manifest
  *
@@ -43,8 +51,8 @@ import org.gradle.api.tasks.TaskProvider
  * on disk is derived from the Gradle project name, while the published name uses
  * [the artifact ID][SpinePublishing.artifactPrefix] — `client-2.0.0.jar` is
  * published as `spine-client-2.0.0.jar`. The POM and the Gradle module metadata
- * are not in `build/libs` at all; they are generated under `build/publications`
- * under the fixed names `pom-default.xml` and `module.json`. Only the publication
+ * are not in `build/libs` at all; they are generated under `build/publications`,
+ * using the fixed names `pom-default.xml` and `module.json`. Only the publication
  * knows how these map onto published names.
  *
  * ## Why a task per project
@@ -53,7 +61,7 @@ import org.gradle.api.tasks.TaskProvider
  * As with [the POM report][io.spine.gradle.report.pom.PomGenerator], a
  * [collector task][registerCollectorIn] is therefore registered in every
  * published project, describing only its own publications, and
- * [an aggregator][registerAggregatorIn] in the root project merges their output.
+ * [an aggregator][registerAggregatorIn] merges their output.
  *
  * Neither task declares inputs or outputs, on purpose: both always run, so the
  * manifest cannot describe a previous state of the build.
@@ -66,7 +74,7 @@ internal object PublicationChecksums {
     const val collectorTaskName = "collectPublicationChecksums"
 
     /**
-     * The name of the root-project task registered by [registerAggregatorIn].
+     * The name of the task registered by [registerAggregatorIn].
      */
     const val aggregatorTaskName = "publicationChecksums"
 
@@ -85,11 +93,16 @@ internal object PublicationChecksums {
     /**
      * Registers the [collector][registerCollectorIn] tasks in the given
      * [published] projects, and the [aggregator][registerAggregatorIn] task in
-     * the [root] project.
+     * [host].
+     *
+     * [host] is the project in which `spinePublishing { }` was opened. That is
+     * the root project of a multi-module build, which is where `publish.yml`
+     * expects the manifest. A module configuring the extension for itself also
+     * gets an aggregator of its own, describing only that module.
      */
-    fun registerTasks(root: Project, published: Set<Project>) {
+    fun registerTasks(host: Project, published: Set<Project>) {
         val collectors = published.map { registerCollectorIn(it) }
-        registerAggregatorIn(root, published, collectors)
+        registerAggregatorIn(host, published, collectors)
     }
 
     /**
@@ -108,7 +121,7 @@ internal object PublicationChecksums {
             group = SpineTaskGroup.name
             description = "Computes the digests of the artifacts published by " +
                     "the `${project.name}` project"
-            mustRunAfter(project.tasks.matching { it.name == "clean" })
+            mustRunAfter(project.tasks.cleanTask())
             dependsOn(project.provider {
                 project.mavenPublications().flatMap { publication ->
                     publication.artifacts.map { it.buildDependencies }
@@ -117,14 +130,14 @@ internal object PublicationChecksums {
             dependsOn(project.tasks.withType(GenerateMavenPom::class.java))
             dependsOn(project.tasks.withType(GenerateModuleMetadata::class.java))
             doLast {
-                val file = collectorOutput(project)
+                val file = collectorOutput(project).get().asFile
                 file.parentFile.mkdirs()
                 file.writeText(serialize(project.publishedArtifacts()))
             }
         }
 
     /**
-     * Registers the [aggregatorTaskName] task in the given [root] project.
+     * Registers the [aggregatorTaskName] task in [host].
      *
      * The task merges the manifests written by the [collectors] into a single
      * file in the `sha256sum` format, which `actions/attest` accepts as its
@@ -134,25 +147,33 @@ internal object PublicationChecksums {
      * A manifest missing at merge time fails the task. Every collector writes
      * unconditionally, so an absent one means the subject set is incomplete —
      * and an attestation that silently covers less than it appears to is worse
-     * than none.
+     * than none. Two digests published under one name fail it for the same
+     * reason: only one of them can describe what a consumer resolves.
      *
      * The task orders itself after `clean` for the reason given in
      * [registerCollectorIn]: it writes under the build directory that `clean`
      * removes.
      */
     private fun registerAggregatorIn(
-        root: Project,
+        host: Project,
         published: Set<Project>,
         collectors: List<TaskProvider<Task>>
-    ): TaskProvider<Task> =
-        root.tasks.getOrRegister(aggregatorTaskName) {
+    ) {
+        // Resolved outside the task action: reading the layout of another project
+        // from `doLast` is the cross-project access this class is arranged to
+        // avoid, and it is what makes a task incompatible with the configuration
+        // cache. The providers stay lazy, so a project may still reconfigure its
+        // build directory afterwards.
+        val sources = published.map { collectorOutput(it) }
+        val target = host.layout.buildDirectory.file(aggregatePath)
+        host.tasks.getOrRegister(aggregatorTaskName) {
             group = SpineTaskGroup.name
             description = "Writes the digests of all published artifacts for attestation"
             dependsOn(collectors)
-            mustRunAfter(root.tasks.matching { it.name == "clean" })
+            mustRunAfter(host.tasks.cleanTask())
             doLast {
-                val merged = published
-                    .map { collectorOutput(it) }
+                val merged = sources
+                    .map { it.get().asFile }
                     .onEach {
                         check(it.exists()) {
                             "No checksum manifest at `$it`." +
@@ -162,25 +183,54 @@ internal object PublicationChecksums {
                     .flatMap { it.readLines() }
                     .filter { it.isNotBlank() }
                     .distinct()
-                    .sortedBy { it.substringAfter(digestSeparator) }
-                val file = root.layout.buildDirectory.file(aggregatePath).get().asFile
+                    .sortedBy { it.subjectName() }
+                merged.ensureNamesUnique()
+                val file = target.get().asFile
                 file.parentFile.mkdirs()
                 file.writeText(merged.joinToString(separator = "\n", postfix = "\n"))
-                logger.lifecycle(
-                    "Wrote ${merged.size} attestation subject(s) to `$file`."
-                )
+                logger.lifecycle("Wrote ${merged.size} attestation subject(s) to `$file`.")
             }
         }
+    }
 
-    private fun collectorOutput(project: Project): File =
-        project.layout.buildDirectory.file(collectorPath).get().asFile
+    /**
+     * Returns the file under the build directory of [project] in which
+     * [the collector task][registerCollectorIn] describes that project.
+     */
+    private fun collectorOutput(project: Project): Provider<RegularFile> =
+        project.layout.buildDirectory.file(collectorPath)
 
+    /**
+     * Renders the given artifacts as `sha256sum` records, ordered by name.
+     */
     private fun serialize(artifacts: Map<String, String>): String =
         artifacts.entries
             .sortedBy { it.key }
             .joinToString(separator = "\n", postfix = "\n") { (name, digest) ->
                 "$digest$digestSeparator$name"
             }
+
+    /**
+     * Returns the subject name of this `sha256sum` record.
+     */
+    private fun String.subjectName(): String = substringAfter(digestSeparator)
+
+    /**
+     * Fails unless every record in this list names a distinct subject.
+     *
+     * Byte-identical records are already gone by this point, so a name occurring
+     * twice carries two different digests. Attesting both would state that the
+     * same published file is two different things.
+     */
+    private fun List<String>.ensureNamesUnique() {
+        val duplicated = groupBy { it.subjectName() }
+            .filterValues { it.size > 1 }
+            .keys
+        check(duplicated.isEmpty()) {
+            "Different digests are published under the same name: " +
+                    duplicated.joinToString { "`$it`" } + "."
+        }
+    }
 }
 
 /**
@@ -205,6 +255,14 @@ private fun TaskContainer.getOrRegister(
     }
 
 /**
+ * Returns the `clean` task of this container, if it has one.
+ *
+ * Filtering by name alone keeps the lookup lazy. Matching on a task instance
+ * would instantiate every registered task in the project just to read its name.
+ */
+private fun TaskContainer.cleanTask(): TaskCollection<Task> = named { it == "clean" }
+
+/**
  * Returns the Maven publications of this project, or an empty collection if
  * the project does not publish.
  */
@@ -217,40 +275,67 @@ private fun Project.mavenPublications(): Collection<MavenPublication> {
 /**
  * Returns the digest of every file this project publishes, keyed by the name
  * under which the file is published.
+ *
+ * Two artifacts of one project resolving to the same published name fail the
+ * build: keeping either one silently drops the other from the attestation.
  */
 private fun Project.publishedArtifacts(): Map<String, String> {
     val result = mutableMapOf<String, String>()
+
+    fun record(name: String, file: File) {
+        val replaced = result.put(name, file.sha256())
+        check(replaced == null) {
+            "The project `$path` publishes two artifacts as `$name`."
+        }
+    }
+
     mavenPublications().forEach { publication ->
         val base = "${publication.artifactId}-${publication.version}"
         publication.artifacts.forEach { artifact ->
             val classifier = artifact.classifier?.takeIf { it.isNotEmpty() }
             val suffix = classifier?.let { "-$it" } ?: ""
-            result["$base$suffix.${artifact.extension}"] = artifact.file.sha256()
+            record("$base$suffix.${artifact.extension}", artifact.file)
         }
-        pomFileOf(publication)?.let { result["$base.pom"] = it.sha256() }
-        moduleFileOf(publication)?.let { result["$base.module"] = it.sha256() }
+        pomFileOf(publication)?.let { record("$base.pom", it) }
+        moduleFileOf(publication)?.let { record("$base.module", it) }
     }
     return result
 }
 
 /**
  * Returns the generated POM of the given [publication], or `null` if the
- * generating task did not run.
+ * generating task has not written it.
  */
-private fun Project.pomFileOf(publication: MavenPublication): File? {
-    val task = tasks.findByName("generatePomFileFor${publication.taskSuffix()}")
-    return (task as GenerateMavenPom?)?.destination?.takeIf { it.exists() }
-}
+private fun Project.pomFileOf(publication: MavenPublication): File? =
+    tasks.withType(GenerateMavenPom::class.java)
+        .findByName(publication.pomTaskName())
+        ?.destination
+        ?.takeIf { it.exists() }
 
 /**
  * Returns the generated Gradle module metadata of the given [publication], or
- * `null` if the metadata is disabled or the generating task did not run.
+ * `null` if the metadata is disabled or its task has not written it.
  */
-private fun Project.moduleFileOf(publication: MavenPublication): File? {
-    val task = tasks.findByName("generateMetadataFileFor${publication.taskSuffix()}")
-    return (task as GenerateModuleMetadata?)
-        ?.outputFile?.get()?.asFile?.takeIf { it.exists() }
-}
+private fun Project.moduleFileOf(publication: MavenPublication): File? =
+    tasks.withType(GenerateModuleMetadata::class.java)
+        .findByName(publication.metadataTaskName())
+        ?.outputFile
+        ?.get()
+        ?.asFile
+        ?.takeIf { it.exists() }
+
+/**
+ * Returns the name of the task generating the POM of this publication.
+ */
+private fun MavenPublication.pomTaskName(): String =
+    "generatePomFileFor${taskSuffix()}"
+
+/**
+ * Returns the name of the task generating the Gradle module metadata of
+ * this publication.
+ */
+private fun MavenPublication.metadataTaskName(): String =
+    "generateMetadataFileFor${taskSuffix()}"
 
 /**
  * Returns the part of the name of a `generate...` task that identifies
@@ -269,15 +354,8 @@ private fun File.sha256(): String {
         "Cannot attest a missing artifact file: `$this`."
     }
     val digest = MessageDigest.getInstance("SHA-256")
-    inputStream().use { stream ->
-        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-        while (true) {
-            val count = stream.read(buffer)
-            if (count < 0) {
-                break
-            }
-            digest.update(buffer, 0, count)
-        }
+    forEachBlock { buffer, bytesRead ->
+        digest.update(buffer, 0, bytesRead)
     }
     return digest.digest().joinToString("") { "%02x".format(it) }
 }

@@ -16,7 +16,7 @@ Spine publishes to GitHub Packages carries SLSA build provenance bound to the
 workflow run that produced it. Subjects are enumerated by Gradle — the only
 component that authoritatively maps published coordinates to files on disk.
 
-Closes [#602](https://github.com/SpineEventEngine/config/issues/602).
+Closes [#602][issue-602].
 
 ## Context
 
@@ -32,8 +32,8 @@ Closes [#602](https://github.com/SpineEventEngine/config/issues/602).
 - Globbing `build/libs` enumerates the wrong set: it misses `.pom`/`.module`
   (which live under `build/publications/<pub>/` as `pom-default.xml` and
   `module.json`), it catches `buildSrc/build/libs/buildSrc.jar`, and the
-  on-disk jar name omits the `artifactPrefix` (`client-*.jar` is published as
-  `spine-client-*.jar`).
+  on-disk jar name omits the `artifactPrefix` (`client-*.jar` is published
+  as `spine-client-*.jar`).
 
 ## Design decisions
 
@@ -53,8 +53,7 @@ Closes [#602](https://github.com/SpineEventEngine/config/issues/602).
    tasks always run, so the manifest can never be stale relative to the jars
    that were just built.
 5. **Fail loudly on a missing artifact file.** Silently skipping would
-   under-attest, and an attestation's value is that its subject set is
-   complete.
+   under-attest, and an attestation's value is that its subject set is complete.
 
 ## Plan
 
@@ -62,12 +61,12 @@ Closes [#602](https://github.com/SpineEventEngine/config/issues/602).
       - `collectPublicationChecksums` (per project): walks
         `publishing.publications.withType<MavenPublication>()`, emits
         `<sha256>  <publishedName>` for each artifact + the `GenerateMavenPom`
-        and `GenerateModuleMetadata` outputs; writes
-        `build/attestation/checksums.txt`.
+        and `GenerateModuleMetadata` outputs; writes `build/attestation/checksums.txt`.
       - `publicationChecksums` (root): `dependsOn` the collectors, merges and
         sorts into `build/attestation/subject-checksums.txt`.
 - [x] 2. Wire both into `SpinePublishing.configured()`.
-- [~] 3. Unit spec for name derivation + manifest serialization — **not added**.
+- [x] 3. Unit spec for name derivation + manifest serialization — **resolved as
+      unnecessary**.
       The derivation helpers are private to `PublicationChecksums.kt`, and the
       integration test asserts their output both against an explicit list of
       published names and against the files actually staged. A unit spec would
@@ -86,8 +85,7 @@ Closes [#602](https://github.com/SpineEventEngine/config/issues/602).
   not listed to `none`, and `GitHubPackages.kt:62` passes `GITHUB_TOKEN` as the
   Maven password — so `packages: write` must be present or publication breaks
   on `master` for every consumer. Planned block: `contents: read`,
-  `packages: write`, `id-token: write`, `attestations: write`,
-  `artifact-metadata: write`.
+  `packages: write`, `id-token: write`, `attestations: write`, `artifact-metadata: write`.
 - `artifact-metadata` is a newer scope; confirmed documented and valid on
   github.com, but version-gated in GitHub's own docs, so unavailable on GHES.
 - Attestation runs per `master` merge (`publish.yml` is `on: push`), i.e. per
@@ -102,3 +100,12 @@ Closes [#602](https://github.com/SpineEventEngine/config/issues/602).
   files Gradle actually publishes (probe: 4/4 exact).
 - 2026-09-23 — implemented, wired, tested. `:buildSrc:test detekt` green.
   Open: step 3 deviation (no unit spec); nothing committed yet.
+- 2026-09-23 — PR #763 opened. Reviewed by `kotlin-engineer`, `spine-code-review`,
+  `review-docs`, `dependency-audit` before opening, then by Copilot and Codex on
+  the PR. Two defects came out of it that the pre-PR pass had rated cosmetic or
+  missed: registration was not idempotent, which broke configuration for any
+  consumer with an uber-jar module, and a manifest failure was reported as a
+  version collision. Both reproduced before fixing. Remaining findings applied
+  in one pass afterwards.
+
+[issue-602]: https://github.com/SpineEventEngine/config/issues/602

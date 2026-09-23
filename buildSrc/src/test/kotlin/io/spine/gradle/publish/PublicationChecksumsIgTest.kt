@@ -14,8 +14,10 @@
 
 package io.spine.gradle.publish
 
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldStartWith
 import java.io.File
 import java.security.MessageDigest
 import org.gradle.testkit.runner.BuildResult
@@ -66,7 +68,7 @@ internal class PublicationChecksumsIgTest {
 
             allprojects {
                 group = "io.spine.sample"
-                version = "$VERSION"
+                version = "$version"
             }
 
             subprojects {
@@ -100,24 +102,24 @@ internal class PublicationChecksumsIgTest {
 
     @Test
     fun `list every published artifact under its published name`() {
-        val result = runGradle("publicationChecksums", "publishAllPublicationsToStageRepository")
+        val result = runGradle(aggregator, "publishAllPublicationsToStageRepository")
 
-        result.task(":publicationChecksums")?.outcome shouldBe TaskOutcome.SUCCESS
+        result.task(":$aggregator")?.outcome shouldBe TaskOutcome.SUCCESS
 
-        // Spelled out rather than only compared with the staged files: two empty
-        // lists also "contain exactly" each other, and this suite must not be
-        // able to pass by describing nothing.
-        // The standard publication of a module without Proto or a test JAR:
-        // the compilation output, the three documentation and source archives
-        // added by `artifacts(JarFlags)`, and the two metadata files.
+        // The standard publication of a module without Proto or a test JAR: the
+        // compilation output, the three documentation and source archives added
+        // by `artifacts(JarFlags)`, and the two metadata files. Spelled out
+        // rather than only compared with the staged files, because two empty
+        // lists also "contain exactly" each other — this suite must not be able
+        // to pass by describing nothing.
         val expected = listOf("api", "backend").flatMap { module ->
             listOf(
-                "spine-$module-$VERSION.jar",
-                "spine-$module-$VERSION-sources.jar",
-                "spine-$module-$VERSION-javadoc.jar",
-                "spine-$module-$VERSION-html-docs.jar",
-                "spine-$module-$VERSION.pom",
-                "spine-$module-$VERSION.module",
+                "spine-$module-$version.jar",
+                "spine-$module-$version-sources.jar",
+                "spine-$module-$version-javadoc.jar",
+                "spine-$module-$version-html-docs.jar",
+                "spine-$module-$version.pom",
+                "spine-$module-$version.module",
             )
         }.sorted()
 
@@ -134,7 +136,7 @@ internal class PublicationChecksumsIgTest {
      */
     @Test
     fun `order the manifest by subject name`() {
-        runGradle("publicationChecksums")
+        runGradle(aggregator)
 
         val names = manifestEntries().map { it.name }
         names shouldBe names.sorted()
@@ -142,7 +144,7 @@ internal class PublicationChecksumsIgTest {
 
     @Test
     fun `record the digest of each published file`() {
-        runGradle("publicationChecksums", "publishAllPublicationsToStageRepository")
+        runGradle(aggregator, "publishAllPublicationsToStageRepository")
 
         manifestEntries().forEach { entry ->
             val published = stagedFile(entry.name)
@@ -152,14 +154,14 @@ internal class PublicationChecksumsIgTest {
 
     @Test
     fun `apply the artifact prefix to the published names`() {
-        runGradle("publicationChecksums")
+        runGradle(aggregator)
 
         val names = manifestEntries().map { it.name }
-        names.forEach { it.startsWith("spine-") shouldBe true }
-        names.contains("spine-api-$VERSION.jar") shouldBe true
-        names.contains("spine-api-$VERSION.pom") shouldBe true
-        names.contains("spine-api-$VERSION.module") shouldBe true
-        names.contains("spine-api-$VERSION-sources.jar") shouldBe true
+        names.forEach { it shouldStartWith "spine-" }
+        names shouldContain "spine-api-$version.jar"
+        names shouldContain "spine-api-$version.pom"
+        names shouldContain "spine-api-$version.module"
+        names shouldContain "spine-api-$version-sources.jar"
     }
 
     /**
@@ -172,12 +174,13 @@ internal class PublicationChecksumsIgTest {
             .filter { it.isFile }
             .map { it.name }
             .filterNot { it.startsWith("maven-metadata") }
-            .filterNot { SIDECARS.any(it::endsWith) }
+            .filterNot { sidecars.any(it::endsWith) }
             .toList()
             .sorted()
 
     private fun stagedFile(name: String): File =
-        file("staged").walkTopDown().first { it.isFile && it.name == name }
+        file("staged").walkTopDown().firstOrNull { it.isFile && it.name == name }
+            ?: error("No staged file named `$name`.")
 
     private fun manifestEntries(): List<ManifestEntry> =
         file("build/attestation/subject-checksums.txt")
@@ -214,6 +217,9 @@ internal class PublicationChecksumsIgTest {
      * of the generated build.
      *
      * The classpath comes from the `test` task in `buildSrc/build.gradle.kts`.
+     *
+     * The indentation below is matched to the `classpath(files(` call in the
+     * generated script, which `trimIndent()` would otherwise flatten.
      */
     private fun buildSrcClasspath(): String {
         val classpath = requireNotNull(System.getProperty("buildSrc.classpath")) {
@@ -229,12 +235,23 @@ internal class PublicationChecksumsIgTest {
 
     private companion object {
 
-        const val VERSION = "1.0.0"
+        /** The task under test, named by the code that registers it. */
+        val aggregator = PublicationChecksums.aggregatorTaskName
 
-        val SIDECARS = listOf(".md5", ".sha1", ".sha256", ".sha512")
+        const val version = "1.0.0"
+
+        val sidecars = listOf(".md5", ".sha1", ".sha256", ".sha512")
     }
 }
 
+/**
+ * Returns the SHA-256 digest of this file as a lowercase hexadecimal string.
+ *
+ * Deliberately a second implementation rather than the one the production code
+ * uses: the assertion compares a digest this test computed with a digest that
+ * code produced, and sharing the function would make it compare a value with
+ * itself. Test files are small, so this one reads the whole file.
+ */
 private fun File.sha256(): String {
     val digest = MessageDigest.getInstance("SHA-256").digest(readBytes())
     return digest.joinToString("") { "%02x".format(it) }

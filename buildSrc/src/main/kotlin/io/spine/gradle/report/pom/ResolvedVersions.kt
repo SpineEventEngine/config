@@ -73,7 +73,10 @@ internal object ResolvedVersions {
             group = SpineTaskGroup.name
             description = "Collects the versions of dependencies of " +
                     "the `${project.name}` project selected by dependency resolution"
-            mustRunAfter(project.tasks.matching { it.name == "clean" })
+            // Filtered by name rather than by task: `matching` tests a predicate
+            // against each task, so it has to instantiate every one registered in
+            // the project merely to read its name.
+            mustRunAfter(project.tasks.named { it == "clean" })
             doLast {
                 val file = outputFileIn(project)
                 file.parentFile.mkdirs()
