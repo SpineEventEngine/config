@@ -24,6 +24,7 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.tasks.GenerateMavenPom
 import org.gradle.api.publish.tasks.GenerateModuleMetadata
+import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 
 /**
@@ -103,7 +104,7 @@ internal object PublicationChecksums {
      * could delete a freshly written manifest.
      */
     private fun registerCollectorIn(project: Project): TaskProvider<Task> =
-        project.tasks.register(collectorTaskName) {
+        project.tasks.getOrRegister(collectorTaskName) {
             group = SpineTaskGroup.name
             description = "Computes the digests of the artifacts published by " +
                     "the `${project.name}` project"
@@ -144,7 +145,7 @@ internal object PublicationChecksums {
         published: Set<Project>,
         collectors: List<TaskProvider<Task>>
     ): TaskProvider<Task> =
-        root.tasks.register(aggregatorTaskName) {
+        root.tasks.getOrRegister(aggregatorTaskName) {
             group = SpineTaskGroup.name
             description = "Writes the digests of all published artifacts for attestation"
             dependsOn(collectors)
@@ -181,6 +182,27 @@ internal object PublicationChecksums {
                 "$digest$digestSeparator$name"
             }
 }
+
+/**
+ * Returns the task named [name] in this container, registering it with [init]
+ * if it is not there yet.
+ *
+ * `spinePublishing { }` configures the extension anew on every call, and the
+ * same project can be reached by two such calls: the root extension lists a
+ * module in [SpinePublishing.modulesWithCustomPublishing], while the module
+ * itself opens the extension with `customPublishing = true` — which is what
+ * `uber-jar-module.gradle.kts` does. Plain registration fails on the second
+ * call, during configuration, so registration has to be idempotent.
+ */
+private fun TaskContainer.getOrRegister(
+    name: String,
+    init: Task.() -> Unit
+): TaskProvider<Task> =
+    if (names.contains(name)) {
+        named(name)
+    } else {
+        register(name, init)
+    }
 
 /**
  * Returns the Maven publications of this project, or an empty collection if
