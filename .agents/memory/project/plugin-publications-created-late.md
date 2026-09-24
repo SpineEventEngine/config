@@ -6,14 +6,14 @@ metadata:
   since: 2026-09-24
 ---
 
-`java-gradle-plugin` (also applied by `com.gradle.plugin-publish`) creates the
-`pluginMaven` publication and a `<declaration>PluginMarkerMaven` publication per
-declared plugin in an `afterEvaluate` action of its own. `spinePublishing` applies
-its publication handlers in `afterEvaluate` too, and for a module listed in
-`modulesWithCustomPublishing` that action is added by the root script, so it runs
-first — before either publication exists. A marker is identified by the plugin:
-its `groupId` is the plugin ID, its `artifactId` is `<id>.gradle.plugin`, and its
-POM name and description come from the plugin declaration.
+Gradle's `java-gradle-plugin` (also applied by `com.gradle.plugin-publish`) creates
+the `pluginMaven` publication and a `<declaration>PluginMarkerMaven` publication per
+declared plugin in an `afterEvaluate` action of its own. The `spinePublishing`
+extension applies its publication handlers in `afterEvaluate` too, and for a module
+listed in `modulesWithCustomPublishing`, that action is added by the root script, so
+it runs first — before either publication exists. A marker is identified by the
+plugin: its `groupId` is the plugin ID, its `artifactId` is `<id>.gradle.plugin`, and
+its POM name and description come from the plugin declaration.
 
 **Why:** `CustomPublicationHandler` iterated `publications.forEach { }`, a snapshot,
 so every Spine plugin POM went out without `<licenses>`, `<scm>`, and
