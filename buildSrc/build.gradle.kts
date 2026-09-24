@@ -38,14 +38,19 @@ repositories {
  * This value is deliberately decoupled from [io.spine.dependency.lib.Jackson.version],
  * which now points to Jackson 3.x. The `buildSrc` sources still use the Jackson 2.x API
  * (`com.fasterxml.jackson.*`), so they must stay on a 2.x version until they are migrated
- * to `tools.jackson.*`. Any maintained 2.x release will do — bump this only when `buildSrc`
- * itself needs a fix from a later 2.x, not to track the newest one.
+ * to `tools.jackson.*`.
  *
- * The lower bound is a security one: `jackson-core` and `jackson-databind` below `2.18.9`
+ * The floor is set by the SPDX Gradle Plugin (see [spdxPluginVersion]). Its JSON store
+ * depends on `jackson-bom`, which aligns every Jackson 2.x module on the runtime classpath
+ * of `buildSrc` with the version it requires. A lower version here would compile `buildSrc`
+ * against one Jackson and run it against another. Raise this together with the plugin, or
+ * when `buildSrc` itself needs a fix from a later 2.x — not to track the newest one.
+ *
+ * Whatever the reason for a change, `jackson-core` and `jackson-databind` below `2.18.9`
  * are exposed to published advisories, three of them rated `high` — `GHSA-r7wm-3cxj-wff9`,
- * `GHSA-rmj7-2vxq-3g9f`, and `GHSA-j3rv-43j4-c7qm`. Do not move this below `2.18.9`.
+ * `GHSA-rmj7-2vxq-3g9f`, and `GHSA-j3rv-43j4-c7qm`.
  */
-val jacksonVersion = "2.18.10"
+val jacksonVersion = "2.22.0"
 
 /**
  * The version of Google Artifact Registry used by `buildSrc`.
@@ -137,6 +142,28 @@ val koverVersion = "0.9.9"
 val shadowVersion = "9.6.1"
 
 /**
+ * The version of the SPDX Gradle Plugin, which writes the SBOM published with each module.
+ *
+ * @see <a href="https://plugins.gradle.org/plugin/org.spdx.sbom">SPDX Gradle Plugin</a>
+ */
+val spdxPluginVersion = "0.12.0"
+
+/**
+ * The version of Plexus XML used by `buildSrc`, pinned to the line made for Maven 3.
+ *
+ * The Shadow plugin brings the 4.x line, made for Maven 4. It merges XML through
+ * `maven-xml`, which finds its `XmlService` via the context class loader of the current
+ * thread — a loader that does not see `buildSrc` on the threads Gradle runs tasks on.
+ * The SPDX Gradle Plugin (see [spdxPluginVersion]) builds effective POMs with the Maven 3
+ * model, which merges the plugin configuration of a POM with that of its parent. So with
+ * the 4.x line, the SBOM of a module fails for any dependency whose POM does that.
+ *
+ * The 3.x line implements the same API on its own. Shadow uses only its classic part,
+ * in `ComponentsXmlResourceTransformer`. Update this within the 3.x line only.
+ */
+val plexusXmlVersion = "3.1.0"
+
+/**
  * The version of JUnit used to test the build scripts.
  *
  * @see [io.spine.dependency.test.JUnit]
@@ -155,6 +182,7 @@ configurations.all {
         force(
             "com.google.guava:guava:${guavaVersion}",
             "com.google.protobuf:protobuf-gradle-plugin:$protobufPluginVersion",
+            "org.codehaus.plexus:plexus-xml:$plexusXmlVersion",
 
             // Force Kotlin lib versions avoiding using those bundled with Gradle.
             "org.jetbrains.kotlin:kotlin-stdlib:$kotlinEmbeddedVersion",
@@ -197,7 +225,8 @@ dependencies {
         "org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion",
         "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinEmbeddedVersion",
         "org.jetbrains.kotlin:kotlin-reflect:$kotlinEmbeddedVersion",
-        "org.jetbrains.kotlinx:kover-gradle-plugin:$koverVersion"
+        "org.jetbrains.kotlinx:kover-gradle-plugin:$koverVersion",
+        "org.spdx:spdx-gradle-plugin:$spdxPluginVersion"
     ).forEach {
         implementation(it)
     }

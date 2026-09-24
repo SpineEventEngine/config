@@ -22,7 +22,6 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
-import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.tasks.GenerateMavenPom
 import org.gradle.api.publish.tasks.GenerateModuleMetadata
@@ -302,16 +301,6 @@ private fun Project.attestationSources(): MutableList<Provider<RegularFile>> {
         properties.set(key, mutableListOf<Provider<RegularFile>>())
     }
     return properties.get(key) as MutableList<Provider<RegularFile>>
-}
-
-/**
- * Returns the Maven publications of this project, or an empty collection if
- * the project does not publish.
- */
-private fun Project.mavenPublications(): Collection<MavenPublication> {
-    val publishing = extensions.findByType(PublishingExtension::class.java)
-        ?: return emptyList()
-    return publishing.publications.withType(MavenPublication::class.java)
 }
 
 /**

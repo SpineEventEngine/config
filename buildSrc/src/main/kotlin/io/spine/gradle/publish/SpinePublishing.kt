@@ -182,7 +182,7 @@ open class SpinePublishing(private val project: Project) {
         /**
          * The name of the extension registered in a Gradle project.
          */
-        public val extensionName: String = SpinePublishing::class.java.simpleName
+        val extensionName: String = SpinePublishing::class.java.simpleName
             .replaceFirstChar { it.lowercase(Locale.ROOT) }
     }
 
@@ -325,6 +325,7 @@ open class SpinePublishing(private val project: Project) {
             project.setUpPublishing(jarFlags)
         }
         PublicationChecksums.registerTasks(project, projectsToPublish)
+        PublicationSbom.registerTasks(project, projectsToPublish)
     }
 
     /**
