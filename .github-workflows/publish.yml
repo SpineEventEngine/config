@@ -77,7 +77,9 @@ jobs:
         # different bytes on each run would leave the manifest describing files other
         # than the ones uploaded here — provenance that cannot verify what was
         # published. Within a single invocation each producer runs at most once, so
-        # the digests and the uploads are of the same bytes.
+        # the digests and the uploads are of the same bytes. The task writing the SBOM
+        # published next to each artifact (`*.spdx.json`) is such a producer: the SBOM
+        # records when it was written. It is attested like any other published file.
         run: ./gradlew publish publicationChecksums -x test --stacktrace
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

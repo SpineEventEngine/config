@@ -109,16 +109,17 @@ internal class PublicationChecksumsIgTest {
 
         // The standard publication of a module without Proto or a test JAR: the
         // compilation output, the three documentation and source archives added
-        // by `artifacts(JarFlags)`, and the two metadata files. Spelled out
-        // rather than only compared with the staged files, because two empty
-        // lists also "contain exactly" each other — this suite must not be able
-        // to pass by describing nothing.
+        // by `artifacts(JarFlags)`, the SBOM added by `PublicationSbom`, and the
+        // two metadata files. Spelled out rather than only compared with the
+        // staged files, because two empty lists also "contain exactly" each
+        // other — this suite must not be able to pass by describing nothing.
         val expected = listOf("api", "backend").flatMap { module ->
             listOf(
                 "spine-$module-$version.jar",
                 "spine-$module-$version-sources.jar",
                 "spine-$module-$version-javadoc.jar",
                 "spine-$module-$version-html-docs.jar",
+                "spine-$module-$version.spdx.json",
                 "spine-$module-$version.pom",
                 "spine-$module-$version.module",
             )
