@@ -227,6 +227,54 @@ class SpinePublishingTest {
             repos shouldHaveSize 1
             repos shouldContain repo
         }
+
+        @Test
+        fun `from the parent project if the local extension does not set them`() {
+            val repo = Repository(
+                "parent-repo",
+                "https://example.com/release",
+                "https://example.com/snapshot"
+            )
+            // Root project has its extension named 'spinePublishing' from setUp.
+            extension.destinations = setOf(repo)
+
+            val subproject = ProjectBuilder.builder().withParent(project).withName("sub").build()
+            // Subproject opens its own extension, leaving `destinations` uninitialized.
+            val extensionName = SpinePublishing.extensionName
+            val subExtension =
+                subproject.extensions.create<SpinePublishing>(extensionName, subproject)
+
+            val repos = subproject.invokePublishTo(subExtension)
+            repos shouldHaveSize 1
+            repos shouldContain repo
+        }
+
+        @Test
+        fun `from the local extension even if called through the root one`() {
+            val rootRepo = Repository(
+                "root-repo",
+                "https://example.com/root/release",
+                "https://example.com/root/snapshot"
+            )
+            // Root project has its extension named 'spinePublishing' from setUp.
+            extension.destinations = setOf(rootRepo)
+
+            val subproject = ProjectBuilder.builder().withParent(project).withName("sub").build()
+            val subRepo = Repository(
+                "sub-repo",
+                "https://example.com/sub/release",
+                "https://example.com/sub/snapshot"
+            )
+            // Subproject opens its own extension with different destinations.
+            val extensionName = SpinePublishing.extensionName
+            val subExtension =
+                subproject.extensions.create<SpinePublishing>(extensionName, subproject)
+            subExtension.destinations = setOf(subRepo)
+
+            val repos = subproject.invokePublishTo(extension)
+            repos shouldHaveSize 1
+            repos shouldContain subRepo
+        }
     }
 }
 
