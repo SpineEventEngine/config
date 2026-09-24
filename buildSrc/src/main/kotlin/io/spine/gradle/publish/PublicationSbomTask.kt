@@ -33,7 +33,9 @@ import org.gradle.work.DisableCachingByDefault
  * Writes the SBOM published with an artifact, naming the modules of this build by
  * the coordinates they are published under.
  *
- * The task rewrites the document that the SPDX Gradle Plugin writes for the artifact:
+ * The task rewrites the document that the SPDX Gradle Plugin writes for the dependencies
+ * of the artifact — which all publications of a JVM module share — into the SBOM of
+ * one [artifact][artifactCoordinates]:
  *
  *  - the document is named after the artifact, and given a namespace derived from its
  *    coordinates, in place of the placeholder the plugin leaves there;
@@ -69,11 +71,18 @@ internal abstract class PublicationSbomTask : DefaultTask() {
     abstract val modulePath: Property<String>
 
     /**
+     * The coordinates of the artifact the SBOM is published with, as
+     * `group:artifactId:version`.
+     */
+    @get:Input
+    abstract val artifactCoordinates: Property<String>
+
+    /**
      * The name of the target whose artifact the SBOM describes, such as `jvm`.
      *
      * A multiplatform module publishes an artifact per target, and a dependency on it
-     * resolves to the artifact of the target being built. So a module of this build —
-     * the described one included — is looked up by its publication of this target first.
+     * resolves to the artifact of the target being built. So a module of this build that
+     * the described one depends on is looked up by its publication of this target first.
      */
     @get:Input
     abstract val platform: Property<String>
@@ -89,13 +98,6 @@ internal abstract class PublicationSbomTask : DefaultTask() {
     abstract val publishedCoordinates: MapProperty<String, String>
 
     /**
-     * The coordinates naming the described artifact when its project has no single
-     * Maven publication to name it after, as `group:artifactId:version`.
-     */
-    @get:Input
-    abstract val fallbackCoordinates: Property<String>
-
-    /**
      * The SBOM to publish.
      */
     @get:OutputFile
@@ -108,28 +110,13 @@ internal abstract class PublicationSbomTask : DefaultTask() {
         val document = mapper.readTree(file) as? ObjectNode
             ?: error("`$file` is not an SPDX JSON document.")
         val published = publishedCoordinates.get()
-        val own = ownCoordinates(published)
+        val own = Coordinates.parse(artifactCoordinates.get())
         document.put("name", own.artifactId)
         document.put("documentNamespace", own.namespace)
         document["packages"]
             ?.filterIsInstance<ObjectNode>()
             ?.forEach { describeModule(pkg = it, own = own, published = published) }
         mapper.writerWithDefaultPrettyPrinter().writeValue(outputFile.get().asFile, document)
-    }
-
-    /**
-     * Returns the coordinates of the described artifact, falling back to the
-     * [fallbackCoordinates] with a warning.
-     */
-    private fun ownCoordinates(published: Map<String, String>): Coordinates {
-        val path = modulePath.get()
-        published.lookUp(path, platform.get())?.let { return it }
-        val fallback = Coordinates.parse(fallbackCoordinates.get())
-        logger.warn(
-            "The SBOM of `$path` is named `${fallback.artifactId}`, after its project:" +
-                    " the project has no single Maven publication to name it after."
-        )
-        return fallback
     }
 
     /**

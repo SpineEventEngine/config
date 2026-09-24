@@ -20,6 +20,7 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.collections.shouldNotContainAnyOf
+import io.kotest.matchers.file.shouldNotExist
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -59,6 +60,9 @@ import org.junit.jupiter.api.io.TempDir
  *    modules of the `logging` repository do, it is listed with custom publishing
  *    by the root project and also opens `spinePublishing` itself, so its SBOM is
  *    registered twice;
+ *  - `twin` — a JVM module with custom publishing, whose two publications
+ *    publish different artifacts, so each needs an SBOM naming its own, and
+ *    whose third publication is removed once the module is evaluated;
  *  - `consumer` — a JVM module depending on `kmp`, whose SBOM must name the
  *    artifact of the JVM target of `kmp`.
  */
@@ -86,6 +90,7 @@ internal class PublicationSbomIgTest {
                 ":plugin:$publishTask",
                 ":impl:${PublicationChecksums.collectorTaskName}",
                 ":kmp:${PublicationSbom.taskNameFor("jvm")}",
+                ":twin:${PublicationSbom.taskName}",
                 ":consumer:${PublicationSbom.taskName}",
                 "--offline",
                 "--stacktrace",
@@ -184,7 +189,31 @@ internal class PublicationSbomIgTest {
             ":plugin samplePluginMarkerMaven 0",
             ":kmp jvm 1",
             ":kmp kotlinMultiplatform 0",
+            ":twin main 1",
+            ":twin extra 1",
         )
+    }
+
+    /**
+     * `spinePublishing` prefixes the artifact ID of each publication, as it does that
+     * of the project. Neither artifact is named as the project, which an SBOM falls
+     * back to when it cannot find its publication.
+     */
+    @Test
+    fun `name the SBOM of each publication after the artifact it is published with`() {
+        val artifacts = mapOf("main" to "spine-twin-main", "extra" to "spine-twin-extra")
+        artifacts.forEach { (publication, artifactId) ->
+            val sbom = file("twin/build/sbom/$publication.spdx.json").readJson()
+
+            sbom["name"].asText() shouldBe artifactId
+            sbom.packageNamed("io.spine.test:$artifactId").purl() shouldBe
+                    "pkg:maven/io.spine.test/$artifactId@$moduleVersion"
+        }
+    }
+
+    @Test
+    fun `write no SBOM for a publication the build removes`() {
+        file("twin/build/sbom/dropped.spdx.json").shouldNotExist()
     }
 
     @Test
@@ -197,7 +226,7 @@ internal class PublicationSbomIgTest {
 
     @Test
     fun `name a multiplatform sibling after its artifact of the same target`() {
-        val sbom = file("consumer/build/sbom/publication.spdx.json").readJson()
+        val sbom = file("consumer/build/sbom/mavenJava.spdx.json").readJson()
 
         sbom.packageNamed("io.spine.test:spine-kmp-jvm").purl() shouldBe
                 "pkg:maven/io.spine.test/spine-kmp-jvm@$moduleVersion"
@@ -256,7 +285,7 @@ internal class PublicationSbomIgTest {
             "settings.gradle.kts",
             """
             rootProject.name = "sbom-sample"
-            include("api", "impl", "bundled", "plugin", "kmp", "consumer")
+            include("api", "impl", "bundled", "plugin", "kmp", "twin", "consumer")
             """.trimIndent()
         )
         // The standard library would be resolved from Maven Central otherwise,
@@ -293,7 +322,7 @@ internal class PublicationSbomIgTest {
 
             spinePublishing {
                 modules = setOf("api", "impl", "consumer")
-                modulesWithCustomPublishing = setOf("plugin", "kmp")
+                modulesWithCustomPublishing = setOf("plugin", "kmp", "twin")
                 destinations = emptySet()
             }
 
@@ -306,7 +335,8 @@ internal class PublicationSbomIgTest {
                 }
             }
 
-            gradle.projectsEvaluated {
+            // The SBOMs are added once all projects are evaluated, so report afterwards.
+            gradle.taskGraph.whenReady {
                 subprojects {
                     the<PublishingExtension>().publications
                         .withType<MavenPublication>()
@@ -383,6 +413,37 @@ internal class PublicationSbomIgTest {
             spinePublishing {
                 customPublishing = true
                 destinations = emptySet()
+            }
+            """.trimIndent()
+        )
+        write(
+            "twin/build.gradle.kts",
+            """
+            plugins {
+                `java-library`
+                `maven-publish`
+            }
+
+            publishing {
+                publications {
+                    create<MavenPublication>("main") {
+                        from(components["java"])
+                        artifactId = "twin-main"
+                    }
+                    create<MavenPublication>("extra") {
+                        from(components["java"])
+                        artifactId = "twin-extra"
+                    }
+                    create<MavenPublication>("dropped") {
+                        from(components["java"])
+                        artifactId = "twin-dropped"
+                    }
+                }
+            }
+
+            // As builds do with the `pluginMaven` publication `java-gradle-plugin` adds.
+            afterEvaluate {
+                publishing.publications.removeIf { it.name == "dropped" }
             }
             """.trimIndent()
         )

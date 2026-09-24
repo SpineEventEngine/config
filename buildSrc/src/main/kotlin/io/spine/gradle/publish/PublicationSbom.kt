@@ -16,13 +16,12 @@ package io.spine.gradle.publish
 
 import DocumentationSettings
 import io.spine.gradle.SpineTaskGroup
-import io.spine.gradle.artifactId
 import java.net.URI
 import java.util.Locale
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ModuleVersionIdentifier
-import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
@@ -48,9 +47,10 @@ import org.spdx.sbom.gradle.extensions.DefaultSpdxSbomTaskExtension
  *
  * ## One SBOM per published artifact
  *
- * A JVM module gets one SBOM of its `runtimeClasspath`, published with each of its
- * publications. A Kotlin Multiplatform module publishes an artifact per target, so it
- * gets an SBOM per target, published with the publication of that target only. The
+ * Each publication gets an SBOM of its own, named after the artifact it publishes. The
+ * publications of a JVM module describe the same dependencies — its `runtimeClasspath`.
+ * A Kotlin Multiplatform module publishes an artifact per target, so the SBOM of each
+ * target publication describes the dependencies of that target. The
  * `kotlinMultiplatform` umbrella publication has no runtime of its own, and gets none.
  * A Kotlin/Native compilation has no runtime configuration either: its klibs are linked
  * into the binary of the consumer, so the SBOM of a Native target describes the
@@ -72,16 +72,21 @@ import org.spdx.sbom.gradle.extensions.DefaultSpdxSbomTaskExtension
 internal object PublicationSbom {
 
     /**
-     * The name of the task writing the published SBOM of a JVM module.
+     * The name of the task writing every SBOM a module publishes.
      *
-     * The task of a Kotlin Multiplatform target is named by [taskNameFor].
+     * The SBOM of each publication is written by a task of its own, named by [taskNameFor].
      */
     const val taskName = "publicationSbom"
 
     /**
-     * The name of the SPDX target, and of the file it writes, for a JVM module.
+     * The name of the SPDX target describing a JVM module.
      */
     private const val moduleUnit = "publication"
+
+    /**
+     * The extension of a published SBOM, as in `<artifactId>-<version>.spdx.json`.
+     */
+    private const val sbomExtension = "spdx.json"
 
     /**
      * The target under which a JVM module looks up the modules it depends on.
@@ -108,11 +113,12 @@ internal object PublicationSbom {
     private const val unknownCommit = "unknown"
 
     /**
-     * Returns the name of the task writing the published SBOM of the given
-     * Kotlin Multiplatform [target].
+     * Returns the name of the task writing the SBOM published with the given [publication].
+     *
+     * The publication of a Kotlin Multiplatform target is named after the target.
      */
-    fun taskNameFor(target: String): String =
-        target + taskName.replaceFirstChar { it.titlecase(Locale.ROOT) }
+    fun taskNameFor(publication: String): String =
+        publication + taskName.replaceFirstChar { it.titlecase(Locale.ROOT) }
 
     /**
      * Registers the tasks writing the SBOMs of the given [published] projects, and adds
@@ -129,7 +135,7 @@ internal object PublicationSbom {
         published.forEach { project ->
             project.afterEvaluate { registerUnits() }
         }
-        host.rootProject.handOverCoordinatesOnceEvaluated()
+        host.rootProject.publishSbomsOnceEvaluated()
     }
 
     /**
@@ -147,7 +153,6 @@ internal object PublicationSbom {
                     name = moduleUnit,
                     configuration = "runtimeClasspath",
                     platform = jvmTarget,
-                    taskName = taskName,
                     publishedWith = { !it.isPluginMarker }
                 )
             )
@@ -180,28 +185,27 @@ internal object PublicationSbom {
                 configuration = main.runtimeDependencyConfigurationName
                     ?: main.compileDependencyConfigurationName,
                 platform = targetName,
-                taskName = taskNameFor(targetName),
                 publishedWith = { it.name == targetName }
             )
         )
     }
 
     /**
-     * Configures the SPDX Gradle Plugin to describe the given [unit], registers the task
-     * completing its SBOM, and adds the SBOM to the publications of the unit.
+     * Configures the SPDX Gradle Plugin to describe the given [unit], and records the unit
+     * so that its SBOMs are [published][publishSbomsOnceEvaluated].
      *
      * The configuration of the plugin does not depend on the coordinates of the artifact,
      * which are final only after the publications are set up: [PublicationSbomTask] puts
      * them into the document instead.
      */
     private fun Project.registerSbom(unit: SbomUnit) {
-        if (tasks.names.contains(unit.taskName)) {
+        pluginManager.apply(SpdxSbomPlugin::class.java)
+        val spdx = extensions.getByType(SpdxSbomExtension::class.java)
+        if (spdx.targets.findByName(unit.name) != null) {
             return
         }
         val repository = DocumentationSettings.repoUrl(this)
         val commit = providers.environmentVariable("GITHUB_SHA").orElse(unknownCommit)
-        pluginManager.apply(SpdxSbomPlugin::class.java)
-        val spdx = extensions.getByType(SpdxSbomExtension::class.java)
         spdx.onlyUseLocalLicenses.set(true)
         spdx.targets.create(unit.name) {
             configurations.set(listOf(unit.configuration))
@@ -214,44 +218,82 @@ internal object PublicationSbom {
                 revision.set(commit)
             }
         }
-        val generated = tasks.named(
-            "spdxSbomFor${unit.name.replaceFirstChar { it.titlecase(Locale.ROOT) }}",
-            SpdxSbomTask::class.java
-        ) {
+        spdxTaskOf(unit).configure {
             taskExtension.set(NoAssertionForLocalRepositories())
         }
+        registerLifecycleTask()
+        sbomUnits().add(unit)
+    }
+
+    /**
+     * Registers the task writing the SBOM of the given [publication] of the [unit], and
+     * adds the SBOM to the publication.
+     *
+     * [published] holds the coordinates of the publications of this build, keyed as
+     * [PublicationSbomTask.publishedCoordinates] describes.
+     */
+    private fun Project.publishSbom(
+        publication: MavenPublication,
+        unit: SbomUnit,
+        published: Map<String, String>
+    ) {
+        val sbomTaskName = taskNameFor(publication.name)
+        if (tasks.names.contains(sbomTaskName)) {
+            return
+        }
         val projectPath = path
-        val output = layout.buildDirectory.file("sbom/${unit.name}.spdx.json")
-        val sbom = tasks.register(unit.taskName, PublicationSbomTask::class.java) {
+        val coordinates = publication.coordinates
+        val generated = spdxTaskOf(unit)
+        val output = layout.buildDirectory.file("sbom/${publication.name}.$sbomExtension")
+        val sbom = tasks.register(sbomTaskName, PublicationSbomTask::class.java) {
             group = SpineTaskGroup.name
-            description = "Writes the SBOM published with the `${unit.name}` artifact" +
-                    " of `$projectPath`"
+            description = "Writes the SBOM published with the `${publication.name}`" +
+                    " publication of `$projectPath`"
             source.set(generated.flatMap { it.outputFile })
             modulePath.set(projectPath)
+            artifactCoordinates.set(coordinates)
             platform.set(unit.platform)
+            publishedCoordinates.set(published)
             outputFile.set(output)
         }
-        pluginManager.withPlugin("maven-publish") {
-            extensions.getByType(PublishingExtension::class.java).publications
-                .withType(MavenPublication::class.java)
-                .matching { unit.publishedWith(it) }
-                .configureEach {
-                    artifact(sbom.flatMap { it.outputFile }) {
-                        extension = "spdx.json"
-                    }
-                }
+        publication.artifact(sbom.flatMap { it.outputFile }) {
+            extension = sbomExtension
         }
     }
 
     /**
-     * Hands the coordinates of the Maven publications of this build to the SBOM tasks,
-     * once all projects are evaluated.
-     *
-     * Registered once per build, on the root project. The values are plain, so no task
-     * reads a provider, nor the state of another project, while it runs.
+     * Registers the task writing every SBOM this project publishes, unless it is
+     * registered already.
      */
-    private fun Project.handOverCoordinatesOnceEvaluated() {
-        val key = "io.spine.gradle.publish.sbomCoordinatesHandedOver"
+    private fun Project.registerLifecycleTask() {
+        if (tasks.names.contains(taskName)) {
+            return
+        }
+        val projectPath = path
+        val sboms = tasks.withType(PublicationSbomTask::class.java)
+        tasks.register(taskName) {
+            group = SpineTaskGroup.name
+            description = "Writes every SBOM `$projectPath` publishes"
+            dependsOn(sboms)
+        }
+    }
+
+    /**
+     * Publishes the SBOMs of the recorded units of every project once all projects are
+     * evaluated, with each publication of a unit.
+     *
+     * Only then are the publications final. Until then, a publication may still come or
+     * go: `java-gradle-plugin` adds `pluginMaven` in an `afterEvaluate` of its own, which
+     * a build may then remove. A unit records itself instead of registering a hook of its
+     * own, because a multiplatform target is registered in a callback, where Gradle allows
+     * no listener to be added.
+     *
+     * Registered once per build, on the root project. The coordinates of the publications
+     * are handed to the tasks as plain values, so no task reads a provider, nor the state
+     * of another project, while it runs.
+     */
+    private fun Project.publishSbomsOnceEvaluated() {
+        val key = "io.spine.gradle.publish.sbomsPublishedOnceEvaluated"
         val properties = extensions.extraProperties
         if (properties.has(key)) {
             return
@@ -260,10 +302,12 @@ internal object PublicationSbom {
         val root = this
         gradle.projectsEvaluated {
             val published = root.collectPublishedCoordinates()
-            root.allprojects.forEach { owner ->
-                owner.tasks.withType(PublicationSbomTask::class.java).configureEach {
-                    publishedCoordinates.set(published)
-                    fallbackCoordinates.set(owner.presumedCoordinates())
+            root.allprojects.forEach { module ->
+                val publications = module.mavenPublications()
+                module.sbomUnits().forEach { unit ->
+                    publications.filter(unit.publishedWith).forEach {
+                        module.publishSbom(publication = it, unit = unit, published = published)
+                    }
                 }
             }
         }
@@ -296,29 +340,47 @@ private fun Project.collectPublishedCoordinates(): Map<String, String> = buildMa
 }
 
 /**
- * Returns the coordinates `spinePublishing { }` gives this project, which name its SBOM
- * when the project has no single Maven publication to name it after.
+ * Returns the task the SPDX Gradle Plugin registers for the target of the given [unit].
  */
-private fun Project.presumedCoordinates(): String = "$group:$artifactId:$version"
+private fun Project.spdxTaskOf(unit: SbomUnit): TaskProvider<SpdxSbomTask> =
+    tasks.named(
+        "spdxSbomFor${unit.name.replaceFirstChar { it.titlecase(Locale.ROOT) }}",
+        SpdxSbomTask::class.java
+    )
 
 /**
- * An artifact described by one SBOM.
+ * Returns the units whose SBOMs this project publishes, as recorded so far.
+ *
+ * The list is attached to the project, so that it lives exactly as long as the build does.
+ * Holding it in [PublicationSbom] would share it between builds, which reuse a Gradle
+ * daemon and its class loaders.
+ */
+@Suppress("UNCHECKED_CAST" /* The property is written here and nowhere else. */)
+private fun Project.sbomUnits(): MutableList<SbomUnit> {
+    val key = "io.spine.gradle.publish.sbomUnits"
+    val properties = extensions.extraProperties
+    if (!properties.has(key)) {
+        properties.set(key, mutableListOf<SbomUnit>())
+    }
+    return properties.get(key) as MutableList<SbomUnit>
+}
+
+/**
+ * The dependencies described by one SPDX target, and the publications whose SBOMs
+ * are written from that description.
  */
 private class SbomUnit(
 
-    /** Names the SPDX target, and the file it writes. */
+    /** Names the SPDX target. */
     val name: String,
 
-    /** The configuration holding the dependencies of the artifact. */
+    /** The configuration holding the dependencies of the artifacts. */
     val configuration: String,
 
     /** The target under which the modules of this build are looked up. */
     val platform: String,
 
-    /** The name of the task writing the published SBOM. */
-    val taskName: String,
-
-    /** Tells whether the SBOM is published with the given publication. */
+    /** Tells whether an SBOM of this unit is published with the given publication. */
     val publishedWith: (MavenPublication) -> Boolean
 )
 

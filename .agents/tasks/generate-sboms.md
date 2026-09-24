@@ -142,6 +142,16 @@ one per target publication — next to each artifact in the Maven repositories, 
   coordinates, a KDoc caveat for a custom module with two publications, "SPDX Gradle
   Plugin" capitalization, "this build" in `LicenseSettings`, a link for #763. The `logging`
   smoke test is still pending (its own `kotlinx-coroutines-bom` conflict).
+- 2026-09-24 — Copilot on #764: one SBOM per module, attached to all its publications,
+  named every copy after one artifact when a module had several. Now each publication gets
+  its own task and file (`build/sbom/<publication>.spdx.json`), named after its own
+  coordinates; `publicationSbom` runs them all; the fallback coordinates are gone. The tasks
+  are registered by the root's one `projectsEvaluated` hook, when publications are final —
+  so a publication a build removes (`core-jvm-compiler`'s `pluginMaven`) gets none. A unit
+  records itself instead of adding a hook: Gradle forbids that in the KMP target callback.
+  `twin` fixture module (two publications and a removed third); 110 tests green. Smoke:
+  `core-jvm-compiler` (`fatJar`, `pluginJar`, no warnings), `elastic` (7 targets; re-run
+  up to date).
   A hand-picked scan cannot clear the blocker; the consumer smoke tests can, since the
   SPDX plugin builds the effective POM of every runtime dependency.
 
