@@ -63,7 +63,7 @@ internal fun Project.mavenPublications(): Collection<MavenPublication> {
  * Tells whether this publication is the marker of a Gradle plugin, which consists
  * of a POM pointing at the publication of the plugin.
  *
- * `java-gradle-plugin` creates a marker for each declared plugin, naming
+ * Gradle's `java-gradle-plugin` creates a marker for each declared plugin, naming
  * the publication after the plugin with the `PluginMarkerMaven` suffix.
  */
 internal val MavenPublication.isPluginMarker: Boolean

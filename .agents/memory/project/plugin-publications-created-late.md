@@ -1,6 +1,6 @@
 ---
 name: plugin-publications-created-late
-description: java-gradle-plugin creates `pluginMaven` and `*PluginMarkerMaven` in its own afterEvaluate, after config's publication handlers run — reach publications with `configureEach`, never a `forEach` snapshot, and never rename a plugin marker.
+description: Gradle's `java-gradle-plugin` creates `pluginMaven` and `*PluginMarkerMaven` in its own afterEvaluate, after config's publication handlers run — reach publications with `configureEach`, never a `forEach` snapshot, and never rename a plugin marker.
 metadata:
   type: project
   since: 2026-09-24

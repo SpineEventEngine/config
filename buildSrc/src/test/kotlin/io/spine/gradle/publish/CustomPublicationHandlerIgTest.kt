@@ -28,11 +28,11 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.w3c.dom.Document
 
 /**
- * Verifies the POMs of a module with custom publishing which applies
+ * Verifies the POMs of a module with custom publishing that applies
  * `java-gradle-plugin`, against a real multi-module build run via Gradle TestKit.
  *
- * `java-gradle-plugin` creates its publications in an `afterEvaluate` action of
- * its own: `pluginMaven` for the plugin JAR, and a marker for each declared plugin.
+ * Gradle's `java-gradle-plugin` creates its publications in an `afterEvaluate` action
+ * of its own: `pluginMaven` for the plugin JAR, and a marker for each declared plugin.
  * Whether that happens before or after the handler is applied depends on how
  * the module is declared as one with custom publishing, so each test runs for
  * every [Declaration].
@@ -53,11 +53,11 @@ internal class CustomPublicationHandlerIgTest {
         declaration: Declaration
     ) {
         build(declaration)
-        val standard = pom("library", "mavenJava")
-        val plugin = pom("plugin", "pluginMaven")
+        val standard = pom(library, standardPublication)
+        val plugin = pom(pluginModule, pluginPublication)
 
         plugin["/project/groupId"] shouldBe group
-        plugin["/project/artifactId"] shouldBe "${toolPrefix}plugin"
+        plugin["/project/artifactId"] shouldBe pluginArtifact
         plugin["/project/version"] shouldBe version
         plugin["/project/description"] shouldBe moduleDescription
         plugin shouldDescribeTheProjectLike standard
@@ -65,8 +65,8 @@ internal class CustomPublicationHandlerIgTest {
 
     /**
      * A marker is resolved by the ID of the plugin it points to, and describes
-     * that plugin. Both come from the plugin declaration, and neither must be
-     * replaced with the attributes of the module.
+     * that plugin. Both come from the plugin declaration and must not be replaced
+     * with the attributes of the module.
      */
     @ParameterizedTest
     @EnumSource(Declaration::class)
@@ -74,14 +74,14 @@ internal class CustomPublicationHandlerIgTest {
         declaration: Declaration
     ) {
         build(declaration)
-        val standard = pom("library", "mavenJava")
-        val marker = pom("plugin", "samplePluginMarkerMaven")
+        val standard = pom(library, standardPublication)
+        val marker = pom(pluginModule, markerPublication)
 
         marker["/project/groupId"] shouldBe pluginId
         marker["/project/artifactId"] shouldBe "$pluginId.gradle.plugin"
         marker["/project/name"] shouldBe pluginName
         marker["/project/description"] shouldBe pluginDescription
-        marker["/project/dependencies/dependency/artifactId"] shouldBe "${toolPrefix}plugin"
+        marker["/project/dependencies/dependency/artifactId"] shouldBe pluginArtifact
         marker shouldDescribeTheProjectLike standard
     }
 
@@ -114,7 +114,7 @@ internal class CustomPublicationHandlerIgTest {
         IN_MODULE(inRoot = false, inModule = true),
 
         /**
-         * Both of the above, like a module which applies `uber-jar-module`
+         * Both of the above, like a module that applies `uber-jar-module`
          * and is listed by the root project.
          *
          * The module configures the same handler for the second time, which
@@ -131,9 +131,9 @@ internal class CustomPublicationHandlerIgTest {
         GradleRunner.create()
             .withProjectDir(projectDir)
             .withArguments(
-                pomTask("library", "mavenJava"),
-                pomTask("plugin", "pluginMaven"),
-                pomTask("plugin", "samplePluginMarkerMaven"),
+                pomTask(library, standardPublication),
+                pomTask(pluginModule, pluginPublication),
+                pomTask(pluginModule, markerPublication),
                 "--stacktrace"
             )
             .build()
@@ -143,13 +143,13 @@ internal class CustomPublicationHandlerIgTest {
         file("settings.gradle.kts").writeText(
             """
             rootProject.name = "plugin-sample"
-            include("library", "plugin")
+            include("$library", "$pluginModule")
             """.trimIndent()
         )
     }
 
     private fun writeRootScript(declaration: Declaration) {
-        val customModules = if (declaration.inRoot) "setOf(\"plugin\")" else "emptySet()"
+        val customModules = if (declaration.inRoot) "setOf(\"$pluginModule\")" else "emptySet()"
         file("build.gradle.kts").writeText(
             """
             buildscript {
@@ -168,7 +168,7 @@ internal class CustomPublicationHandlerIgTest {
             }
 
             spinePublishing {
-                modules = setOf("library")
+                modules = setOf("$library")
                 modulesWithCustomPublishing = $customModules
                 toolArtifactPrefix = "$toolPrefix"
                 destinations = emptySet()
@@ -178,7 +178,7 @@ internal class CustomPublicationHandlerIgTest {
     }
 
     private fun writeLibraryScript() {
-        file("library/build.gradle.kts").apply {
+        file("$library/build.gradle.kts").apply {
             parentFile.mkdirs()
             writeText(
                 """
@@ -210,7 +210,7 @@ internal class CustomPublicationHandlerIgTest {
 
                 gradlePlugin {
                     plugins {
-                        create("sample") {
+                        create("$pluginDeclaration") {
                             id = "$pluginId"
                             implementationClass = "io.spine.sample.SamplePlugin"
                             displayName = "$pluginName"
@@ -232,7 +232,7 @@ internal class CustomPublicationHandlerIgTest {
                 )
             }
         }
-        file("plugin/build.gradle.kts").apply {
+        file("$pluginModule/build.gradle.kts").apply {
             parentFile.mkdirs()
             writeText(script.joinToString("\n\n"))
         }
@@ -265,14 +265,40 @@ internal class CustomPublicationHandlerIgTest {
         const val group = "io.spine.tools"
         const val version = "1.0.0"
         const val toolPrefix = "sample-"
+
+        /**
+         * The module published in the standard way, to compare the POMs with.
+         */
+        const val library = "library"
+
+        /**
+         * The module applying `java-gradle-plugin`, published in a custom way.
+         */
+        const val pluginModule = "plugin"
         const val moduleDescription = "The module publishing the sample plugin."
 
+        /**
+         * The artifact ID expected for the plugin JAR: the name of the module
+         * with the prefix of a tool module.
+         */
+        const val pluginArtifact = "$toolPrefix$pluginModule"
+
+        const val pluginDeclaration = "sample"
         const val pluginId = "io.spine.sample"
         const val pluginName = "Sample Plugin"
         const val pluginDescription = "Does nothing, being a sample."
 
+        /*
+         * The names of the publications, as given by the code that creates them.
+         */
+        const val standardPublication = StandardJavaPublicationHandler.PUBLICATION_NAME
+        const val pluginPublication = "pluginMaven"
+        const val markerPublication = "${pluginDeclaration}PluginMarkerMaven"
+
+        const val licenseNamePath = "/project/licenses/license/name"
+
         /**
-         * The POM elements which describe the project as a whole,
+         * The POM elements that describe the project as a whole,
          * and so are the same for every publication of the project.
          *
          * The number of licenses is compared as well, so that a license
@@ -281,7 +307,7 @@ internal class CustomPublicationHandlerIgTest {
         val projectWideAttributes = listOf(
             "/project/inceptionYear",
             "count(/project/licenses/license)",
-            "/project/licenses/license/name",
+            licenseNamePath,
             "/project/licenses/license/url",
             "/project/licenses/license/distribution",
             "/project/scm/url",
@@ -303,7 +329,7 @@ internal class CustomPublicationHandlerIgTest {
      * with no license at all would describe the project in the same way, too.
      */
     private infix fun Pom.shouldDescribeTheProjectLike(standard: Pom) {
-        standard["/project/licenses/license/name"] shouldBe LicenseSettings.name
+        standard[licenseNamePath] shouldBe LicenseSettings.name
         projectWideAttributes.forEach { path ->
             withClue(path) {
                 this[path] shouldBe standard[path]

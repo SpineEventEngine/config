@@ -160,7 +160,7 @@ sealed class PublicationHandler(
     }
 
     /**
-     * Sets the POM attributes of this [MavenPublication] which describe
+     * Sets the POM attributes of this [MavenPublication] that describe
      * the [project] as a whole, rather than the published artifact.
      *
      * The inception year of Spine is taken from [InceptionYear].
@@ -172,7 +172,7 @@ sealed class PublicationHandler(
      *
      * Unlike [copyProjectAttributes], this function leaves the coordinates and
      * the description of the publication intact. So, it also applies to a publication
-     * which identifies something other than the artifact of the project,
+     * that identifies something other than the artifact of the project,
      * such as a Gradle plugin marker.
      *
      * @see LicenseSettings
