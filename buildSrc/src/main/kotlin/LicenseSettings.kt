@@ -28,4 +28,12 @@
 object LicenseSettings {
     const val name = "The Apache License, Version 2.0"
     const val url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+
+    /**
+     * The [SPDX identifier](https://spdx.org/licenses/) of the license, which the SBOM
+     * published with an artifact declares for the modules of this project.
+     *
+     * @see io.spine.gradle.publish.PublicationSbomTask
+     */
+    const val spdxId = "Apache-2.0"
 }

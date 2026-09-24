@@ -50,6 +50,16 @@ internal val Project.publications: PublicationContainer
     get() = publishingExtension.publications
 
 /**
+ * Returns the Maven publications of this project, or an empty collection if
+ * the project does not publish.
+ */
+internal fun Project.mavenPublications(): Collection<MavenPublication> {
+    val publishing = extensions.findByType(PublishingExtension::class.java)
+        ?: return emptyList()
+    return publishing.publications.withType(MavenPublication::class.java)
+}
+
+/**
  * Obtains an instance, if available, of [SpinePublishing] extension
  * applied to this project.
  */
