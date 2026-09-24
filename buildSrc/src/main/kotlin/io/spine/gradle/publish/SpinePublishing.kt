@@ -398,7 +398,7 @@ open class SpinePublishing(private val project: Project) {
     private fun Project.publishTo(): Set<Repository> {
         val ext = localSpinePublishing
         if (ext != null && ext::destinations.isInitialized) {
-            return destinations
+            return ext.destinations
         }
         return parent?.publishTo() ?: emptySet()
     }

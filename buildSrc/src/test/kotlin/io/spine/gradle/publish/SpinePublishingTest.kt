@@ -227,6 +227,27 @@ class SpinePublishingTest {
             repos shouldHaveSize 1
             repos shouldContain repo
         }
+
+        @Test
+        fun `from the parent project if the local extension does not set them`() {
+            val repo = Repository(
+                "parent-repo",
+                "https://example.com/release",
+                "https://example.com/snapshot"
+            )
+            // Root project has its extension named 'spinePublishing' from setUp.
+            extension.destinations = setOf(repo)
+
+            val subproject = ProjectBuilder.builder().withParent(project).withName("sub").build()
+            // Subproject opens its own extension, leaving `destinations` uninitialized.
+            val extensionName = SpinePublishing.extensionName
+            val subExtension =
+                subproject.extensions.create<SpinePublishing>(extensionName, subproject)
+
+            val repos = subproject.invokePublishTo(subExtension)
+            repos shouldHaveSize 1
+            repos shouldContain repo
+        }
     }
 }
 
