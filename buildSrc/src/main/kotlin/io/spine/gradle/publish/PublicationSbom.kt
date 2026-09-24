@@ -25,6 +25,7 @@ import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.spdx.sbom.gradle.SpdxSbomExtension
 import org.spdx.sbom.gradle.SpdxSbomPlugin
 import org.spdx.sbom.gradle.SpdxSbomTask
@@ -90,11 +91,12 @@ internal object PublicationSbom {
     private const val sbomExtension = "spdx.json"
 
     /**
-     * The target under which a JVM module looks up the modules it depends on.
+     * The [platform][KotlinTarget.platform] under which a JVM module looks up the modules
+     * it depends on.
      *
      * A JVM module resolves a multiplatform sibling to the artifact of its JVM target.
      */
-    private const val jvmTarget = "jvm"
+    private val jvmPlatform = KotlinPlatformType.jvm.name
 
     /**
      * The organization supplying the published artifacts, as SPDX writes one.
@@ -153,7 +155,7 @@ internal object PublicationSbom {
                 SbomUnit(
                     name = moduleUnit,
                     configuration = "runtimeClasspath",
-                    platform = jvmTarget,
+                    platform = jvmPlatform,
                     publishedWith = { !it.isPluginMarker }
                 )
             )
@@ -187,7 +189,7 @@ internal object PublicationSbom {
                 name = targetName,
                 configuration = main.runtimeDependencyConfigurationName
                     ?: main.compileDependencyConfigurationName,
-                platform = targetName,
+                platform = target.platform,
                 publishedWith = { it.name == targetName }
             )
         )
@@ -331,16 +333,53 @@ private val MavenPublication.isPluginMarker: Boolean
     get() = name.endsWith("PluginMarkerMaven")
 
 /**
- * Returns the coordinates of every non-marker Maven publication of this build, keyed as
- * [PublicationSbomTask.publishedCoordinates] describes.
+ * Returns the coordinates of the Maven publications of this build that a module can
+ * depend on, keyed as [PublicationSbomTask.publishedCoordinates] describes.
  */
 private fun Project.collectPublishedCoordinates(): Map<String, String> = buildMap {
     allprojects.forEach { module ->
         val publications = module.mavenPublications().filterNot { it.isPluginMarker }
-        publications.forEach { put(publicationKey(module.path, it.name), it.coordinates) }
         publications.singleOrNull()?.let { put(module.path, it.coordinates) }
+        module.targetPublications(publications).forEach { (platform, publication) ->
+            put(publicationKey(module.path, platform), publication.coordinates)
+        }
     }
 }
+
+/**
+ * Returns the publications of the Kotlin Multiplatform targets of this project among the
+ * given ones, keyed by the [platform][KotlinTarget.platform] of each target.
+ *
+ * A platform with several targets is left out: which of them a dependency resolves to
+ * depends on attributes that the platform does not capture.
+ */
+private fun Project.targetPublications(
+    publications: Collection<MavenPublication>
+): Map<String, MavenPublication> {
+    val kotlin = extensions.findByType(KotlinMultiplatformExtension::class.java)
+        ?: return emptyMap()
+    val byName = publications.associateBy { it.name }
+    return kotlin.targets
+        .filter { it.platformType != KotlinPlatformType.common }
+        .groupBy { it.platform }
+        .mapNotNull { (platform, targets) ->
+            targets.singleOrNull()?.let { byName[it.name] }?.let { platform to it }
+        }
+        .toMap()
+}
+
+/**
+ * The platform this target compiles for: the name of its platform type, such as `jvm`,
+ * followed by the Kotlin/Native target of a native one, as in `native:macos_arm64`.
+ *
+ * Gradle resolves a dependency on a multiplatform module to the artifact of its target
+ * for the platform of the consumer, however either target is named.
+ */
+private val KotlinTarget.platform: String
+    get() {
+        val native = attributes.getAttribute(KotlinNativeTarget.konanTargetAttribute)
+        return if (native == null) platformType.name else "${platformType.name}:$native"
+    }
 
 /**
  * Returns the task the SPDX Gradle Plugin registers for the target of the given [unit].
@@ -380,7 +419,10 @@ private class SbomUnit(
     /** The configuration holding the dependencies of the artifacts. */
     val configuration: String,
 
-    /** The target under which the modules of this build are looked up. */
+    /**
+     * The [platform][KotlinTarget.platform] under which the modules of this build
+     * are looked up.
+     */
     val platform: String,
 
     /** Tells whether an SBOM of this unit is published with the given publication. */

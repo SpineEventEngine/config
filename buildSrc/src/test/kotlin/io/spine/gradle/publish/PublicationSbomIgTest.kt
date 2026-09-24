@@ -54,8 +54,9 @@ import org.junit.jupiter.api.io.TempDir
  *    artifact of another module, such as a fat JAR;
  *  - `plugin` — a Gradle plugin, whose marker publication must stay without
  *    an SBOM;
- *  - `kmp` — a Kotlin Multiplatform module with a JVM target, whose umbrella
- *    publication must stay without an SBOM. It has no sources, so it builds
+ *  - `kmp` — a Kotlin Multiplatform module with a JVM target named `desktop`, not
+ *    after its platform, and an umbrella publication that must stay without an
+ *    SBOM. It has no sources, so it builds
  *    without the Kotlin compiler, which an offline build cannot fetch. As
  *    modules of the `logging` repository do, it is listed with custom publishing
  *    by the root project and also opens `spinePublishing` itself, so its SBOM is
@@ -89,7 +90,7 @@ internal class PublicationSbomIgTest {
                 ":impl:$publishTask",
                 ":plugin:$publishTask",
                 ":impl:${PublicationChecksums.collectorTaskName}",
-                ":kmp:${PublicationSbom.taskNameFor("jvm")}",
+                ":kmp:${PublicationSbom.taskNameFor("desktop")}",
                 ":twin:${PublicationSbom.taskName}",
                 ":consumer:${PublicationSbom.taskName}",
                 "--offline",
@@ -187,7 +188,7 @@ internal class PublicationSbomIgTest {
             ":consumer mavenJava 1",
             ":plugin pluginMaven 1",
             ":plugin samplePluginMarkerMaven 0",
-            ":kmp jvm 1",
+            ":kmp desktop 1",
             ":kmp kotlinMultiplatform 0",
             ":twin main 1",
             ":twin extra 1",
@@ -218,18 +219,22 @@ internal class PublicationSbomIgTest {
 
     @Test
     fun `describe the runtime of a KMP target`() {
-        val sbom = file("kmp/build/sbom/jvm.spdx.json").readJson()
+        val sbom = file("kmp/build/sbom/desktop.spdx.json").readJson()
 
-        sbom["name"].asText() shouldBe "spine-kmp-jvm"
+        sbom["name"].asText() shouldBe "spine-kmp-desktop"
         sbom.packageNames() shouldContainAll listOf("com.example:lib", "io.spine.test:spine-api")
     }
 
+    /**
+     * Gradle resolves `consumer`'s dependency on `kmp` to the artifact of the JVM target
+     * of `kmp` by its platform — the target is named `desktop`.
+     */
     @Test
-    fun `name a multiplatform sibling after its artifact of the same target`() {
+    fun `name a multiplatform sibling after its artifact for the same platform`() {
         val sbom = file("consumer/build/sbom/mavenJava.spdx.json").readJson()
 
-        sbom.packageNamed("io.spine.test:spine-kmp-jvm").purl() shouldBe
-                "pkg:maven/io.spine.test/spine-kmp-jvm@$moduleVersion"
+        sbom.packageNamed("io.spine.test:spine-kmp-desktop").purl() shouldBe
+                "pkg:maven/io.spine.test/spine-kmp-desktop@$moduleVersion"
     }
 
     private fun implSbom(): JsonNode {
@@ -403,8 +408,8 @@ internal class PublicationSbomIgTest {
             plugins { kotlin("multiplatform") }
 
             kotlin {
-                jvm()
-                sourceSets.getByName("jvmMain").dependencies {
+                jvm("desktop")
+                sourceSets.getByName("desktopMain").dependencies {
                     implementation(project(":api"))
                     implementation("com.example:lib:1.0")
                 }

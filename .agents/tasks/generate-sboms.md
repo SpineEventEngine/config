@@ -157,6 +157,12 @@ one per target publication — next to each artifact in the Maven repositories, 
   fixtures of the compiler's Gradle plugin use Android — and describing variants would need
   the Android Gradle Plugin to test offline, so it stays out: the skip now warns instead of
   logging at info, and the KDoc and the PR description say so.
+- 2026-09-24 — Codex on #764: siblings were looked up by the consuming target's name, but
+  Gradle matches variants by platform, so a `jvm("desktop")` target missed a sibling's `jvm`
+  one. Units and sibling publications are now keyed by platform — the platform type, plus
+  the Kotlin/Native target (`native:macos_arm64`); a platform several targets of one module
+  share stays unkeyed. The fixture's KMP target is now `jvm("desktop")`; 110 tests green;
+  `elastic` smoke unchanged.
   A hand-picked scan cannot clear the blocker; the consumer smoke tests can, since the
   SPDX plugin builds the effective POM of every runtime dependency.
 

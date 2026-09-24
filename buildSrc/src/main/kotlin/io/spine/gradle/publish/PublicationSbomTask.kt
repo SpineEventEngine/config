@@ -78,21 +78,24 @@ internal abstract class PublicationSbomTask : DefaultTask() {
     abstract val artifactCoordinates: Property<String>
 
     /**
-     * The name of the target whose artifact the SBOM describes, such as `jvm`.
+     * The platform the described artifact is built for, such as `jvm`, or
+     * `native:macos_arm64` for a Kotlin/Native target.
      *
      * A multiplatform module publishes an artifact per target, and a dependency on it
-     * resolves to the artifact of the target being built. So a module of this build that
-     * the described one depends on is looked up by its publication of this target first.
+     * resolves to the artifact of its target for the platform being built, however the
+     * targets are named. So a module of this build that the described one depends on is
+     * looked up by its publication for this platform first.
      */
     @get:Input
     abstract val platform: Property<String>
 
     /**
-     * The coordinates of the non-marker Maven publications of this build, as
-     * `group:artifactId:version`.
+     * The coordinates of the Maven publications of this build that a module can depend on,
+     * as `group:artifactId:version`.
      *
-     * Each publication is keyed by [publicationKey]. The only non-marker publication of
-     * a project is also keyed by the path of that project alone.
+     * The publication of a Kotlin Multiplatform target is keyed by [publicationKey], with
+     * the [platform] of the target. The only non-marker publication of a project is keyed
+     * by the path of that project alone.
      */
     @get:Input
     abstract val publishedCoordinates: MapProperty<String, String>
@@ -154,14 +157,14 @@ internal abstract class PublicationSbomTask : DefaultTask() {
 
 /**
  * Returns the key under which [PublicationSbomTask.publishedCoordinates] holds the
- * given [publication] of the project with the given path.
+ * publication of the project with the given path for the given [platform].
  */
-internal fun publicationKey(projectPath: String, publication: String): String =
-    "$projectPath#$publication"
+internal fun publicationKey(projectPath: String, platform: String): String =
+    "$projectPath#$platform"
 
 /**
  * Returns the coordinates of the project with the given [path], preferring its
- * publication of the given [platform], or `null` if the project has neither that
+ * publication for the given [platform], or `null` if the project has neither that
  * publication nor a single one.
  */
 private fun Map<String, String>.lookUp(path: String, platform: String): Coordinates? =
