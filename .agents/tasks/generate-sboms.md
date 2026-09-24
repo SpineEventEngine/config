@@ -152,6 +152,11 @@ one per target publication — next to each artifact in the Maven repositories, 
   `twin` fixture module (two publications and a removed third); 110 tests green. Smoke:
   `core-jvm-compiler` (`fatJar`, `pluginJar`, no warnings), `elastic` (7 targets; re-run
   up to date).
+- 2026-09-24 — Codex on #764: an Android KMP target (`androidTarget()`: per-variant
+  compilations, no `main`) gets no SBOM. No Spine module publishes one — only functional-test
+  fixtures of the compiler's Gradle plugin use Android — and describing variants would need
+  the Android Gradle Plugin to test offline, so it stays out: the skip now warns instead of
+  logging at info, and the KDoc and the PR description say so.
   A hand-picked scan cannot clear the blocker; the consumer smoke tests can, since the
   SPDX plugin builds the effective POM of every runtime dependency.
 

@@ -50,7 +50,8 @@ import org.spdx.sbom.gradle.extensions.DefaultSpdxSbomTaskExtension
  * Each publication gets an SBOM of its own, named after the artifact it publishes. The
  * publications of a JVM module describe the same dependencies — its `runtimeClasspath`.
  * A Kotlin Multiplatform module publishes an artifact per target, so the SBOM of each
- * target publication describes the dependencies of that target. The
+ * target publication describes the dependencies of that target — except for an Android
+ * target compiled per build variant, which gets none yet, with a warning. The
  * `kotlinMultiplatform` umbrella publication has no runtime of its own, and gets none.
  * A Kotlin/Native compilation has no runtime configuration either: its klibs are linked
  * into the binary of the consumer, so the SBOM of a Native target describes the
@@ -166,15 +167,17 @@ internal object PublicationSbom {
     /**
      * Registers the SBOM of the given Kotlin Multiplatform [target] of this project.
      *
-     * A target without a `main` compilation gets none. An Android target is one: it
-     * compiles per build variant, and publishes a publication per variant.
+     * A target without a `main` compilation gets none, with a warning. An Android target
+     * declared with `androidTarget()` is one: it compiles per build variant, and publishes
+     * a publication per variant. No Spine module publishes one, and describing its variants
+     * would take the Android Gradle Plugin to test, so it is left out for now.
      */
     private fun Project.registerTargetUnit(target: KotlinTarget) {
         val main = target.compilations.findByName("main")
         if (main == null) {
-            logger.info(
-                "No SBOM for the `${target.name}` target of `$path`: it has no `main`" +
-                        " compilation."
+            logger.warn(
+                "No SBOM is published with the `${target.name}` target of `$path`: it has" +
+                        " no `main` compilation."
             )
             return
         }
