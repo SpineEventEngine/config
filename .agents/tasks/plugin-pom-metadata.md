@@ -79,10 +79,9 @@ the plugin by its ID.
   `ProtoTap` become redundant once they pull this change.
 - POMs of standard publications have no `<name>`, `<url>`, or `<developers>`
   either, so none are added here. Adding them would change every published POM.
-- `SpinePublishing.publishTo()` returns the `destinations` of the calling extension
-  where it means those of the parent's, so a module opening `spinePublishing`
-  without `destinations` fails instead of inheriting them. This is why
-  `uber-jar-module.gradle.kts` copies the destinations of the root project.
+- Done in #765: `SpinePublishing.publishTo()` returned the `destinations` of
+  the calling extension where it meant those of the parent, so a module opening
+  `spinePublishing` without `destinations` failed instead of inheriting them.
 
 ## Log
 
