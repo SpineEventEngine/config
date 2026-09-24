@@ -40,6 +40,10 @@ internal class PublicationChecksumsReconfigurationIgTest {
     @TempDir
     lateinit var projectDir: File
 
+    /**
+     * Like `uber-jar-module.gradle.kts`, the module leaves `destinations` unset
+     * and inherits them from the root extension.
+     */
     @Test
     fun `tolerate the extension configured in both the root and the module`() {
         file("settings.gradle.kts").writeText(
@@ -85,7 +89,6 @@ internal class PublicationChecksumsReconfigurationIgTest {
 
                 spinePublishing {
                     customPublishing = true
-                    destinations = emptySet()
                 }
                 """.trimIndent()
             )
@@ -107,7 +110,6 @@ internal class PublicationChecksumsReconfigurationIgTest {
 
         result.task(":publicationChecksums")?.outcome shouldBe TaskOutcome.SUCCESS
     }
-
 
     /**
      * A second call registers a collector for the module it adds, while the
