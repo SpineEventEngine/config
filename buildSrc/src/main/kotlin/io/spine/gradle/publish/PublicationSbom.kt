@@ -326,13 +326,6 @@ private val MavenPublication.coordinates: String
     get() = "$groupId:$artifactId:$version"
 
 /**
- * Tells whether this publication is the marker of a Gradle plugin, which consists
- * of a POM pointing at the publication of the plugin.
- */
-private val MavenPublication.isPluginMarker: Boolean
-    get() = name.endsWith("PluginMarkerMaven")
-
-/**
  * Returns the coordinates of the Maven publications of this build that a module can
  * depend on, keyed as [PublicationSbomTask.publishedCoordinates] describes.
  */
