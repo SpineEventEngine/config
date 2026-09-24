@@ -98,7 +98,7 @@ sealed class PublicationHandler(
     }
 
     /**
-     * Either handles publications already declared in the associated [project]
+     * Either handles the publications of the associated [project]
      * or creates new ones.
      */
     abstract fun handlePublications()
@@ -131,13 +131,8 @@ sealed class PublicationHandler(
      * current artifact ID is `logging-jvm` (set by the KMP plugin), the resulting
      * artifact ID will be `spine-logging-jvm`.
      *
-     * The Apache Software License 2.0 is set as the only license
-     * under which the published artifact is distributed via [LicenseSettings].
-     *
-     * The source control management attributes are obtained from [DocumentationSettings].
-     *
-     * @see LicenseSettings
-     * @see DocumentationSettings
+     * The attributes describing the project as a whole are set
+     * by [copyProjectWideAttributes].
      */
     protected fun MavenPublication.copyProjectAttributes() {
         groupId = project.group.toString()
@@ -161,6 +156,29 @@ sealed class PublicationHandler(
         }
         version = project.version.toString()
         pom.description.set(project.description)
+        copyProjectWideAttributes()
+    }
+
+    /**
+     * Sets the POM attributes of this [MavenPublication] that describe
+     * the [project] as a whole, rather than the published artifact.
+     *
+     * The inception year of Spine is taken from [InceptionYear].
+     *
+     * The Apache Software License 2.0 is set as the only license
+     * under which the published artifact is distributed via [LicenseSettings].
+     *
+     * The source control management attributes are obtained from [DocumentationSettings].
+     *
+     * Unlike [copyProjectAttributes], this function leaves the coordinates and
+     * the description of the publication intact. So, it also applies to a publication
+     * that identifies something other than the artifact of the project,
+     * such as a Gradle plugin marker.
+     *
+     * @see LicenseSettings
+     * @see DocumentationSettings
+     */
+    protected fun MavenPublication.copyProjectWideAttributes() {
         pom.inceptionYear.set(InceptionYear.value)
         pom.licenses {
             license {
