@@ -7,6 +7,7 @@ See [README.md](README.md) for the format and routing rules.
 
 - [copilot-review-request](feedback/copilot-review-request.md) — GraphQL `requestReviews` with `botIds: ["BOT_kgDOCnlnWA"]`; REST endpoint silently no-ops on re-requests.
 - [kdoc-no-issue-references](feedback/kdoc-no-issue-references.md) — Don't cite tracker issue numbers in KDoc/source doc comments unless essential.
+- [design-over-detekt-thresholds](feedback/design-over-detekt-thresholds.md) — Choose file/class boundaries by design; suppress detekt size rules (`TooManyFunctions`) instead of splitting cohesive code.
 
 ## Project (durable context & rationale)
 

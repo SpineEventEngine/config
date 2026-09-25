@@ -12,14 +12,23 @@
  * and limitations under the License.
  */
 
+// The steps of registering the SBOMs of the publications belong together.
+@file:Suppress("TooManyFunctions")
+
 package io.spine.gradle.publish
 
 import DocumentationSettings
 import io.spine.gradle.SpineTaskGroup
+import java.io.File
 import java.net.URI
 import java.util.Locale
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ModuleVersionIdentifier
+import org.gradle.api.artifacts.component.ComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
+import org.gradle.api.provider.Provider
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -49,7 +58,8 @@ import org.spdx.sbom.gradle.extensions.DefaultSpdxSbomTaskExtension
  * ## One SBOM per published artifact
  *
  * Each publication gets an SBOM of its own, named after the artifact it publishes. The
- * publications of a JVM module describe the same dependencies — its `runtimeClasspath`.
+ * publications of a JVM module describe the same dependencies — its `runtimeClasspath` —
+ * unless one describes its SBOM itself, as the next section tells.
  * A Kotlin Multiplatform module publishes an artifact per target, so the SBOM of each
  * target publication describes the dependencies of that target — except for an Android
  * target compiled per build variant, which gets none yet, with a warning. The
@@ -61,6 +71,17 @@ import org.spdx.sbom.gradle.extensions.DefaultSpdxSbomTaskExtension
  * The Gradle Plugin Portal does not receive the SBOM: its upload skips files other than
  * JARs, so the SBOM of a Gradle plugin is published to the Maven repositories only.
  * A plugin marker publication consists of a POM alone, and gets no SBOM.
+ *
+ * ## Publications of files
+ *
+ * A publication made from a software component has the dependencies of its module, as
+ * its POM does. A publication of a file, made with `artifact(...)`, publishes what its
+ * module makes of it: a POM written by hand, other modules and libraries packed into
+ * a JAR. So its module [describes][MavenPublication.sbom] what the SBOM lists: which
+ * configuration holds the dependencies of the artifact, and what the artifact bundles.
+ * The SBOM relates the artifact to each of its dependencies by `DEPENDS_ON`, and to each
+ * component bundled into it by `CONTAINS`, leaving out what it neither depends on nor
+ * bundles. `uber-jar-module` describes its fat JAR this way.
  *
  * ## Naming the modules of this build
  *
@@ -198,10 +219,6 @@ internal object PublicationSbom {
     /**
      * Configures the SPDX Gradle Plugin to describe the given [unit], and records the unit
      * so that its SBOMs are [published][publishSbomsOnceEvaluated].
-     *
-     * The configuration of the plugin does not depend on the coordinates of the artifact,
-     * which are final only after the publications are set up: [PublicationSbomTask] puts
-     * them into the document instead.
      */
     private fun Project.registerSbom(unit: SbomUnit) {
         pluginManager.apply(SpdxSbomPlugin::class.java)
@@ -209,30 +226,53 @@ internal object PublicationSbom {
         if (spdx.targets.findByName(unit.name) != null) {
             return
         }
-        val repository = DocumentationSettings.repoUrl(this)
-        val commit = providers.environmentVariable("GITHUB_SHA").orElse(unknownCommit)
         spdx.onlyUseLocalLicenses.set(true)
-        spdx.targets.create(unit.name) {
-            configurations.set(listOf(unit.configuration))
-            document {
-                creator.set(spineSupplier)
-                packageSupplier.set(spineSupplier)
-            }
-            scm {
-                uri.set(repository)
-                revision.set(commit)
-            }
-        }
-        spdxTaskOf(unit).configure {
-            taskExtension.set(NoAssertionForLocalRepositories())
-        }
+        registerSpdxTarget(name = unit.name, configurationNames = listOf(unit.configuration))
         registerLifecycleTask()
         sbomUnits().add(unit)
     }
 
     /**
+     * Registers the SPDX target with the given [name], describing the configurations with
+     * the given names, unless it is registered already, and returns the task writing
+     * its document.
+     *
+     * The configuration of the plugin does not depend on the coordinates of the artifact,
+     * which are final only after the publications are set up: [PublicationSbomTask] puts
+     * them into the document instead.
+     */
+    private fun Project.registerSpdxTarget(
+        name: String,
+        configurationNames: List<String>
+    ): TaskProvider<SpdxSbomTask> {
+        val spdx = extensions.getByType(SpdxSbomExtension::class.java)
+        if (spdx.targets.findByName(name) == null) {
+            val repository = DocumentationSettings.repoUrl(this)
+            val commit = providers.environmentVariable("GITHUB_SHA").orElse(unknownCommit)
+            spdx.targets.create(name) {
+                configurations.set(configurationNames)
+                document {
+                    creator.set(spineSupplier)
+                    packageSupplier.set(spineSupplier)
+                }
+                scm {
+                    uri.set(repository)
+                    revision.set(commit)
+                }
+            }
+            spdxTaskOf(name).configure {
+                taskExtension.set(NoAssertionForLocalRepositories())
+            }
+        }
+        return spdxTaskOf(name)
+    }
+
+    /**
      * Registers the task writing the SBOM of the given [publication] of the [unit], and
      * adds the SBOM to the publication.
+     *
+     * The SBOM is written from the document of the unit, unless the publication
+     * [describes][MavenPublication.sbom] what its SBOM lists.
      *
      * [published] holds the coordinates of the publications of this build, keyed as
      * [PublicationSbomTask.publishedCoordinates] describes.
@@ -248,7 +288,10 @@ internal object PublicationSbom {
         }
         val projectPath = path
         val coordinates = publication.coordinates
-        val generated = spdxTaskOf(unit)
+        val described = publication.sbomContent?.let {
+            describedSbom(publication = publication, unit = unit, content = it)
+        }
+        val generated = described?.spdxTask ?: spdxTaskOf(unit.name)
         val output = layout.buildDirectory.file("sbom/${publication.name}.$sbomExtension")
         val sbom = tasks.register(sbomTaskName, PublicationSbomTask::class.java) {
             group = SpineTaskGroup.name
@@ -259,11 +302,56 @@ internal object PublicationSbom {
             artifactCoordinates.set(coordinates)
             platform.set(unit.platform)
             publishedCoordinates.set(published)
+            described?.let { artifactComponents.set(it.components) }
             outputFile.set(output)
         }
         publication.artifact(sbom.flatMap { it.outputFile }) {
             extension = sbomExtension
         }
+    }
+
+    /**
+     * Returns the SPDX document that the SBOM of the given [publication] is written from,
+     * and the components of its artifact, as the publication describes them by [content].
+     *
+     * The document describes the configuration holding the dependencies of the artifact,
+     * followed by those in which its bundled content is found. In this order, the plugin
+     * relates the dependencies of the artifact as their own graph does. If these are
+     * the configuration of the [unit] alone, as for a fat JAR of the runtime classpath,
+     * the document of the unit serves. Otherwise, the publication gets one of its own.
+     *
+     * Nothing is resolved here. The components are resolved as the task writing the SBOM
+     * runs, and so is each configuration, by a task of its own project. A Shadow task
+     * bundling content is realized, though, to tell the configurations it packs; see
+     * [sourceOf].
+     */
+    private fun Project.describedSbom(
+        publication: MavenPublication,
+        unit: SbomUnit,
+        content: SbomContent
+    ): DescribedSbom {
+        val dependencies = content.dependenciesFrom
+            ?.also { requireResolvable(it, publication) }
+            ?: configurations.getByName(unit.configuration)
+        val bundles = content.bundles.map { sourceOf(it, publication) }
+        val configurationNames = (listOf(dependencies) + bundles.flatMap { it.configurations })
+            .map { it.name }
+            .distinct()
+        val spdxTask = if (configurationNames == listOf(unit.configuration)) {
+            spdxTaskOf(unit.name)
+        } else {
+            registerSpdxTarget(
+                name = "${publication.name}Publication",
+                configurationNames = configurationNames
+            )
+        }
+        val own = ComponentKey.ofProject(path)
+        val bundleComponents = bundles.map { it.components }
+        val bundled = combined(bundleComponents, emptySet()) { all, next -> all + next }
+        val components = dependencies.componentKeys().zip(bundled) { dependencyKeys, bundleKeys ->
+            ArtifactComponents(dependencies = dependencyKeys - own, bundled = bundleKeys - own)
+        }
+        return DescribedSbom(spdxTask = spdxTask, components = components)
     }
 
     /**
@@ -309,15 +397,178 @@ internal object PublicationSbom {
             val published = root.collectPublishedCoordinates()
             root.allprojects.forEach { module ->
                 val publications = module.mavenPublications()
-                module.sbomUnits().forEach { unit ->
+                val units = module.sbomUnits()
+                units.forEach { unit ->
                     publications.filter(unit.publishedWith).forEach {
                         module.publishSbom(publication = it, unit = unit, published = published)
                     }
                 }
+                module.warnOfUnpublishedSbomContent(publications, units)
             }
         }
     }
 }
+
+/**
+ * Warns of each of the given [publications] that [describes][MavenPublication.sbom] its
+ * SBOM, but gets no SBOM published with it by any of the [units] of this project.
+ *
+ * Such is a plugin marker, the umbrella publication of a Kotlin Multiplatform module,
+ * or a publication of a module that `spinePublishing` does not publish.
+ */
+private fun Project.warnOfUnpublishedSbomContent(
+    publications: Collection<MavenPublication>,
+    units: List<SbomUnit>
+) {
+    publications
+        .filter { it.sbomContent != null }
+        .filterNot { publication -> units.any { it.publishedWith(publication) } }
+        .forEach {
+            logger.warn(
+                "The `${it.name}` publication of `$path` describes its SBOM," +
+                        " but no SBOM is published with it."
+            )
+        }
+}
+
+/**
+ * The SPDX document the SBOM of a publication is written from, and the components of
+ * the artifact, as the publication [describes][MavenPublication.sbom] them.
+ */
+private class DescribedSbom(
+
+    /** The task writing the document. */
+    val spdxTask: TaskProvider<SpdxSbomTask>,
+
+    /** The components the artifact depends on, and those bundled into it. */
+    val components: Provider<ArtifactComponents>
+)
+
+/**
+ * The configurations in which a part of the content of an artifact is found,
+ * and the components of them bundled into the artifact.
+ */
+private class BundleSource(
+
+    /** The configurations holding the content. */
+    val configurations: List<Configuration>,
+
+    /** The components bundled into the artifact, by their keys. */
+    val components: Provider<Set<ComponentKey>>
+)
+
+/**
+ * Returns the configurations in which the given [bundle] of the content of the
+ * [publication] is found, and the components of them bundled into the artifact.
+ *
+ * A Shadow task bundles the components whose files its dependency filter leaves
+ * among its included dependencies.
+ *
+ * The Shadow task is realized, rather than its values being mapped from its provider.
+ * A value derived from the provider of a task may carry the task as its producer, which
+ * would make the task writing the SBOM build the fat JAR first. Realizing the task only
+ * runs its configuration.
+ */
+private fun Project.sourceOf(bundle: Bundle, publication: MavenPublication): BundleSource =
+    when (bundle) {
+        is Bundle.Components -> {
+            val configuration = bundle.configuration
+            requireResolvable(configuration, publication)
+            BundleSource(listOf(configuration), configuration.componentKeys())
+        }
+
+        is Bundle.Shadowed -> {
+            val task = bundle.task.get()
+            require(task.project.path == path) {
+                "${sbomOf(publication)} describes what `${task.path}` bundles," +
+                        " a task of another project."
+            }
+            val configurations = task.configurations.get().toList()
+            configurations.forEach { requireResolvable(it, publication) }
+            val componentsByFiles = configurations.map { it.componentsByFile() }
+            val byFile = combined(componentsByFiles, emptyMap()) { all, next -> all + next }
+            val components = task.includedDependencies.elements.zip(byFile) { files, keys ->
+                files.mapNotNull { keys[it.asFile] }.toSet()
+            }
+            BundleSource(configurations, components)
+        }
+    }
+
+/**
+ * Ensures that the given [configuration], which the [publication] names in the
+ * description of its SBOM, belongs to this project and can be resolved.
+ *
+ * The SPDX Gradle Plugin looks a configuration up by its name in the project of
+ * the SBOM, and resolves it.
+ */
+private fun Project.requireResolvable(
+    configuration: Configuration,
+    publication: MavenPublication
+) {
+    val subject = sbomOf(publication)
+    require(configurations.findByName(configuration.name) === configuration) {
+        "$subject names `${configuration.name}`, a configuration of another project."
+    }
+    require(configuration.isCanBeResolved) {
+        "$subject names `${configuration.name}`, which cannot be resolved."
+    }
+}
+
+/**
+ * Returns how a message names the SBOM of the given [publication] of this project.
+ */
+private fun Project.sbomOf(publication: MavenPublication): String =
+    "The SBOM of the `${publication.name}` publication of `$path`"
+
+/**
+ * Returns the keys of the components in the dependency graph of this configuration,
+ * which it resolves as the value of the provider is obtained.
+ */
+private fun Configuration.componentKeys(): Provider<Set<ComponentKey>> =
+    incoming.resolutionResult.rootComponent.map(::componentKeysFrom)
+
+/**
+ * Returns the keys of the components in the dependency graph of the given [root].
+ */
+private fun componentKeysFrom(root: ResolvedComponentResult): Set<ComponentKey> {
+    val visited = mutableSetOf<ComponentIdentifier>()
+    val queue = ArrayDeque(listOf(root))
+    return buildSet {
+        while (queue.isNotEmpty()) {
+            val component = queue.removeFirst()
+            if (visited.add(component.id)) {
+                ComponentKey.of(component.id)?.let(::add)
+                component.dependencies
+                    .filterIsInstance<ResolvedDependencyResult>()
+                    .forEach { queue.add(it.selected) }
+            }
+        }
+    }
+}
+
+/**
+ * Returns the keys of the components whose files this configuration resolves,
+ * by the files.
+ */
+private fun Configuration.componentsByFile(): Provider<Map<File, ComponentKey>> =
+    incoming.artifacts.resolvedArtifacts.map { artifacts ->
+        artifacts
+            .mapNotNull { artifact ->
+                ComponentKey.of(artifact.id.componentIdentifier)?.let { artifact.file to it }
+            }
+            .toMap()
+    }
+
+/**
+ * Returns a provider of the given [values] combined with the [combine] function,
+ * starting with the [empty] value.
+ */
+private fun <T : Any> Project.combined(
+    values: List<Provider<T>>,
+    empty: T,
+    combine: (T, T) -> T
+): Provider<T> =
+    values.fold(providers.provider { empty }) { all, next -> all.zip(next, combine) }
 
 /**
  * The coordinates of this publication, as `group:artifactId:version`.
@@ -375,11 +626,11 @@ private val KotlinTarget.platform: String
     }
 
 /**
- * Returns the task the SPDX Gradle Plugin registers for the target of the given [unit].
+ * Returns the task the SPDX Gradle Plugin registers for the target with the given [name].
  */
-private fun Project.spdxTaskOf(unit: SbomUnit): TaskProvider<SpdxSbomTask> =
+private fun Project.spdxTaskOf(name: String): TaskProvider<SpdxSbomTask> =
     tasks.named(
-        "spdxSbomFor${unit.name.replaceFirstChar { it.titlecase(Locale.ROOT) }}",
+        "spdxSbomFor${name.replaceFirstChar { it.titlecase(Locale.ROOT) }}",
         SpdxSbomTask::class.java
     )
 

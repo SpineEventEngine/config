@@ -68,7 +68,6 @@ import org.gradle.kotlin.dsl.findByType
  * This code works for most of the projects.
  *
  * ### Arranging custom publishing for a module
- * ```kotlin
  *
  * 1. Modify the list of standardly published modules in the root project like this:
  *
@@ -86,6 +85,10 @@ import org.gradle.kotlin.dsl.findByType
  * }
  * ```
  * 2. Arrange the custom publishing in the `my-custom-module` project.
+ *
+ * 3. For a publication of a file made with `artifact(...)`, rather than of a software component,
+ *    describe what its SBOM lists by calling [sbom] on the publication: the configuration holding
+ *    the dependencies its POM declares, and what the artifact bundles.
  *
  * ## Using in a single-module project
  *
