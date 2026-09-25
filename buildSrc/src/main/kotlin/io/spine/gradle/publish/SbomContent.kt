@@ -48,7 +48,9 @@ import org.gradle.api.tasks.TaskProvider
  * a dependency of the artifact, even if it is also among its
  * [dependencies][SbomContent.dependencies].
  *
- * A later call adds to what the earlier ones described.
+ * A later call continues the description of the earlier ones: the content it tells to be
+ * [bundled][SbomContent.bundled] adds to theirs, while a configuration it gives to
+ * [dependencies][SbomContent.dependencies] replaces theirs.
  *
  * @see PublicationSbom
  */
@@ -118,6 +120,8 @@ class SbomContent internal constructor() {
      * Suits a JAR packing the classes of other modules into itself, as
      * `from(zipTree(...))` does. The configuration must belong to the module of
      * the publication, and be resolvable.
+     *
+     * Adds to the content that earlier calls tell to be bundled.
      */
     fun bundled(configuration: Configuration) {
         bundleList.add(Bundle.Components(configuration))
@@ -138,6 +142,8 @@ class SbomContent internal constructor() {
      * So a module that the POM declares, rather than the JAR bundling it, is to be
      * excluded by the dependency filter of the task, and not by the paths of its
      * entries. Otherwise, the SBOM describes the module as bundled.
+     *
+     * Adds to the content that earlier calls tell to be bundled.
      */
     fun bundled(task: TaskProvider<out ShadowJar>) {
         bundleList.add(Bundle.Shadowed(task))
