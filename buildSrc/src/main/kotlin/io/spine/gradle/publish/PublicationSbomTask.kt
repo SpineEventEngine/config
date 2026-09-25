@@ -23,6 +23,7 @@ import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -34,9 +35,12 @@ import org.gradle.work.DisableCachingByDefault
  * the coordinates they are published under.
  *
  * The task rewrites the document that the SPDX Gradle Plugin writes for the dependencies
- * of the artifact — which all publications of a JVM module share — into the SBOM of
- * one [artifact][artifactCoordinates]:
+ * of the artifact — which the publications of a module share, unless one describes its
+ * SBOM itself — into the SBOM of one [artifact][artifactCoordinates]:
  *
+ *  - if the publication describes its SBOM, the artifact contains each package bundled
+ *    into it, rather than depending on it, and the packages the artifact neither depends
+ *    on nor bundles are left out, as [artifactComponents] tell;
  *  - the document is named after the artifact, and given a namespace derived from its
  *    coordinates, in place of the placeholder the plugin leaves there;
  *  - each package describing a module of this build — the artifact itself, and each
@@ -101,6 +105,17 @@ internal abstract class PublicationSbomTask : DefaultTask() {
     abstract val publishedCoordinates: MapProperty<String, String>
 
     /**
+     * The components the artifact depends on, and those bundled into it, if its
+     * publication [describes][sbom] what its SBOM lists.
+     *
+     * Absent for any other publication, whose SBOM relates the artifact to the packages
+     * as the plugin does: to each as a dependency.
+     */
+    @get:Optional
+    @get:Input
+    abstract val artifactComponents: Property<ArtifactComponents>
+
+    /**
      * The SBOM to publish.
      */
     @get:OutputFile
@@ -112,11 +127,12 @@ internal abstract class PublicationSbomTask : DefaultTask() {
         val file = source.get().asFile
         val document = mapper.readTree(file) as? ObjectNode
             ?: error("`$file` is not an SPDX JSON document.")
+        artifactComponents.orNull?.describeIn(document, logger)
         val published = publishedCoordinates.get()
         val own = Coordinates.parse(artifactCoordinates.get())
-        document.put("name", own.artifactId)
-        document.put("documentNamespace", own.namespace)
-        document["packages"]
+        document.put(SpdxField.name, own.artifactId)
+        document.put(SpdxField.documentNamespace, own.namespace)
+        document[SpdxField.packages]
             ?.filterIsInstance<ObjectNode>()
             ?.forEach { describeModule(pkg = it, own = own, published = published) }
         mapper.writerWithDefaultPrettyPrinter().writeValue(outputFile.get().asFile, document)
@@ -134,8 +150,8 @@ internal abstract class PublicationSbomTask : DefaultTask() {
         own: Coordinates,
         published: Map<String, String>
     ) {
-        val path = pkg["sourceInfo"]?.asText()?.let(::projectPathIn) ?: return
-        pkg.put("licenseDeclared", LicenseSettings.spdxId)
+        val path = pkg[SpdxField.sourceInfo]?.asText()?.let(::projectPathIn) ?: return
+        pkg.put(SpdxField.licenseDeclared, LicenseSettings.spdxId)
         val module = if (path == modulePath.get()) own else published.lookUp(path, platform.get())
         if (module == null) {
             logger.info(
@@ -145,12 +161,12 @@ internal abstract class PublicationSbomTask : DefaultTask() {
             )
             return
         }
-        pkg.put("name", module.name)
-        pkg.put("versionInfo", module.version)
-        pkg.putArray("externalRefs").addObject().apply {
-            put("referenceCategory", "PACKAGE-MANAGER")
-            put("referenceLocator", module.purl)
-            put("referenceType", "purl")
+        pkg.put(SpdxField.name, module.name)
+        pkg.put(SpdxField.versionInfo, module.version)
+        pkg.putArray(SpdxField.externalRefs).addObject().apply {
+            put(SpdxField.referenceCategory, "PACKAGE-MANAGER")
+            put(SpdxField.referenceLocator, module.purl)
+            put(SpdxField.referenceType, "purl")
         }
     }
 }
@@ -180,7 +196,7 @@ private val projectPathSuffix = Regex("""\[(:[^\[\]]*)]$""")
  * Returns the path of the Gradle project named in the given source information,
  * or `null` if the information does not name one.
  */
-private fun projectPathIn(sourceInfo: String): String? =
+internal fun projectPathIn(sourceInfo: String): String? =
     projectPathSuffix.find(sourceInfo)?.groupValues?.get(1)
 
 /**
