@@ -598,8 +598,7 @@ private val MavenPublication.coordinates: String
  * The packaging is calculated from the artifacts the publication has when it is read.
  * For a publication made from a software component, the first read also takes
  * the artifacts of the component into the publication for good. So the publication
- * must be final by the time this function is called, as it is once all projects are
- * evaluated.
+ * must be final by the time this function is called, as it is once all projects are evaluated.
  */
 private fun MavenPublication.pinPackaging() {
     // The explicit type makes this fail to compile, rather than set the packaging

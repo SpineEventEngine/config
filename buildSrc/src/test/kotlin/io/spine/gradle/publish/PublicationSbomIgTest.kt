@@ -179,7 +179,7 @@ internal class PublicationSbomIgTest {
     }
 
     /**
-     * The packaging is the extension of the artifact, rather than `jar` for all publications alike.
+     * The packaging is the extension of the main artifact, rather than always `jar`.
      */
     @Test
     fun `keep the packaging of an artifact other than a JAR published with an SBOM`() {
