@@ -40,6 +40,8 @@ Closes [#770][issue-770].
       classified `all`, declares `pom`. See them fail on `master`.
 - [x] Align the fixture's `uber` with `uber-jar-module`: its fat JAR has no classifier,
       so it is among the JAR cases.
+- [x] Cover a packaging the build sets: a new `osgi` module publishes its JAR with the
+      `bundle` packaging, which its POM keeps.
 - [x] Keep the packaging in `publishSbom`: pin it with `pinPackaging()` before adding
       the SBOM. Document why in the KDoc.
 - [x] Verify: the IG test, `./gradlew :buildSrc:build detekt`, and the scratch
@@ -62,5 +64,8 @@ Closes [#770][issue-770].
   typed local in `pinPackaging()`, so a lazy `MavenPom.packaging` fails to compile there
   rather than referring to itself; `forAll` in the JAR case, naming each packaging; and
   three KDoc fixes, one scoping the component note to publications made from one.
+- 2026-09-28 — PR #775. Copilot's review asked for a case of an explicitly set packaging.
+  It passes without the fix, as an explicit value overrides the calculation, but it fails
+  if the packaging is ever calculated anew from the artifacts, ignoring the build.
 
 [issue-770]: https://github.com/SpineEventEngine/config/issues/770

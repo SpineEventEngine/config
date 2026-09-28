@@ -87,7 +87,9 @@ import org.w3c.dom.Element
  *  - `uber` — a JVM module publishing a fat JAR of its whole runtime classpath
  *    as its main artifact, with an empty POM, as `uber-jar-module` does;
  *  - `archive` — a JVM module publishing a ZIP archive rather than a JAR, as
- *    a Kotlin/Native target publishes a klib.
+ *    a Kotlin/Native target publishes a klib;
+ *  - `osgi` — a JVM module publishing its JAR as an OSGi bundle, whose build sets
+ *    the `bundle` packaging of the POM.
  */
 @DisplayName("`PublicationSbom` should")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -123,6 +125,7 @@ internal class PublicationSbomIgTest {
                 ":uber:${PublicationSbom.taskName}",
                 ":uber:${pomTaskOf(fatJar)}",
                 ":archive:${pomTaskOf(archive)}",
+                ":osgi:${pomTaskOf(osgiBundle)}",
                 "--offline",
                 "--stacktrace",
             )
@@ -184,6 +187,16 @@ internal class PublicationSbomIgTest {
     @Test
     fun `keep the packaging of an artifact other than a JAR published with an SBOM`() {
         packagingOf("archive", archive) shouldBe "zip"
+    }
+
+    /**
+     * The build of `osgi` sets the `bundle` packaging, as the POM of an OSGi bundle declares
+     * for its JAR. The packaging the build sets is kept, rather than calculated anew from
+     * the artifacts, which would give `jar`.
+     */
+    @Test
+    fun `keep the packaging a build sets explicitly`() {
+        packagingOf("osgi", osgiBundle) shouldBe "bundle"
     }
 
     @Test
@@ -266,6 +279,7 @@ internal class PublicationSbomIgTest {
             ":fat fatJar 1",
             ":uber fatJar 1",
             ":archive archive 1",
+            ":osgi osgiBundle 1",
         )
     }
 
@@ -500,7 +514,7 @@ internal class PublicationSbomIgTest {
             rootProject.name = "sbom-sample"
             include(
                 "api", "impl", "bundled", "plugin", "kmp", "twin", "consumer",
-                "thin", "fat", "uber", "archive",
+                "thin", "fat", "uber", "archive", "osgi",
             )
             """.trimIndent()
         )
@@ -539,7 +553,7 @@ internal class PublicationSbomIgTest {
             spinePublishing {
                 modules = setOf("api", "impl", "consumer")
                 modulesWithCustomPublishing = setOf(
-                    "plugin", "kmp", "twin", "thin", "fat", "uber", "archive",
+                    "plugin", "kmp", "twin", "thin", "fat", "uber", "archive", "osgi",
                 )
                 destinations = emptySet()
             }
@@ -679,6 +693,7 @@ internal class PublicationSbomIgTest {
         writeFatJarModule()
         writeUberJarModule()
         writeArchiveModule()
+        writeOsgiModule()
     }
 
     /**
@@ -823,6 +838,24 @@ internal class PublicationSbomIgTest {
     }
 
     /**
+     * Writes the `osgi` module, which publishes its JAR as an OSGi bundle, setting
+     * the `bundle` packaging of the POM.
+     */
+    private fun writeOsgiModule() {
+        val body = """
+            publishing {
+                publications {
+                    create<MavenPublication>("$osgiBundle") {
+                        artifact(tasks.jar)
+                        pom.packaging = "bundle"
+                    }
+                }
+            }
+            """.trimIndent()
+        writeScript("osgi", "plugins { `java-library` }", body)
+    }
+
+    /**
      * Writes the build script of the given [module], made of the given [parts].
      */
     private fun writeScript(module: String, vararg parts: String) {
@@ -883,6 +916,9 @@ internal class PublicationSbomIgTest {
 
         /** The publication of a ZIP archive. */
         const val archive = "archive"
+
+        /** The publication of a JAR as an OSGi bundle. */
+        const val osgiBundle = "osgiBundle"
 
         /** Returns the name of the task writing the POM of the given [publication]. */
         fun pomTaskOf(publication: String): String =
