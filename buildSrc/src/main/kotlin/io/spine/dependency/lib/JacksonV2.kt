@@ -57,7 +57,15 @@ object JacksonV2 : DependencyWithBom() {
 
         @Suppress("MemberNameEqualsClassName")
         val core = "$group:jackson-core"
+
+        /** Returns the coordinates of [core] with the [version]. */
+        @Suppress("MemberNameEqualsClassName")
+        fun core(): String = artifact(core)
+
         val databind = "$group:jackson-databind"
+
+        /** Returns the coordinates of [databind] with the [version]. */
+        fun databind(): String = artifact(databind)
 
         override val modules = listOf(core, databind)
     }
@@ -67,8 +75,19 @@ object JacksonV2 : DependencyWithBom() {
         override val group = "$groupPrefix.datatype"
 
         val jdk8 = "$group:jackson-datatype-jdk8"
+
+        /** Returns the coordinates of [jdk8] with the [version]. */
+        fun jdk8(): String = artifact(jdk8)
+
         val jsr310 = "$group:jackson-datatype-jsr310"
+
+        /** Returns the coordinates of [jsr310] with the [version]. */
+        fun jsr310(): String = artifact(jsr310)
+
         val guava = "$group:jackson-datatype-guava"
+
+        /** Returns the coordinates of [guava] with the [version]. */
+        fun guava(): String = artifact(guava)
 
         override val modules = listOf(jdk8, jsr310, guava)
     }
@@ -78,8 +97,19 @@ object JacksonV2 : DependencyWithBom() {
         override val group = "$groupPrefix.dataformat"
 
         val xml = "$group:jackson-dataformat-xml"
+
+        /** Returns the coordinates of [xml] with the [version]. */
+        fun xml(): String = artifact(xml)
+
         val yaml = "$group:jackson-dataformat-yaml"
+
+        /** Returns the coordinates of [yaml] with the [version]. */
+        fun yaml(): String = artifact(yaml)
+
         val protobuf = "$group:jackson-dataformat-protobuf"
+
+        /** Returns the coordinates of [protobuf] with the [version]. */
+        fun protobuf(): String = artifact(protobuf)
 
         override val modules = listOf(xml, yaml, protobuf)
     }
@@ -90,8 +120,14 @@ object JacksonV2 : DependencyWithBom() {
 
         val parameterNames = "$group:jackson-module-parameter-names"
 
+        /** Returns the coordinates of [parameterNames] with the [version]. */
+        fun parameterNames(): String = artifact(parameterNames)
+
         // https://github.com/FasterXML/jackson-module-kotlin/releases
         val kotlin = "$group:jackson-module-kotlin"
+
+        /** Returns the coordinates of [kotlin] with the [version]. */
+        fun kotlin(): String = artifact(kotlin)
 
         override val modules = listOf(parameterNames, kotlin)
     }

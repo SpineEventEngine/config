@@ -29,6 +29,16 @@ object Protobuf {
     const val javaLib = "$group:protobuf-java:$version"
 
     /**
+     * The Java library with utilities for Protobuf messages, such as `JsonFormat`.
+     */
+    const val javaUtil = "$group:protobuf-java-util:$version"
+
+    /**
+     * The Kotlin library with extensions for Protobuf messages.
+     */
+    const val kotlin = "$group:protobuf-kotlin:$version"
+
+    /**
      * The Java library containing proto definitions of Google Protobuf types.
      */
     @Suppress("unused")
@@ -39,8 +49,8 @@ object Protobuf {
      */
     val libs = listOf(
         javaLib,
-        "$group:protobuf-java-util:$version",
-        "$group:protobuf-kotlin:$version"
+        javaUtil,
+        kotlin
     )
     const val compiler = "$group:protoc:$version"
 
