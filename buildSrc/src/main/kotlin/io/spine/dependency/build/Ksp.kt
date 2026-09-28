@@ -30,11 +30,42 @@ object Ksp : Dependency() {
     const val id = "com.google.devtools.ksp"
     const val gradlePluginArtifactName = "com.google.devtools.ksp.gradle.plugin"
 
+    /**
+     * The plugin marker of the KSP Gradle plugin, through which Gradle resolves
+     * the plugin by its [id].
+     *
+     * The marker is not among the [modules]: it is a POM without code,
+     * which points at [gradlePlugin].
+     */
+    val gradlePluginMarker = "$id:$gradlePluginArtifactName"
+
+    /** Returns the coordinates of [gradlePluginMarker] with the [version]. */
+    fun gradlePluginMarker(): String = artifact(gradlePluginMarker, version)
+
     val symbolProcessingApi = "$group:symbol-processing-api"
+
+    /** Returns the coordinates of [symbolProcessingApi] with the [version]. */
+    fun symbolProcessingApi(): String = artifact(symbolProcessingApi)
+
     val symbolProcessing = "$group:symbol-processing"
+
+    /** Returns the coordinates of [symbolProcessing] with the [version]. */
+    fun symbolProcessing(): String = artifact(symbolProcessing)
+
     val symbolProcessingAaEmb = "$group:symbol-processing-aa-embeddable"
+
+    /** Returns the coordinates of [symbolProcessingAaEmb] with the [version]. */
+    fun symbolProcessingAaEmb(): String = artifact(symbolProcessingAaEmb)
+
     val symbolProcessingCommonDeps = "$group:symbol-processing-common-deps"
+
+    /** Returns the coordinates of [symbolProcessingCommonDeps] with the [version]. */
+    fun symbolProcessingCommonDeps(): String = artifact(symbolProcessingCommonDeps)
+
     val gradlePlugin = "$group:symbol-processing-gradle-plugin"
+
+    /** Returns the coordinates of [gradlePlugin] with the [version]. */
+    fun gradlePlugin(): String = artifact(gradlePlugin)
 
     override val modules = listOf(
         symbolProcessingApi,

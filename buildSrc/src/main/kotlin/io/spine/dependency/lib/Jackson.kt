@@ -60,14 +60,23 @@ object Jackson : DependencyWithBom() {
     // https://github.com/FasterXML/jackson-core
     val core = "$coreGroup:jackson-core"
 
+    /** Returns the coordinates of [core] with the [version]. */
+    fun core(): String = artifact(core)
+
     // https://github.com/FasterXML/jackson-databind
     val databind = "$coreGroup:jackson-databind"
+
+    /** Returns the coordinates of [databind] with the [version]. */
+    fun databind(): String = artifact(databind)
 
     // https://github.com/FasterXML/jackson-annotations
     val annotations = "com.fasterxml.jackson.core:jackson-annotations:$annotationsVersion"
 
     // https://github.com/FasterXML/jackson-module-kotlin/releases
     val moduleKotlin = "$moduleGroup:jackson-module-kotlin"
+
+    /** Returns the coordinates of [moduleKotlin] with the [version]. */
+    fun moduleKotlin(): String = artifact(moduleKotlin)
 
     @Deprecated(
         "The module was merged into `jackson-databind` in Jackson 3.0" +
@@ -92,11 +101,20 @@ object Jackson : DependencyWithBom() {
         // https://github.com/FasterXML/jackson-dataformat-xml/releases
         val xml = "$group:$infix-xml"
 
+        /** Returns the coordinates of [xml] with the [version]. */
+        fun xml(): String = artifact(xml)
+
         // https://github.com/FasterXML/jackson-dataformats-text/releases
         val yaml = "$group:$infix-yaml"
 
+        /** Returns the coordinates of [yaml] with the [version]. */
+        fun yaml(): String = artifact(yaml)
+
         // https://github.com/FasterXML/jackson-dataformats-binary/tree/3.x/protobuf
         val protobuf = "$group:$infix-protobuf"
+
+        /** Returns the coordinates of [protobuf] with the [version]. */
+        fun protobuf(): String = artifact(protobuf)
 
         val xmlArtifact = "$xml:$version"
         val yamlArtifact = "$yaml:$version"
@@ -129,6 +147,9 @@ object Jackson : DependencyWithBom() {
         // https://github.com/FasterXML/jackson-datatypes-collections/tree/3.x/guava
         val guava = "$group:$infix-guava"
 
+        /** Returns the coordinates of [guava] with the [version]. */
+        fun guava(): String = artifact(guava)
+
         @Deprecated(
             "Protobuf support is a data format, not a data type." +
                     " The `$infix-protobuf` artifact has never been published.",
@@ -140,8 +161,14 @@ object Jackson : DependencyWithBom() {
         // https://github.com/FasterXML/jackson-datatypes-misc/tree/3.x/javax-money
         val javaXMoney = "$group:$infix-javax-money"
 
+        /** Returns the coordinates of [javaXMoney] with the [version]. */
+        fun javaXMoney(): String = artifact(javaXMoney)
+
         // https://github.com/FasterXML/jackson-datatypes-misc/tree/3.x/moneta
         val moneta = "$group:$infix-moneta"
+
+        /** Returns the coordinates of [moneta] with the [version]. */
+        fun moneta(): String = artifact(moneta)
 
         override val modules = listOf(
             guava,
