@@ -16,6 +16,7 @@ package io.spine.gradle.publish
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.kotest.inspectors.forAll
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
@@ -41,6 +42,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
+import org.w3c.dom.Document
 import org.w3c.dom.Element
 
 /**
@@ -80,9 +82,14 @@ import org.w3c.dom.Element
  *  - `fat` — a JVM module publishing a fat JAR with a hand-written POM. Shadow
  *    bundles `bundled` and `com.example:inner`, but neither `com.example:outer`,
  *    which the POM declares without `inner`, nor `com.example:annotations`, which
- *    the artifact leaves for its consumers to add;
+ *    the artifact leaves for its consumers to add. The JAR keeps the `all`
+ *    classifier Shadow gives it, so the publication has no main artifact;
  *  - `uber` — a JVM module publishing a fat JAR of its whole runtime classpath
- *    with an empty POM, as `uber-jar-module` does.
+ *    as its main artifact, with an empty POM, as `uber-jar-module` does;
+ *  - `archive` — a JVM module publishing a ZIP archive rather than a JAR, as
+ *    a Kotlin/Native target publishes a klib;
+ *  - `osgi` — a JVM module publishing its JAR as an OSGi bundle, whose build sets
+ *    the `bundle` packaging of the POM.
  */
 @DisplayName("`PublicationSbom` should")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -108,6 +115,7 @@ internal class PublicationSbomIgTest {
                 ":plugin:$publishTask",
                 ":impl:${PublicationChecksums.collectorTaskName}",
                 ":kmp:${PublicationSbom.taskNameFor("desktop")}",
+                ":kmp:${pomTaskOf("desktop")}",
                 ":twin:${PublicationSbom.taskName}",
                 ":consumer:${PublicationSbom.taskName}",
                 ":thin:${PublicationSbom.taskName}",
@@ -115,6 +123,9 @@ internal class PublicationSbomIgTest {
                 ":fat:${PublicationSbom.taskName}",
                 ":fat:${pomTaskOf(fatJar)}",
                 ":uber:${PublicationSbom.taskName}",
+                ":uber:${pomTaskOf(fatJar)}",
+                ":archive:${pomTaskOf(archive)}",
+                ":osgi:${pomTaskOf(osgiBundle)}",
                 "--offline",
                 "--stacktrace",
             )
@@ -138,6 +149,54 @@ internal class PublicationSbomIgTest {
 
         manifest.map { it.substringAfter("  ") } shouldContain
                 "spine-impl-$moduleVersion.spdx.json"
+    }
+
+    /**
+     * The SBOM is published without a classifier, as the artifact itself is, and Gradle
+     * derives the packaging of a POM from such artifacts. A POM leaves out the packaging
+     * of a JAR, which is the default.
+     */
+    @Test
+    fun `keep the packaging of a JAR published with an SBOM`() {
+        val jarPublications = listOf(
+            "impl" to "mavenJava",
+            "plugin" to "pluginMaven",
+            "kmp" to "desktop",
+            "thin" to pluginJar,
+            "uber" to fatJar,
+        )
+
+        jarPublications.forAll { (module, publication) ->
+            packagingOf(module, publication).shouldBeNull()
+        }
+    }
+
+    /**
+     * Shadow classifies the fat JAR of `fat` as `all`, so the publication has no main
+     * artifact, and its POM declares the `pom` packaging. The SBOM, having no classifier,
+     * would otherwise become the main artifact, and `spdx.json` the packaging.
+     */
+    @Test
+    fun `keep the packaging of a publication without a main artifact`() {
+        packagingOf("fat", fatJar) shouldBe "pom"
+    }
+
+    /**
+     * The packaging is the extension of the main artifact, rather than always `jar`.
+     */
+    @Test
+    fun `keep the packaging of an artifact other than a JAR published with an SBOM`() {
+        packagingOf("archive", archive) shouldBe "zip"
+    }
+
+    /**
+     * The build of `osgi` sets the `bundle` packaging, as the POM of an OSGi bundle declares
+     * for its JAR. The packaging the build sets is kept, rather than calculated anew from
+     * the artifacts, which would give `jar`.
+     */
+    @Test
+    fun `keep the packaging a build sets explicitly`() {
+        packagingOf("osgi", osgiBundle) shouldBe "bundle"
     }
 
     @Test
@@ -219,6 +278,8 @@ internal class PublicationSbomIgTest {
             ":thin pluginJar 1",
             ":fat fatJar 1",
             ":uber fatJar 1",
+            ":archive archive 1",
+            ":osgi osgiBundle 1",
         )
     }
 
@@ -374,13 +435,23 @@ internal class PublicationSbomIgTest {
      * as `group:artifactId`.
      */
     private fun pomDependenciesOf(module: String, publication: String): List<String> {
-        val pom = file("$module/build/publications/$publication/pom-default.xml")
-        val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pom)
-        val dependencies = document.getElementsByTagName("dependency")
+        val dependencies = pomOf(module, publication).getElementsByTagName("dependency")
         return (0 until dependencies.length)
             .map { dependencies.item(it) as Element }
             .map { "${it.childText("groupId")}:${it.childText("artifactId")}" }
             .shouldNotBeEmpty()
+    }
+
+    /**
+     * Returns the packaging the POM of the given [publication] declares, or `null` if
+     * it declares none, which means `jar`.
+     */
+    private fun packagingOf(module: String, publication: String): String? =
+        pomOf(module, publication).getElementsByTagName("packaging").item(0)?.textContent
+
+    private fun pomOf(module: String, publication: String): Document {
+        val pom = file("$module/build/publications/$publication/pom-default.xml")
+        return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pom)
     }
 
     private fun implSbom(): JsonNode {
@@ -443,7 +514,7 @@ internal class PublicationSbomIgTest {
             rootProject.name = "sbom-sample"
             include(
                 "api", "impl", "bundled", "plugin", "kmp", "twin", "consumer",
-                "thin", "fat", "uber",
+                "thin", "fat", "uber", "archive", "osgi",
             )
             """.trimIndent()
         )
@@ -481,7 +552,9 @@ internal class PublicationSbomIgTest {
 
             spinePublishing {
                 modules = setOf("api", "impl", "consumer")
-                modulesWithCustomPublishing = setOf("plugin", "kmp", "twin", "thin", "fat", "uber")
+                modulesWithCustomPublishing = setOf(
+                    "plugin", "kmp", "twin", "thin", "fat", "uber", "archive", "osgi",
+                )
                 destinations = emptySet()
             }
 
@@ -619,6 +692,8 @@ internal class PublicationSbomIgTest {
         writeThinJarModule()
         writeFatJarModule()
         writeUberJarModule()
+        writeArchiveModule()
+        writeOsgiModule()
     }
 
     /**
@@ -711,12 +786,23 @@ internal class PublicationSbomIgTest {
     /**
      * Writes the `uber` module, whose fat JAR bundles its whole runtime classpath,
      * and whose POM declares no dependencies.
+     *
+     * As in `uber-jar-module`, the fat JAR has no classifier, taking the name of the JAR
+     * of the module, whose task is disabled. So the fat JAR is the main artifact.
      */
     private fun writeUberJarModule() {
         val body = """
             dependencies {
                 implementation(project(":bundled"))
                 implementation("com.example:testlib:1.0")
+            }
+
+            tasks.jar {
+                enabled = false
+            }
+
+            tasks.shadowJar {
+                archiveClassifier.set("")
             }
 
             publishing {
@@ -729,6 +815,44 @@ internal class PublicationSbomIgTest {
             }
             """.trimIndent()
         writeScript("uber", shadowModuleHead, body)
+    }
+
+    /**
+     * Writes the `archive` module, which publishes a ZIP archive rather than a JAR.
+     */
+    private fun writeArchiveModule() {
+        val body = """
+            val zip = tasks.register<Zip>("zip") {
+                from("build.gradle.kts")
+            }
+
+            publishing {
+                publications {
+                    create<MavenPublication>("$archive") {
+                        artifact(zip)
+                    }
+                }
+            }
+            """.trimIndent()
+        writeScript("archive", "plugins { `java-library` }", body)
+    }
+
+    /**
+     * Writes the `osgi` module, which publishes its JAR as an OSGi bundle, setting
+     * the `bundle` packaging of the POM.
+     */
+    private fun writeOsgiModule() {
+        val body = """
+            publishing {
+                publications {
+                    create<MavenPublication>("$osgiBundle") {
+                        artifact(tasks.jar)
+                        pom.packaging = "bundle"
+                    }
+                }
+            }
+            """.trimIndent()
+        writeScript("osgi", "plugins { `java-library` }", body)
     }
 
     /**
@@ -789,6 +913,12 @@ internal class PublicationSbomIgTest {
 
         /** The publication of a fat JAR. */
         const val fatJar = "fatJar"
+
+        /** The publication of a ZIP archive. */
+        const val archive = "archive"
+
+        /** The publication of a JAR as an OSGi bundle. */
+        const val osgiBundle = "osgiBundle"
 
         /** Returns the name of the task writing the POM of the given [publication]. */
         fun pomTaskOf(publication: String): String =
