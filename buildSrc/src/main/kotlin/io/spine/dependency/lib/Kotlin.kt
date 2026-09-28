@@ -109,6 +109,10 @@ object Kotlin : DependencyWithBom() {
         val lib = "$group:kotlin-gradle-plugin:$version"
         val model = "$group:kotlin-gradle-model:$version"
 
-        override val modules = listOf(api, lib, model)
+        /**
+         * The coordinates of [api], [lib], and [model] without the version,
+         * which [artifacts] appends to each of them.
+         */
+        override val modules = listOf(api, lib, model).map { it.substringBeforeLast(':') }
     }
 }
