@@ -53,7 +53,8 @@ import org.spdx.sbom.gradle.extensions.DefaultSpdxSbomTaskExtension
  * [PublicationSbomTask]. It lists what an artifact depends on at runtime — never the
  * build tooling, nor the libraries used only to test it. Being published next to the
  * artifact, as `<artifactId>-<version>.spdx.json`, it enters the manifest of
- * [PublicationChecksums], so the provenance attestation covers it too.
+ * [PublicationChecksums], so the provenance attestation covers it too. It leaves the
+ * packaging the POM declares as it is.
  *
  * ## One SBOM per published artifact
  *
@@ -274,6 +275,13 @@ internal object PublicationSbom {
      * The SBOM is written from the document of the unit, unless the publication
      * [describes][MavenPublication.sbom] what its SBOM lists.
      *
+     * The SBOM is published without a classifier, as the SPDX Maven Plugin publishes one.
+     * Gradle would count such an artifact when calculating the packaging of the POM, so the
+     * packaging is [pinned][pinPackaging] before the SBOM is added. The POM then declares
+     * what it would without the SBOM: `jar` for a JAR rather than `pom`, and `pom` for
+     * a publication without a main artifact, such as a JAR classified `all` alone, rather
+     * than `spdx.json`.
+     *
      * [published] holds the coordinates of the publications of this build, keyed as
      * [PublicationSbomTask.publishedCoordinates] describes.
      */
@@ -305,6 +313,7 @@ internal object PublicationSbom {
             described?.let { artifactComponents.set(it.components) }
             outputFile.set(output)
         }
+        publication.pinPackaging()
         publication.artifact(sbom.flatMap { it.outputFile }) {
             extension = sbomExtension
         }
@@ -575,6 +584,24 @@ private fun <T : Any> Project.combined(
  */
 private val MavenPublication.coordinates: String
     get() = "$groupId:$artifactId:$version"
+
+/**
+ * Stores the packaging Gradle calculates for the POM of this publication as an explicit
+ * value, so that artifacts added later do not change it.
+ *
+ * Until it is set explicitly, the packaging has no value of its own: Gradle calculates it
+ * from the artifacts of the publication whenever it is read, taking the extension of
+ * the only artifact without a classifier, or `pom` for none or several. Adding an artifact
+ * without a classifier therefore changes the packaging, unless an explicit value is set.
+ * A packaging the build has set explicitly is read back unchanged, and so is kept.
+ *
+ * Reading the packaging makes Gradle take in the artifacts of the software component
+ * the publication is made from. So the publication must be final by the time this
+ * function is called, as it is once all projects are evaluated.
+ */
+private fun MavenPublication.pinPackaging() {
+    pom.packaging = pom.packaging
+}
 
 /**
  * Returns the coordinates of the Maven publications of this build that a module can
