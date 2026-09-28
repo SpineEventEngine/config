@@ -593,14 +593,19 @@ private val MavenPublication.coordinates: String
  * from the artifacts of the publication whenever it is read, taking the extension of
  * the only artifact without a classifier, or `pom` for none or several. Adding an artifact
  * without a classifier therefore changes the packaging, unless an explicit value is set.
- * A packaging the build has set explicitly is read back unchanged, and so is kept.
+ * A packaging the build has set explicitly is read back unchanged, and so it is kept.
  *
- * Reading the packaging makes Gradle take in the artifacts of the software component
- * the publication is made from. So the publication must be final by the time this
- * function is called, as it is once all projects are evaluated.
+ * The packaging is calculated from the artifacts the publication has when it is read.
+ * For a publication made from a software component, the first read also takes
+ * the artifacts of the component into the publication for good. So the publication
+ * must be final by the time this function is called, as it is once all projects are
+ * evaluated.
  */
 private fun MavenPublication.pinPackaging() {
-    pom.packaging = pom.packaging
+    // The explicit type makes this fail to compile, rather than set the packaging
+    // to itself, once Gradle turns `MavenPom.getPackaging()` into a lazy property.
+    val calculated: String = pom.packaging
+    pom.packaging = calculated
 }
 
 /**

@@ -58,5 +58,9 @@ Closes [#770][issue-770].
 - 2026-09-28 — review: the KDoc read as if `pom` were the aim for classified artifacts;
   reworded as what the POM would declare without the SBOM. The fixture's `uber` now
   publishes an unclassified fat JAR, as `uber-jar-module` does.
+- 2026-09-28 — pre-PR passed at `e12bee2b`. Applied the reviewers' findings: an explicitly
+  typed local in `pinPackaging()`, so a lazy `MavenPom.packaging` fails to compile there
+  rather than referring to itself; `forAll` in the JAR case, naming each packaging; and
+  three KDoc fixes, one scoping the component note to publications made from one.
 
 [issue-770]: https://github.com/SpineEventEngine/config/issues/770

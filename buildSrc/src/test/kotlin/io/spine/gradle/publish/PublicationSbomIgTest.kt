@@ -16,6 +16,7 @@ package io.spine.gradle.publish
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.kotest.inspectors.forAll
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
@@ -162,9 +163,9 @@ internal class PublicationSbomIgTest {
             "uber" to fatJar,
         )
 
-        jarPublications
-            .filter { (module, publication) -> packagingOf(module, publication) != null }
-            .shouldBeEmpty()
+        jarPublications.forAll { (module, publication) ->
+            packagingOf(module, publication).shouldBeNull()
+        }
     }
 
     /**
@@ -178,8 +179,7 @@ internal class PublicationSbomIgTest {
     }
 
     /**
-     * The packaging is the extension of the artifact, rather than `jar` for each
-     * publication.
+     * The packaging is the extension of the artifact, rather than `jar` for all publications alike.
      */
     @Test
     fun `keep the packaging of an artifact other than a JAR published with an SBOM`() {
