@@ -14,6 +14,7 @@
 
 package io.spine.dependency.lib
 
+import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -23,7 +24,7 @@ internal class JacksonSpec {
 
     @Test
     fun `return the coordinates of a module with the version`() {
-        with(Jackson) {
+        assertSoftly(Jackson) {
             core() shouldBe "$core:$version"
             databind() shouldBe "$databind:$version"
             moduleKotlin() shouldBe "$moduleKotlin:$version"
@@ -32,7 +33,7 @@ internal class JacksonSpec {
 
     @Test
     fun `return the coordinates of a data format module with the version`() {
-        with(Jackson.DataFormat) {
+        assertSoftly(Jackson.DataFormat) {
             xml() shouldBe "$xml:$version"
             yaml() shouldBe "$yaml:$version"
             protobuf() shouldBe "$protobuf:$version"
@@ -41,7 +42,7 @@ internal class JacksonSpec {
 
     @Test
     fun `return the coordinates of a data type module with the version`() {
-        with(Jackson.DataType) {
+        assertSoftly(Jackson.DataType) {
             guava() shouldBe "$guava:$version"
             javaXMoney() shouldBe "$javaXMoney:$version"
             moneta() shouldBe "$moneta:$version"

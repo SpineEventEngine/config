@@ -14,6 +14,7 @@
 
 package io.spine.dependency.build
 
+import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -23,7 +24,7 @@ internal class KspSpec {
 
     @Test
     fun `return the coordinates of a module with the version`() {
-        with(Ksp) {
+        assertSoftly(Ksp) {
             symbolProcessingApi() shouldBe "$symbolProcessingApi:$version"
             symbolProcessing() shouldBe "$symbolProcessing:$version"
             symbolProcessingAaEmb() shouldBe "$symbolProcessingAaEmb:$version"
@@ -40,8 +41,6 @@ internal class KspSpec {
      */
     @Test
     fun `return the coordinates of the plugin marker with the version`() {
-        with(Ksp) {
-            gradlePluginMarker() shouldBe "$id:$id.gradle.plugin:$version"
-        }
+        Ksp.gradlePluginMarker() shouldBe "${Ksp.id}:${Ksp.id}.gradle.plugin:${Ksp.version}"
     }
 }
