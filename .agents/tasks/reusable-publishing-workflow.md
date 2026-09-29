@@ -213,8 +213,14 @@ jobs:
         --signer-workflow SpineEventEngine/config/.github/workflows/publishing.yml <file>
       ```
 
-      Confirm the pre-change form (`-R` alone) now fails, which proves the signer
-      moved. Record both outputs in the Log.
+      Then assert the signer positively from the certificate, not from a negative:
+      add `--format json` and check, under
+      `.[].verificationResult.signature.certificate`, that `buildSignerURI` is
+      `https://github.com/SpineEventEngine/config/.github/workflows/publishing.yml@<ref>`,
+      `sourceRepositoryURI` is the consumer, and `buildSignerDigest` is the pinned
+      `config` commit. (`-R` alone is expected to fail too — the CLI derives the identity
+      regex `^https://github.com/<owner>/<repo>/` from `--repo`, and config's signer does
+      not match it — but the rollout does not rest on that.) Record the output in the Log.
 
 ## Risks
 
@@ -300,3 +306,8 @@ jobs:
   longer promises an attestation for a run whose `attest` job failed, and distinguishes
   pre-attestation versions from inline-attested ones; this file's risk entry now matches
   the re-run recovery. Codex reviewed the same commit with no findings.
+- 2026-09-29 — Codex on `f02838e9`: replace the "`-R` alone must fail" rollout expectation
+  with a positive check of the certificate identity. Adopted the positive check. The
+  premise that `-R` alone accepts the new attestation is not borne out by the CLI's
+  `policy.go`, which builds the SAN regex from `--repo`; Fulcio's SAN template for GitHub
+  Actions is `{{ .url }}/{{ .job_workflow_ref }}`, so the signer is config's file.
