@@ -255,7 +255,8 @@ function copy_workflows() {
 # `publishing.yml` hosted by `config` as `@CONFIG_COMMIT`; once pinned, the
 # workflow steps and `buildSrc` come from the same commit, and the reference is
 # immutable. Must run while `config` is still the working directory, so `git`
-# addresses the submodule rather than the consumer.
+# addresses the submodule rather than the consumer. Fails the pull when no
+# commit can be resolved — see the note inside.
 function pin_publishing_workflow() {
     local target=../.github/workflows/publish.yml
     # Absent when replaced by a repo-specific workflow; foreign when the
@@ -263,13 +264,17 @@ function pin_publishing_workflow() {
     if [ ! -f "$target" ] || ! grep -q 'publishing\.yml@CONFIG_COMMIT' "$target"; then
         return 0
     fi
-    local ref
-    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        ref=$(git rev-parse HEAD)
-    else
-        echo "WARNING: 'config' is not a git work tree;" \
-             "pinning 'publish.yml' to 'master' instead of a commit." >&2
-        ref=master
+    # Fail closed. A mutable ref such as `master` would hand every consumer
+    # secret to whatever `config` holds at run time and break the promise that
+    # the workflow and `buildSrc` come from the same commit. `config` must also
+    # be a work tree of its own — the submodule — not a plain directory inside
+    # the consumer's: there `HEAD` would silently be the consumer's commit.
+    local top ref
+    top=$(git rev-parse --show-toplevel 2>/dev/null) || top=""
+    if [ "$top" != "$(pwd -P)" ] || ! ref=$(git rev-parse --verify HEAD 2>/dev/null); then
+        echo "ERROR: cannot resolve the 'config' commit to pin 'publish.yml' to;" \
+             "'config' must be a git submodule with a checked-out commit — aborting." >&2
+        exit 1
     fi
     local tmp
     tmp=$(mktemp ../.github/workflows/publish.yml.XXXXXX)

@@ -83,8 +83,11 @@ in its Build Level 2 shape.
    `git rev-parse HEAD` of the config checkout, which is the commit the consumer pins
    as its submodule. Workflow steps and `buildSrc` then move together, the reference is
    immutable (GitHub's recommendation), and the diff lands in the same commit as the
-   submodule bump consumers already make. If the config directory is not a git work
-   tree, stamp `master` and warn. Every pull rewrites the SHA — accepted at approval.
+   submodule bump consumers already make. If no `config` commit can be resolved — the
+   directory is not a work tree of its own, or has no commit — the pull fails: a mutable
+   ref would hand every consumer secret to whatever `master` holds at run time (the
+   draft's warn-and-pin-`master` fallback was dropped after Copilot's review on #776).
+   Every pull rewrites the SHA — accepted at approval.
 5. **`secrets: inherit`** in the caller. The called job needs five decryption keys
    plus `NPM_SECRET`, all defined per consumer; listing them in every thin caller
    would recreate per-repo churn. `GITHUB_TOKEN` is passed automatically.
@@ -176,20 +179,21 @@ jobs:
 - [x] 3. `migrate`:
       - skip list for config-only workflows in `copy_workflows`;
       - stamp `@CONFIG_COMMIT` in the copied `publish.yml` (portable: temp file + `mv`,
-        no `sed -i`); fail loudly if the placeholder survives; warn and stamp `master`
-        outside a git work tree.
+        no `sed -i`); fail loudly if the placeholder survives or no commit resolves.
+      - checked-in regression test `scripts/test-migrate-publishing-pin.sh`, modeled on
+        `scripts/test-migrate-ide-files.sh`: skip list, pin, re-pin, `config:replaces`,
+        fail-closed path.
 - [x] 4. README:
       - refine "`.github-workflows` directory": a third category — workflows config
         hosts for consumers, triggered only by `workflow_call`, living in
         `.github/workflows/` and excluded from distribution;
       - add "Verifying published artifacts" with the `--signer-workflow` command and
         a note that versions published before this change verify with `-R` alone.
-- [ ] 5. Static checks: parse both YAML files; `actionlint` (install via Homebrew if
+- [x] 5. Static checks: parse both YAML files; `actionlint` (install via Homebrew if
       absent); `shellcheck migrate` if available.
       - done: YAML parse (system Ruby), `bash -n migrate`, six sandbox cases for the
-        new `migrate` functions (see Log). **Open:** `actionlint`/`shellcheck` — Homebrew
-        is blocked by an unaccepted Xcode license (needs `sudo`); alternatives are
-        accepting the license or the `rhysd/actionlint` Docker image.
+        new `migrate` functions, `actionlint` 1.7.12 with the `shellcheck` integration on
+        both workflow files, `shellcheck` 0.11.0 on `migrate` — no findings (see Log).
 - [x] 6. Read-only prerequisite check: branch protection on config `master`
       (`gh api repos/SpineEventEngine/config/branches/master/protection`); record the
       result in the Log. With `@<sha>` stamping this is defence in depth; with
@@ -231,9 +235,10 @@ jobs:
 - **A stamped SHA that becomes unreachable** (a config PR-branch commit whose branch
   was deleted without a merge commit) fails the consumer's publish with "workflow not
   found" — the same failure class as an unfetchable submodule commit, not a new one.
-- **Unchanged from #763:** publication precedes attestation; a failure in `attest`
-  leaves the version published and unattested, and the fix is to publish the next
-  version.
+- **Unchanged from #763:** publication precedes attestation. A failure in `publish`
+  after the uploads — `publicationChecksums` — leaves the version published and
+  unattested, and the fix is to publish the next version. A failure in `attest` is
+  recoverable in place: "Re-run failed jobs" re-attests from the retained manifest.
 
 ## Non-goals
 
@@ -285,3 +290,13 @@ jobs:
 [slsa-go]: https://github.com/slsa-framework/slsa-github-generator/blob/main/.github/workflows/builder_go_slsa3.yml
 [slsa-spec]: https://github.com/slsa-framework/slsa-github-generator/blob/main/SPECIFICATIONS.md
 - 2026-09-29 — committed on `reusable-publishing-workflow`; PR opened against `master`.
+- 2026-09-29 — Alexander accepted the Xcode license; `brew install actionlint shellcheck`
+  succeeded. `actionlint -no-color` on `publishing.yml` and the `publish.yml` template, and
+  on all live workflows: exit 0, no findings. `shellcheck -s bash migrate`: exit 0.
+- 2026-09-29 — Copilot review on #776, five inline findings, all applied: the
+  warn-and-pin-`master` fallback replaced by a fail-closed check that `config` is a work
+  tree of its own with a resolvable HEAD; `scripts/test-migrate-publishing-pin.sh` added
+  (runs the real `migrate` against a fixture, like the IDE-files harness); the README no
+  longer promises an attestation for a run whose `attest` job failed, and distinguishes
+  pre-attestation versions from inline-attested ones; this file's risk entry now matches
+  the re-run recovery. Codex reviewed the same commit with no findings.

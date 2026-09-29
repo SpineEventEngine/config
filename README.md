@@ -173,8 +173,10 @@ that repository blocks on it.
 
 ## Verifying published artifacts
 
-Every artifact a consumer publishes from `master` carries a SLSA build provenance attestation,
-signed from within the reusable `publishing.yml` above. To verify a downloaded file, pin both the
+An artifact published by a `Publish` run that completed, its `attest` job included, carries a
+SLSA build provenance attestation signed from within the reusable `publishing.yml` above. A run
+whose `attest` job failed leaves its artifacts published but unattested until that job is re-run;
+the comments in `publishing.yml` describe the recovery. To verify a downloaded file, pin both the
 repository it was built from and the workflow that signed for it:
 
 ```bash
@@ -182,10 +184,12 @@ gh attestation verify -R SpineEventEngine/<repository> \
   --signer-workflow SpineEventEngine/config/.github/workflows/publishing.yml <file>
 ```
 
-Versions published before a repository adopted the reusable workflow were signed by that
-repository's own `publish.yml`. They verify with `-R SpineEventEngine/<repository>` alone and fail
-with `--signer-workflow`, which is the check working as intended. To pin the exact `config` commit
-that ran the publication, add `--signer-digest <commit>`.
+Older versions fall into two groups. Those published before the repository received the
+attestation step at all carry no attestation, and verification fails for them whatever the flags.
+Those published by that inline step, before the repository adopted the reusable workflow, were
+signed by the repository's own `publish.yml`: they verify with `-R SpineEventEngine/<repository>`
+alone and fail with `--signer-workflow`, which is the check working as intended. To pin the exact
+`config` commit that ran a publication, add `--signer-digest <commit>`.
 
 ## Further reading
 
