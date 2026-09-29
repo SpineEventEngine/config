@@ -50,8 +50,18 @@ for required in migrate scripts/update-gitignore.sh .gitignore \
     || { echo "FAIL: cannot find '$required' under $config_dir" >&2; exit 1; }
 done
 
-# File mode, portable across BSD and GNU `stat`.
-mode_of() { stat -f '%Lp' "$1" 2>/dev/null || stat -c '%a' "$1"; }
+# File mode, portable across GNU and BSD `stat`. GNU first: BSD `stat -c` fails
+# outright, whereas GNU `stat -f` SUCCEEDS with file-system information, so the
+# other order would never fall through on Linux. The result is validated so a
+# `stat` that answers with something other than a mode fails the run loudly
+# instead of failing one assertion with a confusing diff.
+mode_of() {
+  local mode
+  mode="$(stat -c '%a' "$1" 2>/dev/null || stat -f '%Lp' "$1")"
+  [[ "$mode" =~ ^[0-7]{3,4}$ ]] \
+    || { echo "FAIL: cannot read the mode of '$1' — stat answered '$mode'" >&2; exit 1; }
+  echo "$mode"
+}
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
