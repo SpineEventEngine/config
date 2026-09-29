@@ -1,0 +1,219 @@
+name: Publishing
+
+# The job body behind the `publish.yml` that `config` distributes to every JVM
+# consumer. A consumer's `publish.yml` is a thin caller: it supplies the
+# trigger, the permission grant and the secrets, and points here by commit.
+#
+# Hosting the body here is what raises the attestation from SLSA Build Level 2
+# to Level 3. The certificate behind an attestation records as the signer the
+# workflow file whose steps the job ran — the `job_workflow_ref` claim of the
+# runner's OIDC token. With the steps inlined in the consumer, signer and
+# caller were the same file, and anyone able to change it could change the
+# build without the attestation showing it. With the steps here, the signer is
+# this file, verifiers pin it with `gh attestation verify --signer-workflow`,
+# and the build instructions are out of the consumer's reach.
+#
+# `workflow_call` is the only trigger: `config` itself never runs this file,
+# and `migrate` never copies it — see `CONFIG_ONLY_WORKFLOWS` there.
+#
+# Two jobs, not one, for the two SLSA Build L3 rules a single job leaves open:
+#
+#  - `id-token: write` is granted per job, and the runner hands the token
+#    endpoint to every step of that job. The Gradle step runs the consumer's
+#    build scripts, so in one job those scripts could mint a token naming this
+#    file as signer. Here they cannot: `publish` has no `id-token`, and
+#    `attest`, which has it, runs no consumer code.
+#  - A GitHub cache is shared by every workflow on a branch, and the Gradle
+#    home `setup-gradle` restores holds task outputs (`org.gradle.caching` is
+#    on), so a consumer-owned workflow on `master` could feed this build.
+#    `publish` therefore runs with the cache disabled.
+#
+# The manifest of published files crosses from `publish` to `attest` as a job
+# output. An output is bound to the job that set it; the run's artifact store
+# is writable by any job of the run, including any a consumer adds to its
+# caller.
+#
+# No `inputs`: the values that differ per consumer — the repository and its
+# secrets — arrive through the `github` context, which in a called workflow
+# is the caller's, and through `secrets: inherit`.
+
+on:
+  workflow_call:
+
+jobs:
+  publish:
+    name: Publish to Maven repositories
+    runs-on: ubuntu-latest
+
+    # This block is exhaustive: a scope missing here is set to `none`, not
+    # left at the default. `packages: write` is what `GITHUB_TOKEN` needs to
+    # publish to GitHub Packages — it is used as the Maven password, see
+    # `GitHubPackages.kt`. The scopes that serve the attestation belong to the
+    # `attest` job alone, see the top of the file.
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      manifest: ${{ steps.manifest.outputs.manifest }}
+
+    steps:
+      # The `github` context of a called workflow is the caller's, so this
+      # checks out the consumer repository, with `config` among its submodules.
+      - uses: actions/checkout@v6
+        with:
+          submodules: 'true'
+
+      - uses: actions/setup-java@v5
+        with:
+          java-version: 17
+          distribution: zulu
+
+      # No cache, see the top of the file. The cost is a cold dependency
+      # download once per merge to `master`.
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-disabled: true
+
+      - name: Decrypt CloudRepo credentials
+        run: ./config/scripts/decrypt.sh "$CLOUDREPO_CREDENTIALS_KEY" ./.github/keys/cloudrepo.properties.gpg ./cloudrepo.properties
+        env:
+          CLOUDREPO_CREDENTIALS_KEY: ${{ secrets.CLOUDREPO_CREDENTIALS_KEY }}
+
+      - name: Decrypt Git SSH credentials
+        run: ./config/scripts/decrypt.sh "$GIT_CREDENTIALS_KEY" ./.github/keys/deploy_key_rsa.gpg ./deploy_key_rsa
+        env:
+          GIT_CREDENTIALS_KEY: ${{ secrets.GIT_CREDENTIALS_KEY }}
+
+        # Make sure the SSH key is not "too visible". SSH agent will not accept it otherwise.
+      - name: Set file system permissions
+        run: chmod 400 ./deploy_key_rsa && chmod +x ./config/scripts/register-ssh-key.sh
+
+      - name: Decrypt GCS credentials
+        run: ./config/scripts/decrypt.sh "$GCS_CREDENTIALS_KEY" ./.github/keys/gcs-auth-key.json.gpg ./gcs-auth-key.json
+        env:
+          GCS_CREDENTIALS_KEY: ${{ secrets.GCS_CREDENTIALS_KEY }}
+
+      - name: Decrypt GCAR credentials
+        run: ./config/scripts/decrypt.sh "$MAVEN_PUBLISHER_KEY" ./.github/keys/maven-publisher.json.gpg ./maven-publisher.json
+        env:
+          MAVEN_PUBLISHER_KEY: ${{ secrets.MAVEN_PUBLISHER_KEY }}
+
+      - name: Decrypt Git SSH credentials
+        run: ./config/scripts/decrypt.sh "$GRADLE_PORTAL_CREDENTIALS_KEY" ./.github/keys/gradle-plugin-portal.secret.properties.gpg ./gradle-plugin-portal.secret.properties
+        env:
+          GRADLE_PORTAL_CREDENTIALS_KEY: ${{ secrets.GRADLE_PORTAL_CREDENTIALS_KEY }}
+
+      - name: Append Gradle properties
+        run: cat ./gradle-plugin-portal.secret.properties >> ./gradle.properties
+
+      - name: Publish artifacts to Maven
+        id: publish
+        # Since we're in the `master` branch already, this means that tests of a PR passed.
+        # So, no need to run the tests again when publishing.
+        #
+        # `publicationChecksums` shares this invocation on purpose. In one of its own
+        # it would rebuild whatever is not up to date, and a producer that emits
+        # different bytes on each run would leave the manifest describing files other
+        # than the ones uploaded here — provenance that cannot verify what was
+        # published. Within a single invocation each producer runs at most once, so
+        # the digests and the uploads are of the same bytes. The task writing the SBOM
+        # published next to each artifact (`*.spdx.json`) is such a producer: the SBOM
+        # records when it was written. It is attested like any other published file.
+        run: ./gradlew publish publicationChecksums -x test --stacktrace
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORMAL_GIT_HUB_PAGES_AUTHOR: developers@spine.io
+          # https://docs.github.com/en/actions/reference/environment-variables
+          REPO_SLUG: ${{ github.repository }}    # e.g. SpineEventEngine/core-jvm
+          GOOGLE_APPLICATION_CREDENTIALS: ./maven-publisher.json
+          NPM_TOKEN: ${{ secrets.NPM_SECRET }}
+
+      # A failed publication on `master` is most often a version collision: a stale
+      # duplicate bump merged before `revalidate-versions.yml` could turn it red (the
+      # narrow auto-merge race). The artifact is safe — the registry rejects the
+      # overwrite — but the fix needs a human/agent, so make the failure loud and
+      # actionable instead of a quiet red run.
+      - name: Report a failed publication
+        if: failure() && steps.publish.outcome == 'failure'
+        shell: bash
+        run: |
+          echo "::error title=Publish failed::Publishing to Maven, or computing the attestation manifest, failed on the base branch. Read the Gradle output to see which task failed - the two need opposite responses."
+          echo "If ':publish' failed on a version collision, the version is already"
+          echo "published and immutable:"
+          echo "  1. Bump 'version.gradle.kts' on the base branch to the next free version."
+          echo "  2. Re-run this 'Publish' workflow."
+          echo "Stale duplicate bumps are normally caught before merge by 'revalidate-versions.yml'."
+          echo
+          echo "If ':publicationChecksums' failed instead, the artifacts are published"
+          echo "and intact, and only their attestation is missing. Do NOT bump the"
+          echo "version: re-publishing an immutable one cannot succeed, and this"
+          echo "workflow publishes before it attests, so a plain re-run stops there."
+          echo "Fix the manifest failure and publish the next version to attest it."
+
+      # The manifest leaves this job as an output rather than through the
+      # artifact store, see the top of the file. `awk 1` terminates the last
+      # line even when the file does not, so the heredoc delimiter always
+      # stands on a line of its own.
+      - name: Export the attestation manifest
+        id: manifest
+        shell: bash
+        run: |
+          manifest=build/attestation/subject-checksums.txt
+          if [ ! -s "$manifest" ]; then
+            echo "::error title=Empty manifest::'$manifest' is missing or empty."
+            exit 1
+          fi
+          delimiter="MANIFEST_$(openssl rand -hex 16)"
+          {
+            echo "manifest<<$delimiter"
+            awk 1 "$manifest"
+            echo "$delimiter"
+          } >> "$GITHUB_OUTPUT"
+
+  attest:
+    name: Attest the published artifacts
+    # `needs` both orders the jobs and gates this one: it runs only once the
+    # publication and the manifest have succeeded, and a failed `publish` job
+    # skips it.
+    #
+    # A failure here leaves the artifacts published but unattested. Recover
+    # with "Re-run failed jobs" on the run, not "Re-run all jobs": `publish`
+    # succeeded, so it is not repeated, its manifest output is retained, and
+    # this job signs the same digests it would have signed the first time.
+    # Nothing is rebuilt. A recovery that rebuilds was considered and rejected:
+    # a build that is not bit-for-bit reproducible cannot promise to reproduce
+    # the published bytes, and would attest whatever it happened to rebuild,
+    # as though that were what consumers resolve. A missing attestation is a
+    # gap, but a wrong one is a false statement.
+    needs: publish
+    runs-on: ubuntu-latest
+
+    # `id-token` mints the OIDC token Sigstore issues a signing certificate
+    # against, `attestations` persists the result, `artifact-metadata` records
+    # the artifact storage entry, and `contents: read` completes the grant
+    # GitHub documents for an attesting job. No consumer code runs in this job.
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+
+    steps:
+      # Through `env`, so the manifest is never interpolated into the script.
+      - name: Write the attestation manifest
+        shell: bash
+        env:
+          MANIFEST: ${{ needs.publish.outputs.manifest }}
+        run: |
+          mkdir -p build/attestation
+          printf '%s\n' "$MANIFEST" > build/attestation/subject-checksums.txt
+
+      - name: Attest the published artifacts
+        uses: actions/attest@v4
+        with:
+          # Digests and names are taken from this file verbatim — the action
+          # does not read the artifacts. `publicationChecksums` derives both
+          # from the Maven publications, which are the only place the mapping
+          # from a file on disk to its published name is known.
+          subject-checksums: build/attestation/subject-checksums.txt

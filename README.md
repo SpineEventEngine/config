@@ -120,9 +120,18 @@ The command to start the build process is:
 ## `.github-workflows` directory
 
 This directory contains GitHub Workflow scripts that do not apply to the `config` repository, and
-as such cannot be placed under `.github/workflows`.
+as such cannot be placed under `.github/workflows`: each carries its own trigger, and from there
+it would run here.
 
 These scripts are copied by the `pull` script when `config` is applied to a new repository.
+
+`config` also *hosts* one workflow it never copies: the reusable
+[`publishing.yml`](.github/workflows/publishing.yml). Its only trigger is `workflow_call`, so it
+runs for a consumer, inside that consumer's run, when the distributed `publish.yml` calls it by
+commit. It therefore lives under `.github/workflows`, where GitHub resolves reusable workflows,
+and `migrate` keeps it out of consumers through its `CONFIG_ONLY_WORKFLOWS` list. Keeping the
+publication steps in `config` is what makes `config` the signer of every consumer's artifact
+attestation; the comments in `publishing.yml` explain the mechanism.
 
 ### Replacing a distributed workflow in a single repository
 
@@ -161,6 +170,22 @@ If the retired workflow was a **required status check** in a repository's
 branch protection, drop it there as well. Otherwise GitHub keeps waiting for
 a status that no workflow will ever report again, and every pull request in
 that repository blocks on it.
+
+## Verifying published artifacts
+
+Every artifact a consumer publishes from `master` carries a SLSA build provenance attestation,
+signed from within the reusable `publishing.yml` above. To verify a downloaded file, pin both the
+repository it was built from and the workflow that signed for it:
+
+```bash
+gh attestation verify -R SpineEventEngine/<repository> \
+  --signer-workflow SpineEventEngine/config/.github/workflows/publishing.yml <file>
+```
+
+Versions published before a repository adopted the reusable workflow were signed by that
+repository's own `publish.yml`. They verify with `-R SpineEventEngine/<repository>` alone and fail
+with `--signer-workflow`, which is the check working as intended. To pin the exact `config` commit
+that ran the publication, add `--signer-digest <commit>`.
 
 ## Further reading
 

@@ -217,19 +217,74 @@ function is_overridden() {
     printf '%s\n' "$OVERRIDDEN" | grep -qxF "$1"
 }
 
+# Workflows `config` hosts but never distributes. A reusable workflow is
+# executed *from* a consumer by reference (see the distributed `publish.yml`),
+# so a copy there would be inert; `detekt-code-analysis.yml` runs for `config`
+# alone.
+CONFIG_ONLY_WORKFLOWS="detekt-code-analysis.yml publishing.yml"
+
+# Whether the workflow named by $1 is one `config` keeps to itself.
+function is_config_only() {
+    case " $CONFIG_ONLY_WORKFLOWS " in
+        *" $1 "*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
 # Copies every workflow from the source directory ($1) into the consumer's
-# `.github/workflows`, skipping any the consumer has chosen to replace.
+# `.github/workflows`, skipping any the consumer has chosen to replace and any
+# `config` keeps to itself.
 function copy_workflows() {
     local f name
     for f in "$1"/*; do
         [ -e "$f" ] || continue
         name=$(basename "$f")
+        if is_config_only "$name"; then
+            continue
+        fi
         if is_overridden "$name"; then
             echo "Skipping '$name' (replaced by a repo-specific workflow)"
             continue
         fi
         cp -a "$f" ../.github/workflows/
     done
+}
+
+# Pins the distributed `publish.yml` to the `config` commit this consumer is
+# about to record as its submodule. The template refers to the reusable
+# `publishing.yml` hosted by `config` as `@CONFIG_COMMIT`; once pinned, the
+# workflow steps and `buildSrc` come from the same commit, and the reference is
+# immutable. Must run while `config` is still the working directory, so `git`
+# addresses the submodule rather than the consumer.
+function pin_publishing_workflow() {
+    local target=../.github/workflows/publish.yml
+    # Absent when replaced by a repo-specific workflow; foreign when the
+    # placeholder is missing. Neither is ours to touch.
+    if [ ! -f "$target" ] || ! grep -q 'publishing\.yml@CONFIG_COMMIT' "$target"; then
+        return 0
+    fi
+    local ref
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        ref=$(git rev-parse HEAD)
+    else
+        echo "WARNING: 'config' is not a git work tree;" \
+             "pinning 'publish.yml' to 'master' instead of a commit." >&2
+        ref=master
+    fi
+    local tmp
+    tmp=$(mktemp ../.github/workflows/publish.yml.XXXXXX)
+    # `cp` onto the target keeps its mode; `mv` would leave mktemp's 0600.
+    if sed "s|publishing\.yml@CONFIG_COMMIT|publishing.yml@$ref|" "$target" > "$tmp" \
+       && ! grep -q 'publishing\.yml@CONFIG_COMMIT' "$tmp" \
+       && cp "$tmp" "$target"; then
+        rm -f "$tmp"
+        echo "Pinned 'publish.yml' to config@${ref:0:8}"
+    else
+        rm -f "$tmp"
+        echo "ERROR: failed to pin 'publish.yml' to a 'config' commit —" \
+             "aborting so the consumer does not keep the placeholder." >&2
+        exit 1
+    fi
 }
 
 # ---------------------------------------------------------------------------
@@ -367,7 +422,7 @@ if [ "$IS_JVM" = "true" ]; then
     echo "Updating GitHub workflows (JVM)"
     copy_workflows .github-workflows
     copy_workflows .github/workflows
-    rm -f ../.github/workflows/detekt-code-analysis.yml # config-only workflow
+    pin_publishing_workflow
 
     echo "Updating Gradle Wrapper"
     cp -R ./gradle ..
