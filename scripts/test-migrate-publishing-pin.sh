@@ -110,7 +110,7 @@ run_migrate() {
 }
 
 # The line the pin rewrites, in the consumer's copy under $1.
-uses_line() { grep -E '^\s*uses:' "$1/.github/workflows/publish.yml"; }
+uses_line() { grep -E '^[[:space:]]*uses:' "$1/.github/workflows/publish.yml"; }
 
 # =============================================================================
 # (1) A regular pull: skip list and pin.
@@ -270,7 +270,7 @@ fi
 
 plain_sha="$(git -C "$plain" rev-parse HEAD)"
 if [ -f "$plain/.github/workflows/publish.yml" ] \
-   && grep -q "@master\|@$plain_sha" "$plain/.github/workflows/publish.yml"; then
+   && grep -qE "@master|@$plain_sha" "$plain/.github/workflows/publish.yml"; then
   f-ail "'publish.yml' was pinned to a branch or to the consumer's commit" \
         "on the failing path"
 else
