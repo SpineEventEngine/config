@@ -203,7 +203,7 @@ branch whose changes go through review. Its value is compared exactly, one ref p
 `<branch>` is the branch the artifact's version family is published from:
 
   * `master` — the main line of development. The distributed `publish.yml` publishes from this
-    branch only, so this is the value for every artifact published so far.
+    branch only, so this is the value for every artifact published by the distributed workflow.
   * `v<major>.x`, e.g. `v2.x` — a release branch for an earlier version family, once a repository
     maintains one and publishes from it. A release of that family published from the branch
     verifies with `refs/heads/v2.x`; versions of the family built on `master` before the branch
@@ -217,8 +217,9 @@ Older versions fall into two groups. Those published before the repository recei
 attestation step at all carry no attestation, and verification fails for them whatever the flags.
 Those published by that inline step, before the repository adopted the reusable workflow, were
 signed by the repository's own `publish.yml`: they verify with `-R SpineEventEngine/<repository>`
-alone and fail with `--signer-workflow`, which is the check working as intended. To pin the exact
-`config` commit that ran a publication, add `--signer-digest <commit>`.
+and `--source-ref`, which pins their branch the same way, but fail with `--signer-workflow`,
+which is the check working as intended. To pin the exact `config` commit that ran a publication,
+add `--signer-digest <commit>`.
 
 ## Further reading
 
