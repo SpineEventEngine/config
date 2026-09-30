@@ -120,9 +120,18 @@ The command to start the build process is:
 ## `.github-workflows` directory
 
 This directory contains GitHub Workflow scripts that do not apply to the `config` repository, and
-as such cannot be placed under `.github/workflows`.
+as such cannot be placed under `.github/workflows`: each carries its own trigger, and from there
+it would run here.
 
 These scripts are copied by the `pull` script when `config` is applied to a new repository.
+
+`config` also *hosts* one workflow it never copies: the reusable
+[`publishing.yml`](.github/workflows/publishing.yml). Its only trigger is `workflow_call`, so it
+runs for a consumer, inside that consumer's run, when the distributed `publish.yml` calls it by
+commit. It therefore lives under `.github/workflows`, where GitHub resolves reusable workflows,
+and `migrate` keeps it out of consumers through its `CONFIG_ONLY_WORKFLOWS` list. Keeping the
+publication steps in `config` is what makes `config` the signer of every consumer's artifact
+attestation; the comments in `publishing.yml` explain the mechanism.
 
 ### Replacing a distributed workflow in a single repository
 
@@ -161,6 +170,26 @@ If the retired workflow was a **required status check** in a repository's
 branch protection, drop it there as well. Otherwise GitHub keeps waiting for
 a status that no workflow will ever report again, and every pull request in
 that repository blocks on it.
+
+## Verifying published artifacts
+
+An artifact published by a `Publish` run that completed, its `attest` job included, carries a
+SLSA build provenance attestation signed from within the reusable `publishing.yml` above. A run
+whose `attest` job failed leaves its artifacts published but unattested until that job is re-run;
+the comments in `publishing.yml` describe the recovery. To verify a downloaded file, pin both the
+repository it was built from and the workflow that signed for it:
+
+```bash
+gh attestation verify -R SpineEventEngine/<repository> \
+  --signer-workflow SpineEventEngine/config/.github/workflows/publishing.yml <file>
+```
+
+Older versions fall into two groups. Those published before the repository received the
+attestation step at all carry no attestation, and verification fails for them whatever the flags.
+Those published by that inline step, before the repository adopted the reusable workflow, were
+signed by the repository's own `publish.yml`: they verify with `-R SpineEventEngine/<repository>`
+alone and fail with `--signer-workflow`, which is the check working as intended. To pin the exact
+`config` commit that ran a publication, add `--signer-digest <commit>`.
 
 ## Further reading
 
