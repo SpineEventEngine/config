@@ -125,15 +125,13 @@ private fun ModuleData.projectUrl(): String? {
 private fun ModuleData.licenses(): Set<License> {
     val result = mutableSetOf<License>()
 
-    manifests.firstOrNull()?.let { manifest ->
-        manifest.licenses.mapNotNullTo(result) { license ->
-            val name: String? = license.name
-            val url: String? = license.url
-            when {
-                name.isNullOrBlank() -> url?.takeIf { it.isNotBlank() }?.let { License(it, it) }
-                name.startsWith("http") -> License(name, name)
-                else -> License(name, url ?: manifest.url)
-            }
+    manifests.firstOrNull()?.licenses?.mapNotNullTo(result) { license ->
+        val name: String? = license.name
+        val url: String? = license.url
+        when {
+            name.isNullOrBlank() -> url?.takeIf { it.isNotBlank() }?.let { License(it, it) }
+            name.startsWith("http") -> License(name, name)
+            else -> License(name, url)
         }
     }
 
