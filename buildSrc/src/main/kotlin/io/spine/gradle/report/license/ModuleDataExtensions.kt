@@ -126,16 +126,15 @@ private fun ModuleData.licenses(): Set<License> {
     val result = mutableSetOf<License>()
 
     manifests.firstOrNull()?.let { manifest ->
-        manifest.licenses
-            .filter { !it.name.isNullOrBlank() }
-            .mapTo(result) { license ->
-                val name = license.name
-                if (name.startsWith("http")) {
-                    License(name, name)
-                } else {
-                    License(name, license.url ?: manifest.url)
-                }
+        manifest.licenses.mapNotNullTo(result) { license ->
+            val name: String? = license.name
+            val url: String? = license.url
+            when {
+                name.isNullOrBlank() -> url?.takeIf { it.isNotBlank() }?.let { License(it, it) }
+                name.startsWith("http") -> License(name, name)
+                else -> License(name, url ?: manifest.url)
             }
+        }
     }
 
     val pomLicenses = poms.firstOrNull()?.licenses?.map { license ->
