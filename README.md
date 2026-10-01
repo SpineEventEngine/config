@@ -180,53 +180,11 @@ that repository blocks on it.
 
 ## Verifying published artifacts
 
-An artifact published by a `Publish` run that completed, its `attest` job included, carries a
-SLSA build provenance attestation signed from within the reusable `publishing.yml` above. A run
-whose `attest` job failed leaves its artifacts published but unattested until that job is re-run;
-the comments in `publishing.yml` describe the recovery. To verify a downloaded file, pin the
-repository it was built from, the workflow that signed for it, and the branch it was built from:
-
-```bash
-gh attestation verify <file> \
-  -R SpineEventEngine/<repository> \
-  --signer-workflow SpineEventEngine/config/.github/workflows/publishing.yml \
-  --source-ref refs/heads/<branch>
-```
-
-For example:
-
-```bash
-gh attestation verify spine-base-2.0.0-SNAPSHOT.443.jar \
-  -R SpineEventEngine/base-libraries \
-  --signer-workflow SpineEventEngine/config/.github/workflows/publishing.yml \
-  --source-ref refs/heads/master
-```
-
-`--signer-workflow` fixes the steps of the build, but not the code they build: a caller workflow
-added to an unreviewed branch could run the same `publishing.yml` over that branch's build
-scripts and get an attestation signed the same way. `--source-ref` ties the attestation to a
-branch whose changes go through review. Its value is compared exactly, one ref per check.
-
-`<branch>` is the branch the artifact's version family is published from:
-
-  * `master` — the main line of development. The distributed `publish.yml` publishes from this
-    branch only, so this is the value for every artifact published by the distributed workflow.
-  * `v<major>.x`, e.g. `v2.x` — a release branch for an earlier version family, once a repository
-    maintains one and publishes from it. A release of that family published from the branch
-    verifies with `refs/heads/v2.x`; versions of the family built on `master` before the branch
-    was cut still verify with `refs/heads/master`.
-
-A branch is a meaningful value only while a ruleset protects it: changes reach it only through
-review, it cannot be force-pushed, and, for release branches, a new `v<major>.x` branch cannot be
-created outside the same rules.
-
-Older versions fall into two groups. Those published before the repository received the
-attestation step at all carry no attestation, and verification fails for them whatever the flags.
-Those published by that inline step, before the repository adopted the reusable workflow, were
-signed by the repository's own `publish.yml`: they verify with `-R SpineEventEngine/<repository>`
-and `--source-ref`, which pins their branch the same way, but fail with `--signer-workflow`,
-which is the check working as intended. To pin the exact `config` commit that ran a publication,
-add `--signer-digest <commit>`.
+Every `Publish` run attests the files it publishes: the `attest` job of the reusable
+`publishing.yml` above signs SLSA build provenance for each of them. If that job fails, the files
+stay published without provenance until it is re-run; the comments in `publishing.yml` describe
+the recovery. How consumers check the provenance of a file is described on spine.io, in
+[Verifying artifacts][verifying-artifacts].
 
 ## Further reading
 
@@ -238,5 +196,6 @@ add `--signer-digest <commit>`.
 [base]: https://github.com/SpineEventEngine/base
 [base-types]: https://github.com/SpineEventEngine/base-types
 [core-jvm]: https://github.com/SpineEventEngine/core-jvm
+[verifying-artifacts]: https://spine.io/docs/security/verifying-artifacts/
 [working-with-submodules]: https://blog.github.com/2016-02-01-working-with-submodules
 [submodule-tools]: https://git-scm.com/book/en/v2/Git-Tools-Submodules 
