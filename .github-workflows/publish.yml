@@ -18,9 +18,11 @@ name: Publish
 
 # Consumers verify an artifact against the branch it was published from
 # (`gh attestation verify --source-ref`), which means something only while a
-# ruleset protects that branch. Before a repository publishes from a
-# `v<major>.x` release branch, add `'v*.x'` here, and make its ruleset cover
-# that pattern, including the creation of such branches.
+# ruleset protects that branch. Publishing from `v<major>.x` release branches
+# takes `'v*.x'` added to this trigger in the template in `config`, not in a
+# consumer's copy, which `./config/pull` overwrites. The template reaches every
+# repository that publishes, so first make each of their rulesets cover that
+# pattern, including the creation of such branches.
 on:
   push:
     branches: [master]
