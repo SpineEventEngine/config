@@ -16,6 +16,11 @@ name: Publish
 # called workflow can keep or reduce what it is given, never raise it — and
 # `secrets: inherit` passes the repository secrets the decryption steps need.
 
+# Consumers verify an artifact against the branch it was published from
+# (`gh attestation verify --source-ref`), which means something only while a
+# ruleset protects that branch. Before a repository publishes from a
+# `v<major>.x` release branch, add `'v*.x'` here, and make its ruleset cover
+# that pattern, including the creation of such branches.
 on:
   push:
     branches: [master]
