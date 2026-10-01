@@ -32,6 +32,19 @@ if [ -d "../buildSrc/src/main/kotlin/io/spine/dependency" ]; then
   echo "Detected JVM repository."
 fi
 
+# Whether the repo needs the standalone Gradle Wrapper validation workflow. A JVM
+# repository does not: every workflow that runs Gradle there uses
+# `gradle/actions/setup-gradle`, which validates the wrapper JAR itself. A Hugo-only
+# repository keeps a wrapper merely to run Hugo through Gradle tasks, and none of its
+# workflows uses `setup-gradle`, so nothing else checks that the JAR is genuine. The
+# JAR must be present: the validation action fails when it finds no wrapper at all.
+WRAPPER_VALIDATION_WORKFLOW="gradle-wrapper-validation.yml"
+NEEDS_WRAPPER_VALIDATION=false
+if [ "$IS_HUGO_DOCS" = "true" ] && [ "$IS_JVM" = "false" ] \
+   && [ -f ../gradle/wrapper/gradle-wrapper.jar ]; then
+  NEEDS_WRAPPER_VALIDATION=true
+fi
+
 # ---------------------------------------------------------------------------
 # Shared agent content — skills, scripts, guidelines, Claude commands/agents.
 #
@@ -242,6 +255,10 @@ function copy_workflows() {
         if is_config_only "$name"; then
             continue
         fi
+        # Only Hugo-only repositories receive it, from the Hugo section below.
+        if [ "$name" = "$WRAPPER_VALIDATION_WORKFLOW" ]; then
+            continue
+        fi
         if is_overridden "$name"; then
             echo "Skipping '$name' (replaced by a repo-specific workflow)"
             continue
@@ -345,6 +362,15 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
         echo "Skipping 'check-links.yml' (replaced by a repo-specific workflow)"
     else
         cp .github/workflows/check-links.yml ../.github/workflows/
+    fi
+
+    # See `NEEDS_WRAPPER_VALIDATION` at the top for why only a Hugo-only repo gets it.
+    if [ "$NEEDS_WRAPPER_VALIDATION" = "true" ]; then
+        if is_overridden "$WRAPPER_VALIDATION_WORKFLOW"; then
+            echo "Skipping '$WRAPPER_VALIDATION_WORKFLOW' (replaced by a repo-specific workflow)"
+        else
+            cp ".github-workflows/$WRAPPER_VALIDATION_WORKFLOW" ../.github/workflows/
+        fi
     fi
 
     # On a Hugo-only repo, remove any JVM workflows that may be present from
@@ -501,16 +527,19 @@ for ide_file in .idea/misc.xml .idea/kotlinc.xml; do
 done
 
 # ---------------------------------------------------------------------------
-# Remove the retired Gradle Wrapper validation workflow. `config` no longer
-# distributes `gradle-wrapper-validation.yml`, but `cp -a` only overlays files —
-# it cannot delete a consumer's copy from an earlier pull, so the workflow would
-# keep running (and keep blocking merges via branch protection) forever.
+# Remove the Gradle Wrapper validation workflow from every repository that does
+# not need it — all but a Hugo-only one with a wrapper (see
+# `NEEDS_WRAPPER_VALIDATION` at the top). Earlier pulls distributed
+# `gradle-wrapper-validation.yml` to JVM repositories, but `cp -a` only overlays
+# files — it cannot delete a consumer's copy, so the workflow would keep running
+# (and keep blocking merges via branch protection) forever.
 #
-# The dedicated `gradle/actions/wrapper-validation` action is redundant for us:
-# every workflow that runs Gradle uses `gradle/actions/setup-gradle`, which
-# validates the wrapper JAR checksum itself. The action's own README says so —
-# "If you are using setup-gradle in your workflows, it is unlikely that you will
-# need to use the wrapper-validation action."
+# The dedicated `gradle/actions/wrapper-validation` action is redundant in a JVM
+# repository: every workflow that runs Gradle there uses
+# `gradle/actions/setup-gradle`, which validates the wrapper JAR checksum itself.
+# The action's own README says so — "If you are using setup-gradle in your
+# workflows, it is unlikely that you will need to use the wrapper-validation
+# action."
 #
 # Run AFTER the `cd ..` above so `git` resolves against the CONSUMER repository:
 # while the script is still inside `config`, git commands would address the
@@ -519,18 +548,20 @@ done
 # leaving it dangling in the working tree. An untracked copy falls back to
 # `rm -f`. Both guards make a re-run a quiet no-op.
 #
-# NOTE: branch protection in each consumer must drop the now-absent
+# NOTE: branch protection in each such consumer must drop the now-absent
 # "Validate Gradle Wrapper" required check; otherwise its PRs block on a status
 # that will never be reported again.
 # ---------------------------------------------------------------------------
-RETIRED_WORKFLOW=".github/workflows/gradle-wrapper-validation.yml"
-if git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
-   && git ls-files --error-unmatch "$RETIRED_WORKFLOW" >/dev/null 2>&1; then
-    echo "Removing retired workflow '$RETIRED_WORKFLOW' (superseded by \`setup-gradle\`)"
-    git rm --force --quiet "$RETIRED_WORKFLOW"
-elif [ -f "$RETIRED_WORKFLOW" ]; then
-    echo "Removing retired workflow '$RETIRED_WORKFLOW' (superseded by \`setup-gradle\`)"
-    rm -f "$RETIRED_WORKFLOW"
+if [ "$NEEDS_WRAPPER_VALIDATION" = "false" ]; then
+    unneeded_workflow=".github/workflows/$WRAPPER_VALIDATION_WORKFLOW"
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+       && git ls-files --error-unmatch "$unneeded_workflow" >/dev/null 2>&1; then
+        echo "Removing workflow '$unneeded_workflow' (no wrapper to validate outside \`setup-gradle\`)"
+        git rm --force --quiet "$unneeded_workflow"
+    elif [ -f "$unneeded_workflow" ]; then
+        echo "Removing workflow '$unneeded_workflow' (no wrapper to validate outside \`setup-gradle\`)"
+        rm -f "$unneeded_workflow"
+    fi
 fi
 
 if [ "$IS_JVM" = "true" ]; then

@@ -125,6 +125,13 @@ it would run here.
 
 These scripts are copied by the `pull` script when `config` is applied to a new repository.
 
+One of them goes to a different set of repositories:
+[`gradle-wrapper-validation.yml`](.github-workflows/gradle-wrapper-validation.yml) is copied only
+into Hugo-only repositories that carry a Gradle Wrapper, and `migrate` removes it from every
+other repository. A JVM repository runs Gradle through `gradle/actions/setup-gradle`, which
+validates the wrapper itself. A Hugo-only repository keeps its wrapper only to run Hugo through
+Gradle tasks, and no `setup-gradle` step there checks that the wrapper is genuine.
+
 `config` also *hosts* one workflow it never copies: the reusable
 [`publishing.yml`](.github/workflows/publishing.yml). Its only trigger is `workflow_call`, so it
 runs for a consumer, inside that consumer's run, when the distributed `publish.yml` calls it by
@@ -162,9 +169,9 @@ Dropping a workflow from this repository is not enough to stop it in the
 consumers — `migrate` overlays files and never deletes them, so every
 repository that received the workflow earlier keeps running it. Retiring one
 therefore takes two steps: delete it here, and add an explicit removal to
-`migrate` (see the `gradle-wrapper-validation.yml` block near the end of that
-script for the pattern). The removal uses `git rm`, so the deletion is staged
-into the pull's own commit.
+`migrate` (see the block near the end of that script that removes
+`gradle-wrapper-validation.yml` from JVM repositories for the pattern). The
+removal uses `git rm`, so the deletion is staged into the pull's own commit.
 
 If the retired workflow was a **required status check** in a repository's
 branch protection, drop it there as well. Otherwise GitHub keeps waiting for
