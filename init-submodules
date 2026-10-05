@@ -83,8 +83,11 @@ json_unescape() {
 # a manual run never waits for input.
 #
 # Parse the input with `jq` when it is installed. The bootstrap cannot require
-# `jq`, so without it a pattern match reads the `cwd` string and `json_unescape`
-# decodes it. A value it cannot decode falls back as described below.
+# `jq`, so without it a pattern match reads the first `cwd` member, and
+# `json_unescape` decodes it; a value it cannot decode falls back as described
+# below. Unlike `jq`, the pattern does not validate the rest of the input, which
+# Claude Code writes. Either way, the path must belong to the project, as checked
+# below.
 session_dir=""
 if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ ! -t 0 ]; then
     if command -v jq >/dev/null 2>&1; then

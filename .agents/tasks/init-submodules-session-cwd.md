@@ -103,3 +103,8 @@ the current directory and never wait for input.
   now decodes `\\`, `\"`, and `\/`; any other escape still falls back. The
   harness has 103 checks; the previous commit fails the 6 that decode without
   `jq`.
+- 2026-10-05: Copilot's review of `ecc78002` flagged that the `jq`-free fallback
+  accepts malformed input. A JSON validator in Bash was not added. The comment
+  now states that without `jq` only the first `cwd` member is read, and the path
+  must still belong to the project. Harness section 18 pins both points (108
+  checks).
