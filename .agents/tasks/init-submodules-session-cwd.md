@@ -98,3 +98,8 @@ the current directory and never wait for input.
   missing, a pattern match now reads a `cwd` value that holds no JSON escape
   sequence. The harness has 83 checks; the previous commit fails the 4 that run
   without `jq`.
+- 2026-10-05: Codex then flagged that this fallback refused every escaped value,
+  and a native Windows path is always escaped (`C:\\Users\\…`). `json_unescape`
+  now decodes `\\`, `\"`, and `\/`; any other escape still falls back. The
+  harness has 103 checks; the previous commit fails the 6 that decode without
+  `jq`.

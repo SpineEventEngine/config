@@ -54,6 +54,26 @@ set -u
 # and make `cd` print the directory it enters.
 unset CDPATH
 
+# Decode the JSON string escapes that a path can hold: `\\` (each backslash of a
+# Windows path), `\"`, and `\/`. Fail on any other escape, such as `\n`.
+json_unescape() {
+    local rest=$1 out="" next
+    while :; do
+        case $rest in
+            *\\*) ;;
+            *) printf '%s' "$out$rest"; return 0 ;;
+        esac
+        out=$out${rest%%\\*}
+        rest=${rest#*\\}
+        next=${rest%"${rest#?}"}
+        case $next in
+            \\ | \" | /) out=$out$next ;;
+            *) return 1 ;;
+        esac
+        rest=${rest#?}
+    done
+}
+
 # Act on the work tree the session is in. Claude Code runs this script as a
 # `SessionStart` hook and passes the hook input JSON on stdin. The `cwd` field
 # of that JSON is the session's working directory. In a worktree session, that
@@ -63,18 +83,17 @@ unset CDPATH
 # a manual run never waits for input.
 #
 # Parse the input with `jq` when it is installed. The bootstrap cannot require
-# `jq`, so without it a pattern match reads a `cwd` value that holds no JSON
-# escape sequence, as an ordinary path does. Any other value falls back as
-# described below.
+# `jq`, so without it a pattern match reads the `cwd` string and `json_unescape`
+# decodes it. A value it cannot decode falls back as described below.
 session_dir=""
 if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ ! -t 0 ]; then
     if command -v jq >/dev/null 2>&1; then
         session_dir=$(jq -r '.cwd // empty' 2>/dev/null) || session_dir=""
     else
         input=$(cat)
-        cwd_pattern='"cwd"[[:space:]]*:[[:space:]]*"([^"\\]*)"'
+        cwd_pattern='"cwd"[[:space:]]*:[[:space:]]*"(([^"\\]|\\.)*)"'
         if [[ $input =~ $cwd_pattern ]]; then
-            session_dir=${BASH_REMATCH[1]}
+            session_dir=$(json_unescape "${BASH_REMATCH[1]}") || session_dir=""
         fi
     fi
 fi
