@@ -55,12 +55,13 @@ set -u
 unset CDPATH
 
 # Act on the work tree the session is in. Claude Code runs this script as a
-# `SessionStart` hook and passes the hook input JSON on stdin, whose `cwd` is
-# the session's working directory — inside the worktree, in a worktree session,
-# while this process and `$CLAUDE_PROJECT_DIR` stay in the main checkout. Read
-# stdin only when Claude Code started the script (it exports
-# `CLAUDE_PROJECT_DIR` to hooks) and stdin is not a terminal, so that a manual
-# run never waits for input.
+# `SessionStart` hook and passes the hook input JSON on stdin. The `cwd` field
+# of that JSON is the session's working directory. In a worktree session, that
+# directory is inside the worktree, while this process and `$CLAUDE_PROJECT_DIR`
+# stay in the main checkout. Read stdin only when Claude Code started the script
+# (it exports `CLAUDE_PROJECT_DIR` to hooks) and stdin is not a terminal, so that
+# a manual run never waits for input. Without `jq`, the script cannot read `cwd`
+# and falls back as described below.
 session_dir=""
 if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ ! -t 0 ] && command -v jq >/dev/null 2>&1; then
     session_dir=$(jq -r '.cwd // empty' 2>/dev/null) || session_dir=""

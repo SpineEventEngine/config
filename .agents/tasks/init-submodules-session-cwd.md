@@ -48,8 +48,7 @@ the current directory and never wait for input.
      each falls back to the current directory.
   5. `cwd` is `<main>/config`: config's own `.agents/shared` stays uninitialized
      and its `core.hooksPath` unset; main's is set.
-  6. `cwd` is an unrelated repo with `.gitmodules`: its `core.hooksPath` stays
-     untouched.
+  6. `cwd` is an unrelated repo with `.gitmodules`: its `core.hooksPath` stays untouched.
 - [x] Fix two defects that re-verification found in the new code. These are
       deltas from the reviewed patch:
   - `unset CDPATH`. In a main checkout, `--git-common-dir` prints a relative
@@ -84,10 +83,13 @@ the current directory and never wait for input.
   `/tmp` symlinks, and spaces in paths. Results: the reviewed patch passes all six
   requested cases but fails 5 checks (4 for `CDPATH`, 1 for `common_git_dir`);
   with both fixes, 70/70. `shellcheck` reports 0 findings on the branch and on
-  `master`. Awaiting review; nothing committed.
+  `master`. Awaiting review.
 - 2026-10-05: the session that wrote the patch independently reported the
   `CDPATH` bug, which Codex's review of SpineEventEngine/agents#45 found. It is
   already fixed here. Without `CLAUDE_PROJECT_DIR`, runs behave exactly as on
-  `master` (7/7 on both): a Codex `SessionStart` hook, which runs in the session
-  `cwd`, an agent shell, and a terminal. config's `.codex/hooks.json` has no
-  `SessionStart` entry, and `migrate` does not distribute `.codex/`.
+  `master` (7/7 on both) in a Codex `SessionStart` hook (which runs in the
+  session `cwd`), an agent shell, and a terminal. The `config` repository's
+  `.codex/hooks.json` has no `SessionStart` entry, and `migrate` does not
+  distribute `.codex/`.
+- 2026-10-05: committed as `2cb777e0` and opened as #782. A follow-up commit
+  applies the `review-docs` wording suggestions.
