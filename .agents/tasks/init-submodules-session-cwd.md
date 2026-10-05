@@ -93,3 +93,8 @@ the current directory and never wait for input.
   distribute `.codex/`.
 - 2026-10-05: committed as `2cb777e0` and opened as #782. A follow-up commit
   applies the `review-docs` wording suggestions.
+- 2026-10-05: Codex's review of #782 flagged the undeclared `jq` dependency.
+  Without `jq`, worktree detection fell back to the main checkout. When `jq` is
+  missing, a pattern match now reads a `cwd` value that holds no JSON escape
+  sequence. The harness has 83 checks; the previous commit fails the 4 that run
+  without `jq`.

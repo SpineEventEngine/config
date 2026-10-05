@@ -60,11 +60,23 @@ unset CDPATH
 # directory is inside the worktree, while this process and `$CLAUDE_PROJECT_DIR`
 # stay in the main checkout. Read stdin only when Claude Code started the script
 # (it exports `CLAUDE_PROJECT_DIR` to hooks) and stdin is not a terminal, so that
-# a manual run never waits for input. Without `jq`, the script cannot read `cwd`
-# and falls back as described below.
+# a manual run never waits for input.
+#
+# Parse the input with `jq` when it is installed. The bootstrap cannot require
+# `jq`, so without it a pattern match reads a `cwd` value that holds no JSON
+# escape sequence, as an ordinary path does. Any other value falls back as
+# described below.
 session_dir=""
-if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ ! -t 0 ] && command -v jq >/dev/null 2>&1; then
-    session_dir=$(jq -r '.cwd // empty' 2>/dev/null) || session_dir=""
+if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ ! -t 0 ]; then
+    if command -v jq >/dev/null 2>&1; then
+        session_dir=$(jq -r '.cwd // empty' 2>/dev/null) || session_dir=""
+    else
+        input=$(cat)
+        cwd_pattern='"cwd"[[:space:]]*:[[:space:]]*"([^"\\]*)"'
+        if [[ $input =~ $cwd_pattern ]]; then
+            session_dir=${BASH_REMATCH[1]}
+        fi
+    fi
 fi
 
 # The physical path of the Git directory that a repository's main checkout and
