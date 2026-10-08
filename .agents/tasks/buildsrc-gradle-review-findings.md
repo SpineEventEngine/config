@@ -263,7 +263,7 @@ Replace eager APIs with their lazy siblings where one exists:
       `Provider`s during configuration; pass them in via task
       properties.
   - [x] `CheckVersionIncrement.kt` — `project.rootDir` and
-        `project.artifactPath()` became the `rootDir` and `artifactPath`
+        `project.artifactPath()` became the `rootDir` and `artifactPaths`
         task properties, set by `IncrementGuard`.
   - [x] `IncrementGuard.kt` — the `onlyIf` spec of `checkVersionIncrement`
         scanned `project.gradle.taskGraph` at execution time. A
@@ -276,12 +276,16 @@ Replace eager APIs with their lazy siblings where one exists:
         in a `taskGraph.whenReady` hook and keeps the result in a
         `Property<Boolean>`, which the spec reads.
         `Task.isInPublishingGraph()` is deprecated.
-- [ ] **Wrong artifact path for tool modules in `checkVersionIncrement`**
-      — `Project.artifactPrefix()` in `IncrementGuard.kt` ignores
+- [x] **Wrong artifact path for tool modules in `checkVersionIncrement`**
+      — `Project.artifactPrefix()` in `IncrementGuard.kt` ignored
       `SpinePublishing.toolArtifactPrefix` and custom publication
-      `artifactId`s. For `io.spine.tools` modules, the metadata lookup gets
-      a 404, so `checkNotPublished` passes silently. Example: core-jvm-compiler
-      `:compiler-plugins` checks `spine-compiler-plugins`, but publishes `core-jvm-plugins`.
+      `artifactId`s. For `io.spine.tools` modules, the metadata lookup got
+      a 404, so `checkNotPublished` passed silently. Example: core-jvm-compiler
+      `:compiler-plugins` checked `spine-compiler-plugins`, but publishes
+      `core-jvm-plugins`. Now `IncrementGuard` takes the `artifactPaths`
+      from the coordinates of the Maven publications of the module,
+      plugin markers included. `checkNotPublished` checks each of them, and
+      warns when no repository has the metadata of an artifact.
 - [ ] **`@Internal lateinit var directory: String` in `RunGradle.kt:60-62`**
       — should be a `DirectoryProperty` (or at least a
       `Property<String>`) so the task can participate in
@@ -343,11 +347,21 @@ Replace eager APIs with their lazy siblings where one exists:
   case fails on that `Task.project` call. Each `dokkaGenerate*` task of
   Dokka 2.x matches the predicate by its own name, so the spec never
   skips a real Dokka task; the semantics are kept as they were.
+- 2026-10-08 — `checkVersionIncrement` checks the artifact paths of the
+  Maven publications of a module, rather than a path computed from its
+  name. Verified with `GITHUB_EVENT_NAME=pull_request GITHUB_BASE_REF=master`
+  against the published versions. In core-jvm-compiler (`2.0.0-SNAPSHOT.094`),
+  `:compiler-plugins` and `:gradle-plugin` passed before and fail with
+  "already published" now. In `logging` (`2.0.0-SNAPSHOT.425`), `:logging`
+  and `:logging-testlib` passed before, and fail now. Modules that publish
+  nothing skip the lookup. With the configuration cache on, the provider
+  of `artifactPaths` stores and reuses cleanly. `CheckVersionIncrementIgTest`
+  runs the task in a real build and checks its output, warnings included.
 - 2026-10-08 — the Dokka gate skips again (branch `dokka-publishing-gate`,
-  stacked on `dokka-config-cache`). Dokka tasks are skipped only in a build
-  that publishes to Maven Local and runs neither `publish`, a
-  `PublishToMavenRepository` task, nor `updateGitHubPages`, unless a task
-  named on the command line has `dokka` in its name. `DokkaSetupIgTest` names its probe like
-  `dokkaGeneratePublicationJavadoc` and reaches it through a published
-  `javadocJar`; against the previous gate, the Maven Local case fails. See
-  `dokka-maven-local-gate.md`.
+  a follow-up to `dokka-config-cache`). Dokka tasks are skipped only in
+  a build that publishes to Maven Local and runs neither `publish`,
+  a `PublishToMavenRepository` task, nor `updateGitHubPages`, unless a task
+  named on the command line, possibly abbreviated, is a Dokka task.
+  `DokkaSetupIgTest` names its probe like `dokkaGeneratePublicationJavadoc`
+  and reaches it through a published `javadocJar`; against the previous
+  gate, the Maven Local case fails. See `dokka-maven-local-gate.md`.
