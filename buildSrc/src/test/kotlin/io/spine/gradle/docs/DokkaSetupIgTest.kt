@@ -186,6 +186,14 @@ internal class DokkaSetupIgTest {
     }
 
     @Test
+    fun `run a Dokka task requested by an abbreviation along with publishing to Maven Local`() {
+        // Gradle selects `dokkaGeneratePublicationProbe` by this camel-case abbreviation.
+        runStoringThenReusing(":dokka-sample:publishToMavenLocal", ":dokka-sample:dGPP") {
+            it.probeOutcome shouldBe SUCCESS
+        }
+    }
+
+    @Test
     fun `run a Dokka task when the build does not publish`() {
         runStoringThenReusing(":dokka-sample:javadocJar") {
             it.probeOutcome shouldBe SUCCESS

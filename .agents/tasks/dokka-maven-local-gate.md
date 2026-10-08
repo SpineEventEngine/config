@@ -66,3 +66,9 @@ everywhere else, with configuration-cache compatibility kept.
 - 2026-10-08 — pre-PR: `kotlin-engineer` and `spine-code-review` APPROVE,
   `review-docs` APPROVE WITH CHANGES; applied. A `PublishToMavenRepository`
   task now counts as shipping the documentation, with its own test case.
+- 2026-10-08 — PR #790. Merged `master` twice (#787, then #789); the only
+  conflicts were log lines in `buildsrc-gradle-review-findings.md`. Codex
+  review: a camel-case abbreviation, e.g., `dGPJ`, was not taken for a Dokka
+  request, since `StartParameter.taskNames` keeps names as typed. Requested
+  names are now matched against the Dokka tasks of the graph by Gradle's
+  abbreviation rule; a new case covers `dGPP`.
