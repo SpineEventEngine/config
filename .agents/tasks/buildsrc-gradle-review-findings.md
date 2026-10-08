@@ -330,9 +330,9 @@ Replace eager APIs with their lazy siblings where one exists:
   skips a real Dokka task; the semantics are kept as they were.
 - 2026-10-08 — the Dokka gate skips again (branch `dokka-publishing-gate`,
   stacked on `dokka-config-cache`). Dokka tasks are skipped only in a build
-  that publishes to Maven Local and runs neither `publish` nor
-  `updateGitHubPages`, unless a task named on the command line has `dokka`
-  in its name. `DokkaSetupIgTest`
-  names its probe like `dokkaGeneratePublicationJavadoc` and reaches it
-  through a published `javadocJar`; against the previous gate, the Maven
-  Local case fails. See `dokka-maven-local-gate.md`.
+  that publishes to Maven Local and runs neither `publish`, a
+  `PublishToMavenRepository` task, nor `updateGitHubPages`, unless a task
+  named on the command line has `dokka` in its name. `DokkaSetupIgTest` names its probe like
+  `dokkaGeneratePublicationJavadoc` and reaches it through a published
+  `javadocJar`; against the previous gate, the Maven Local case fails. See
+  `dokka-maven-local-gate.md`.

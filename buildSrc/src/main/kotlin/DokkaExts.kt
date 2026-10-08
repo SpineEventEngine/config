@@ -24,6 +24,7 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
@@ -211,7 +212,7 @@ fun Project.htmlDocsJar(): TaskProvider<Jar> = tasks.getOrCreate("htmlDocsJar") 
 
 /**
  * Tells if this task belongs to the execution graph that contains
- * the `publish` and `dokkaGenerate` tasks.
+ * the `publish` or `dokkaGenerate` tasks.
  *
  * This predicate could be useful for disabling publishing tasks
  * when doing, e.g., `publishToMavenLocal` for the purpose of the
@@ -236,11 +237,10 @@ fun Task.isInPublishingGraph(): Boolean =
  *
  * Such a build usually feeds integration tests, which need the published code,
  * but not its documentation. So the Dokka tasks are skipped when the execution graph
- * contains a [PublishToMavenLocal] task, unless:
- *  - the graph also contains `publish` or `updateGitHubPages`, which ship
- *    the documentation to remote repositories and to GitHub Pages, respectively, or
- *  - a task named on the command line has `dokka` in its name, ignoring case,
- *    e.g., `dokkaGenerate`.
+ * contains a [PublishToMavenLocal] task and no task that ships the documentation
+ * elsewhere: `publish`, a [PublishToMavenRepository] task, or `updateGitHubPages`.
+ * They still run if a task named on the command line has `dokka` in its name,
+ * ignoring case, e.g., `dokkaGenerate`.
  *
  * Any other build runs the Dokka tasks in its graph. When the tasks are skipped,
  * the documentation JARs they feed, such as `javadocJar`, contain only a manifest,
@@ -268,18 +268,19 @@ fun Project.skipDokkaWhenPublishingToMavenLocal() {
 }
 
 /**
+ * The names of the lifecycle tasks that ship the documentation beyond Maven Local.
+ */
+private val docsShippingTaskNames = setOf("publish", TaskName.updateGitHubPages)
+
+/**
  * Tells if this graph publishes to Maven Local and does not contain a task that ships
  * the documentation elsewhere.
  */
 private fun TaskExecutionGraph.publishesToMavenLocalOnly(): Boolean {
     val tasks = allTasks
-    return tasks.any { it is PublishToMavenLocal } && tasks.none { it.name in docsShippingTasks }
+    return tasks.any { it is PublishToMavenLocal }
+            && tasks.none { it is PublishToMavenRepository || it.name in docsShippingTaskNames }
 }
-
-/**
- * The names of the tasks that ship the documentation beyond Maven Local.
- */
-private val docsShippingTasks = setOf("publish", TaskName.updateGitHubPages)
 
 /**
  * Disables Dokka and Javadoc tasks in this `Project`.

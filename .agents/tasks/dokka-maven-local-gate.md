@@ -23,14 +23,15 @@ everywhere else, with configuration-cache compatibility kept.
 - History of the predicate: `publish*` except `publishToMavenLocal*` (2024-03),
   `publish` only (2025-03), `publish || dokkaGenerate*` (2025-04, the Dokka 2.x
   migration, which made it always true).
-- Builds on the uncommitted `dokka-config-cache` work (`runOnlyInPublishingGraph`
-  and `DokkaSetupIgTest`), copied into this tree as the baseline.
+- Builds on the `dokka-config-cache` branch (`runOnlyInPublishingGraph` and
+  `DokkaSetupIgTest`), on which this branch is stacked.
 - Rule agreed with the user (2026-10-08): run Dokka when a Dokka task is
   requested on the command line, or the graph holds `publish`, or the graph holds
-  no `PublishToMavenLocal` task. CI's `publish -x test` and `dokkaGenerate`,
+  no `PublishToMavenLocal` task. CI's `publish -x test`, `dokkaGenerate`,
   `updateGitHubPages`, and `publishPlugins` keep their documentation.
-  `updateGitHubPages` counts as `publish` does, so running it along with
-  `publishToMavenLocal` keeps the documentation too (from the Gradle review).
+  `updateGitHubPages` and any `PublishToMavenRepository` task count as
+  `publish` does, so running them along with `publishToMavenLocal` keeps
+  the documentation too (from the Gradle and Spine code reviews).
 - A skipped Dokka task leaves `javadocJar`/`htmlDocsJar` with a manifest only,
   or with the output of an earlier Dokka run.
   Checked on Gradle 9.8.1: the JAR is still built, and `publishToMavenLocal`
@@ -59,6 +60,9 @@ everywhere else, with configuration-cache compatibility kept.
 - 2026-10-08 — implemented. `./gradlew :buildSrc:test detekt` passes on JDK 17
   (171 tests). Against the previous gate, only the Maven Local case fails.
 - 2026-10-08 — `gradle-review` and `review-docs`: APPROVE WITH CHANGES; applied.
-  Added `updateGitHubPages` to the tasks that need the documentation, and the
-  `dokka-sample` project name. Removing either guard fails its own case.
+  Added `updateGitHubPages` to the tasks that need the documentation, and named
+  the test project `dokka-sample`. Removing either guard fails its own case.
   `./gradlew :buildSrc:test detekt` passes (172 tests).
+- 2026-10-08 — pre-PR: `kotlin-engineer` and `spine-code-review` APPROVE,
+  `review-docs` APPROVE WITH CHANGES; applied. A `PublishToMavenRepository`
+  task now counts as shipping the documentation, with its own test case.
