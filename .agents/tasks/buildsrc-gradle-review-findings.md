@@ -269,10 +269,13 @@ Replace eager APIs with their lazy siblings where one exists:
         scanned `project.gradle.taskGraph` at execution time. A
         `taskGraph.whenReady` hook now does the scan and sets the
         `publishesToMavenLocal` task property, which the spec reads.
-  - [ ] `dokka-setup.gradle.kts:26-30` — the `onlyIf` spec of every
-        `DokkaBaseTask` calls `Task.isInPublishingGraph()` (`DokkaExts.kt`),
-        which reads `project.gradle.taskGraph` at execution time. Apply
-        the same `whenReady` approach.
+  - [x] `dokka-setup.gradle.kts:26-30` — the `onlyIf` spec of every
+        `DokkaBaseTask` called `Task.isInPublishingGraph()` (`DokkaExts.kt`),
+        which read `project.gradle.taskGraph` at execution time.
+        `Project.runOnlyInPublishingGraph(tasks)` now scans the graph in a
+        `taskGraph.whenReady` hook and keeps the result in a
+        `Property<Boolean>`, which the spec reads.
+        `Task.isInPublishingGraph()` is deprecated.
 - [x] **Wrong artifact path for tool modules in `checkVersionIncrement`**
       — `Project.artifactPrefix()` in `IncrementGuard.kt` ignored
       `SpinePublishing.toolArtifactPrefix` and custom publication
@@ -337,6 +340,13 @@ Replace eager APIs with their lazy siblings where one exists:
   this task's: `PublicationHandler.registerDestinations` reads
   `Repository.credentials`, which calls
   `CloudArtifactRegistry.fetchGoogleCredentials`.
+- 2026-10-08 — the `onlyIf` spec that `dokka-setup` adds to Dokka tasks
+  no longer calls `Task.project` (branch `dokka-config-cache`).
+  `DokkaSetupIgTest` gates a probe `DokkaBaseTask` with the configuration
+  cache, storing and then reusing the entry; against the old spec, every
+  case fails on that `Task.project` call. Each `dokkaGenerate*` task of
+  Dokka 2.x matches the predicate by its own name, so the spec never
+  skips a real Dokka task; the semantics are kept as they were.
 - 2026-10-08 — `checkVersionIncrement` checks the artifact paths of the
   Maven publications of a module, rather than a path computed from its
   name. Verified with `GITHUB_EVENT_NAME=pull_request GITHUB_BASE_REF=master`
