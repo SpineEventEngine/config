@@ -148,7 +148,22 @@ class IncrementGuard : Plugin<Project> {
             // configured after the task is created.
             artifactPath.set(target.provider { target.artifactPath() })
             onlyIf {
-                mustVerify(shouldCheckVersion(), Build.ci, it.publishesToMavenLocal())
+                mustVerify(
+                    ciPullRequest = shouldCheckVersion(),
+                    onCi = Build.ci,
+                    localPublish = publishesToMavenLocal.get()
+                )
+            }
+        }
+
+        // The `onlyIf` spec above runs at execution time, when it must not call `Task.project`
+        // to reach the task graph. So the graph is scanned for this project's Maven Local
+        // publishing at configuration time, once it is known. The result is kept in a task
+        // property, which a configuration cache entry stores along with the task.
+        target.gradle.taskGraph.whenReady {
+            val graph = this
+            checkVersion.configure {
+                publishesToMavenLocal.set(localPublishPlanned(graph.allTasks, target))
             }
         }
 
@@ -183,23 +198,6 @@ class IncrementGuard : Plugin<Project> {
         return shouldCheckVersion(event, baseBranch)
     }
 }
-
-/**
- * Tells whether the current build is going to publish this task's project to
- * Maven Local.
- *
- * Integration tests in this and sibling projects consume freshly built artifacts
- * from `~/.m2`. Publishing them under a version that already exists would let those
- * tests pick up a stale artifact, so the version increment must be verified before
- * any local publication runs.
- *
- * Only this task's own project is considered: a sibling module's local publish in
- * the same invocation must not trigger this module's check. The predicate is
- * evaluated lazily as a task `onlyIf` spec, by which point the execution
- * [task graph][org.gradle.api.execution.TaskExecutionGraph] is fully populated.
- */
-private fun Task.publishesToMavenLocal(): Boolean =
-    IncrementGuard.localPublishPlanned(project.gradle.taskGraph.allTasks, project)
 
 /**
  * Obtains the path to the artifact of this project in a Maven repository,

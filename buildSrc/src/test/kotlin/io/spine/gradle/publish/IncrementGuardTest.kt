@@ -24,6 +24,7 @@ import io.spine.gradle.publish.IncrementGuard.Companion.shouldCompareToBase
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.kotlin.dsl.create
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.DisplayName
@@ -156,6 +157,17 @@ class IncrementGuardTest {
                 .get()
 
             localPublishPlanned(listOf(appPublish), lib) shouldBe false
+        }
+
+        @Test
+        fun `but not when the project publishes only to a remote repository`() {
+            val project = guardedProject()
+            val remotePublish = project.tasks.register(
+                "publishFooPublicationToCloudRepository",
+                PublishToMavenRepository::class.java
+            ).get()
+
+            localPublishPlanned(listOf(remotePublish), project) shouldBe false
         }
     }
 
