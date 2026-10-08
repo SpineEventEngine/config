@@ -21,10 +21,13 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.api.execution.TaskExecutionGraph
+import org.gradle.api.tasks.TaskCollection
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.DependencyHandlerScope
+import org.gradle.kotlin.dsl.property
 import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.dokka.gradle.engine.parameters.DokkaSourceSetSpec
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
@@ -211,9 +214,40 @@ fun Project.htmlDocsJar(): TaskProvider<Jar> = tasks.getOrCreate("htmlDocsJar") 
  * when doing, e.g., `publishToMavenLocal` for the purpose of the
  * integration tests that (of course) do not test the documentation
  * generation process and its results.
+ *
+ * The predicate reaches the task graph through [Task.getProject]. Called from an `onlyIf`
+ * spec or a task action, it does so at execution time, which Gradle deprecates and
+ * the configuration cache does not support. [runOnlyInPublishingGraph] avoids that.
  */
-fun Task.isInPublishingGraph(): Boolean =
-    project.gradle.taskGraph.allTasks.any {
+@Deprecated(message = "Please use `Project.runOnlyInPublishingGraph(tasks)` instead.")
+fun Task.isInPublishingGraph(): Boolean = project.gradle.taskGraph.isPublishingGraph()
+
+/**
+ * Makes the given [tasks] of this project run only when the execution graph
+ * contains the `publish` task or a task whose name contains `dokkaGenerate`.
+ *
+ * The `onlyIf` spec added to the tasks is evaluated at execution time, when it must not
+ * call [Task.getProject] to reach the task graph: Gradle deprecates that, and
+ * the configuration cache does not support it. So the graph is scanned at configuration
+ * time, once it is ready, and the spec reads the result from a property, which
+ * a configuration cache entry stores along with the tasks.
+ */
+fun Project.runOnlyInPublishingGraph(tasks: TaskCollection<out Task>) {
+    val inPublishingGraph = objects.property<Boolean>()
+    gradle.taskGraph.whenReady {
+        inPublishingGraph.set(isPublishingGraph())
+    }
+    tasks.configureEach {
+        onlyIf { inPublishingGraph.get() }
+    }
+}
+
+/**
+ * Tells if this graph contains the `publish` task or a task whose name
+ * contains `dokkaGenerate`.
+ */
+private fun TaskExecutionGraph.isPublishingGraph(): Boolean =
+    allTasks.any {
         it.name == "publish" || it.name.contains("dokkaGenerate")
     }
 
