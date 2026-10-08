@@ -172,9 +172,10 @@ Document the contract:
 - [ ] `buildSrc/src/main/kotlin/io/spine/gradle/RunGradle.kt:48`
       — add
       `@DisableCachingByDefault(because = "Runs an external Gradle build whose outputs are not tracked")`.
-- [ ] `buildSrc/src/main/kotlin/io/spine/gradle/publish/CheckVersionIncrement.kt:45`
+- [x] `buildSrc/src/main/kotlin/io/spine/gradle/publish/CheckVersionIncrement.kt:45`
       — add
       `@DisableCachingByDefault(because = "Performs network I/O against a Maven repository")`.
+      Landed as `because = "Queries a remote Maven repository and produces no outputs."`.
 - [ ] `buildSrc/src/main/kotlin/io/spine/gradle/docs/UpdatePluginVersion.kt:56`
       — add
       `@DisableCachingByDefault(because = "Rewrites build scripts in place without declared outputs")`.
@@ -264,10 +265,14 @@ Replace eager APIs with their lazy siblings where one exists:
   - [x] `CheckVersionIncrement.kt` — `project.rootDir` and
         `project.artifactPath()` became the `rootDir` and `artifactPath`
         task properties, set by `IncrementGuard`.
+  - [x] `IncrementGuard.kt` — the `onlyIf` spec of `checkVersionIncrement`
+        scanned `project.gradle.taskGraph` at execution time. A
+        `taskGraph.whenReady` hook now does the scan and sets the
+        `publishesToMavenLocal` task property, which the spec reads.
   - [x] `dokka-setup.gradle.kts:26-30` — the `onlyIf` spec of every
         `DokkaBaseTask` called `Task.isInPublishingGraph()` (`DokkaExts.kt`),
         which read `project.gradle.taskGraph` at execution time.
-        `Project.runOnlyInPublishingGraph()` now scans the graph in a
+        `Project.runOnlyInPublishingGraph(tasks)` now scans the graph in a
         `taskGraph.whenReady` hook and keeps the result in a
         `Property<Boolean>`, which the spec reads.
         `Task.isInPublishingGraph()` is deprecated.
@@ -321,10 +326,20 @@ Replace eager APIs with their lazy siblings where one exists:
   deprecated that call, so every consumer's `checkVersionIncrement` run
   warned. Verified in `money` on Gradle 9.8.1: the warning is gone, and
   the failure messages match the old ones.
+- 2026-10-08 — the `onlyIf` spec of `checkVersionIncrement` no longer
+  calls `Task.project` either (branch `checkversion-config-cache`); the
+  configuration cache reported that call. `IncrementGuardIgTest` runs the
+  task with the configuration cache, storing and then reusing the entry.
+  Verified in `core-jvm-compiler` with a pull-request environment: the
+  problem is gone, and the task still runs. The remaining problem there —
+  `gcloud config config-helper` started at configuration time — is not
+  this task's: `PublicationHandler.registerDestinations` reads
+  `Repository.credentials`, which calls
+  `CloudArtifactRegistry.fetchGoogleCredentials`.
 - 2026-10-08 — the `onlyIf` spec that `dokka-setup` adds to Dokka tasks
   no longer calls `Task.project` (branch `dokka-config-cache`).
   `DokkaSetupIgTest` gates a probe `DokkaBaseTask` with the configuration
   cache, storing and then reusing the entry; against the old spec, every
-  case fails with the reported problem. Each `dokkaGenerate*` task of
+  case fails on that `Task.project` call. Each `dokkaGenerate*` task of
   Dokka 2.x matches the predicate by its own name, so the spec never
   skips a real Dokka task; the semantics are kept as they were.
