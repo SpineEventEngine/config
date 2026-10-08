@@ -269,8 +269,7 @@ Replace eager APIs with their lazy siblings where one exists:
       `SpinePublishing.toolArtifactPrefix` and custom publication
       `artifactId`s. For `io.spine.tools` modules, the metadata lookup gets
       a 404, so `checkNotPublished` passes silently. Example: core-jvm-compiler
-      `:compiler-plugins` checks `spine-compiler-plugins`, but publishes
-      `core-jvm-plugins`.
+      `:compiler-plugins` checks `spine-compiler-plugins`, but publishes `core-jvm-plugins`.
 - [ ] **`@Internal lateinit var directory: String` in `RunGradle.kt:60-62`**
       — should be a `DirectoryProperty` (or at least a
       `Property<String>`) so the task can participate in

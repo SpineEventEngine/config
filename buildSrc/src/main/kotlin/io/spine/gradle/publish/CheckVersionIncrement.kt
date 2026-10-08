@@ -71,8 +71,7 @@ abstract class CheckVersionIncrement : DefaultTask() {
     abstract val rootDir: DirectoryProperty
 
     /**
-     * The path to the project artifact in a Maven repository, such as
-     * `io/spine/spine-base`.
+     * The path to the project artifact in a Maven repository, such as `io/spine/spine-base`.
      */
     @get:Input
     abstract val artifactPath: Property<String>
