@@ -21,6 +21,7 @@ import io.spine.gradle.SpineTaskGroup
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
 
 /**
@@ -144,9 +145,9 @@ class IncrementGuard : Plugin<Project> {
             description = "Verifies that the project version was incremented before publishing"
             repository = CloudArtifactRegistry.repository
             rootDir.set(target.rootDir)
-            // Resolved lazily: the group and the artifact prefix may still be
-            // configured after the task is created.
-            artifactPath.set(target.provider { target.artifactPath() })
+            // Resolved lazily: publications and their coordinates are configured
+            // after the task is created, some of them in `afterEvaluate`.
+            artifactPaths.set(target.provider { target.publishedArtifactPaths() })
             onlyIf {
                 mustVerify(shouldCheckVersion(), Build.ci, it.publishesToMavenLocal())
             }
@@ -202,28 +203,29 @@ private fun Task.publishesToMavenLocal(): Boolean =
     IncrementGuard.localPublishPlanned(project.gradle.taskGraph.allTasks, project)
 
 /**
- * Obtains the path to the artifact of this project in a Maven repository,
+ * Obtains the paths in a Maven repository to the artifacts this project publishes,
  * such as `io/spine/spine-base`.
+ *
+ * The paths are taken from the coordinates of the Maven publications of the project,
+ * rather than computed from its name. So they cover the
+ * [tool artifact prefix][SpinePublishing.toolArtifactPrefix], an `artifactId` set by
+ * a module with [custom publishing][SpinePublishing.modulesWithCustomPublishing], and
+ * every publication of a module that has several, such as a Kotlin Multiplatform one.
+ *
+ * Plugin markers are left out: their coordinates are derived from a plugin ID, and
+ * each is published together with the plugin it points to.
+ *
+ * The result is empty for a project that publishes nothing.
  */
-private fun Project.artifactPath(): String {
-    val group = this.group as String
-    val name = "${artifactPrefix()}${this.name}"
-
-    val pathElements = ArrayList(group.split('.'))
-    pathElements.add(name)
-    val path = pathElements.joinToString(separator = "/")
-    return path
-}
+private fun Project.publishedArtifactPaths(): Set<String> =
+    mavenPublications()
+        .filterNot { it.isPluginMarker }
+        .map { it.repositoryPath }
+        .toSet()
 
 /**
- * Returns the artifact prefix used for the publishing of this project.
- *
- * All current Spine modules should be using `SpinePublishing`.
- * Therefore, the corresponding extension should be present in the root project.
- * Without it, the [default prefix][SpinePublishing.DEFAULT_PREFIX] is used.
+ * The path to the artifact of this publication in a Maven repository,
+ * such as `io/spine/spine-base`.
  */
-private fun Project.artifactPrefix(): String {
-    val ext = rootProject.extensions.findByType(SpinePublishing::class.java)
-    val result = ext?.artifactPrefix ?: SpinePublishing.DEFAULT_PREFIX
-    return result
-}
+private val MavenPublication.repositoryPath: String
+    get() = "${groupId.replace('.', '/')}/$artifactId"
