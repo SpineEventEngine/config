@@ -239,12 +239,13 @@ fun Task.isInPublishingGraph(): Boolean =
  * but not its documentation. So the Dokka tasks are skipped when the execution graph
  * contains a [PublishToMavenLocal] task and no task that ships the documentation
  * elsewhere: `publish`, a [PublishToMavenRepository] task, or `updateGitHubPages`.
- * They still run if a task named on the command line selects a task of the graph
- * that has `dokka` in its name, ignoring case. The name may be the full one,
- * e.g., `dokkaGenerate`, or a camel-case abbreviation, e.g., `dGPJ` for
- * `dokkaGeneratePublicationJavadoc`. Without task names, a Dokka request cannot be
- * ruled out, so the tasks run too. This is the case of an included build, as Gradle does
- * not pass it the tasks named on the command line.
+ * They still run if a task named on the command line selects a documentation task of
+ * the graph: one that has `dokka` in its name, ignoring case, or a documentation JAR,
+ * `javadocJar` or `htmlDocsJar`. The name may be the full one, e.g., `dokkaGenerate`,
+ * or a camel-case abbreviation, e.g., `dGPJ` for `dokkaGeneratePublicationJavadoc`.
+ * Without task names, a documentation request cannot be ruled out, so the tasks run too.
+ * This is the case of an included build, as Gradle does not pass it the tasks named
+ * on the command line.
  *
  * Any other build runs the Dokka tasks in its graph. When the tasks are skipped,
  * the documentation JARs they feed, such as `javadocJar`, contain only a manifest,
@@ -264,8 +265,8 @@ fun Project.skipDokkaWhenPublishingToMavenLocal() {
         .filter { it.isNotEmpty() }
     val docsNeeded = objects.property<Boolean>()
     gradle.taskGraph.whenReady {
-        val dokkaRequested = requestedNames.isEmpty() || selectsDokkaTask(requestedNames)
-        docsNeeded.set(dokkaRequested || !publishesToMavenLocalOnly())
+        val docsRequested = requestedNames.isEmpty() || selectsDocsTask(requestedNames)
+        docsNeeded.set(docsRequested || !publishesToMavenLocalOnly())
     }
     tasks.withType<DokkaBaseTask>().configureEach {
         onlyIf("documentation is needed beyond Maven Local") { docsNeeded.get() }
@@ -288,17 +289,26 @@ private fun TaskExecutionGraph.publishesToMavenLocalOnly(): Boolean {
 }
 
 /**
- * Tells if any of the given names, taken from the command line, selects a task
- * of this graph that has `dokka` in its name, ignoring case.
- *
- * The command line keeps a task name as typed, so the name may be a camel-case
- * abbreviation that Gradle resolves, e.g., `dGPJ` for `dokkaGeneratePublicationJavadoc`.
+ * The names of the tasks that pack the documentation into JARs.
  */
-private fun TaskExecutionGraph.selectsDokkaTask(names: List<String>): Boolean {
-    val dokkaTaskNames = allTasks.map { it.name }.filter { it.contains("dokka", ignoreCase = true) }
+private val docsJarTaskNames = setOf("javadocJar", "htmlDocsJar")
+
+/**
+ * Tells if any of the given names, taken from the command line, selects
+ * a documentation task of this graph.
+ *
+ * A documentation task is one that has `dokka` in its name, ignoring case,
+ * or a documentation JAR. The command line keeps a task name as typed, so the name
+ * may be a camel-case abbreviation that Gradle resolves, e.g., `dGPJ`
+ * for `dokkaGeneratePublicationJavadoc`.
+ */
+private fun TaskExecutionGraph.selectsDocsTask(names: List<String>): Boolean {
+    val docsTaskNames = allTasks.map { it.name }.filter {
+        it.contains("dokka", ignoreCase = true) || it in docsJarTaskNames
+    }
     return names.any { name ->
         val pattern = abbreviationPattern(name)
-        dokkaTaskNames.any { pattern.containsMatchIn(it) }
+        docsTaskNames.any { pattern.containsMatchIn(it) }
     }
 }
 

@@ -130,6 +130,13 @@ internal class DokkaSetupIgTest {
     }
 
     @Test
+    fun `run a Dokka task when a docs JAR is requested along with publishing to Maven Local`() {
+        runStoringThenReusing(":dokka-sample:publishToMavenLocal", ":dokka-sample:javadocJar") {
+            it.probeOutcome shouldBe SUCCESS
+        }
+    }
+
+    @Test
     fun `run a Dokka task requested from an included build along with Maven Local`() {
         // Gradle passes an included build no task names, so it cannot see the request.
         val included = "included"

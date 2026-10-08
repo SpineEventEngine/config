@@ -76,3 +76,6 @@ everywhere else, with configuration-cache compatibility kept.
   so a Dokka task requested in it along with `publishToMavenLocal` was
   skipped. Without task names, Dokka now runs; a new case includes a second
   build and requests its probe.
+- 2026-10-08 — Codex review: `publishToMavenLocal javadocJar` packed no docs
+  into the JAR that was asked for. A requested `javadocJar` or `htmlDocsJar`
+  now counts as a documentation request, with its own case.
