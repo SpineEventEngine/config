@@ -257,11 +257,20 @@ Replace eager APIs with their lazy siblings where one exists:
 - [ ] **`project` access inside task actions** — `RunGradle.kt:142-180`
       (`project.rootDir`, `project.gradle.taskGraph.hasTask(":clean")`,
       `project.file(directory)`, `project.rootProject`),
-      `CheckVersionIncrement.kt:60-115` (`project.artifactPath()` and
-      friends), `PomGenerator.kt:85-93`,
+      `PomGenerator.kt:85-93`,
       `LicenseReporter.kt:120-122`. Capture the necessary values or
       `Provider`s during configuration; pass them in via task
       properties.
+  - [x] `CheckVersionIncrement.kt` — `project.rootDir` and
+        `project.artifactPath()` became the `rootDir` and `artifactPath`
+        task properties, set by `IncrementGuard`.
+- [ ] **Wrong artifact path for tool modules in `checkVersionIncrement`**
+      — `Project.artifactPrefix()` in `IncrementGuard.kt` ignores
+      `SpinePublishing.toolArtifactPrefix` and custom publication
+      `artifactId`s. For `io.spine.tools` modules, the metadata lookup gets
+      a 404, so `checkNotPublished` passes silently. Example: core-jvm-compiler
+      `:compiler-plugins` checks `spine-compiler-plugins`, but publishes
+      `core-jvm-plugins`.
 - [ ] **`@Internal lateinit var directory: String` in `RunGradle.kt:60-62`**
       — should be a `DirectoryProperty` (or at least a
       `Property<String>`) so the task can participate in
@@ -301,3 +310,8 @@ Replace eager APIs with their lazy siblings where one exists:
   root-aggregator `publish` task, and `checkCredentials`); all four
   added to Section A.3 and addressed in the same PR. Sections B–H
   remain pending.
+- 2026-10-08 — `CheckVersionIncrement` no longer calls `Task.project`
+  from its action (branch `version-increment-task-inputs`). Gradle 9
+  deprecated that call, so every consumer's `checkVersionIncrement` run
+  warned. Verified in `money` on Gradle 9.8.1: the warning is gone, and
+  the failure messages match the old ones.
