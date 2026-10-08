@@ -262,14 +262,22 @@ Replace eager APIs with their lazy siblings where one exists:
       `Provider`s during configuration; pass them in via task
       properties.
   - [x] `CheckVersionIncrement.kt` — `project.rootDir` and
-        `project.artifactPath()` became the `rootDir` and `artifactPath`
+        `project.artifactPath()` became the `rootDir` and `artifactPaths`
         task properties, set by `IncrementGuard`.
-- [ ] **Wrong artifact path for tool modules in `checkVersionIncrement`**
-      — `Project.artifactPrefix()` in `IncrementGuard.kt` ignores
+  - [ ] `IncrementGuard.kt` — the `onlyIf` predicate calls
+        `Task.publishesToMavenLocal()`, which reads
+        `project.gradle.taskGraph` at execution time. The configuration
+        cache reports it as a problem for `checkVersionIncrement`.
+- [x] **Wrong artifact path for tool modules in `checkVersionIncrement`**
+      — `Project.artifactPrefix()` in `IncrementGuard.kt` ignored
       `SpinePublishing.toolArtifactPrefix` and custom publication
-      `artifactId`s. For `io.spine.tools` modules, the metadata lookup gets
-      a 404, so `checkNotPublished` passes silently. Example: core-jvm-compiler
-      `:compiler-plugins` checks `spine-compiler-plugins`, but publishes `core-jvm-plugins`.
+      `artifactId`s. For `io.spine.tools` modules, the metadata lookup got
+      a 404, so `checkNotPublished` passed silently. Example: core-jvm-compiler
+      `:compiler-plugins` checked `spine-compiler-plugins`, but publishes
+      `core-jvm-plugins`. Now `IncrementGuard` takes the `artifactPaths`
+      from the coordinates of the Maven publications of the module, leaving
+      out plugin markers. `checkNotPublished` checks each of them, and warns
+      when no repository has the metadata of a published artifact.
 - [ ] **`@Internal lateinit var directory: String` in `RunGradle.kt:60-62`**
       — should be a `DirectoryProperty` (or at least a
       `Property<String>`) so the task can participate in
@@ -314,3 +322,13 @@ Replace eager APIs with their lazy siblings where one exists:
   deprecated that call, so every consumer's `checkVersionIncrement` run
   warned. Verified in `money` on Gradle 9.8.1: the warning is gone, and
   the failure messages match the old ones.
+- 2026-10-08 — `checkVersionIncrement` checks the artifact paths of the
+  Maven publications of a module, rather than a path computed from its
+  name. Verified with `GITHUB_EVENT_NAME=pull_request GITHUB_BASE_REF=master`
+  against the published versions. In core-jvm-compiler (`2.0.0-SNAPSHOT.094`),
+  `:compiler-plugins` and `:gradle-plugin` passed before and fail with
+  "already published" now. In `logging` (`2.0.0-SNAPSHOT.425`), `:logging`
+  and `:logging-testlib` passed before, and fail now. Modules that publish
+  nothing skip the lookup. With the configuration cache on, the provider
+  of `artifactPaths` stores and reuses cleanly. The only problem reported
+  for the task comes from its `onlyIf` predicate, recorded above.
