@@ -275,9 +275,9 @@ Replace eager APIs with their lazy siblings where one exists:
       a 404, so `checkNotPublished` passed silently. Example: core-jvm-compiler
       `:compiler-plugins` checked `spine-compiler-plugins`, but publishes
       `core-jvm-plugins`. Now `IncrementGuard` takes the `artifactPaths`
-      from the coordinates of the Maven publications of the module, leaving
-      out plugin markers. `checkNotPublished` checks each of them, and warns
-      when no repository has the metadata of a published artifact.
+      from the coordinates of the Maven publications of the module,
+      plugin markers included. `checkNotPublished` checks each of them, and
+      warns when no repository has the metadata of an artifact.
 - [ ] **`@Internal lateinit var directory: String` in `RunGradle.kt:60-62`**
       — should be a `DirectoryProperty` (or at least a
       `Property<String>`) so the task can participate in

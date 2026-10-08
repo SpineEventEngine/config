@@ -212,14 +212,13 @@ private fun Task.publishesToMavenLocal(): Boolean =
  * a module with [custom publishing][SpinePublishing.modulesWithCustomPublishing], and
  * every publication of a module that has several, such as a Kotlin Multiplatform one.
  *
- * Plugin markers are left out: their coordinates are derived from a plugin ID, and
- * each is published together with the plugin it points to.
+ * Plugin markers are included. A marker is a publication of its own, which may be
+ * uploaded without the plugin it points to, e.g., by a publish that failed halfway.
  *
  * The result is empty for a project that publishes nothing.
  */
 private fun Project.publishedArtifactPaths(): Set<String> =
     mavenPublications()
-        .filterNot { it.isPluginMarker }
         .map { it.repositoryPath }
         .toSet()
 

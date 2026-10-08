@@ -277,11 +277,11 @@ class IncrementGuardTest {
         }
 
         /**
-         * A marker is published together with the plugin it points to,
-         * so checking the plugin publication suffices.
+         * A marker may be uploaded without the plugin it points to,
+         * so it must be checked on its own.
          */
         @Test
-        fun `no artifact path of a plugin marker`() {
+        fun `the artifact path of a plugin marker`() {
             val project = publishingProject()
             project.publication(
                 "pluginMaven",
@@ -294,8 +294,10 @@ class IncrementGuardTest {
                 artifactId = "io.spine.core-jvm.gradle.plugin"
             )
 
-            project.checkVersionTask().artifactPaths.get() shouldBe
-                    setOf("io/spine/tools/core-jvm-gradle-plugin")
+            project.checkVersionTask().artifactPaths.get() shouldBe setOf(
+                "io/spine/tools/core-jvm-gradle-plugin",
+                "io/spine/core-jvm/io.spine.core-jvm.gradle.plugin"
+            )
         }
 
         @Test
@@ -420,6 +422,8 @@ class IncrementGuardTest {
         /**
          * The task logs a warning in this case: it cannot tell a new artifact from
          * a path that does not match the published one.
+         *
+         * @see IncrementGuardIgTest for the check of the warning
          */
         @Test
         fun `when the artifact has never been published`() {
@@ -505,7 +509,7 @@ private fun Project.checkVersionTask(): CheckVersionIncrement =
  *
  * The [repository] is either `snapshots` or `releases`, as in [asRepository].
  */
-private fun File.writeMetadata(repository: String, path: String, vararg versions: String) {
+internal fun File.writeMetadata(repository: String, path: String, vararg versions: String) {
     val (groupPath, artifactId) = path.split('/').let { it.dropLast(1) to it.last() }
     val versionElements = versions.joinToString(separator = "") { "<version>$it</version>" }
     val file = resolve("$repository/$path/${MavenMetadata.FILE_NAME}")

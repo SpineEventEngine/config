@@ -73,8 +73,7 @@ abstract class CheckVersionIncrement : DefaultTask() {
 
     /**
      * The paths to the artifacts of the project in a Maven repository, such as
-     * `io/spine/spine-base`, one per Maven publication of the project, except
-     * plugin markers.
+     * `io/spine/spine-base`, one per Maven publication of the project.
      *
      * Empty for a project that publishes nothing.
      */
