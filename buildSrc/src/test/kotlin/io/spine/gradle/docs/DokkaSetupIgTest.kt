@@ -67,71 +67,7 @@ internal class DokkaSetupIgTest {
 
     @BeforeEach
     fun createBuild() {
-        file("settings.gradle.kts").writeText(
-            """
-            rootProject.name = "documented-sample"
-            include("dokka-sample")
-            """.trimIndent()
-        )
-        // The standard library would be resolved from Maven Central otherwise,
-        // which an offline build cannot reach.
-        file("gradle.properties").writeText("kotlin.stdlib.default.dependency=false\n")
-        file("build.gradle.kts").writeText(
-            """
-            buildscript {
-                dependencies {
-                    classpath(files(
-            ${buildSrcClasspath()}
-                    ))
-                }
-            }
-            """.trimIndent()
-        )
-        file("dokka-sample").mkdirs()
-        file("dokka-sample/build.gradle.kts").writeText(
-            """
-            import org.jetbrains.dokka.gradle.internal.InternalDokkaGradlePluginApi
-            import org.jetbrains.dokka.gradle.tasks.DokkaBaseTask
-
-            plugins {
-                kotlin("jvm")
-                `maven-publish`
-                id("dokka-setup")
-            }
-
-            @OptIn(InternalDokkaGradlePluginApi::class)
-            abstract class DocsProbe : DokkaBaseTask() {
-
-                @TaskAction
-                fun probe() = Unit
-            }
-
-            group = "io.spine.sample"
-            version = "1.0.0"
-
-            val docsProbe = tasks.register<DocsProbe>("dokkaGeneratePublicationProbe")
-
-            val javadocJar = tasks.register<Jar>("javadocJar") {
-                archiveClassifier.set("javadoc")
-                from(layout.buildDirectory.dir("docs-probe"))
-                dependsOn(docsProbe)
-            }
-
-            publishing {
-                publications.create<MavenPublication>("docs") {
-                    artifact(javadocJar)
-                }
-                repositories.maven {
-                    name = "remote"
-                    url = uri(rootDir.resolve("remote-repo"))
-                }
-            }
-
-            tasks.register("updateGitHubPages") {
-                dependsOn(docsProbe)
-            }
-            """.trimIndent()
-        )
+        writeBuild(projectDir, "documented-sample")
     }
 
     @Test
@@ -194,6 +130,18 @@ internal class DokkaSetupIgTest {
     }
 
     @Test
+    fun `run a Dokka task requested from an included build along with Maven Local`() {
+        // Gradle passes an included build no task names, so it cannot see the request.
+        val included = "included"
+        writeBuild(file(included), included)
+        file("settings.gradle.kts").appendText("\nincludeBuild(\"$included\")\n")
+        val probe = ":$included$PROBE_PATH"
+        runStoringThenReusing(":$included:dokka-sample:publishToMavenLocal", probe) {
+            it.task(probe)?.outcome shouldBe SUCCESS
+        }
+    }
+
+    @Test
     fun `run a Dokka task when the build does not publish`() {
         runStoringThenReusing(":dokka-sample:javadocJar") {
             it.probeOutcome shouldBe SUCCESS
@@ -205,6 +153,78 @@ internal class DokkaSetupIgTest {
         runStoringThenReusing(PROBE_PATH) {
             it.probeOutcome shouldBe SUCCESS
         }
+    }
+
+    /**
+     * Writes a build named [name] into [dir], with the probe in its `dokka-sample` project.
+     */
+    private fun writeBuild(dir: File, name: String) {
+        dir.mkdirs()
+        dir.resolve("settings.gradle.kts").writeText(
+            """
+            rootProject.name = "$name"
+            include("dokka-sample")
+            """.trimIndent()
+        )
+        // The standard library would be resolved from Maven Central otherwise,
+        // which an offline build cannot reach.
+        dir.resolve("gradle.properties").writeText("kotlin.stdlib.default.dependency=false\n")
+        dir.resolve("build.gradle.kts").writeText(
+            """
+            buildscript {
+                dependencies {
+                    classpath(files(
+            ${buildSrcClasspath()}
+                    ))
+                }
+            }
+            """.trimIndent()
+        )
+        dir.resolve("dokka-sample").mkdirs()
+        dir.resolve("dokka-sample/build.gradle.kts").writeText(
+            """
+            import org.jetbrains.dokka.gradle.internal.InternalDokkaGradlePluginApi
+            import org.jetbrains.dokka.gradle.tasks.DokkaBaseTask
+
+            plugins {
+                kotlin("jvm")
+                `maven-publish`
+                id("dokka-setup")
+            }
+
+            @OptIn(InternalDokkaGradlePluginApi::class)
+            abstract class DocsProbe : DokkaBaseTask() {
+
+                @TaskAction
+                fun probe() = Unit
+            }
+
+            group = "io.spine.sample"
+            version = "1.0.0"
+
+            val docsProbe = tasks.register<DocsProbe>("dokkaGeneratePublicationProbe")
+
+            val javadocJar = tasks.register<Jar>("javadocJar") {
+                archiveClassifier.set("javadoc")
+                from(layout.buildDirectory.dir("docs-probe"))
+                dependsOn(docsProbe)
+            }
+
+            publishing {
+                publications.create<MavenPublication>("docs") {
+                    artifact(javadocJar)
+                }
+                repositories.maven {
+                    name = "remote"
+                    url = uri(rootDir.resolve("remote-repo"))
+                }
+            }
+
+            tasks.register("updateGitHubPages") {
+                dependsOn(docsProbe)
+            }
+            """.trimIndent()
+        )
     }
 
     private val BuildResult.probeOutcome

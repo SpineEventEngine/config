@@ -72,3 +72,7 @@ everywhere else, with configuration-cache compatibility kept.
   request, since `StartParameter.taskNames` keeps names as typed. Requested
   names are now matched against the Dokka tasks of the graph by Gradle's
   abbreviation rule; a new case covers `dGPP`.
+- 2026-10-08 — Copilot review: Gradle passes an included build no task names,
+  so a Dokka task requested in it along with `publishToMavenLocal` was
+  skipped. Without task names, Dokka now runs; a new case includes a second
+  build and requests its probe.
