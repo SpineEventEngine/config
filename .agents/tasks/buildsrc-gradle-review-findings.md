@@ -172,9 +172,10 @@ Document the contract:
 - [ ] `buildSrc/src/main/kotlin/io/spine/gradle/RunGradle.kt:48`
       — add
       `@DisableCachingByDefault(because = "Runs an external Gradle build whose outputs are not tracked")`.
-- [ ] `buildSrc/src/main/kotlin/io/spine/gradle/publish/CheckVersionIncrement.kt:45`
+- [x] `buildSrc/src/main/kotlin/io/spine/gradle/publish/CheckVersionIncrement.kt:45`
       — add
       `@DisableCachingByDefault(because = "Performs network I/O against a Maven repository")`.
+      Landed as `because = "Queries a remote Maven repository and produces no outputs."`.
 - [ ] `buildSrc/src/main/kotlin/io/spine/gradle/docs/UpdatePluginVersion.kt:56`
       — add
       `@DisableCachingByDefault(because = "Rewrites build scripts in place without declared outputs")`.
@@ -264,10 +265,14 @@ Replace eager APIs with their lazy siblings where one exists:
   - [x] `CheckVersionIncrement.kt` — `project.rootDir` and
         `project.artifactPath()` became the `rootDir` and `artifactPaths`
         task properties, set by `IncrementGuard`.
-  - [ ] `IncrementGuard.kt` — the `onlyIf` predicate calls
-        `Task.publishesToMavenLocal()`, which reads
-        `project.gradle.taskGraph` at execution time. The configuration
-        cache reports it as a problem for `checkVersionIncrement`.
+  - [x] `IncrementGuard.kt` — the `onlyIf` spec of `checkVersionIncrement`
+        scanned `project.gradle.taskGraph` at execution time. A
+        `taskGraph.whenReady` hook now does the scan and sets the
+        `publishesToMavenLocal` task property, which the spec reads.
+  - [ ] `dokka-setup.gradle.kts:26-30` — the `onlyIf` spec of every
+        `DokkaBaseTask` calls `Task.isInPublishingGraph()` (`DokkaExts.kt`),
+        which reads `project.gradle.taskGraph` at execution time. Apply
+        the same `whenReady` approach.
 - [x] **Wrong artifact path for tool modules in `checkVersionIncrement`**
       — `Project.artifactPrefix()` in `IncrementGuard.kt` ignored
       `SpinePublishing.toolArtifactPrefix` and custom publication
@@ -322,6 +327,16 @@ Replace eager APIs with their lazy siblings where one exists:
   deprecated that call, so every consumer's `checkVersionIncrement` run
   warned. Verified in `money` on Gradle 9.8.1: the warning is gone, and
   the failure messages match the old ones.
+- 2026-10-08 — the `onlyIf` spec of `checkVersionIncrement` no longer
+  calls `Task.project` either (branch `checkversion-config-cache`); the
+  configuration cache reported that call. `IncrementGuardIgTest` runs the
+  task with the configuration cache, storing and then reusing the entry.
+  Verified in `core-jvm-compiler` with a pull-request environment: the
+  problem is gone, and the task still runs. The remaining problem there —
+  `gcloud config config-helper` started at configuration time — is not
+  this task's: `PublicationHandler.registerDestinations` reads
+  `Repository.credentials`, which calls
+  `CloudArtifactRegistry.fetchGoogleCredentials`.
 - 2026-10-08 — `checkVersionIncrement` checks the artifact paths of the
   Maven publications of a module, rather than a path computed from its
   name. Verified with `GITHUB_EVENT_NAME=pull_request GITHUB_BASE_REF=master`
@@ -330,5 +345,5 @@ Replace eager APIs with their lazy siblings where one exists:
   "already published" now. In `logging` (`2.0.0-SNAPSHOT.425`), `:logging`
   and `:logging-testlib` passed before, and fail now. Modules that publish
   nothing skip the lookup. With the configuration cache on, the provider
-  of `artifactPaths` stores and reuses cleanly. The only problem reported
-  for the task comes from its `onlyIf` predicate, recorded above.
+  of `artifactPaths` stores and reuses cleanly. `CheckVersionIncrementIgTest`
+  runs the task in a real build and checks its output, warnings included.

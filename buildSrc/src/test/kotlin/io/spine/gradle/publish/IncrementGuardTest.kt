@@ -32,6 +32,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.kotlin.dsl.create
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.DisplayName
@@ -165,6 +166,17 @@ class IncrementGuardTest {
                 .get()
 
             localPublishPlanned(listOf(appPublish), lib) shouldBe false
+        }
+
+        @Test
+        fun `but not when the project publishes only to a remote repository`() {
+            val project = guardedProject()
+            val remotePublish = project.tasks.register(
+                "publishFooPublicationToCloudRepository",
+                PublishToMavenRepository::class.java
+            ).get()
+
+            localPublishPlanned(listOf(remotePublish), project) shouldBe false
         }
     }
 
@@ -423,7 +435,7 @@ class IncrementGuardTest {
          * The task logs a warning in this case: it cannot tell a new artifact from
          * a path that does not match the published one.
          *
-         * @see IncrementGuardIgTest for the check of the warning
+         * @see CheckVersionIncrementIgTest for the check of the warning
          */
         @Test
         fun `when the artifact has never been published`() {

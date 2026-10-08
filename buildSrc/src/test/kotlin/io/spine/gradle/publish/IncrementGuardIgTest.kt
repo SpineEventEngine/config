@@ -14,91 +14,53 @@
 
 package io.spine.gradle.publish
 
+import io.kotest.assertions.withClue
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.string.shouldNotContain
 import java.io.File
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome.SKIPPED
+import org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
 /**
- * Runs `checkVersionIncrement` in a real build via Gradle TestKit.
+ * Verifies when `checkVersionIncrement` runs in a real build that uses the
+ * configuration cache.
  *
- * The build publishes a module under a custom `artifactId`, as `:compiler-plugins` of
- * `core-jvm-compiler` does, and checks it against a Maven repository in a local directory.
- * The environment of a pull request to `master` makes the task run.
+ * Every case runs the build twice: the first run stores the configuration cache entry,
+ * and the second one reuses it. The task must reach the same outcome both times, so the
+ * decision whether to run cannot rely on configuration that a reused entry skips.
  *
- * Unlike the tests built with `ProjectBuilder`, this one sees the output of the build,
- * which carries the warnings of the task.
+ * The builds run without the `CI` and GitHub Actions variables of the test JVM, so the
+ * outcome is the same on a workstation and on CI. The Maven repository the task queries
+ * is a missing local directory, so the task finds no published versions and passes
+ * without network access.
+ *
+ * [io.spine.gradle.Build.ci] is read once per class loader, and a TestKit daemon may reuse
+ * the build script class loader across builds. Therefore, any TestKit build in this test
+ * run that reads `Build.ci` with `CI` set — e.g., by running `checkVersionIncrement`
+ * without removing `CI` from its environment — would leak that value into these builds.
  */
-@DisplayName("`checkVersionIncrement` should")
+@DisplayName("`checkVersionIncrement` should, with the configuration cache,")
 internal class IncrementGuardIgTest {
 
     @TempDir
     lateinit var projectDir: File
 
-    @Test
-    fun `fail when the version of a publication is already published`() {
-        repoDir.writeMetadata(repository = "snapshots", path = artifactPath, version)
-        writeBuild()
-
-        val output = runner().buildAndFail().output
-
-        output shouldContain "The version `$version` of `$artifactPath` is already published"
-    }
-
-    @Test
-    fun `pass without a warning when the version is not published yet`() {
-        repoDir.writeMetadata(repository = "snapshots", path = artifactPath, previousVersion)
-        writeBuild()
-
-        val output = runner().build().output
-
-        output shouldNotContain "No `${MavenMetadata.FILE_NAME}` is found"
-    }
-
-    @Test
-    fun `warn when no repository has the metadata of a publication`() {
-        writeBuild()
-
-        val output = runner().build().output
-
-        output shouldContain "No `${MavenMetadata.FILE_NAME}` is found for `$artifactPath`"
-        output shouldContain
-                "cannot tell whether the version `$version` is already published"
-    }
-
-    /**
-     * The directory holding the `snapshots` and `releases` repositories.
-     */
-    private val repoDir: File
-        get() = projectDir.resolve("repo")
-
-    private fun runner(): GradleRunner =
-        GradleRunner.create()
-            .withProjectDir(projectDir)
-            .withEnvironment(pullRequestEnvironment())
-            .withArguments(IncrementGuard.taskName, "--stacktrace")
-
-    /**
-     * Returns the environment of a CI build of a pull request to `master`,
-     * outside the `Version Guard` workflow, so that the task runs and skips
-     * the comparison with the base branch.
-     */
-    private fun pullRequestEnvironment(): Map<String, String> =
-        System.getenv() - "VERSION_GUARD" + mapOf(
-            "GITHUB_EVENT_NAME" to "pull_request",
-            "GITHUB_BASE_REF" to "master",
-        )
-
-    private fun writeBuild() {
-        val repoUrl = repoDir.toURI().toString().removeSuffix("/")
+    @BeforeEach
+    fun createBuild() {
         file("settings.gradle.kts").writeText(
             """
-            rootProject.name = "compiler-plugins"
+            rootProject.name = "guarded-sample"
+            include("lib", "app")
             """.trimIndent()
         )
+        file("lib").mkdirs()
+        file("app").mkdirs()
         file("build.gradle.kts").writeText(
             """
             buildscript {
@@ -113,32 +75,103 @@ internal class IncrementGuardIgTest {
             import io.spine.gradle.publish.IncrementGuard
             import io.spine.gradle.repo.Repository
 
-            plugins {
-                `maven-publish`
+            allprojects {
+                group = "io.spine.sample"
+                version = "1.0.0"
             }
 
-            group = "$group"
-            version = "$version"
-
-            apply<IncrementGuard>()
-
-            publishing {
-                publications {
-                    create<MavenPublication>("fatJar") {
-                        artifactId = "$artifactId"
+            subprojects {
+                apply(plugin = "maven-publish")
+                apply<IncrementGuard>()
+                configure<PublishingExtension> {
+                    publications {
+                        create<MavenPublication>("maven")
                     }
                 }
-            }
-
-            tasks.named<CheckVersionIncrement>(IncrementGuard.taskName) {
-                repository = Repository(
-                    name = "local",
-                    releases = "$repoUrl/releases",
-                    snapshots = "$repoUrl/snapshots",
-                )
+                val unpublished = rootDir.resolve("repository").toURI().toString()
+                tasks.withType<CheckVersionIncrement>().configureEach {
+                    repository = Repository(
+                        name = "unpublished",
+                        releases = unpublished,
+                        snapshots = unpublished
+                    )
+                }
             }
             """.trimIndent()
         )
+    }
+
+    @Test
+    fun `run when its project publishes to Maven Local`() {
+        runStoringThenReusing(":lib:publishToMavenLocal") {
+            it.task(":lib:checkVersionIncrement")?.outcome shouldBe SUCCESS
+        }
+    }
+
+    @Test
+    fun `skip when only a sibling project publishes to Maven Local`() {
+        runStoringThenReusing(":lib:checkVersionIncrement", ":app:publishToMavenLocal") {
+            it.task(":lib:checkVersionIncrement")?.outcome shouldBe SKIPPED
+            it.task(":app:checkVersionIncrement")?.outcome shouldBe SUCCESS
+        }
+    }
+
+    @Test
+    fun `skip on a local build that does not publish`() {
+        runStoringThenReusing(":lib:checkVersionIncrement") {
+            it.task(":lib:checkVersionIncrement")?.outcome shouldBe SKIPPED
+        }
+    }
+
+    @Test
+    fun `run on a pull request to a protected branch`() {
+        val pullRequest = mapOf(
+            "GITHUB_EVENT_NAME" to "pull_request",
+            "GITHUB_BASE_REF" to "master"
+        )
+
+        runStoringThenReusing(":lib:checkVersionIncrement", env = pullRequest) {
+            it.task(":lib:checkVersionIncrement")?.outcome shouldBe SUCCESS
+        }
+    }
+
+    /**
+     * Runs the given [tasks] twice with the configuration cache, and checks the result of
+     * each run with [verify].
+     *
+     * The first run stores the cache entry, and the second one reuses it. The [env]
+     * variables are added to the environment of the test JVM, from which the [ciVariables]
+     * are removed.
+     */
+    private fun runStoringThenReusing(
+        vararg tasks: String,
+        env: Map<String, String> = emptyMap(),
+        verify: (BuildResult) -> Unit
+    ) {
+        val stored = runGradle(tasks, env)
+        withClue("The run that stores the configuration cache entry") {
+            stored.output shouldContain "Configuration cache entry stored"
+            verify(stored)
+        }
+        val reused = runGradle(tasks, env)
+        withClue("The run that reuses the configuration cache entry") {
+            reused.output shouldContain "Reusing configuration cache"
+            verify(reused)
+        }
+    }
+
+    private fun runGradle(tasks: Array<out String>, env: Map<String, String>): BuildResult {
+        val environment = System.getenv() - ciVariables + env
+        return GradleRunner.create()
+            .withProjectDir(projectDir)
+            .withEnvironment(environment)
+            .withArguments(
+                *tasks,
+                "--configuration-cache",
+                "-Dmaven.repo.local=${file("m2").absolutePath}",
+                "--stacktrace"
+            )
+            .build()
     }
 
     private fun file(relativePath: String): File = projectDir.resolve(relativePath)
@@ -159,18 +192,10 @@ internal class IncrementGuardIgTest {
             "            \"${File(it).invariantSeparatorsPath}\""
         }
     }
-
-    private companion object {
-
-        const val group = "io.spine.tools"
-        const val version = "2.0.0-SNAPSHOT.094"
-        const val previousVersion = "2.0.0-SNAPSHOT.093"
-
-        /**
-         * The `artifactId` of the publication, unrelated to the name of the project.
-         */
-        const val artifactId = "core-jvm-plugins"
-
-        const val artifactPath = "io/spine/tools/$artifactId"
-    }
 }
+
+/**
+ * The environment variables that select the CI behavior of [IncrementGuard]
+ * and [CheckVersionIncrement].
+ */
+internal val ciVariables = setOf("CI", "GITHUB_EVENT_NAME", "GITHUB_BASE_REF", "VERSION_GUARD")
