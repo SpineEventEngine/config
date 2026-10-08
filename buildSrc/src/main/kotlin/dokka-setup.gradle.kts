@@ -23,7 +23,7 @@ dependencies {
     useDokkaWithSpineExtensions()
 }
 
-runOnlyInPublishingGraph(tasks.withType<DokkaBaseTask>())
+skipDokkaWhenPublishingToMavenLocal()
 
 // The Dokka Javadoc format does not support Kotlin Multiplatform source sets, so its
 // publication task fails for KMP modules ("No source set found for <module>/jvmMain").

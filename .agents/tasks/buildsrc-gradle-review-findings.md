@@ -272,8 +272,8 @@ Replace eager APIs with their lazy siblings where one exists:
   - [x] `dokka-setup.gradle.kts:26-30` — the `onlyIf` spec of every
         `DokkaBaseTask` called `Task.isInPublishingGraph()` (`DokkaExts.kt`),
         which read `project.gradle.taskGraph` at execution time.
-        `Project.runOnlyInPublishingGraph(tasks)` now scans the graph in a
-        `taskGraph.whenReady` hook and keeps the result in a
+        `Project.skipDokkaWhenPublishingToMavenLocal()` now scans the graph
+        in a `taskGraph.whenReady` hook and keeps the result in a
         `Property<Boolean>`, which the spec reads.
         `Task.isInPublishingGraph()` is deprecated.
 - [x] **Wrong artifact path for tool modules in `checkVersionIncrement`**
@@ -357,3 +357,11 @@ Replace eager APIs with their lazy siblings where one exists:
   nothing skip the lookup. With the configuration cache on, the provider
   of `artifactPaths` stores and reuses cleanly. `CheckVersionIncrementIgTest`
   runs the task in a real build and checks its output, warnings included.
+- 2026-10-08 — the Dokka gate skips again (branch `dokka-publishing-gate`,
+  a follow-up to `dokka-config-cache`). Dokka tasks are skipped only in
+  a build that publishes to Maven Local and runs neither `publish`,
+  a `PublishToMavenRepository` task, nor `updateGitHubPages`, unless a task
+  named on the command line, possibly abbreviated, is a Dokka task.
+  `DokkaSetupIgTest` names its probe like `dokkaGeneratePublicationJavadoc`
+  and reaches it through a published `javadocJar`; against the previous
+  gate, the Maven Local case fails. See `dokka-maven-local-gate.md`.
