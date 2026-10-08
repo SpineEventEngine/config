@@ -198,4 +198,4 @@ internal class IncrementGuardIgTest {
  * The environment variables that select the CI behavior of [IncrementGuard]
  * and [CheckVersionIncrement].
  */
-private val ciVariables = setOf("CI", "GITHUB_EVENT_NAME", "GITHUB_BASE_REF", "VERSION_GUARD")
+internal val ciVariables = setOf("CI", "GITHUB_EVENT_NAME", "GITHUB_BASE_REF", "VERSION_GUARD")
