@@ -264,6 +264,13 @@ Replace eager APIs with their lazy siblings where one exists:
   - [x] `CheckVersionIncrement.kt` — `project.rootDir` and
         `project.artifactPath()` became the `rootDir` and `artifactPath`
         task properties, set by `IncrementGuard`.
+  - [x] `dokka-setup.gradle.kts:26-30` — the `onlyIf` spec of every
+        `DokkaBaseTask` called `Task.isInPublishingGraph()` (`DokkaExts.kt`),
+        which read `project.gradle.taskGraph` at execution time.
+        `Project.runOnlyInPublishingGraph()` now scans the graph in a
+        `taskGraph.whenReady` hook and keeps the result in a
+        `Property<Boolean>`, which the spec reads.
+        `Task.isInPublishingGraph()` is deprecated.
 - [ ] **Wrong artifact path for tool modules in `checkVersionIncrement`**
       — `Project.artifactPrefix()` in `IncrementGuard.kt` ignores
       `SpinePublishing.toolArtifactPrefix` and custom publication
@@ -314,3 +321,10 @@ Replace eager APIs with their lazy siblings where one exists:
   deprecated that call, so every consumer's `checkVersionIncrement` run
   warned. Verified in `money` on Gradle 9.8.1: the warning is gone, and
   the failure messages match the old ones.
+- 2026-10-08 — the `onlyIf` spec that `dokka-setup` adds to Dokka tasks
+  no longer calls `Task.project` (branch `dokka-config-cache`).
+  `DokkaSetupIgTest` gates a probe `DokkaBaseTask` with the configuration
+  cache, storing and then reusing the entry; against the old spec, every
+  case fails with the reported problem. Each `dokkaGenerate*` task of
+  Dokka 2.x matches the predicate by its own name, so the spec never
+  skips a real Dokka task; the semantics are kept as they were.
