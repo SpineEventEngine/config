@@ -15,6 +15,7 @@
 package io.spine.gradle.docs
 
 import io.kotest.assertions.withClue
+import io.kotest.matchers.file.shouldExist
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.io.File
@@ -28,6 +29,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
 /**
+ * The path of the probe task that the build under test declares.
+ */
+private const val PROBE = ":dokka-sample:dokkaGeneratePublicationProbe"
+
+/**
  * Verifies when the `dokka-setup` plugin lets Dokka tasks run in a real build
  * that uses the configuration cache.
  *
@@ -36,9 +42,20 @@ import org.junit.jupiter.api.io.TempDir
  * decision whether to run cannot rely on configuration that a reused entry skips.
  *
  * Dokka's own tasks resolve the Dokka engine from Maven Central, which an offline
- * build cannot reach. So the build declares a `docsProbe` task that extends
+ * build cannot reach. So the build declares a probe task that extends
  * [DokkaBaseTask][org.jetbrains.dokka.gradle.tasks.DokkaBaseTask] and does nothing.
- * The plugin gates it like any other Dokka task.
+ * The plugin gates it like any other Dokka task. The probe is named like
+ * `dokkaGeneratePublicationJavadoc`, because every Dokka 2.x task has `dokkaGenerate`
+ * in its name, so a gate that relied on task names would never skip it.
+ *
+ * The build publishes a `javadocJar` that depends on the probe, just as the `javadocJar`
+ * that `spinePublishing` creates depends on `dokkaGeneratePublicationJavadoc`. The build
+ * publishes to a file-based repository and to its own Maven Local repository, so it never
+ * touches `~/.m2`. The `updateGitHubPages` task of the build stands in for the one that
+ * copies the Dokka output to GitHub Pages.
+ *
+ * The project with the probe is named `dokka-sample`, like the modules of `dokka-tools`,
+ * so that `dokka` in the path of a requested task is not taken for a Dokka request.
  */
 @DisplayName("`dokka-setup` should, with the configuration cache,")
 internal class DokkaSetupIgTest {
@@ -51,7 +68,7 @@ internal class DokkaSetupIgTest {
         file("settings.gradle.kts").writeText(
             """
             rootProject.name = "documented-sample"
-            include("lib")
+            include("dokka-sample")
             """.trimIndent()
         )
         // The standard library would be resolved from Maven Central otherwise,
@@ -68,8 +85,8 @@ internal class DokkaSetupIgTest {
             }
             """.trimIndent()
         )
-        file("lib").mkdirs()
-        file("lib/build.gradle.kts").writeText(
+        file("dokka-sample").mkdirs()
+        file("dokka-sample/build.gradle.kts").writeText(
             """
             import org.jetbrains.dokka.gradle.internal.InternalDokkaGradlePluginApi
             import org.jetbrains.dokka.gradle.tasks.DokkaBaseTask
@@ -87,13 +104,28 @@ internal class DokkaSetupIgTest {
                 fun probe() = Unit
             }
 
-            val docsProbe = tasks.register<DocsProbe>("docsProbe")
+            group = "io.spine.sample"
+            version = "1.0.0"
 
-            tasks.named("publish") {
+            val docsProbe = tasks.register<DocsProbe>("dokkaGeneratePublicationProbe")
+
+            val javadocJar = tasks.register<Jar>("javadocJar") {
+                archiveClassifier.set("javadoc")
+                from(layout.buildDirectory.dir("docs-probe"))
                 dependsOn(docsProbe)
             }
 
-            tasks.register("dokkaGenerateSample") {
+            publishing {
+                publications.create<MavenPublication>("docs") {
+                    artifact(javadocJar)
+                }
+                repositories.maven {
+                    name = "remote"
+                    url = uri(rootDir.resolve("remote-repo"))
+                }
+            }
+
+            tasks.register("updateGitHubPages") {
                 dependsOn(docsProbe)
             }
             """.trimIndent()
@@ -101,25 +133,69 @@ internal class DokkaSetupIgTest {
     }
 
     @Test
-    fun `skip a Dokka task when the build neither publishes nor generates documentation`() {
-        runStoringThenReusing(":lib:docsProbe") {
-            it.task(":lib:docsProbe")?.outcome shouldBe SKIPPED
+    fun `skip a Dokka task when the build publishes to Maven Local only`() {
+        runStoringThenReusing(":dokka-sample:publishToMavenLocal") {
+            it.probeOutcome shouldBe SKIPPED
+            // The javadoc JAR is still published, with only a manifest,
+            // which is enough for integration tests.
+            mavenLocal.resolve("io/spine/sample/dokka-sample/1.0.0/dokka-sample-1.0.0-javadoc.jar")
+                .shouldExist()
         }
     }
 
     @Test
-    fun `run a Dokka task when the build publishes`() {
-        runStoringThenReusing(":lib:publish") {
-            it.task(":lib:docsProbe")?.outcome shouldBe SUCCESS
+    fun `run a Dokka task when the build publishes to a remote repository`() {
+        runStoringThenReusing(":dokka-sample:publish") {
+            it.probeOutcome shouldBe SUCCESS
+        }
+    }
+
+    @Test
+    fun `run a Dokka task when the build publishes to both Maven Local and a remote repository`() {
+        runStoringThenReusing(":dokka-sample:publishToMavenLocal", ":dokka-sample:publish") {
+            it.probeOutcome shouldBe SUCCESS
+        }
+    }
+
+    @Test
+    fun `run a Dokka task when the build updates GitHub Pages and publishes to Maven Local`() {
+        runStoringThenReusing(
+            ":dokka-sample:publishToMavenLocal",
+            ":dokka-sample:updateGitHubPages"
+        ) {
+            it.probeOutcome shouldBe SUCCESS
+        }
+    }
+
+    @Test
+    fun `run a Dokka task when it is requested along with publishing to Maven Local`() {
+        runStoringThenReusing(":dokka-sample:publishToMavenLocal", PROBE) {
+            it.probeOutcome shouldBe SUCCESS
+        }
+    }
+
+    @Test
+    fun `run a Dokka task when the build does not publish`() {
+        runStoringThenReusing(":dokka-sample:javadocJar") {
+            it.probeOutcome shouldBe SUCCESS
         }
     }
 
     @Test
     fun `run a Dokka task when the build generates documentation`() {
-        runStoringThenReusing(":lib:dokkaGenerateSample") {
-            it.task(":lib:docsProbe")?.outcome shouldBe SUCCESS
+        runStoringThenReusing(PROBE) {
+            it.probeOutcome shouldBe SUCCESS
         }
     }
+
+    private val BuildResult.probeOutcome
+        get() = task(PROBE)?.outcome
+
+    /**
+     * The Maven Local repository of the build, which replaces `~/.m2/repository`.
+     */
+    private val mavenLocal: File
+        get() = file("maven-local")
 
     /**
      * Runs the given [tasks] twice with the configuration cache, and checks the result of
@@ -147,7 +223,8 @@ internal class DokkaSetupIgTest {
                 *tasks,
                 "--configuration-cache",
                 "--offline",
-                "--stacktrace"
+                "--stacktrace",
+                "-Dmaven.repo.local=${mavenLocal.absolutePath}"
             )
             .build()
 

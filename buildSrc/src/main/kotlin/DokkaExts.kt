@@ -14,6 +14,7 @@
 
 import io.spine.dependency.local.DokkaTools
 import io.spine.gradle.SpineTaskGroup
+import io.spine.gradle.github.pages.TaskName
 import io.spine.gradle.publish.getOrCreate
 import java.io.File
 import java.time.LocalDate
@@ -22,16 +23,18 @@ import org.gradle.api.Task
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.execution.TaskExecutionGraph
-import org.gradle.api.tasks.TaskCollection
+import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.property
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.dokka.gradle.engine.parameters.DokkaSourceSetSpec
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 import org.jetbrains.dokka.gradle.engine.plugins.DokkaHtmlPluginParameters
+import org.jetbrains.dokka.gradle.tasks.DokkaBaseTask
 
 /**
  * To exclude pieces of code annotated with `@Internal` from the documentation
@@ -217,14 +220,31 @@ fun Project.htmlDocsJar(): TaskProvider<Jar> = tasks.getOrCreate("htmlDocsJar") 
  *
  * The predicate reaches the task graph through [Task.getProject]. Called from an `onlyIf`
  * spec or a task action, it does so at execution time, which Gradle deprecates and
- * the configuration cache does not support. [runOnlyInPublishingGraph] avoids that.
+ * the configuration cache does not support. Also, the predicate holds whenever the graph
+ * contains a Dokka task, since Dokka 2.x names its tasks `dokkaGenerate…`.
+ * [skipDokkaWhenPublishingToMavenLocal] avoids both problems.
  */
-@Deprecated(message = "Please use `Project.runOnlyInPublishingGraph(tasks)` instead.")
-fun Task.isInPublishingGraph(): Boolean = project.gradle.taskGraph.isPublishingGraph()
+@Deprecated(message = "Please use `Project.skipDokkaWhenPublishingToMavenLocal()` instead.")
+fun Task.isInPublishingGraph(): Boolean =
+    project.gradle.taskGraph.allTasks.any {
+        it.name == "publish" || it.name.contains("dokkaGenerate")
+    }
 
 /**
- * Makes the given [tasks] of this project run only when the execution graph
- * contains the `publish` task or a task whose name contains `dokkaGenerate`.
+ * Configures the Dokka tasks of this project to be skipped in a build that publishes
+ * to Maven Local only.
+ *
+ * Such a build usually feeds integration tests, which need the published code,
+ * but not its documentation. So the Dokka tasks are skipped when the execution graph
+ * contains a [PublishToMavenLocal] task, unless:
+ *  - the graph also contains `publish` or `updateGitHubPages`, which ship
+ *    the documentation to remote repositories and to GitHub Pages, respectively, or
+ *  - a task named on the command line has `dokka` in its name, ignoring case,
+ *    e.g., `dokkaGenerate`.
+ *
+ * Any other build runs the Dokka tasks in its graph. When the tasks are skipped,
+ * the documentation JARs they feed, such as `javadocJar`, contain only a manifest,
+ * or the output of an earlier Dokka run.
  *
  * The `onlyIf` spec added to the tasks is evaluated at execution time, when it must not
  * call [Task.getProject] to reach the task graph: Gradle deprecates that, and
@@ -232,24 +252,34 @@ fun Task.isInPublishingGraph(): Boolean = project.gradle.taskGraph.isPublishingG
  * time, once it is ready, and the spec reads the result from a property, which
  * a configuration cache entry stores along with the tasks.
  */
-fun Project.runOnlyInPublishingGraph(tasks: TaskCollection<out Task>) {
-    val inPublishingGraph = objects.property<Boolean>()
-    gradle.taskGraph.whenReady {
-        inPublishingGraph.set(isPublishingGraph())
+fun Project.skipDokkaWhenPublishingToMavenLocal() {
+    // The project path is dropped, so that, e.g., `:dokka-extensions:build`
+    // is not taken for a Dokka request.
+    val dokkaRequested = gradle.startParameter.taskNames.any {
+        it.substringAfterLast(':').contains("dokka", ignoreCase = true)
     }
-    tasks.configureEach {
-        onlyIf { inPublishingGraph.get() }
+    val docsNeeded = objects.property<Boolean>()
+    gradle.taskGraph.whenReady {
+        docsNeeded.set(dokkaRequested || !publishesToMavenLocalOnly())
+    }
+    tasks.withType<DokkaBaseTask>().configureEach {
+        onlyIf("documentation is needed beyond Maven Local") { docsNeeded.get() }
     }
 }
 
 /**
- * Tells if this graph contains the `publish` task or a task whose name
- * contains `dokkaGenerate`.
+ * Tells if this graph publishes to Maven Local and does not contain a task that ships
+ * the documentation elsewhere.
  */
-private fun TaskExecutionGraph.isPublishingGraph(): Boolean =
-    allTasks.any {
-        it.name == "publish" || it.name.contains("dokkaGenerate")
-    }
+private fun TaskExecutionGraph.publishesToMavenLocalOnly(): Boolean {
+    val tasks = allTasks
+    return tasks.any { it is PublishToMavenLocal } && tasks.none { it.name in docsShippingTasks }
+}
+
+/**
+ * The names of the tasks that ship the documentation beyond Maven Local.
+ */
+private val docsShippingTasks = setOf("publish", TaskName.updateGitHubPages)
 
 /**
  * Disables Dokka and Javadoc tasks in this `Project`.
