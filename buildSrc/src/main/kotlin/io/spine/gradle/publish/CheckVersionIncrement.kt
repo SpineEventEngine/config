@@ -25,6 +25,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 
 /**
  * A task that verifies the project version is fit to be published.
@@ -42,10 +43,13 @@ import org.gradle.api.tasks.TaskAction
  *
  * The two checks are complementary; neither subsumes the other.
  *
- * The task action must not access [project][org.gradle.api.Task.getProject], which Gradle
- * deprecates at execution time. Therefore, [version] is captured when the task is created,
- * and [IncrementGuard] sets [rootDir] and [artifactPath] when it registers the task.
+ * Neither the task action nor the `onlyIf` spec that gates it may access
+ * [project][org.gradle.api.Task.getProject]: Gradle deprecates that at execution time, and
+ * the configuration cache does not support it. Therefore, [version] is captured when the
+ * task is created, [IncrementGuard] sets [rootDir] and [artifactPath] when it registers
+ * the task, and it sets [publishesToMavenLocal] once the task graph is ready.
  */
+@DisableCachingByDefault(because = "Queries a remote Maven repository and produces no outputs.")
 abstract class CheckVersionIncrement : DefaultTask() {
 
     /**
@@ -75,6 +79,25 @@ abstract class CheckVersionIncrement : DefaultTask() {
      */
     @get:Input
     abstract val artifactPath: Property<String>
+
+    /**
+     * Tells whether the build is going to publish this task's project to Maven Local.
+     *
+     * Integration tests in this and sibling projects consume freshly built artifacts
+     * from `~/.m2`. Publishing them under a version that already exists would let those
+     * tests pick up a stale artifact, so a local build verifies the version increment
+     * before any local publication of the project runs.
+     *
+     * Only this task's own project counts: a sibling module's local publish in the same
+     * invocation must not trigger this module's check (see
+     * [IncrementGuard.localPublishPlanned]).
+     *
+     * [IncrementGuard] scans the task graph once it is ready and sets this property, which
+     * the `onlyIf` spec it adds to the task then reads. The value affects only whether
+     * the task runs, not what it verifies, so it is not an [input][Input].
+     */
+    @get:Internal
+    abstract val publishesToMavenLocal: Property<Boolean>
 
     @TaskAction
     fun checkVersion() {
