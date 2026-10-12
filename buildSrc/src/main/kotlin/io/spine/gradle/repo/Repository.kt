@@ -29,6 +29,8 @@ import org.gradle.api.Project
  * @param credentialsFile The path to the file that contains the credentials for the registry.
  * @param credentialValues The function to obtain an instance of [Credentials] from
  *   a Gradle [Project], if [credentialsFile] is not specified.
+ *   Publishing calls it only at execution time, so it may start an external process.
+ *   It may be called once for each published module, never concurrently.
  */
 data class Repository(
     private val name: String,
@@ -40,6 +42,11 @@ data class Repository(
 
     companion object {
         val regex = Regex("[A-Za-z0-9_\\-.]+")
+
+        /**
+         * Serializes obtaining the credentials of all repositories, see [credentials].
+         */
+        private val credentialsLock = Any()
     }
 
     init {
@@ -76,13 +83,22 @@ data class Repository(
      * If the credentials are represented by a `.properties` file, reads the file and parses
      * the credentials. The file must have properties `user.name` and `user.password`, which store
      * the username and the password for the Maven repository auth.
+     *
+     * Call this function from a task action rather than at configuration time:
+     * obtaining the credentials may start an external process, such as `gcloud`.
+     *
+     * The calls are serialized. Tasks of several projects may run them at once, and
+     * obtaining the credentials may write files that other calls share, e.g.,
+     * the GitHub Packages token unpacked into the build directory of the given project.
      */
-    fun credentials(project: Project): Credentials? = when {
-        credentialValues != null -> credentialValues.invoke(project)
-        credentialsFile != null -> credsFromFile(credentialsFile, project)
-        else -> throw IllegalArgumentException(
-            "Credentials file or a supplier function should be passed."
-        )
+    fun credentials(project: Project): Credentials? = synchronized(credentialsLock) {
+        when {
+            credentialValues != null -> credentialValues.invoke(project)
+            credentialsFile != null -> credsFromFile(credentialsFile, project)
+            else -> throw IllegalArgumentException(
+                "Credentials file or a supplier function should be passed."
+            )
+        }
     }
 
     private fun credsFromFile(fileName: String, project: Project): Credentials? {
