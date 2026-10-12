@@ -31,7 +31,8 @@ import org.gradle.api.Project
  *   a Gradle [Project], if [credentialsFile] is not specified.
  *   Publishing calls it only at execution time, so it may start an external process.
  *   It may be called several times for each published module, but never concurrently.
- *   It must not wait for the state of another project, e.g., resolve its configurations.
+ *   It must not wait for the state of any project, e.g., resolve a configuration:
+ *   the calls hold a lock that the tasks of all projects share.
  */
 data class Repository(
     private val name: String,

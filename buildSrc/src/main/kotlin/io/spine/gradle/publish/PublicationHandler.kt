@@ -310,7 +310,7 @@ private fun RepositoryHandler.register(project: Project, repository: Repository)
  * the supplier task, which sets them on the repository rather than producing an output.
  */
 private fun Project.supplyCredentials(target: MavenArtifactRepository, source: Repository) {
-    // Resolved at configuration time: the action must not reach the project
+    // Captured at configuration time: the action must not reach the project
     // through its task, as Gradle deprecates calling `Task.project` at execution time.
     val rootProject = rootProject
     val repoName = target.name.replaceFirstChar { it.titlecase(Locale.ROOT) }

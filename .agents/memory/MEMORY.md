@@ -16,7 +16,7 @@ See [README.md](README.md) for the format and routing rules.
 - [porting-buildsrc-from-consumer-repos](project/porting-buildsrc-from-consumer-repos.md) — To back-port buildSrc improvements from a consumer repo, diff after its last "Update `config`" commit; consumer-owned files never port.
 - [config-build-verification](project/config-build-verification.md) — config root has no `build` task; verify buildSrc via `./gradlew :buildSrc:test detekt` with JAVA_HOME exported.
 - [plugin-testkit-assertions-live-in-tool-base](project/plugin-testkit-assertions-live-in-tool-base.md) — Generic Gradle-plugin functional-test assertions (testkit-truth) belong in tool-base/plugin-testlib, not per-plugin `*-testlib` modules.
-- [gradle-10-third-party-deprecations](project/gradle-10-third-party-deprecations.md) — Gradle 9.6–9.8 nags (Detekt, Gradle Doctor, and `Configuration.setVisible` from Dokka, Kover, Protobuf) are third-party — don't chase them in `buildSrc`.
+- [gradle-10-third-party-deprecations](project/gradle-10-third-party-deprecations.md) — Gradle 9.6–9.8 nags from Detekt, Gradle Doctor, Dokka, Kover, and Protobuf (incl. `Configuration.setVisible`) are third-party — don't chase them in `buildSrc`.
 - [pom-report-per-project-collectors](project/pom-report-per-project-collectors.md) — `generatePom` must never resolve other projects' configurations; capturing `rootComponent` `Provider`s does not help — per-project collector tasks are the working design.
 - [plugin-publications-created-late](project/plugin-publications-created-late.md) — `java-gradle-plugin` creates `pluginMaven` and plugin markers after config's handlers run; use `configureEach`, never a `forEach` snapshot, and never rename a marker.
 

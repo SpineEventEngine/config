@@ -380,4 +380,4 @@ Replace eager APIs with their lazy siblings where one exists:
   task resolves its project at configuration time, and it is not compatible
   with the configuration cache, which cannot store a `Project`.
   `PublishingCredentialsIgTest` runs it with `--warning-mode all`: no
-  `Task.project` warning now, while the old code prints it.
+  `Task.project` warning now, while the old code printed that warning.

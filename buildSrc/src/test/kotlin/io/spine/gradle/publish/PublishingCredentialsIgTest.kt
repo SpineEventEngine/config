@@ -164,12 +164,16 @@ internal class PublishingCredentialsIgTest {
         file(requestLog).shouldExist()
     }
 
+    /**
+     * Only the last destination lacks credentials, so a check that stops
+     * at the first one cannot pass.
+     */
     @Test
     fun `be required by 'checkCredentials' for every destination`() {
-        val result = gradle(checkTask, "-P$withoutCredentials").buildAndFail()
+        val lacking = destinations.last().name
+        val result = gradle(checkTask, "-P$withoutCredentials=$lacking").buildAndFail()
 
-        result.output shouldContain
-                "No valid credentials for repository `${destinations.first().name}`"
+        result.output shouldContain "No valid credentials for repository `$lacking`"
     }
 
     /**
@@ -241,7 +245,7 @@ internal class PublishingCredentialsIgTest {
                 snapshots = "${repository.url}",
                 credentialValues = { project ->
                     project.rootDir.resolve("$requestLog").appendText("$name\n")
-                    if (project.findProperty("$withoutCredentials") != null) null
+                    if (project.findProperty("$withoutCredentials") == "$name") null
                     else Credentials("$username", "$password")
                 }
             )
@@ -257,8 +261,8 @@ internal class PublishingCredentialsIgTest {
         const val requestLog = "credential-requests.log"
 
         /**
-         * The project property that makes the credentials functions of the fixture
-         * find no credentials.
+         * The project property that names the destination whose credentials function
+         * finds no credentials.
          */
         const val withoutCredentials = "withoutCredentials"
 

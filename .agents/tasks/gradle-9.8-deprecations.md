@@ -89,15 +89,15 @@ Gradle constraints, verified with a scratch build on 9.8.1:
 - 2026-10-12 — `checkCredentials` (`PublishingExts.kt`) no longer calls
   `Task.project` in `doLast`. Gradle 9.8.1 printed "Invocation of
   Task.project at execution time has been deprecated" on every `publish`.
-  The project is resolved at configuration time. The task is
+  The project is captured at configuration time. The task is
   `notCompatibleWithConfigurationCache` because `Repository.credentials`
   takes the `Project`. Without that marker, `publish --configuration-cache`
   fails to serialize the project. `PublishingCredentialsIgTest` runs
   `checkCredentials` with `--warning-mode all`; the run prints no
-  `Task.project` warning now, while the old code prints it. The test also
-  checks that the task fails when a destination has no credentials, and its
-  publishing cases run `publish`. `:buildSrc:test detekt`: 198 tests, no
-  failures.
+  `Task.project` warning now, while the old code printed that warning.
+  The test also checks that the task fails when the last destination has
+  no credentials, and its publishing cases run `publish`.
+  `:buildSrc:test detekt`: 198 tests, no failures.
 
 [dokka#4601]: https://github.com/Kotlin/dokka/pull/4601
 [kotlinx-kover#836]: https://github.com/Kotlin/kotlinx-kover/issues/836
