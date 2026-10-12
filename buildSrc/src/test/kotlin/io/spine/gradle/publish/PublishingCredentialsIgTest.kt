@@ -142,7 +142,8 @@ internal class PublishingCredentialsIgTest {
 
     /**
      * Gradle does not support explicit repository credentials with the configuration
-     * cache, so a build that publishes with them must run without it, rather than fail.
+     * cache, so a build that publishes with them falls back to running without it
+     * instead of failing.
      */
     @Test
     fun `be sent with each upload when the configuration cache is requested`() {
@@ -156,15 +157,15 @@ internal class PublishingCredentialsIgTest {
      * when the check obtains the credentials.
      */
     @Test
-    fun `be checked by 'checkCredentials' without a deprecation warning`() {
+    fun `be checked by 'checkCredentials' without reaching the project through its task`() {
         val result = runGradle(checkTask, "--warning-mode", "all")
 
-        result.output shouldNotContain "has been deprecated"
+        result.output shouldNotContain "Invocation of Task.project at execution time"
         file(requestLog).shouldExist()
     }
 
     @Test
-    fun `fail the check when a destination has none`() {
+    fun `be required by 'checkCredentials' for every destination`() {
         val result = gradle(checkTask, "-P$withoutCredentials").buildAndFail()
 
         result.output shouldContain
@@ -175,8 +176,8 @@ internal class PublishingCredentialsIgTest {
      * Asserts that each repository accepted uploads only with the credentials
      * of its own destination.
      *
-     * The log of credential requests is checked as well, so that the case
-     * that expects no requests cannot pass because the log is never written.
+     * Checking the log of credential requests here shows that the fixture writes it,
+     * so the `help` case, which expects no log, cannot pass vacuously.
      */
     private fun shouldSendOwnCredentials() {
         file(requestLog).shouldExist()
@@ -274,8 +275,8 @@ internal class PublishingCredentialsIgTest {
 }
 
 /**
- * A Maven repository served over HTTP from the loopback interface, which accepts
- * an upload only with credentials.
+ * A Maven repository that accepts an upload only with credentials.
+ * It is served over HTTP from the loopback interface.
  *
  * Gradle does not send the credentials until challenged, so the repository answers
  * an upload without them with `401`, asking for Basic authentication.

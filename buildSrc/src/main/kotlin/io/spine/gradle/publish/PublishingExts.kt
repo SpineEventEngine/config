@@ -206,9 +206,10 @@ private fun TaskContainer.registerCheckCredentialsTask(
 /**
  * Adds an action that fails this task if any of the [destinations] has no credentials.
  *
- * The action obtains the credentials with the [Project] of this task, which is resolved
- * now: Gradle deprecates calling [Task.getProject] at execution time. The configuration
- * cache cannot store the project, though, so the task is not compatible with it.
+ * The action obtains the credentials with the [Project] of this task. The project is
+ * resolved when this function runs, at configuration time, because Gradle deprecates
+ * calling [Task.getProject] at execution time. The configuration cache cannot store
+ * a project, though, so the task is not compatible with it.
  */
 private fun Task.doLastCredentialsCheck(destinations: Set<Repository>) {
     val project = project

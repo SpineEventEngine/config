@@ -30,7 +30,8 @@ import org.gradle.api.Project
  * @param credentialValues The function to obtain an instance of [Credentials] from
  *   a Gradle [Project], if [credentialsFile] is not specified.
  *   Publishing calls it only at execution time, so it may start an external process.
- *   It may be called once for each published module, never concurrently.
+ *   It may be called several times for each published module, but never concurrently.
+ *   It must not wait for the state of another project, e.g., resolve its configurations.
  */
 data class Repository(
     private val name: String,
@@ -44,7 +45,7 @@ data class Repository(
         val regex = Regex("[A-Za-z0-9_\\-.]+")
 
         /**
-         * Serializes obtaining the credentials of all repositories, see [credentials].
+         * Serializes obtaining the credentials of all repositories (see [credentials]).
          */
         private val credentialsLock = Any()
     }
@@ -87,7 +88,7 @@ data class Repository(
      * Call this function from a task action rather than at configuration time:
      * obtaining the credentials may start an external process, such as `gcloud`.
      *
-     * The calls are serialized. Tasks of several projects may run them at once, and
+     * The calls are serialized. Tasks of several projects may call it at once, and
      * obtaining the credentials may write files that other calls share, e.g.,
      * the GitHub Packages token unpacked into the build directory of the given project.
      */

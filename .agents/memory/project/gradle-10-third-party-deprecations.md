@@ -26,12 +26,12 @@ bumped `Kover.version` 0.9.8 → 0.9.9. Verified by building `buildSrc`
 with `--warning-mode all`: the warning is present at 0.9.8 and gone at
 0.9.9.
 
-Gradle 9.8 adds `Configuration.setVisible(boolean)` (removed in Gradle 11),
-raised 36 times per `help` in `tool-base`, all from plugin bytecode.
+Gradle 9.8 deprecates `Configuration.setVisible(boolean)`, which Gradle 11
+removes. `help` in `tool-base` reports 36 calls, all from plugin bytecode.
 Status on 2026-10-12 — no stable release fixes it in any of them:
 
-- Dokka 2.2.0 (22 hits) — fixed by [dokka#4601][dokka-4601]; only
-  2.3.0-Beta is newer.
+- Dokka 2.2.0 (22 hits) — fixed by [dokka#4601][dokka-4601], not in
+  a stable release yet; 2.3.0-Beta is the only newer version.
 - Kover 0.9.9 (9 hits) — unfixed, even on `main`;
   [kotlinx-kover#836][kover-836] is open. 0.9.10/0.9.11 still call it.
 - Protobuf plugin 0.10.0 (3 hits) — fixed by
@@ -46,7 +46,7 @@ scripts or bumping plugins to pre-releases. Safety rules forbid
 auto-updating dependencies outside a dedicated update task, and the
 `dependency-update` skill rejects pre-releases.
 
-**How to apply:** treat these two warnings as known and out of our hands
+**How to apply:** treat these warnings as known and out of our hands
 at the versions currently pinned; do not chase them in `buildSrc`.
 Re-check upstream during each `dependency-update` run: Detekt 2.0 final
 (mind the plugin ID change and config migration), Gradle Doctor > 0.12.1,

@@ -285,8 +285,8 @@ sealed class PublicationHandler(
  * Adds a Maven repository to the project.
  *
  * The credentials of the repository, if they are [available][Repository.credentials]
- * from the root project, are supplied only when a task publishing to it is about to run,
- * see [supplyCredentials].
+ * from the root project, are supplied only when a task publishing to it is about
+ * to run (see [supplyCredentials]).
  */
 private fun RepositoryHandler.register(project: Project, repository: Repository) {
     val isSnapshot = project.version.toString().isSnapshot()
@@ -298,20 +298,20 @@ private fun RepositoryHandler.register(project: Project, repository: Repository)
 }
 
 /**
- * Registers a task that sets the credentials of the [target] repository
+ * Registers a supplier task that sets the credentials of the [target] repository
  * to those of the [source] one, and makes each task publishing to [target]
- * depend on it.
+ * depend on the supplier task.
  *
  * Obtaining the credentials may start an external process, e.g., `gcloud`
- * for [CloudArtifactRegistry]. Gradle deprecates doing so at configuration time,
- * and builds that do not publish should not do it at all. The credentials cannot be
- * supplied by an action of the publishing task itself, either: the task validates
+ * for [CloudArtifactRegistry]. Gradle deprecates starting one at configuration time,
+ * and builds that do not publish should not obtain the credentials at all.
+ * An action of the publishing task cannot supply them, either: the task validates
  * them before running any of its actions. Hence, the publishing task depends on
- * the supplier, which sets them on the repository rather than producing an output.
+ * the supplier task, which sets them on the repository rather than producing an output.
  */
 private fun Project.supplyCredentials(target: MavenArtifactRepository, source: Repository) {
-    // Resolved now, not via the `project` of the task, which Gradle deprecates
-    // at execution time.
+    // Resolved at configuration time: the action must not reach the project
+    // through its task, as Gradle deprecates calling `Task.project` at execution time.
     val rootProject = rootProject
     val repoName = target.name.replaceFirstChar { it.titlecase(Locale.ROOT) }
     val supplier = tasks.register("supply${repoName}Credentials") {

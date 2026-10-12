@@ -10,14 +10,15 @@ related-memories:
 
 ## Goal
 
-Consumers of `config` print no Gradle 9.8.1 deprecation warning from `config`
-at configuration time under `--warning-mode all`:
+Address the Gradle 9.8.1 deprecation warnings that consumers of `config`
+print at configuration time under `--warning-mode all`:
 
-1. `Configuration.setVisible(boolean)` (removed in Gradle 11) — raised by the
-   third-party plugins pinned in `buildSrc/build.gradle.kts`.
+1. `Configuration.setVisible(boolean)` (removed in Gradle 11) — called by the
+   third-party plugins pinned in `buildSrc/build.gradle.kts`. Move each plugin
+   to a release that fixes it, or record why the warning remains.
 2. `Starting an external process at configuration time` (an error in
-   Gradle 11) — raised by `gcloud`, started while `PublicationHandler`
-   registers the publishing repositories.
+   Gradle 11) — triggered by starting `gcloud` while `PublicationHandler`
+   registers the publishing repositories. Remove it.
 
 ## Context
 
@@ -42,11 +43,12 @@ The `gcloud` start: `PublicationHandler`'s `RepositoryHandler.register` calls
 `CheckVersionIncrement` reads the public metadata without credentials.
 
 Gradle constraints, verified with a scratch build on 9.8.1:
+
 - `PasswordCredentials.username` is a non-optional `@Input` of
   `PublishToMavenRepository`, validated before any task action, so a
   `doFirst` is too late to supply it.
 - Gradle marks explicit repository credentials as unsupported with the
-  configuration cache, and degrades it for builds that publish.
+  configuration cache, and builds that publish run without it.
 
 ## Plan
 
@@ -91,9 +93,9 @@ Gradle constraints, verified with a scratch build on 9.8.1:
   `notCompatibleWithConfigurationCache` because `Repository.credentials`
   takes the `Project`. Without that marker, `publish --configuration-cache`
   fails to serialize the project. `PublishingCredentialsIgTest` runs
-  `checkCredentials` with `--warning-mode all`, which prints no deprecation
-  now; against the old code it prints that warning. The test also checks
-  that the task fails when a destination has no credentials, and its
+  `checkCredentials` with `--warning-mode all`; the run prints no
+  `Task.project` warning now, while the old code prints it. The test also
+  checks that the task fails when a destination has no credentials, and its
   publishing cases run `publish`. `:buildSrc:test detekt`: 198 tests, no
   failures.
 

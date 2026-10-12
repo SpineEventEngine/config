@@ -366,8 +366,8 @@ Replace eager APIs with their lazy siblings where one exists:
   and reaches it through a published `javadocJar`; against the previous
   gate, the Maven Local case fails. See `dokka-maven-local-gate.md`.
 - 2026-10-12 — publishing repositories no longer obtain their credentials at
-  configuration time (branch `gradle-9.8-deprecations`). That was the
-  `gcloud config config-helper` start noted on 2026-10-08. A
+  configuration time (branch `gradle-9.8-deprecations`). That had started
+  `gcloud config config-helper`, as noted on 2026-10-08. A
   `supply<Repo>Credentials` task obtains them, and each
   `PublishToMavenRepository` task of that repository depends on it.
   `PublishingCredentialsIgTest` checks that `help` never obtains them, with
@@ -380,4 +380,4 @@ Replace eager APIs with their lazy siblings where one exists:
   task resolves its project at configuration time, and it is not compatible
   with the configuration cache, which cannot store a `Project`.
   `PublishingCredentialsIgTest` runs it with `--warning-mode all`: no
-  deprecation now; against the old code, the `Task.project` warning.
+  `Task.project` warning now, while the old code prints it.
