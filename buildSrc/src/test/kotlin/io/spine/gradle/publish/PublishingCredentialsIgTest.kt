@@ -25,6 +25,7 @@ import io.kotest.matchers.string.shouldNotContain
 import java.io.File
 import java.net.InetAddress
 import java.net.InetSocketAddress
+import java.net.URI
 import java.util.Base64
 import java.util.concurrent.CopyOnWriteArrayList
 import org.gradle.testkit.runner.BuildResult
@@ -299,8 +300,17 @@ private class ProbeRepository : AutoCloseable {
     val authorizations: List<String>
         get() = accepted.toList()
 
+    /**
+     * The URL of this repository.
+     *
+     * The loopback address may be an IPv6 one, which [URI] encloses in square brackets.
+     */
     val url: String
-        get() = "http://${server.address.hostString}:${server.address.port}/maven"
+        get() {
+            val address = server.address
+            return URI("http", null, address.hostString, address.port, "/maven", null, null)
+                .toString()
+        }
 
     init {
         server.createContext("/") { exchange -> exchange.use { respond(it) } }
