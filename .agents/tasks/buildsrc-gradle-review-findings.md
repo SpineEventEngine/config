@@ -365,3 +365,19 @@ Replace eager APIs with their lazy siblings where one exists:
   `DokkaSetupIgTest` names its probe like `dokkaGeneratePublicationJavadoc`
   and reaches it through a published `javadocJar`; against the previous
   gate, the Maven Local case fails. See `dokka-maven-local-gate.md`.
+- 2026-10-12 — publishing repositories no longer obtain their credentials at
+  configuration time (branch `gradle-9.8-deprecations`). That had started
+  `gcloud config config-helper`, as noted on 2026-10-08. A
+  `supply<Repo>Credentials` task obtains them, and each
+  `PublishToMavenRepository` task of that repository depends on it.
+  `PublishingCredentialsIgTest` checks that `help` never obtains them, with
+  the configuration cache stored and reused. It also checks that uploads to
+  an HTTP repository carry them, with and without the configuration cache.
+  In `tool-base` on Gradle 9.8.1, `help` no longer warns about an external
+  process; the other warnings are unchanged. See `gradle-9.8-deprecations.md`.
+- 2026-10-12 — `checkCredentials` no longer calls `Task.project` from its
+  action (same branch). Every `publish` run printed that deprecation. The
+  task resolves its project at configuration time, and it is not compatible
+  with the configuration cache, which cannot store a `Project`.
+  `PublishingCredentialsIgTest` runs it with `--warning-mode all`: no
+  `Task.project` warning now, while the old code printed that warning.
