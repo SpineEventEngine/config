@@ -77,7 +77,7 @@ val grGitVersion = "5.3.3"
  * This version may change from the [version of Kotlin][io.spine.dependency.lib.Kotlin.version]
  * used by the project.
  */
-val kotlinEmbeddedVersion = "2.4.10"
+val kotlinEmbeddedVersion = "2.4.21"
 
 /**
  * The version of Guava used in `buildSrc`.
@@ -85,7 +85,7 @@ val kotlinEmbeddedVersion = "2.4.10"
  * Always use the same version as the one specified in [io.spine.dependency.lib.Guava].
  * Otherwise, when testing Gradle plugins, clashes may occur.
  */
-val guavaVersion = "33.7.1-jre"
+val guavaVersion = "33.7.2-jre"
 
 /**
  * The version of ErrorProne Gradle plugin.
