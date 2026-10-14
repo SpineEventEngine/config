@@ -32,8 +32,8 @@ Status on 2026-10-12 — no stable release fixes it in any of them:
 
 - Dokka 2.2.0 (22 hits) — fixed by [dokka#4601][dokka-4601], not in
   a stable release yet; 2.3.0-Beta is the only newer version.
-- Kover 0.9.9 (9 hits) — unfixed, even on `main`;
-  [kotlinx-kover#836][kover-836] is open. 0.9.10/0.9.11 still call it.
+- Kover 0.9.11 — unfixed, even on `main`; [kotlinx-kover#836][kover-836]
+  is open. 9 hits were counted at 0.9.9; 0.9.10 and 0.9.11 still call it.
 - Protobuf plugin 0.10.0 (3 hits) — fixed by
   [protobuf-gradle-plugin#816][protobuf-816]; not released yet.
 - detekt 1.23.8 (2 hits) — fixed by [detekt#9577][detekt-9577] on `main`
