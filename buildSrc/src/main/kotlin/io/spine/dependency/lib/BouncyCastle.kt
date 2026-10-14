@@ -17,5 +17,5 @@ package io.spine.dependency.lib
 // https://www.bouncycastle.org/java.html
 @Suppress("unused", "ConstPropertyName")
 object BouncyCastle {
-    const val libPkcsJdk15 = "org.bouncycastle:bcpkix-jdk15on:1.68"
+    const val libPkcsJdk15 = "org.bouncycastle:bcpkix-jdk15on:1.70"
 }
