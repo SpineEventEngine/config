@@ -25,8 +25,25 @@ object CheckStyle {
     /**
      * The version to be used in the project.
      *
-     * `10.12.1` is the last version in `10.12.0`, which does not introduce
-     * capability conflict over `google-collections` with Guava.
+     * Pinned to `10.12.1`, the last release that resolves and runs in our builds.
+     * `forceVersions()` forces our versions into every configuration, including
+     * `checkstyle`, and enables `failOnVersionConflict()` there. Every newer
+     * release fails for one of these reasons:
+     *
+     *  - `10.12.2` to `10.14.1` depend on Doxia, which brings
+     *    `com.google.collections:google-collections:1.0`. Guava `32.1.0` and later
+     *    declare the same capability in their Gradle metadata, so the forced
+     *    [Guava][io.spine.dependency.lib.Guava] makes Gradle reject the graph with
+     *    a capability conflict. `10.14.2` excludes `google-collections` from both
+     *    Doxia modules.
+     *  - `10.14.2` to `12.3.1` bring two versions each of `commons-lang3` and
+     *    `httpcore` through Doxia, and `failOnVersionConflict()` rejects them.
+     *    We do not force these modules.
+     *  - `13.0.0` and later require Java 21, while our builds run Checkstyle on
+     *    Java 17. From `13.11.0` on, they no longer depend on Doxia.
+     *
+     * To move to `12.3.1`, force `commons-lang3` and `httpcore` in the `checkstyle`
+     * configuration. Moving further requires running Checkstyle on Java 21.
      *
      * @see <a href="https://checkstyle.sourceforge.io/releasenotes.html">Checkstyle</a>
      */
