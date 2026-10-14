@@ -7,7 +7,7 @@ metadata:
 ---
 
 Generic Gradle-plugin functional-test assertions — the Google Truth Subjects for
-Gradle TestKit `BuildResult`/`BuildTask` from `com.autonomousapps:testkit-truth` —
+Gradle TestKit `BuildResult`/`BuildTask` from `com.autonomousapps:gradle-testkit-truth` —
 belong in **`tool-base`'s `plugin-testlib`**, the plugin-agnostic test-support
 library every Spine Gradle plugin depends on. Not in `compiler-testlib` (which is
 code-generation-specific), and not duplicated per plugin.
