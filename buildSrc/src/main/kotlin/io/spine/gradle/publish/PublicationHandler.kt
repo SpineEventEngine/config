@@ -39,7 +39,7 @@ import org.gradle.kotlin.dsl.withType
 private const val MAVEN_PUBLISH = "maven-publish"
 
 /**
- * The name of the Gradle plugin that publishes the test fixtures of a project.
+ * The name of the Gradle plugin that adds test fixtures to a project.
  */
 private const val JAVA_TEST_FIXTURES = "java-test-fixtures"
 
@@ -116,13 +116,13 @@ sealed class PublicationHandler(
     abstract fun handlePublications()
 
     /**
-     * Silences the warnings about the test fixtures variants, which Gradle prints
+     * Silences the warnings that Gradle prints about the test fixtures variants
      * when it generates the POM of a Maven publication of the [project].
      *
      * The `java-test-fixtures` plugin adds the test fixtures to the `java` component
      * as variants with a capability of their own. Gradle Module Metadata (`.module`)
-     * keeps them, while a POM cannot describe a capability and leaves them out
-     * by design. So the warnings carry no information.
+     * keeps them, while a POM cannot describe a capability, so Gradle leaves them
+     * out of it by design. Hence, the warnings carry no information.
      *
      * The publications added after this handler is applied, such as `pluginMaven`
      * of `java-gradle-plugin`, are silenced as well.

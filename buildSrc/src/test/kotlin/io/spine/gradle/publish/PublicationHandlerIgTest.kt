@@ -25,18 +25,19 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
 
 /**
- * Verifies the warnings that Gradle prints when it generates the POMs of modules
- * applying `java-test-fixtures`, in a real multi-module build run via Gradle TestKit.
+ * Verifies that [PublicationHandler] silences the warnings that Gradle prints when
+ * it generates the POMs of modules applying `java-test-fixtures`, in a real
+ * multi-module build run via Gradle TestKit.
  *
  * The fixture is built once for the whole class, and each case inspects the output
  * of the build. All the modules of the fixture apply `java-test-fixtures`.
  * The fixture has:
- *  - `library` — a module published in the standard way;
+ *  - `library` — a module published in the standard way.
  *  - `plugin` — a module applying `java-gradle-plugin`, listed by the root project
  *    in `modulesWithCustomPublishing`. Its `pluginMaven` publication is created
- *    after the handler is applied;
+ *    after the handler is applied.
  *  - `unhandled` — a module that `spinePublishing` does not publish. It declares
- *    a publication of its Java component itself, so that the fixture shows
+ *    a publication of the `java` component itself, so that the fixture shows
  *    the warnings the other modules would print.
  */
 @DisplayName("`PublicationHandler` should")
@@ -73,10 +74,12 @@ internal class PublicationHandlerIgTest {
     }
 
     @Test
-    fun `leave the warnings of a publication of a module it does not handle`() {
-        output shouldContain warningsHeader(unhandledPublication)
-        output shouldContain "Variant testFixturesApiElements"
-        output shouldContain "Variant testFixturesRuntimeElements"
+    fun `leave the warnings for a publication of a module it does not handle`() {
+        val header = warningsHeader(unhandledPublication)
+        output shouldContain header
+        val warnings = output.substringAfter(header)
+        warnings shouldContain "Variant testFixturesApiElements"
+        warnings shouldContain "Variant testFixturesRuntimeElements"
     }
 
     private fun writeBuild() {
