@@ -52,7 +52,8 @@ outage.
       `Floating '<path>' -> origin/<branch>` message and before
       `git submodule update --init`, so a skip really is a no-op
 - [x] Verify with throwaway repos: named branch, detached superproject,
-      ordinary `branch = master` run twice
+      ordinary `branch = master` run twice, and a superproject carrying both a
+      branch and a tag of the same name
 - [x] `bash -n` and `shellcheck` clean (only the pre-existing SC1091 on
       `source migrate`, unchanged from before)
 - [ ] Open the PR against `master`
@@ -66,3 +67,12 @@ outage.
   APPROVE WITH CHANGES. Took the prose fixes, and documented that the
   detached-superproject skip bypasses this entry's `git submodule update
   --init` too, leaving a not-yet-checked-out submodule to `init-submodules`
+- 2026-10-16 — Codex review of `f1423f5e` found that
+  `git rev-parse --abbrev-ref HEAD` shortens to a *non-ambiguous* name, so a
+  superproject with both a branch and a tag called `foo` resolved to
+  `heads/foo`: the fetch succeeded, the checkout failed, and the submodule was
+  left stale and detached at the pin. Reproduced, then switched to
+  `git branch --show-current`, which prints the name exactly and prints
+  nothing when detached. `git symbolic-ref --short` was checked and shortens
+  the same way, so it is not an alternative. The `= "HEAD"` half of the
+  detachment guard went with it, being unreachable for the new command
