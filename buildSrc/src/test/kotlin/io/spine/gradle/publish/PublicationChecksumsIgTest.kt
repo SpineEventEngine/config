@@ -79,7 +79,7 @@ internal class PublicationChecksumsIgTest {
                 // `javadocJar` of `spinePublishing` is wired to Dokka, which
                 // this fixture does not apply: the manifest is what is under
                 // test, not the documentation toolchain.
-                tasks.register("dokkaGeneratePublicationJavadoc")
+                $generatorStub
             }
 
             spinePublishing {
@@ -167,28 +167,28 @@ internal class PublicationChecksumsIgTest {
     }
 
     /**
-     * A module that builds no documentation still publishes the archives that
+     * A module that generates no documentation still publishes the JARs that
      * would hold it: `disableDocumentationTasks()` stops the generators, not
-     * the archives, so each is published holding no entries.
+     * the JARs, so each is published containing only a manifest.
      *
-     * Were an archive stopped along with its generator, the publication would
-     * go on declaring a file that nothing writes. Publishing to Maven Local
-     * tolerates that today, so this task — the first to read every declared
-     * file — is where such a module fails the build.
+     * Were a JAR stopped along with its generator, the publication would go on
+     * declaring a file that nothing writes. Publishing to Maven Local tolerates
+     * that today, so `collectPublicationChecksums` — the first task to read
+     * every declared file — is where such a module fails the build.
      */
     @Test
     fun `cover a module that generates no documentation`() {
         val script = file("build.gradle.kts")
         script.writeText(
             script.readText().replace(
-                stubGenerator,
-                "$stubGenerator\n    disableDocumentationTasks()"
+                generatorStub,
+                "$generatorStub\n    disableDocumentationTasks()"
             )
         )
 
         runGradle(aggregator, "publishAllPublicationsToStageRepository")
 
-        val names = manifestEntries().map { it.name }
+        val names = manifestEntries().map { it.name }.sorted()
         names shouldContain "spine-api-$version-javadoc.jar"
         names shouldContain "spine-api-$version-html-docs.jar"
         names shouldContainExactly publishedFileNames()
@@ -301,11 +301,14 @@ internal class PublicationChecksumsIgTest {
         const val version = "1.0.0"
 
         /**
-         * The line of the fixture registering the stub of the Dokka task that
-         * feeds `javadocJar`, used as the anchor for per-test additions to
-         * the configuration shared by the modules.
+         * The statement of the fixture that registers a stub of the Dokka task
+         * feeding `javadocJar`.
+         *
+         * It anchors the per-test additions to the configuration shared by
+         * the modules. The fixture is written from this constant too, so that
+         * an edit of one cannot leave the other matching nothing.
          */
-        const val stubGenerator = """tasks.register("dokkaGeneratePublicationJavadoc")"""
+        const val generatorStub = """tasks.register("dokkaGeneratePublicationJavadoc")"""
 
         val sidecars = listOf(".md5", ".sha1", ".sha256", ".sha512")
     }

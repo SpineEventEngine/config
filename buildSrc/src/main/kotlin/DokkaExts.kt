@@ -339,12 +339,12 @@ private val wordStart = Regex("(?=\\p{javaUpperCase})")
  * This function could be useful to improve build speed when building subprojects containing
  * test environments or integration test projects.
  *
- * The JARs packing the documentation stay enabled, exactly as
- * [skipDokkaWhenPublishingToMavenLocal] leaves them. A publication declares an
- * artifact file per JAR, so a JAR that a disabled task never writes is a file
- * that publishing, and the attestation of what it published, find missing.
- * With nothing generated to pack, such a JAR costs almost nothing and
- * holds no entries.
+ * The JARs packing the documentation stay enabled, as they do under
+ * [skipDokkaWhenPublishingToMavenLocal]. A publication declares one artifact
+ * file per JAR, and a JAR that a disabled task never writes would be missing
+ * both when publishing and when the published files are attested. With nothing
+ * generated to pack, such a JAR costs almost nothing: it contains only
+ * a manifest, or the output of an earlier Dokka run.
  */
 @Suppress("unused")
 fun Project.disableDocumentationTasks() {
@@ -363,12 +363,16 @@ fun Project.disableDocumentationTasks() {
  *
  * A [Jar] task is recognized by its type rather than by its name, so that
  * `javadocJar` and `htmlDocsJar` are treated alike — as is any documentation JAR
- * added later, whatever it is called.
+ * added later, whatever it is called. Any other task generates documentation if
+ * `dokka` or `javadoc` occurs in its name, ignoring case.
+ *
+ * [selectsDocsTask] keeps matching the same JARs by name, because the names it
+ * is given come from the command line rather than from the task graph.
  */
 private fun Task.generatesDocumentation(): Boolean {
     if (this is Jar) {
         return false
     }
-    val lowercaseName = name.lowercase()
-    return lowercaseName.contains("dokka") || lowercaseName.contains("javadoc")
+    return name.contains("dokka", ignoreCase = true)
+            || name.contains("javadoc", ignoreCase = true)
 }

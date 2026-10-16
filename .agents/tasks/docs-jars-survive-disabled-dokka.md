@@ -26,7 +26,7 @@ publication declares exists on disk.
   Seen on runs [38944987966][run-072] (`.072`) and [38951775822][run-073] (`.073`).
 
 - `test-env/build.gradle.kts` calls `disableDocumentationTasks()`, which disables
-  every task whose name holds `dokka` or `javadoc`. `javadocJar` is such a name,
+  every task with `dokka` or `javadoc` in its name. `javadocJar` is such a name,
   so the JAR the publication declares is never written. `htmlDocsJar` is not, so
   the same publication ships an empty `-html-docs.jar` — the asymmetry was
   invisible until `collectPublicationChecksums` started reading every declared
@@ -43,12 +43,13 @@ publication declares exists on disk.
 
 ## Plan
 
-1. `DokkaExts.kt`: disable a task only when it generates documentation —
-   a `Jar` task is excluded by its type, which covers `javadocJar`,
-   `htmlDocsJar`, and any documentation JAR added later. ✅
-2. `PublicationChecksumsIgTest`: a module calling `disableDocumentationTasks()`
-   is still covered by the manifest. ✅
-3. Pull the updated `buildSrc` into `compiler` and re-publish from `master`.
+- [x] 1. `DokkaExts.kt`: disable a task only when it generates documentation —
+  a `Jar` task is excluded by its type, which covers `javadocJar`,
+  `htmlDocsJar`, and any documentation JAR added later.
+- [x] 2. `PublicationChecksumsIgTest`: a module calling
+  `disableDocumentationTasks()` is still covered by the manifest.
+- [ ] 3. Pull the updated `buildSrc` into `compiler` and re-publish from
+  `master`.
 
 ## Verification
 
@@ -65,6 +66,14 @@ publication declares exists on disk.
 - The manifest covers `test-env`, whose artifacts reach Maven Local only. The
   attestation thus names files that no registry serves. Harmless, but it
   overstates what the build published — worth a separate look.
+
+## Log
+
+- 2026-10-16 — diagnosed from the two failed `compiler` runs; steps 1-2 done
+  and verified, step 3 waits on this change reaching `master`.
+- 2026-10-16 — review findings applied: the documentation JARs are described
+  as containing only a manifest, and the fixture of the new test is written
+  from the same constant the test matches on.
 
 [run-072]: https://github.com/SpineEventEngine/compiler/actions/runs/38944987966/job/117121739485
 [run-073]: https://github.com/SpineEventEngine/compiler/actions/runs/38951775822/job/117144658146
