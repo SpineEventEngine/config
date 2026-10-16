@@ -334,19 +334,41 @@ private fun abbreviationPattern(abbreviation: String): Regex {
 private val wordStart = Regex("(?=\\p{javaUpperCase})")
 
 /**
- * Disables Dokka and Javadoc tasks in this `Project`.
+ * Disables the Dokka and Javadoc tasks generating the documentation of this `Project`.
  *
  * This function could be useful to improve build speed when building subprojects containing
  * test environments or integration test projects.
+ *
+ * The JARs packing the documentation stay enabled, exactly as
+ * [skipDokkaWhenPublishingToMavenLocal] leaves them. A publication declares an
+ * artifact file per JAR, so a JAR that a disabled task never writes is a file
+ * that publishing, and the attestation of what it published, find missing.
+ * With nothing generated to pack, such a JAR costs almost nothing and
+ * holds no entries.
  */
 @Suppress("unused")
 fun Project.disableDocumentationTasks() {
     gradle.taskGraph.whenReady {
         tasks.forEach { task ->
-            val lowercaseName = task.name.lowercase()
-            if (lowercaseName.contains("dokka") || lowercaseName.contains("javadoc")) {
+            if (task.generatesDocumentation()) {
                 task.enabled = false
             }
         }
     }
+}
+
+/**
+ * Tells if this task generates documentation, rather than packing already generated
+ * documentation into a JAR.
+ *
+ * A [Jar] task is recognized by its type rather than by its name, so that
+ * `javadocJar` and `htmlDocsJar` are treated alike — as is any documentation JAR
+ * added later, whatever it is called.
+ */
+private fun Task.generatesDocumentation(): Boolean {
+    if (this is Jar) {
+        return false
+    }
+    val lowercaseName = name.lowercase()
+    return lowercaseName.contains("dokka") || lowercaseName.contains("javadoc")
 }

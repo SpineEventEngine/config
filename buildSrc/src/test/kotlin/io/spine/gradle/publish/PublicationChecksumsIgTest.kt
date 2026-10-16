@@ -167,6 +167,34 @@ internal class PublicationChecksumsIgTest {
     }
 
     /**
+     * A module that builds no documentation still publishes the archives that
+     * would hold it: `disableDocumentationTasks()` stops the generators, not
+     * the archives, so each is published holding no entries.
+     *
+     * Were an archive stopped along with its generator, the publication would
+     * go on declaring a file that nothing writes. Publishing to Maven Local
+     * tolerates that today, so this task — the first to read every declared
+     * file — is where such a module fails the build.
+     */
+    @Test
+    fun `cover a module that generates no documentation`() {
+        val script = file("build.gradle.kts")
+        script.writeText(
+            script.readText().replace(
+                stubGenerator,
+                "$stubGenerator\n    disableDocumentationTasks()"
+            )
+        )
+
+        runGradle(aggregator, "publishAllPublicationsToStageRepository")
+
+        val names = manifestEntries().map { it.name }
+        names shouldContain "spine-api-$version-javadoc.jar"
+        names shouldContain "spine-api-$version-html-docs.jar"
+        names shouldContainExactly publishedFileNames()
+    }
+
+    /**
      * Maven deploys a version ending in `-SNAPSHOT` under a timestamped name
      * assigned at upload time, so the names derived from the publication belong
      * to no uploaded file. Naming files that were never published is the one
@@ -271,6 +299,13 @@ internal class PublicationChecksumsIgTest {
         val aggregator = PublicationChecksums.aggregatorTaskName
 
         const val version = "1.0.0"
+
+        /**
+         * The line of the fixture registering the stub of the Dokka task that
+         * feeds `javadocJar`, used as the anchor for per-test additions to
+         * the configuration shared by the modules.
+         */
+        const val stubGenerator = """tasks.register("dokkaGeneratePublicationJavadoc")"""
 
         val sidecars = listOf(".md5", ".sha1", ".sha256", ".sha512")
     }
