@@ -38,12 +38,12 @@ declare it.
 - [x] Reviews (`spine-code-review`, `kotlin-engineer`, `gradle-review`, `review-docs`)
   applied: one call per publication, Shadow's name constants, merging into
   an existing `dependencies` element, and tests for these.
-- [ ] Re-run the test on the reviewed version; mark the draft PR ready.
+- [x] Re-run the test on the reviewed version (9/9); mark the PR ready.
 - [ ] After the merge: `./config/pull` in tool-base#196 and compiler#89, and
   replace their copies with the call.
 
 ## Log
 
 - 2026-10-16 — implemented; `ProtobufRuntimeIgTest` 5/5, `detekt` clean.
-- 2026-10-16 — review fixes pushed as a draft PR; their test run waits for
-  a free build slot on the machine.
+- 2026-10-16 — review fixes pushed as draft config#796; `ProtobufRuntimeIgTest`
+  9/9 and `detekt` clean on them; marked ready.
