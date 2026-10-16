@@ -63,7 +63,14 @@ if [ -f .gitmodules ]; then
         # `origin/.` and the submodule stays wherever it was. Resolve it to the
         # current branch name before anything is printed or touched.
         if [ "$branch" = "." ]; then
-            branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+            # `git branch --show-current` prints the branch name exactly, and
+            # prints nothing when `HEAD` is detached. `git rev-parse
+            # --abbrev-ref HEAD` cannot stand in: it shortens to a *non-ambiguous*
+            # name, so a superproject carrying both a branch and a tag called
+            # `foo` yields `heads/foo`, which fetches but then fails to check out
+            # and would leave the submodule stale and detached. `git symbolic-ref
+            # --short` shortens the same way and is no better.
+            branch=$(git branch --show-current 2>/dev/null)
             # A detached superproject has no branch name to inherit. Unlike
             # `init-submodules`, which floats only a submodule it has just
             # cloned, this loop acts on submodules that are already checked out
@@ -76,7 +83,7 @@ if [ -f .gitmodules ]; then
             # pin. One not yet checked out therefore stays that way here;
             # `init-submodules`, which initializes before it resolves `.`, is
             # what materializes it.
-            if [ -z "$branch" ] || [ "$branch" = "HEAD" ]; then
+            if [ -z "$branch" ]; then
                 echo "  WARNING: '$path' tracks the superproject's branch ('.')," \
                      "which is detached here; left as-is." \
                      "Re-run from a branch to float it." >&2
