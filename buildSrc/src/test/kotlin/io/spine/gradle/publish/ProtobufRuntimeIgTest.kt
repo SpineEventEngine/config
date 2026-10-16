@@ -16,11 +16,15 @@ package io.spine.gradle.publish
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.kotest.inspectors.forAll
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.spine.dependency.lib.Protobuf
 import java.io.File
@@ -38,17 +42,27 @@ import org.junit.jupiter.api.io.TempDir
 import org.w3c.dom.Element
 
 /**
- * Verifies [unbundleProtobufRuntime] in a real build of a fat JAR, run via Gradle TestKit.
+ * Verifies [unbundleProtobufRuntime] in a real build of fat JARs, run via Gradle TestKit.
  *
  * The fixture is built once for the whole class, and each case inspects what
- * the build left behind. It runs `--offline`, resolving from a local `file:`
- * repository, which holds stand-ins for the Protobuf runtime libraries.
+ * the build left behind. The build runs with `--offline`, resolving from a local
+ * `file:` repository, which holds stand-ins for the Protobuf runtime libraries.
+ * `protobuf-java-util` depends on `com.example:gson`, as the genuine one depends
+ * on Gson. The build also runs with the configuration cache.
  *
- * The `fat` module of the fixture depends on the Protobuf runtime and on
- * `com.example:lib`. `protobuf-java-util` depends on `com.example:gson`, as
- * the genuine one depends on Gson. The module publishes its fat JAR in
- * the `fatJar` publication, with `artifact(...)`, and its Java component, which
- * carries the shadowed variant, in the `library` publication.
+ * All the modules of the fixture apply Shadow and depend on `com.example:lib`.
+ * The fixture has:
+ *  - `fat` — a module depending on the Protobuf runtime. It publishes its fat JAR
+ *    in the `cliFatJar` publication, with `artifact(...)`, as the Compiler CLI does,
+ *    and its Java component, which carries the shadowed variant, in the `library`
+ *    publication;
+ *  - `component` — a module whose `library` publication of its Java component is
+ *    given to the function, so that the POM the function adds to already has
+ *    the `dependencies` element Gradle writes;
+ *  - `twin` — a module depending on the Protobuf runtime. It publishes its fat JAR
+ *    in two publications: `fatJar`, as `uber-jar-module` does, and `extra`, whose POM
+ *    gets a `dependencies` element written by hand before the function adds to it.
+ *    The function is called once for each publication.
  */
 @DisplayName("`unbundleProtobufRuntime` should")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -65,9 +79,14 @@ internal class ProtobufRuntimeIgTest {
             .withProjectDir(projectDir)
             .withArguments(
                 ":fat:shadowJar",
-                ":fat:generatePomFileForFatJarPublication",
+                ":fat:${pomTaskOf(cliFatJar)}",
                 ":fat:generateMetadataFileForLibraryPublication",
+                ":fat:$listIncludedTask",
+                ":component:${pomTaskOf(library)}",
+                ":twin:${pomTaskOf(defaultFatJar)}",
+                ":twin:${pomTaskOf(extra)}",
                 "--offline",
+                "--configuration-cache",
                 "--stacktrace",
             )
             .build()
@@ -77,7 +96,7 @@ internal class ProtobufRuntimeIgTest {
     fun `leave the Protobuf runtime out of the fat JAR`() {
         val entries = fatJarEntries()
 
-        entries.filter { it.startsWith("com/google/protobuf/") } shouldBe emptyList()
+        entries.filter { it.startsWith("com/google/protobuf/") }.shouldBeEmpty()
         entries shouldNotContain "META-INF/protobuf-kotlin.kotlin_module"
     }
 
@@ -90,88 +109,148 @@ internal class ProtobufRuntimeIgTest {
     }
 
     @Test
+    fun `exclude the runtime by the dependency filter of the fat JAR`() {
+        val included = file("fat/build/included.txt").readLines()
+
+        included shouldContainExactlyInAnyOrder listOf("lib-1.0.jar", "gson-1.0.jar")
+    }
+
+    @Test
     fun `not name the runtime in the manifest of the fat JAR`() {
-        JarFile(fatJar()).use { jar ->
-            jar.manifest.mainAttributes.getValue("Class-Path").shouldBeNull()
+        JarFile(fatJarFile()).use { jar ->
+            val manifest = jar.manifest.shouldNotBeNull()
+            manifest.mainAttributes.getValue("Class-Path").shouldBeNull()
         }
     }
 
     @Test
     fun `declare the runtime in the POM of the fat JAR`() {
-        val pom = file("fat/build/publications/$fatJar/pom-default.xml")
-        val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pom)
-        val dependencies = document.getElementsByTagName("dependency").elements()
+        val dependencies = pomDependencies("fat", cliFatJar)
+        val artifactIds = dependencies.map { it.childText("artifactId") }
 
-        dependencies.map { it.childText("artifactId") } shouldContainExactly runtimeLibraries
-        dependencies.forEach {
-            it.childText("groupId") shouldBe Protobuf.group
-            it.childText("version") shouldBe Protobuf.version
-            it.childText("scope") shouldBe "runtime"
-            val exclusion = it.getElementsByTagName("exclusion").elements().single()
-            exclusion.childText("groupId") shouldBe "*"
-            exclusion.childText("artifactId") shouldBe "*"
-        }
+        artifactIds shouldContainExactlyInAnyOrder runtimeLibraries
+        dependencies.forAll { it.shouldBeRuntimeLibrary() }
     }
 
     @Test
     fun `declare the runtime in the shadowed variant`() {
         val metadata = ObjectMapper().readTree(file("fat/build/publications/library/module.json"))
-        val variant = metadata["variants"].single { it["name"].asText() == shadowedVariant }
-        val dependencies = variant["dependencies"].toList()
+        val variants = metadata["variants"].shouldNotBeNull()
+            .filter { it["name"]?.asText() == shadowedVariant }
+        variants.shouldBeSingleton()
+        val dependencies = variants.single()["dependencies"].shouldNotBeNull().toList()
+        val modules = dependencies.map { it["module"]?.asText() }
 
-        dependencies.map { it["module"].asText() } shouldContainExactlyInAnyOrder runtimeLibraries
-        dependencies.forEach {
-            it["group"].asText() shouldBe Protobuf.group
-            it["version"]["requires"].asText() shouldBe Protobuf.version
-            it.excludesAll() shouldBe true
+        modules shouldContainExactlyInAnyOrder runtimeLibraries
+        dependencies.forAll {
+            it["group"]?.asText() shouldBe Protobuf.group
+            it["version"]?.get("requires")?.asText() shouldBe Protobuf.version
+            it.excludes() shouldContainExactly listOf("*" to "*")
         }
     }
 
-    private fun fatJar(): File = file("fat/build/libs/fat-$moduleVersion-all.jar")
+    @Test
+    fun `add to the dependencies which Gradle writes into the POM`() {
+        // The shadowed variant of the Java component adds the runtime as optional.
+        val dependencies = pomDependencies("component", library)
+            .filter { it.childTextOrNull("optional") == null }
+        val artifactIds = dependencies.map { it.childText("artifactId") }
+
+        artifactIds shouldContainExactly listOf("lib") + runtimeLibraries
+        dependencies.drop(1).forAll { it.shouldBeRuntimeLibrary() }
+    }
+
+    @Test
+    fun `add to the dependencies written into the POM by hand`() {
+        val dependencies = pomDependencies("twin", extra)
+        val artifactIds = dependencies.map { it.childText("artifactId") }
+
+        artifactIds shouldContainExactly listOf("lib") + runtimeLibraries
+        dependencies.drop(1).forAll { it.shouldBeRuntimeLibrary() }
+    }
+
+    @Test
+    fun `declare the runtime in each publication it is called for`() {
+        val dependencies = pomDependencies("twin", defaultFatJar)
+        val artifactIds = dependencies.map { it.childText("artifactId") }
+
+        artifactIds shouldContainExactlyInAnyOrder runtimeLibraries
+        dependencies.forAll { it.shouldBeRuntimeLibrary() }
+    }
+
+    private fun fatJarFile(): File = file("fat/build/libs/fat-$moduleVersion-all.jar")
 
     private fun fatJarEntries(): List<String> =
-        JarFile(fatJar()).use { jar -> jar.entries().toList().map { it.name } }
+        JarFile(fatJarFile()).use { jar -> jar.entries().toList().map { it.name } }
 
     /**
-     * Writes the local repository with the stand-ins of the Protobuf runtime
+     * Returns the `dependency` elements of the POM of the given [publication] of
+     * the given [module], ensuring the POM has a single `dependencies` element.
+     */
+    private fun pomDependencies(module: String, publication: String): List<Element> {
+        val pom = file("$module/build/publications/$publication/pom-default.xml")
+        val project = DocumentBuilderFactory.newInstance()
+            .newDocumentBuilder()
+            .parse(pom)
+            .documentElement
+        val dependencies = project.childElements("dependencies")
+        dependencies.shouldBeSingleton()
+        return dependencies.single().childElements("dependency")
+    }
+
+    /**
+     * Writes the local repository with the stand-ins for the Protobuf runtime
      * and the other libraries of the fixture.
      */
     private fun writeRepository() {
-        val protobufJava = dependencyOn(Protobuf.group, "protobuf-java", Protobuf.version)
         library(
-            Protobuf.group, "protobuf-java", Protobuf.version,
+            Protobuf.javaLib,
             entries = listOf("com/google/protobuf/RuntimeVersion.class"),
         )
         library(
-            Protobuf.group, "protobuf-java-util", Protobuf.version,
+            Protobuf.javaUtil,
             entries = listOf("com/google/protobuf/util/JsonFormat.class"),
-            dependencies = listOf(protobufJava, dependencyOn("com.example", "gson", "1.0")),
+            dependencies = listOf(Protobuf.javaLib, gson),
         )
         library(
-            Protobuf.group, "protobuf-kotlin", Protobuf.version,
+            Protobuf.kotlin,
             entries = listOf(
                 "com/google/protobuf/kotlin/DslList.class",
                 "META-INF/protobuf-kotlin.kotlin_module",
             ),
-            dependencies = listOf(protobufJava),
+            dependencies = listOf(Protobuf.javaLib),
         )
-        library("com.example", "lib", "1.0", entries = listOf("com/example/Lib.class"))
-        library("com.example", "gson", "1.0", entries = listOf("com/example/gson/Gson.class"))
+        library(lib, entries = listOf("com/example/Lib.class"))
+        library(gson, entries = listOf("com/example/gson/Gson.class"))
     }
 
+    /**
+     * Writes the POM and the JAR of the library with the given `group:name:version`
+     * [coordinates] into the local repository.
+     *
+     * @param entries The paths of the empty entries of the JAR.
+     * @param dependencies The `group:name:version` coordinates of the dependencies
+     *   the POM declares.
+     */
     private fun library(
-        groupId: String,
-        artifactId: String,
-        version: String,
+        coordinates: String,
         entries: List<String>,
         dependencies: List<String> = emptyList(),
     ) {
+        val (groupId, artifactId, version) = coordinates.split(':')
         val path = "repository/${groupId.replace('.', '/')}/$artifactId/$version"
-        val dependenciesElement = if (dependencies.isEmpty()) {
-            ""
-        } else {
-            dependencies.joinToString("\n", "  <dependencies>\n", "\n  </dependencies>")
+        val declared = dependencies.joinToString("\n") { dependency ->
+            val (depGroup, depArtifact, depVersion) = dependency.split(':')
+            """
+            |    <dependency>
+            |      <groupId>$depGroup</groupId>
+            |      <artifactId>$depArtifact</artifactId>
+            |      <version>$depVersion</version>
+            |    </dependency>
+            """.trimMargin()
         }
+        val dependenciesElement = if (dependencies.isEmpty()) "" else
+            "  <dependencies>\n$declared\n  </dependencies>"
         write(
             "$path/$artifactId-$version.pom",
             """
@@ -194,21 +273,12 @@ internal class ProtobufRuntimeIgTest {
         }
     }
 
-    private fun dependencyOn(groupId: String, artifactId: String, version: String): String =
-        """
-        |    <dependency>
-        |      <groupId>$groupId</groupId>
-        |      <artifactId>$artifactId</artifactId>
-        |      <version>$version</version>
-        |    </dependency>
-        """.trimMargin()
-
     private fun writeBuild() {
         write(
             "settings.gradle.kts",
             """
             rootProject.name = "protobuf-runtime-sample"
-            include("fat")
+            include("fat", "component", "twin")
             """.trimIndent()
         )
         write(
@@ -231,10 +301,95 @@ internal class ProtobufRuntimeIgTest {
             }
             """.trimIndent()
         )
-        val runtime = Protobuf.libs.joinToString("\n") { "    implementation(\"$it\")" }
-        write(
-            "fat/build.gradle.kts",
-            """
+        writeFatModule()
+        writeComponentModule()
+        writeTwinModule()
+    }
+
+    private fun writeFatModule() {
+        val body = """
+            |publishing {
+            |    publications {
+            |        create<MavenPublication>("$cliFatJar") {
+            |            artifactId = "fat-all"
+            |            artifact(tasks.shadowJar)
+            |        }
+            |        create<MavenPublication>("$library") {
+            |            from(components["java"])
+            |        }
+            |    }
+            |}
+            |
+            |unbundleProtobufRuntime(publication = "$cliFatJar")
+            |
+            |// Lists the files of the dependencies the fat JAR bundles, which the SBOM
+            |// of a fat JAR describes as bundled.
+            |tasks.register("$listIncludedTask") {
+            |    val included = files(tasks.shadowJar.map { it.includedDependencies })
+            |    val listing = layout.buildDirectory.file("included.txt")
+            |    inputs.files(included)
+            |    outputs.file(listing)
+            |    doLast {
+            |        listing.get().asFile.writeText(included.files.joinToString("\n") { it.name })
+            |    }
+            |}
+            |""".trimMargin()
+        writeModule("fat", body)
+    }
+
+    private fun writeComponentModule() {
+        val body = """
+            |publishing {
+            |    publications {
+            |        create<MavenPublication>("$library") {
+            |            from(components["java"])
+            |        }
+            |    }
+            |}
+            |
+            |unbundleProtobufRuntime(publication = "$library")
+            |""".trimMargin()
+        writeModule("component", body, dependOnRuntime = false)
+    }
+
+    private fun writeTwinModule() {
+        val body = """
+            |publishing {
+            |    publications {
+            |        create<MavenPublication>("$defaultFatJar") {
+            |            artifactId = "twin-all"
+            |            artifact(tasks.shadowJar)
+            |        }
+            |        create<MavenPublication>("$extra") {
+            |            artifactId = "twin-extra"
+            |            artifact(tasks.shadowJar)
+            |            pom.withXml {
+            |                val dependency = asNode()
+            |                    .appendNode("dependencies")
+            |                    .appendNode("dependency")
+            |                dependency.appendNode("groupId", "com.example")
+            |                dependency.appendNode("artifactId", "lib")
+            |                dependency.appendNode("version", "1.0")
+            |            }
+            |        }
+            |    }
+            |}
+            |
+            |unbundleProtobufRuntime()
+            |unbundleProtobufRuntime(publication = "$extra")
+            |""".trimMargin()
+        writeModule("twin", body)
+    }
+
+    /**
+     * Writes the build script of the given [module], which applies Shadow,
+     * depends on `com.example:lib` and, unless told otherwise, on the Protobuf runtime,
+     * and ends with the given [body].
+     */
+    private fun writeModule(module: String, body: String, dependOnRuntime: Boolean = true) {
+        val libs = if (dependOnRuntime) Protobuf.libs else emptyList()
+        val runtime = libs.joinToString("\n") { "|    implementation(\"$it\")" }
+        val head = """
             |import io.spine.gradle.publish.unbundleProtobufRuntime
             |
             |plugins {
@@ -244,25 +399,11 @@ internal class ProtobufRuntimeIgTest {
             |}
             |
             |dependencies {
-            |    implementation("com.example:lib:1.0")
-            |$runtime
+            |    implementation("$lib")
+            $runtime
             |}
-            |
-            |publishing {
-            |    publications {
-            |        create<MavenPublication>("$fatJar") {
-            |            artifactId = "fat-all"
-            |            artifact(tasks.shadowJar)
-            |        }
-            |        create<MavenPublication>("library") {
-            |            from(components["java"])
-            |        }
-            |    }
-            |}
-            |
-            |unbundleProtobufRuntime()
             |""".trimMargin()
-        )
+        write("$module/build.gradle.kts", "$head\n$body")
     }
 
     private fun file(relativePath: String): File = projectDir.resolve(relativePath)
@@ -297,30 +438,82 @@ internal class ProtobufRuntimeIgTest {
 
     private companion object {
 
-        /** The version of the module of the fixture. */
+        /** The version of the modules of the fixture. */
         const val moduleVersion = "1.0.0"
 
-        /** The publication of the fat JAR. */
-        const val fatJar = "fatJar"
+        /** The name of a publication of a fat JAR, other than the default one. */
+        const val cliFatJar = "cliFatJar"
 
-        /** The variant of the Java component published by the Shadow plugin. */
+        /** The name of the publication of a fat JAR, which the function uses by default. */
+        const val defaultFatJar = "fatJar"
+
+        /** The name of the publication of a fat JAR whose POM declares a dependency. */
+        const val extra = "extra"
+
+        /** The name of a publication of a Java component. */
+        const val library = "library"
+
+        /** The name of the variant of the Java component published by the Shadow plugin. */
         const val shadowedVariant = "shadowRuntimeElements"
 
-        /** The artifact IDs of the Protobuf runtime libraries, in their order in the POM. */
+        /** The name of the task listing the dependencies the fat JAR bundles. */
+        const val listIncludedTask = "listIncluded"
+
+        /** The library the modules of the fixture bundle. */
+        const val lib = "com.example:lib:1.0"
+
+        /** The library `protobuf-java-util` depends on, as the genuine one depends on Gson. */
+        const val gson = "com.example:gson:1.0"
+
+        /** The artifact IDs of the Protobuf runtime libraries. */
         val runtimeLibraries: List<String> =
             Protobuf.libs.map { it.substringBeforeLast(':').substringAfter(':') }
+
+        /** Returns the name of the task writing the POM of the given [publication]. */
+        fun pomTaskOf(publication: String): String =
+            "generatePomFileFor${publication.replaceFirstChar { it.uppercase() }}Publication"
     }
 }
 
-private fun org.w3c.dom.NodeList.elements(): List<Element> =
-    (0 until length).map { item(it) as Element }
+/**
+ * Asserts that this `dependency` element of a POM declares a Protobuf runtime
+ * library in the `runtime` scope and without transitive dependencies.
+ */
+private fun Element.shouldBeRuntimeLibrary() {
+    childText("groupId") shouldBe Protobuf.group
+    childText("version") shouldBe Protobuf.version
+    childText("scope") shouldBe "runtime"
+    val exclusions = childElements("exclusions")
+    exclusions.shouldBeSingleton()
+    val exclusion = exclusions.single().childElements("exclusion")
+    exclusion.shouldBeSingleton()
+    exclusion.single().childText("groupId") shouldBe "*"
+    exclusion.single().childText("artifactId") shouldBe "*"
+}
 
-private fun Element.childText(tagName: String): String =
-    getElementsByTagName(tagName).item(0).textContent
+/** Returns the child elements of this one with the given [tag]. */
+private fun Element.childElements(tag: String): List<Element> {
+    val children = childNodes
+    return (0 until children.length)
+        .map { children.item(it) }
+        .filterIsInstance<Element>()
+        .filter { it.tagName == tag }
+}
+
+/** Returns the text of the child element of this one with the given [tag]. */
+private fun Element.childText(tag: String): String =
+    childTextOrNull(tag).shouldNotBeNull()
 
 /**
- * Tells if this dependency of the Gradle module metadata excludes all its transitive
- * dependencies.
+ * Returns the text of the child element of this one with the given [tag],
+ * or `null` if there is none.
  */
-private fun JsonNode.excludesAll(): Boolean =
-    this["excludes"]?.any { it["group"].asText() == "*" && it["module"].asText() == "*" } == true
+private fun Element.childTextOrNull(tag: String): String? =
+    childElements(tag).firstOrNull()?.textContent
+
+/**
+ * Returns the `group` and `module` of each exclusion of this dependency of
+ * the Gradle module metadata.
+ */
+private fun JsonNode.excludes(): List<Pair<String?, String?>> =
+    this["excludes"]?.map { it["group"]?.asText() to it["module"]?.asText() }.orEmpty()

@@ -19,10 +19,11 @@ Fat JARs bundling the unrelocated Protobuf runtime pin the runtime of the build
 that made them on the classpath of their consumers; newer generated code then
 fails with `ProtobufRuntimeVersionException`. The runtime cannot be relocated,
 as it depends on the names of its classes. tool-base#196 (`protobuf-setup-plugins`,
-`jvm-tool-plugins`) and compiler#89 (`compiler-cli-all`) fixed this with two
-copies of the same code: tool-base's repo-owned `buildSrc/…/shade/ProtobufRuntime.kt`
-and a block of `cli/build.gradle.kts`. They differ only in the name of
-the artifact-only publication whose POM declares the runtime.
+`jvm-tool-plugins`) and compiler#89 (`compiler-cli-all`) address this in their
+open PRs with two copies of the same code: tool-base's repo-owned
+`buildSrc/…/shade/ProtobufRuntime.kt` and a block of `cli/build.gradle.kts`.
+They differ only in the name of the artifact-only publication whose POM
+declares the runtime.
 
 The function is opt-in rather than part of `uber-jar-module`: the IntelliJ
 Platform uber JARs use that script too, bundle no Protobuf, and must not
@@ -33,10 +34,16 @@ declare it.
 - [x] `buildSrc/…/publish/ProtobufRuntime.kt`: `unbundleProtobufRuntime(publication)`.
 - [x] `ProtobufRuntimeIgTest`: the JAR, its manifest, the POM, and the Gradle
   module metadata of the shadowed variant.
-- [ ] `./gradlew :buildSrc:test detekt`, `/pre-pr`, PR.
+- [x] `./gradlew :buildSrc:test --tests '*ProtobufRuntimeIgTest' detekt`.
+- [x] Reviews (`spine-code-review`, `kotlin-engineer`, `gradle-review`, `review-docs`)
+  applied: one call per publication, Shadow's name constants, merging into
+  an existing `dependencies` element, and tests for these.
+- [ ] Re-run the test on the reviewed version; mark the draft PR ready.
 - [ ] After the merge: `./config/pull` in tool-base#196 and compiler#89, and
   replace their copies with the call.
 
 ## Log
 
-- 2026-10-16 — implemented.
+- 2026-10-16 — implemented; `ProtobufRuntimeIgTest` 5/5, `detekt` clean.
+- 2026-10-16 — review fixes pushed as a draft PR; their test run waits for
+  a free build slot on the machine.
