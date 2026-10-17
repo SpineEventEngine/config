@@ -83,15 +83,19 @@ it may be worth testing that the change does not break dependant projects. `Conf
 the local changes in the `config` repository. The usage looks like this:
 
 ```kotlin
+import java.nio.file.Path
+
 // A reference to `config` to use along with the `ConfigTester`.
-val config = Paths.get("./")
+// Both paths are resolved against the project directory: a relative path would be
+// resolved against the working directory of the Gradle daemon instead.
+val config: Path = layout.projectDirectory.asFile.toPath()
 
 // A temp folder to use to check out the sources of other repositories with the `ConfigTester`.
-val tempFolder = File("./tmp")
+val tempFolder = layout.projectDirectory.dir("tmp").asFile
 
 // Creates a Gradle task which checks out and builds the selected Spine repositories
 // with the local version of `config` and `config/buildSrc`.
-ConfigTester(config, tasks, tempFolder)
+ConfigTester(config = config, tasks = tasks, tempFolder = tempFolder)
     .addRepo(SpineRepos.baseTypes)  // Builds `base-types` at `master`.
     .addRepo(SpineRepos.base)       // Builds `base` at `master`.
     .addRepo(SpineRepos.coreJvm)    // Builds `core-jvm` at `master`.
