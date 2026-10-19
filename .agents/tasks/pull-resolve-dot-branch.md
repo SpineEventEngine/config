@@ -43,7 +43,9 @@ Nothing in Spine declares `.` today (all 20 local checkouts with a tracked
 branch use the literal `master`), so this is latent robustness, not a live
 outage.
 
+[#708]: https://github.com/SpineEventEngine/config/pull/708
 [#802]: https://github.com/SpineEventEngine/config/pull/802
+[#804]: https://github.com/SpineEventEngine/config/pull/804
 
 ## Plan
 
@@ -52,10 +54,15 @@ outage.
       `Floating '<path>' -> origin/<branch>` message and before
       `git submodule update --init`, so a skip really is a no-op
 - [x] Verify with throwaway repos: named branch, detached superproject,
-      ordinary `branch = master` run twice
+      ordinary `branch = master` run twice, and a superproject carrying both a
+      branch and a tag of the same name
 - [x] `bash -n` and `shellcheck` clean (only the pre-existing SC1091 on
       `source migrate`, unchanged from before)
-- [ ] Open the PR against `master`
+- [x] Open the PR against `master` — [#804], which merged **without** the
+      review fix below: auto-merge fired about two minutes before the fix
+      commit was pushed
+- [ ] Re-land the lost commit on a branch off `master` and confirm it is
+      actually an ancestor of `origin/master` afterwards
 
 ## Log
 
@@ -66,3 +73,19 @@ outage.
   APPROVE WITH CHANGES. Took the prose fixes, and documented that the
   detached-superproject skip bypasses this entry's `git submodule update
   --init` too, leaving a not-yet-checked-out submodule to `init-submodules`
+- 2026-10-16 — Codex review of `f1423f5e` found that
+  `git rev-parse --abbrev-ref HEAD` shortens to a *non-ambiguous* name, so a
+  superproject with both a branch and a tag called `foo` resolved to
+  `heads/foo`: the fetch succeeded, the checkout failed, and the submodule was
+  left stale and detached at the pin. Reproduced, then switched to
+  `git branch --show-current`, which prints the name exactly and prints
+  nothing when detached. `git symbolic-ref --short` was checked and shortens
+  the same way, so it is not an alternative. The `= "HEAD"` half of the
+  detachment guard went with it, being unreachable for the new command
+- 2026-10-19 — [#804] merged, but without the fix above: config's auto-merge
+  fired about two minutes before `6a39f556` was pushed, so the merge commit's
+  branch-side parent is one commit below it. `master` therefore shipped the
+  exact bug the review reported, with the PR reading "merged" and green. The
+  commit was cherry-picked back onto a branch off `master` — the same failure
+  mode cost [#708] a fix once before, so this time the landing is checked with
+  `git merge-base --is-ancestor` instead of the PR's merged state
