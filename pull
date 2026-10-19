@@ -120,6 +120,13 @@ if [ -f .gitmodules ]; then
         # case this is avoids both; the branch exists locally in the ordinary
         # one, where `-b` would fail with `already exists`.
         #
+        # The merge target is spelled out as `refs/remotes/origin/<branch>` for
+        # the same reason: gitrevisions(7) resolves a bare name through
+        # `refs/tags/` BEFORE `refs/remotes/`, so a tag literally named
+        # `origin/<branch>` wins the shorthand, and the merge would then
+        # fast-forward the branch the checkout just placed exactly onto
+        # whatever that tag points at, reporting success.
+        #
         # `--ff-only` still guards both paths, which matters more here than in
         # `init-submodules`: these submodules are already checked out and in
         # use, so a local branch that has diverged from `origin/<branch>` must
@@ -135,7 +142,7 @@ if [ -f .gitmodules ]; then
                    git checkout --quiet -b "$branch" \
                        "refs/remotes/origin/$branch"; \
                fi \
-            && git merge --quiet --ff-only "origin/$branch" ) \
+            && git merge --quiet --ff-only "refs/remotes/origin/$branch" ) \
         || echo "  WARNING: could not float '$path' to origin/$branch; left as-is." >&2
     done
 fi

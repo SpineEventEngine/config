@@ -259,6 +259,14 @@ git submodule status 2>/dev/null | awk '$1 ~ /^-/ { print $2 }' | while read -r 
     # diverged from `origin/<branch>` is reported rather than overwritten.
     # Nothing here force-moves a ref except the remote-tracking ref the fetch
     # owns, which a default clone force-updates anyway.
+    #
+    # It merges `refs/remotes/origin/<branch>`, not the `origin/<branch>`
+    # shorthand, for the reason the checkout above spells a ref out too.
+    # gitrevisions(7) resolves a bare name through `refs/tags/` BEFORE
+    # `refs/remotes/`, so a tag literally named `origin/<branch>` wins the
+    # shorthand — and then this merge would fast-forward the branch the
+    # checkout just placed exactly onto whatever that tag points at, reporting
+    # success. Every ref in the chain is therefore fully qualified.
     echo "init-submodules: floating '$path' -> origin/$branch"
     ( cd "$path" \
         && git fetch --quiet origin \
@@ -269,7 +277,7 @@ git submodule status 2>/dev/null | awk '$1 ~ /^-/ { print $2 }' | while read -r 
                git checkout --quiet -b "$branch" \
                    "refs/remotes/origin/$branch"; \
            fi \
-        && git merge --quiet --ff-only "origin/$branch" ) </dev/null \
+        && git merge --quiet --ff-only "refs/remotes/origin/$branch" ) </dev/null \
         || echo "init-submodules: WARNING — could not float '$path' to" \
                 "origin/$branch; run './config/pull' to retry." >&2
 done

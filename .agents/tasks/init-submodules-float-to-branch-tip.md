@@ -64,6 +64,14 @@ tracked branch, not at the commit the superproject pins.
   - keep `merge --ff-only` after either checkout path, so a local branch that
     has diverged from `origin/<branch>` is reported rather than overwritten,
     and nothing force-moves a ref but the remote-tracking ref the fetch owns;
+  - merge `refs/remotes/origin/<branch>`, not the `origin/<branch>` shorthand.
+    gitrevisions(7) resolves a bare name through `refs/tags/` before
+    `refs/remotes/`, so a tag literally named `origin/<branch>` wins it. An
+    ordinary clone fetches such a tag, and the merge would then fast-forward
+    the branch the checkout had just placed exactly onto whatever the tag
+    points at, reporting success — turning the narrow-clone path from a warned
+    failure into a silent wrong float. Every ref in the chain is now fully
+    qualified, in both scripts;
   - give `./config/pull` the same two fixes, so the scripts do not diverge. It
     carried the same bare fetch and bare checkout, and there the silent detach
     matters more: `pull` floats submodules that are already checked out and in
