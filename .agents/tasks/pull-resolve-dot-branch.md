@@ -43,9 +43,9 @@ Nothing in Spine declares `.` today (all 20 local checkouts with a tracked
 branch use the literal `master`), so this is latent robustness, not a live
 outage.
 
+[#708]: https://github.com/SpineEventEngine/config/pull/708
 [#802]: https://github.com/SpineEventEngine/config/pull/802
 [#804]: https://github.com/SpineEventEngine/config/pull/804
-[#708]: https://github.com/SpineEventEngine/config/pull/708
 
 ## Plan
 
@@ -59,8 +59,8 @@ outage.
 - [x] `bash -n` and `shellcheck` clean (only the pre-existing SC1091 on
       `source migrate`, unchanged from before)
 - [x] Open the PR against `master` — [#804], which merged **without** the
-      review fix below: auto-merge fired about two minutes before the commit
-      existed
+      review fix below: auto-merge fired about two minutes before the fix
+      commit was pushed
 - [ ] Re-land the lost commit on a branch off `master` and confirm it is
       actually an ancestor of `origin/master` afterwards
 

@@ -64,12 +64,12 @@ if [ -f .gitmodules ]; then
         # current branch name before anything is printed or touched.
         if [ "$branch" = "." ]; then
             # `git branch --show-current` prints the branch name exactly, and
-            # prints nothing when `HEAD` is detached. `git rev-parse
-            # --abbrev-ref HEAD` cannot stand in: it shortens to a *non-ambiguous*
-            # name, so a superproject carrying both a branch and a tag called
-            # `foo` yields `heads/foo`, which fetches but then fails to check out
-            # and would leave the submodule stale and detached. `git symbolic-ref
-            # --short` shortens the same way and is no better.
+            # prints nothing when `HEAD` is detached.
+            # `git rev-parse --abbrev-ref HEAD` cannot stand in: it shortens to a
+            # *non-ambiguous* name, so a superproject carrying both a branch and a
+            # tag called `foo` yields `heads/foo`, which fetches but then fails to
+            # check out, leaving the submodule stale and detached.
+            # `git symbolic-ref --short` shortens the same way and is no better.
             branch=$(git branch --show-current 2>/dev/null)
             # A detached superproject has no branch name to inherit. Unlike
             # `init-submodules`, which floats only a submodule it has just
