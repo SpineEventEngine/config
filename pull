@@ -56,6 +56,33 @@ if [ -f .gitmodules ]; then
     | while read -r key branch; do
         name=${key#submodule.}; name=${name%.branch}
         path=$(git config -f .gitmodules --get "submodule.$name.path") || continue
+        # `.gitmodules` may declare `branch = .`, which gitmodules(5) defines as
+        # the branch the superproject itself is on. That is a sentinel, not a
+        # ref: passed through as-is, it makes `git fetch origin .` die with
+        # `fatal: invalid refspec '.'`, so the float warns about a nonexistent
+        # `origin/.` and the submodule stays wherever it was. Resolve it to the
+        # current branch name before anything is printed or touched.
+        if [ "$branch" = "." ]; then
+            branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+            # A detached superproject has no branch name to inherit. Unlike
+            # `init-submodules`, which floats only a submodule it has just
+            # cloned, this loop acts on submodules that are already checked out
+            # and in use, so guessing a branch could move one off the commit it
+            # is on. Leave it exactly as it is and say what would make it float.
+            #
+            # Skipping the entry outright also skips its `git submodule update
+            # --init` below, which is the point: with the default `checkout`
+            # strategy that command resets an already-floated submodule to the
+            # pin. One not yet checked out therefore stays that way here;
+            # `init-submodules`, which initializes before it resolves `.`, is
+            # what materializes it.
+            if [ -z "$branch" ] || [ "$branch" = "HEAD" ]; then
+                echo "  WARNING: '$path' tracks the superproject's branch ('.')," \
+                     "which is detached here; left as-is." \
+                     "Re-run from a branch to float it." >&2
+                continue
+            fi
+        fi
         echo "Floating '$path' -> origin/$branch"
         git submodule sync -- "$path" >/dev/null 2>&1 || true
         git submodule update --init -- "$path" >/dev/null 2>&1 || true
