@@ -17,11 +17,9 @@ package io.spine.gradle
 import io.kotest.matchers.shouldBe
 import java.net.URI
 import java.nio.file.Path
-import kotlin.io.path.createDirectories
 import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.exists
 import kotlin.io.path.readText
-import kotlin.io.path.writeText
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -156,15 +154,5 @@ internal class ClonedRepoSpec {
         const val MODULE_SCRIPT = "src/main/kotlin/module.gradle.kts"
         const val TEMPLATE_MODULE_SCRIPT = "// A template to be defined by a project."
         const val OWN_MODULE_SCRIPT = "plugins { `java-library` }"
-
-        /**
-         * Creates a file under this folder, along with the folders leading to it.
-         */
-        fun Path.put(relativePath: String, content: String): Path {
-            val file = resolve(relativePath)
-            file.parent.createDirectories()
-            file.writeText(content)
-            return file
-        }
     }
 }

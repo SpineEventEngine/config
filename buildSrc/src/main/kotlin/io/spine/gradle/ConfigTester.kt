@@ -103,7 +103,8 @@ class ConfigTester(
     }
 
     /**
-     * Adds a test.
+     * Adds a Git [repo] into the test build by its URI, to be checked out
+     * at the given [branch].
      */
     fun addRepo(repo: URI, branch: Branch): ConfigTester {
         repos.add(GitRepository(repo, branch))
@@ -187,7 +188,9 @@ class GitRepository(
     private val uri: URI,
 
     /**
-     * A branch to checkout.
+     * A branch to check out.
+     *
+     * May be any branch of the repository, not only the default one.
      *
      * By default, points to `master`.
      */
@@ -221,6 +224,9 @@ class GitRepository(
      * the `destinationFolder/foobar` folder.
      *
      * If the supplied folder does not exist, it is created.
+     *
+     * The [branch] is checked out as a local branch tracking its remote counterpart.
+     * A [branch] the remote does not advertise fails the checkout.
      */
     fun checkout(destinationFolder: File): ClonedRepo {
         val preparedFolder = prepareCheckout(destinationFolder).toPath()
@@ -229,16 +235,21 @@ class GitRepository(
                     "to `${preparedFolder.toAbsolutePath()}`."
         )
 
+        // The branch is checked out by the `clone` itself, rather than by a subsequent
+        // `checkout`. A fresh clone has only the default branch among its local refs,
+        // so `checkout` cannot resolve any other branch by its plain name, while
+        // `refToCheckout` is resolved against the refs advertised by the remote,
+        // where every branch of the repository is present.
+        //
+        // Only the checked-out files are of interest further on, so the Git repository
+        // the clone opens is closed right away.
         Grgit.clone(
             mapOf(
                 "dir" to preparedFolder,
-                "uri" to uri
+                "uri" to uri,
+                "refToCheckout" to branch.name
             )
-        ).checkout(
-            mapOf(
-                "branch" to branch.name
-            )
-        )
+        ).close()
         return ClonedRepo(this, preparedFolder)
     }
 
@@ -488,5 +499,8 @@ object SpineRepos {
 
 /**
  * A name of a Git branch.
+ *
+ * The [name] is a plain branch name, such as `master` or `grpc-concurrency-fixes`.
+ * Neither the `refs/heads/` prefix nor the name of a remote is expected.
  */
 data class Branch(val name: String)
