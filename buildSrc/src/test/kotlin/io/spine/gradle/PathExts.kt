@@ -21,7 +21,7 @@ import kotlin.io.path.writeText
 /**
  * Creates a file under this folder, along with the folders leading to it.
  */
-internal fun Path.put(relativePath: String, content: String): Path {
+internal fun Path.createFile(relativePath: String, content: String): Path {
     val file = resolve(relativePath)
     file.parent.createDirectories()
     file.writeText(content)

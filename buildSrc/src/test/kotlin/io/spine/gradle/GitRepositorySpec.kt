@@ -59,7 +59,7 @@ internal class GitRepositorySpec {
         origin = tempDir.resolve(REPO_NAME).createDirectories()
         destination = tempDir.resolve("checkout").toFile()
         Grgit.init(mapOf("dir" to origin)).use { git ->
-            origin.put(SHARED_FILE, SHARED_TEXT)
+            origin.createFile(SHARED_FILE, SHARED_TEXT)
             git.commitAll("Add the file shared by all branches.")
 
             // Git does not mandate the name of the branch a repository starts with,
@@ -69,7 +69,7 @@ internal class GitRepositorySpec {
             }
 
             git.checkout(mapOf("branch" to FEATURE, "createBranch" to true))
-            origin.put(FEATURE_FILE, FEATURE_TEXT)
+            origin.createFile(FEATURE_FILE, FEATURE_TEXT)
             git.commitAll("Add the file of the feature branch.")
 
             git.checkout(mapOf("branch" to MASTER))

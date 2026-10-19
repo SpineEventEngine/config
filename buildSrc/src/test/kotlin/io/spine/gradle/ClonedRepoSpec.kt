@@ -45,8 +45,8 @@ internal class ClonedRepoSpec {
 
     @Test
     fun `copy the files, and not only the folders`() {
-        source.put("quality/detekt-config.yml", "The quality settings.")
-        source.put("src/main/kotlin/io/spine/dependency/build/Ksp.kt", "object Ksp")
+        source.createFile("quality/detekt-config.yml", "The quality settings.")
+        source.createFile("src/main/kotlin/io/spine/dependency/build/Ksp.kt", "object Ksp")
 
         replaceBuildSrc()
 
@@ -58,12 +58,12 @@ internal class ClonedRepoSpec {
 
     @Test
     fun `skip the build output and the Git metadata`() {
-        source.put(BUILD_SCRIPT, "The build script.")
-        source.put("src/main/kotlin/Deps.kt", "object Deps")
-        source.put("build/classes/Deps.class", "The compiled code.")
-        source.put(".gradle/file-system.probe", "The probe.")
-        source.put(".kotlin/sessions/session.salive", "The session.")
-        source.put(".git/HEAD", "ref: refs/heads/master")
+        source.createFile(BUILD_SCRIPT, "The build script.")
+        source.createFile("src/main/kotlin/Deps.kt", "object Deps")
+        source.createFile("build/classes/Deps.class", "The compiled code.")
+        source.createFile(".gradle/file-system.probe", "The probe.")
+        source.createFile(".kotlin/sessions/session.salive", "The session.")
+        source.createFile(".git/HEAD", "ref: refs/heads/master")
 
         replaceBuildSrc()
 
@@ -78,11 +78,11 @@ internal class ClonedRepoSpec {
     @Test
     fun `skip the build output of a nested Gradle project`() {
         val config = tempDir.resolve("config")
-        config.put(BUILD_SCRIPT, "The build script.")
-        config.put("$BUILD_SRC/settings.gradle.kts", "The settings of `buildSrc`.")
-        config.put("$BUILD_SRC/build/classes/Deps.class", "The compiled code.")
-        config.put("$BUILD_SRC/.gradle/file-system.probe", "The probe.")
-        config.put("$BUILD_SRC/src/main/kotlin/io/spine/dependency/build/Ksp.kt", "object Ksp")
+        config.createFile(BUILD_SCRIPT, "The build script.")
+        config.createFile("$BUILD_SRC/settings.gradle.kts", "The settings of `buildSrc`.")
+        config.createFile("$BUILD_SRC/build/classes/Deps.class", "The compiled code.")
+        config.createFile("$BUILD_SRC/.gradle/file-system.probe", "The probe.")
+        config.createFile("$BUILD_SRC/src/main/kotlin/io/spine/dependency/build/Ksp.kt", "object Ksp")
 
         val repo = GitRepository(URI("https://github.com/SpineEventEngine/base"))
         ClonedRepo(repo, location).replaceConfig(config, null)
@@ -96,8 +96,8 @@ internal class ClonedRepoSpec {
 
     @Test
     fun `preserve the 'module gradle kts' of the repository under test`() {
-        source.put(MODULE_SCRIPT, TEMPLATE_MODULE_SCRIPT)
-        location.resolve(BUILD_SRC).put(MODULE_SCRIPT, OWN_MODULE_SCRIPT)
+        source.createFile(MODULE_SCRIPT, TEMPLATE_MODULE_SCRIPT)
+        location.resolve(BUILD_SRC).createFile(MODULE_SCRIPT, OWN_MODULE_SCRIPT)
 
         replaceBuildSrc()
 
@@ -109,7 +109,7 @@ internal class ClonedRepoSpec {
 
     @Test
     fun `take the template 'module gradle kts' when the repository has none`() {
-        source.put(MODULE_SCRIPT, TEMPLATE_MODULE_SCRIPT)
+        source.createFile(MODULE_SCRIPT, TEMPLATE_MODULE_SCRIPT)
 
         replaceBuildSrc()
 
@@ -119,7 +119,7 @@ internal class ClonedRepoSpec {
 
     @Test
     fun `skip a link that does not resolve`() {
-        source.put("src/main/kotlin/Deps.kt", "object Deps")
+        source.createFile("src/main/kotlin/Deps.kt", "object Deps")
         val link = source.resolve("guidelines")
         link.createSymbolicLinkPointingTo(source.resolve("shared/guidelines"))
 
@@ -132,8 +132,8 @@ internal class ClonedRepoSpec {
 
     @Test
     fun `skip the ignored folder`() {
-        source.put("src/main/kotlin/Deps.kt", "object Deps")
-        source.put("tmp/base/README.md", "The checked out sources.")
+        source.createFile("src/main/kotlin/Deps.kt", "object Deps")
+        source.createFile("tmp/base/README.md", "The checked out sources.")
 
         replaceBuildSrc(ignoredFolder = source.resolve("tmp"))
 
