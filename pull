@@ -96,10 +96,53 @@ if [ -f .gitmodules ]; then
         # Converge the active update strategy with `.gitmodules` (see note above).
         strategy=$(git config -f .gitmodules --get "submodule.$name.update" 2>/dev/null) \
             && git config "submodule.$name.update" "$strategy"
+        # The fetch names its destination, and the checkout is given a start
+        # point, for the same two reasons as in `init-submodules`.
+        #
+        # A bare `git fetch origin <branch>` leaves it to the refspec configured
+        # for the remote to update `refs/remotes/origin/<branch>` as well, which
+        # a full clone's does. A submodule declaring `shallow = true` in
+        # `.gitmodules` is cloned single-branch (a shallow clone implies
+        # `--single-branch`), as
+        # `+refs/heads/<default>:refs/remotes/origin/<default>`, so any other
+        # tracked branch reaches `FETCH_HEAD` alone and `origin/<branch>` never
+        # appears at all. The leading `+` matches what a default clone
+        # configures.
+        #
+        # And a bare `git checkout <branch>` guesses the branch from a
+        # remote-tracking ref only when the name resolves to nothing, over just
+        # the refs that refspec covers. So it fails in the single-branch clone
+        # above; and where the submodule carries a *tag* of that name, the name
+        # does resolve, so Git checks out the tag and detaches `HEAD` — after
+        # which the `--ff-only` below fast-forwards that detached `HEAD` to the
+        # branch tip and reports success, leaving the submodule on the right
+        # commit, on no branch, with nothing warned. Asking `show-ref` which
+        # case this is avoids both; the branch exists locally in the ordinary
+        # one, where `-b` would fail with `already exists`.
+        #
+        # The merge target is spelled out as `refs/remotes/origin/<branch>` for
+        # the same reason: gitrevisions(7) resolves a bare name through
+        # `refs/tags/` BEFORE `refs/remotes/`, so a tag literally named
+        # `origin/<branch>` wins the shorthand, and the merge would then
+        # fast-forward the branch the checkout just placed exactly onto
+        # whatever that tag points at, reporting success.
+        #
+        # `--ff-only` still guards both paths, which matters more here than in
+        # `init-submodules`: these submodules are already checked out and in
+        # use, so a local branch that has diverged from `origin/<branch>` must
+        # be reported, never overwritten. Nothing here force-moves a ref but
+        # the remote-tracking ref the fetch owns, which a default clone
+        # force-updates anyway.
         ( cd "$path" \
-            && git fetch --quiet origin "$branch" \
-            && git checkout --quiet "$branch" \
-            && git merge --quiet --ff-only "origin/$branch" ) \
+            && git fetch --quiet origin \
+                   "+refs/heads/$branch:refs/remotes/origin/$branch" \
+            && if git show-ref --verify --quiet "refs/heads/$branch"; then \
+                   git checkout --quiet "$branch"; \
+               else \
+                   git checkout --quiet -b "$branch" \
+                       "refs/remotes/origin/$branch"; \
+               fi \
+            && git merge --quiet --ff-only "refs/remotes/origin/$branch" ) \
         || echo "  WARNING: could not float '$path' to origin/$branch; left as-is." >&2
     done
 fi

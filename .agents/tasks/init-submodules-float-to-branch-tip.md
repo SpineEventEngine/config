@@ -41,8 +41,48 @@ tracked branch, not at the commit the superproject pins.
     `git fetch origin .` is a `fatal: invalid refspec`. Nothing in Spine
     declares it, but it is valid anywhere. A detached superproject has no name
     to inherit, so the float is skipped and the pin kept. `./config/pull` has
-    the same gap for already-checked-out submodules; that is pre-existing and
-    left for a follow-up;
+    the same gap for already-checked-out submodules, fixed there separately in
+    PR #804. `init-submodules` resolves it the same way: with
+    `git branch --show-current`, not `git rev-parse --abbrev-ref HEAD`, which
+    shortens to a non-ambiguous name and so yields `heads/foo` when a tag
+    shares the branch name; the fetch then succeeds but the checkout fails;
+  - name the fetch destination explicitly, as
+    `+refs/heads/<branch>:refs/remotes/origin/<branch>`. A submodule declaring
+    `shallow = true` is cloned single-branch, so for any other tracked branch a
+    bare `git fetch origin <branch>` reaches only `FETCH_HEAD` and
+    `refs/remotes/origin/<branch>` never appears at all;
+  - ask whether the branch exists locally, with `git show-ref --verify`, rather
+    than letting Git work the checkout out, because both answers are otherwise
+    wrong in a reachable case. A fresh clone has a local branch only for the
+    default branch, so `-b` alone would fail with `already exists` on the
+    common path; and plain `git checkout <branch>` guesses from a
+    remote-tracking ref only when the name resolves to nothing, considering
+    only refs the remote's fetch refspec covers, so it fails in the
+    single-branch clone above — while a submodule carrying a *tag* of that name
+    makes it resolve the tag and detach `HEAD`, which `--ff-only` then
+    fast-forwards to the right commit on no branch at all, silently;
+  - keep `merge --ff-only` after either checkout path, so a local branch that
+    has diverged from `origin/<branch>` is reported rather than overwritten,
+    and nothing force-moves a ref but the remote-tracking ref the fetch owns;
+  - merge `refs/remotes/origin/<branch>`, not the `origin/<branch>` shorthand.
+    gitrevisions(7) resolves a bare name through `refs/tags/` before
+    `refs/remotes/`, so a tag literally named `origin/<branch>` wins it. An
+    ordinary clone fetches such a tag, and the merge would then fast-forward
+    the branch the checkout had just placed exactly onto whatever the tag
+    points at, reporting success — turning the narrow-clone path from a warned
+    failure into a silent wrong float. Every ref in the chain is now fully
+    qualified, in both scripts;
+  - give `./config/pull` the same two fixes, so the scripts do not diverge. It
+    carried the same bare fetch and bare checkout, and there the silent detach
+    matters more: `pull` floats submodules that are already checked out and in
+    use, which may carry local work. That work is safe either way, and the two
+    cases differ only in whether anything is said: a local branch merely *ahead*
+    of `origin/<branch>` floats silently and keeps its commits, while one that
+    has genuinely diverged — commits on both sides — fails `--ff-only` and is
+    reported by the existing warning, also keeping its commits. Neither depends
+    on the `update` strategy; the first commit's message said the diverged case
+    was silent, which was an artefact of a fixture whose remote had not moved
+    past the pin, so `update = merge` reconciled it before the float;
   - a failed float warns and leaves the submodule wherever the steps that did
     succeed put it — at worst the pin — and is never retried, because the
     submodule is no longer a `-` line, so the warning points at `./config/pull`;
