@@ -67,10 +67,14 @@ tracked branch, not at the commit the superproject pins.
   - give `./config/pull` the same two fixes, so the scripts do not diverge. It
     carried the same bare fetch and bare checkout, and there the silent detach
     matters more: `pull` floats submodules that are already checked out and in
-    use, which may carry local work. Verified that a submodule whose local
-    branch has diverged from `origin/<branch>` is still reported and keeps its
-    commit, as the `update = merge` strategy and `--ff-only` between them
-    already ensured;
+    use, which may carry local work. That work is safe either way, and the two
+    cases differ only in whether anything is said: a local branch merely *ahead*
+    of `origin/<branch>` floats silently and keeps its commits, while one that
+    has genuinely diverged — commits on both sides — fails `--ff-only` and is
+    reported by the existing warning, also keeping its commits. Neither depends
+    on the `update` strategy; the first commit's message said the diverged case
+    was silent, which was an artefact of a fixture whose remote had not moved
+    past the pin, so `update = merge` reconciled it before the float;
   - a failed float warns and leaves the submodule wherever the steps that did
     succeed put it — at worst the pin — and is never retried, because the
     submodule is no longer a `-` line, so the warning points at `./config/pull`;
