@@ -18,7 +18,6 @@ package io.spine.dependency.local
  * Defines Maven groups for the Spine SDK artifacts.
  */
 @Suppress(
-    "unused" /* Some subprojects do not use all the declared groups. */,
     "ConstPropertyName" /* We use a custom convention for artifact properties. */,
 )
 object Spine {
