@@ -44,6 +44,8 @@ branch use the literal `master`), so this is latent robustness, not a live
 outage.
 
 [#802]: https://github.com/SpineEventEngine/config/pull/802
+[#804]: https://github.com/SpineEventEngine/config/pull/804
+[#708]: https://github.com/SpineEventEngine/config/pull/708
 
 ## Plan
 
@@ -56,7 +58,11 @@ outage.
       branch and a tag of the same name
 - [x] `bash -n` and `shellcheck` clean (only the pre-existing SC1091 on
       `source migrate`, unchanged from before)
-- [ ] Open the PR against `master`
+- [x] Open the PR against `master` — [#804], which merged **without** the
+      review fix below: auto-merge fired about two minutes before the commit
+      existed
+- [ ] Re-land the lost commit on a branch off `master` and confirm it is
+      actually an ancestor of `origin/master` afterwards
 
 ## Log
 
@@ -76,3 +82,10 @@ outage.
   nothing when detached. `git symbolic-ref --short` was checked and shortens
   the same way, so it is not an alternative. The `= "HEAD"` half of the
   detachment guard went with it, being unreachable for the new command
+- 2026-10-19 — [#804] merged, but without the fix above: config's auto-merge
+  fired about two minutes before `6a39f556` was pushed, so the merge commit's
+  branch-side parent is one commit below it. `master` therefore shipped the
+  exact bug the review reported, with the PR reading "merged" and green. The
+  commit was cherry-picked back onto a branch off `master` — the same failure
+  mode cost [#708] a fix once before, so this time the landing is checked with
+  `git merge-base --is-ancestor` instead of the PR's merged state
