@@ -64,6 +64,13 @@ tracked branch, not at the commit the superproject pins.
   - keep `merge --ff-only` after either checkout path, so a local branch that
     has diverged from `origin/<branch>` is reported rather than overwritten,
     and nothing force-moves a ref but the remote-tracking ref the fetch owns;
+  - give `./config/pull` the same two fixes, so the scripts do not diverge. It
+    carried the same bare fetch and bare checkout, and there the silent detach
+    matters more: `pull` floats submodules that are already checked out and in
+    use, which may carry local work. Verified that a submodule whose local
+    branch has diverged from `origin/<branch>` is still reported and keeps its
+    commit, as the `update = merge` strategy and `--ff-only` between them
+    already ensured;
   - a failed float warns and leaves the submodule wherever the steps that did
     succeed put it — at worst the pin — and is never retried, because the
     submodule is no longer a `-` line, so the warning points at `./config/pull`;

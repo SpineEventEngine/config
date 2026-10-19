@@ -225,10 +225,11 @@ git submodule status 2>/dev/null | awk '$1 ~ /^-/ { print $2 }' | while read -r 
     # What that just checked out is the superproject's pin, which nobody
     # maintains (see the header). Advance the fresh checkout to the tip of its
     # tracked branch, leaving it ON the branch rather than in a detached `HEAD` —
-    # the same three steps `./config/pull` takes in its step 2, with the fetch
-    # destination and the checkout start point spelled out, for the two reasons
-    # below. A failure leaves the submodule wherever the steps that did succeed
-    # put it, so the warning promises no particular commit, as `pull`'s does not.
+    # the same three steps `./config/pull` takes in its step 2, both scripts
+    # naming the fetch destination and the checkout start point, for the two
+    # reasons below. A failure leaves the submodule wherever the steps that did
+    # succeed put it, so the warning promises no particular commit, as `pull`'s
+    # does not.
     #
     # The fetch names its destination. A bare `git fetch origin <branch>` relies
     # on the refspec configured for the remote to update
