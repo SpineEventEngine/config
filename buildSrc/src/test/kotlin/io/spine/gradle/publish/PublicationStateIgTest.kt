@@ -470,8 +470,12 @@ private class Registry(@Volatile var root: File, private val token: String) : Au
     private fun String?.carriesToken(): Boolean {
         val credentials = this?.takeIf { it.startsWith("Basic ") }?.removePrefix("Basic ")
             ?: return false
-        val decoded = runCatching { String(Base64.getDecoder().decode(credentials)) }
-        return decoded.getOrNull()?.endsWith(":$token") == true
+        val decoded = try {
+            String(Base64.getDecoder().decode(credentials))
+        } catch (_: IllegalArgumentException) {
+            return false
+        }
+        return decoded.endsWith(":$token")
     }
 
     override fun close() {

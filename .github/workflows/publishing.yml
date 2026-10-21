@@ -139,9 +139,9 @@ jobs:
       # a version, because the registries reject every overwrite.
       #
       # The task reads GitHub Packages with `GITHUB_TOKEN`, since it serves nothing
-      # without a token. `REPO_SLUG` is passed as it is to the publish step, since
-      # the build configures the same tasks; the other secrets of that step are needed
-      # only to upload.
+      # without a token. `REPO_SLUG` is set as in the publish step, since the build
+      # configures the same tasks; the other secrets of that step are needed only
+      # to upload.
       - name: Check whether the version is already published
         id: state
         shell: bash
@@ -293,12 +293,11 @@ jobs:
     # as though that were what consumers resolve. A missing attestation is a
     # gap, but a wrong one is a false statement. "Re-run all jobs" cannot
     # recover either: the repeated `publish` finds the version already
-    # published from this commit, uploads nothing, and leaves no manifest to
-    # attest.
+    # published from this commit and uploads nothing, so there is no manifest
+    # to attest.
     #
-    # The `if` skips the job when `publish` uploaded nothing, because this
-    # commit has already published the version. A skipped job leaves the run
-    # green.
+    # The `if` skips the job when `publish` uploaded nothing, since this commit
+    # has already published the version. A skipped job leaves the run green.
     needs: publish
     if: needs.publish.outputs.manifest != ''
     runs-on: ubuntu-latest

@@ -86,6 +86,14 @@ internal class RemoteFileSpec {
         }
 
         @Test
+        fun `retrying after a rate limit`() {
+            server.rateLimit(then = 200)
+
+            RemoteFile.readText(server.url("file.txt")) shouldBe body
+            server.requests.size shouldBe 2
+        }
+
+        @Test
         fun `failing after the last attempt`() {
             server.answer(500)
 
@@ -321,6 +329,22 @@ private class Server : AutoCloseable {
             if (index == 0 || then == null) {
                 location?.let { exchange.responseHeaders.add("Location", it) }
                 exchange.sendResponseHeaders(302, -1)
+            } else {
+                exchange.reply(then)
+            }
+        }
+    }
+
+    /**
+     * Refuses the first request for exceeding a rate limit, as GitHub does with
+     * `403 Forbidden` and a `Retry-After` header, and answers the next ones with
+     * the given status.
+     */
+    fun rateLimit(then: Int) {
+        respond = { exchange, index ->
+            if (index == 0) {
+                exchange.responseHeaders.add("Retry-After", "1")
+                exchange.sendResponseHeaders(403, -1)
             } else {
                 exchange.reply(then)
             }

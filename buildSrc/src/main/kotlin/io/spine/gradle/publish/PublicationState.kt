@@ -216,7 +216,8 @@ abstract class PublicationState : DefaultTask() {
         val gaps = incomplete.flatMap { finding ->
             when (finding.presence) {
                 Presence.ABSENT -> listOf("${finding.label}: the whole publication")
-                else -> finding.gaps.map { "${finding.label}: $it" }
+                Presence.PARTIAL, Presence.COMPLETE ->
+                    finding.gaps.map { "${finding.label}: $it" }
             }
         }
         val gitHub = gitHubPackages.get()
@@ -226,7 +227,8 @@ abstract class PublicationState : DefaultTask() {
         val pruned = if (gitHubOnly) {
             "\nEvery gap is in GitHub Packages, which keeps only the latest snapshot versions" +
                     " of a package. If the version is an old one, it was pruned from there," +
-                    " and there is nothing to fix."
+                    " and the failure needs no action; if it is the latest, follow the advice" +
+                    " below."
         } else {
             ""
         }
@@ -373,8 +375,7 @@ abstract class PublicationState : DefaultTask() {
          * Matches the revision in the source information that the SPDX Gradle Plugin
          * writes for a module of this build: `git+<uri>@<revision>#<name>[<path>]`.
          *
-         * The revision is a full commit hash: 40 hexadecimal digits of SHA-1, or 64 of
-         * SHA-256.
+         * The revision is a full commit hash: 40 hexadecimal digits of SHA-1, or 64 of SHA-256.
          */
         private val scmRevision = Regex("""git\+[^"\s]+?@([0-9a-f]{64}|[0-9a-f]{40})#""")
 

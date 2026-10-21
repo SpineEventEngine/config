@@ -17,7 +17,9 @@ package io.spine.gradle.publish
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.HttpURLConnection
+import java.net.MalformedURLException
 import java.net.URI
+import java.net.URISyntaxException
 import java.net.URL
 import java.net.URLConnection
 import kotlin.time.Duration.Companion.seconds
@@ -26,15 +28,17 @@ import kotlin.time.Duration.Companion.seconds
  * Reads the files of a remote Maven repository, such as `maven-metadata.xml`.
  *
  * Each request is bounded by timeouts, so that an unresponsive registry fails the build
- * instead of stalling it. A request that fails with an I/O error, a server error, or
- * a [transient] client error is retried, up to three attempts in all, with the delay
- * doubling from one second. A missing file is not an error, and a request the server
- * refuses for good, such as one answered with `403 Forbidden`, is not retried.
+ * instead of stalling it. A request that fails with an I/O error, a server error,
+ * a [transient] client error, or a rate-limit `403 Forbidden` is retried, up to three
+ * attempts in all, with the delay doubling from one second. A missing file is not
+ * an error, and a request the server refuses for good, such as one answered with
+ * `401 Unauthorized` or a plain `403 Forbidden`, is not retried.
  *
  * An `Authorization` header passed with a request is sent to the origin of the given URL
- * only. A redirect to another origin, such as the storage GitHub Packages redirects
- * a download to, is followed without it. A redirect is followed to an HTTP(S) URL only,
- * and never from HTTPS to plain HTTP.
+ * only. When reading a file, a redirect to another origin, such as the storage GitHub
+ * Packages redirects a download to, is followed without it; [exists] does not follow
+ * such a redirect. A redirect is followed to an HTTP(S) URL only, and never from HTTPS
+ * to plain HTTP.
  */
 internal object RemoteFile {
 
@@ -223,8 +227,8 @@ internal object RemoteFile {
      * Obtains the status of the response if it is a success, a redirect, or a sign that
      * there is no such file.
      *
-     * @throws IOException for a server error or a [transient] client error, which may go
-     *   away on another attempt.
+     * @throws IOException for a server error, a [transient] client error, or a rate limit,
+     *   which may go away on another attempt.
      * @throws IllegalStateException for any other client error.
      */
     private fun HttpURLConnection.status(): Int {
@@ -249,8 +253,10 @@ internal object RemoteFile {
         val location = checkNotNull(getHeaderField("Location")) {
             "`${url.shown()}` redirects with no `Location`."
         }
-        val target = runCatching { url.toURI().resolve(URI.create(location)).toURL() }
-            .getOrElse { error("`${url.shown()}` redirects to an invalid location.") }
+        // The cause is left out of the message: it would quote the location, whose query
+        // may carry a signature.
+        val target = resolve(location)
+            ?: error("`${url.shown()}` redirects to an invalid location.")
         val allowed = target.protocol == url.protocol ||
                 (url.protocol == "http" && target.protocol == "https")
         check(allowed) {
@@ -261,9 +267,25 @@ internal object RemoteFile {
 }
 
 /**
+ * Resolves the given redirect [location] against the URL of this connection.
+ *
+ * @return the resolved URL, or `null` if the location is not a valid URL.
+ */
+private fun HttpURLConnection.resolve(location: String): URL? =
+    try {
+        url.toURI().resolve(URI.create(location)).toURL()
+    } catch (_: IllegalArgumentException) {
+        null
+    } catch (_: URISyntaxException) {
+        null
+    } catch (_: MalformedURLException) {
+        null
+    }
+
+/**
  * Tells whether this response with the given [status] refuses the request for exceeding
- * a rate limit, as GitHub answers with `403 Forbidden` and a `Retry-After` header, or
- * no remaining requests.
+ * a rate limit, as GitHub does with `403 Forbidden` and either a `Retry-After` header or
+ * an `X-RateLimit-Remaining: 0` header.
  */
 private fun HttpURLConnection.isRateLimited(status: Int): Boolean =
     status == HttpURLConnection.HTTP_FORBIDDEN &&

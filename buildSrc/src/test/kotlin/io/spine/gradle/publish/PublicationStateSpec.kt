@@ -119,68 +119,68 @@ internal class PublicationStateSpec {
         fun `absent when no repository has anything of it`() {
             val holdings = listOf(holding(registry), holding(gitHub))
 
-            PublicationState.presenceOf(holdings, names, module) shouldBe Presence.ABSENT
+            presence(holdings) shouldBe Presence.ABSENT
         }
 
         @Test
         fun `complete when every repository lists it and has every file`() {
             val holdings = listOf(
-                holding(registry, listed = true, names + module),
-                holding(gitHub, listed = true, names + module)
+                holding(registry, listed = true, present = names + module),
+                holding(gitHub, listed = true, present = names + module)
             )
 
-            PublicationState.presenceOf(holdings, names, module) shouldBe Presence.COMPLETE
+            presence(holdings) shouldBe Presence.COMPLETE
         }
 
         @Test
         fun `complete without module metadata in any repository`() {
             val holdings = listOf(
-                holding(registry, listed = true, names),
-                holding(gitHub, listed = true, names)
+                holding(registry, listed = true, present = names),
+                holding(gitHub, listed = true, present = names)
             )
 
-            PublicationState.presenceOf(holdings, names, module) shouldBe Presence.COMPLETE
+            presence(holdings) shouldBe Presence.COMPLETE
         }
 
         @Test
         fun `partial when a repository has nothing of it`() {
-            val holdings = listOf(holding(registry, listed = true, names), holding(gitHub))
+            val holdings = listOf(holding(registry, listed = true, present = names), holding(gitHub))
 
-            PublicationState.presenceOf(holdings, names, module) shouldBe Presence.PARTIAL
+            presence(holdings) shouldBe Presence.PARTIAL
         }
 
         @Test
         fun `partial when a repository lacks a file`() {
             val holdings = listOf(
-                holding(registry, listed = true, names),
-                holding(gitHub, listed = true, names - sources)
+                holding(registry, listed = true, present = names),
+                holding(gitHub, listed = true, present = names - sources)
             )
 
-            PublicationState.presenceOf(holdings, names, module) shouldBe Presence.PARTIAL
+            presence(holdings) shouldBe Presence.PARTIAL
         }
 
         @Test
         fun `partial when only some repositories have the module metadata`() {
             val holdings = listOf(
-                holding(registry, listed = true, names + module),
-                holding(gitHub, listed = true, names)
+                holding(registry, listed = true, present = names + module),
+                holding(gitHub, listed = true, present = names)
             )
 
-            PublicationState.presenceOf(holdings, names, module) shouldBe Presence.PARTIAL
+            presence(holdings) shouldBe Presence.PARTIAL
         }
 
         @Test
         fun `partial when a repository has its files but does not list it`() {
-            val holdings = listOf(holding(registry, listed = false, names))
+            val holdings = listOf(holding(registry, listed = false, present = names))
 
-            PublicationState.presenceOf(holdings, names, module) shouldBe Presence.PARTIAL
+            presence(holdings) shouldBe Presence.PARTIAL
         }
 
         @Test
         fun `partial when a repository lists it but has none of its files`() {
             val holdings = listOf(holding(registry, listed = true))
 
-            PublicationState.presenceOf(holdings, names, module) shouldBe Presence.PARTIAL
+            presence(holdings) shouldBe Presence.PARTIAL
         }
     }
 
@@ -190,8 +190,8 @@ internal class PublicationStateSpec {
         @Test
         fun `each repository that lacks anything`() {
             val holdings = listOf(
-                holding(registry, listed = true, names + module),
-                holding(gitHub, listed = false, names - sources)
+                holding(registry, listed = true, present = names + module),
+                holding(gitHub, listed = false, present = names - sources)
             )
 
             val gaps = PublicationState.gapsOf(
@@ -212,8 +212,8 @@ internal class PublicationStateSpec {
         @Test
         fun `no repository when the publication has no module metadata anywhere`() {
             val holdings = listOf(
-                holding(registry, listed = true, names),
-                holding(gitHub, listed = true, names)
+                holding(registry, listed = true, present = names),
+                holding(gitHub, listed = true, present = names)
             )
 
             val gaps = PublicationState.gapsOf(
@@ -312,5 +312,12 @@ internal class PublicationStateSpec {
             listed: Boolean = false,
             present: Collection<String> = emptyList()
         ) = Holding(destination = destination, listed = listed, present = present.toSet())
+
+        /**
+         * Decides how much of the publication with the [names] and the [module] metadata
+         * the given [holdings] have.
+         */
+        fun presence(holdings: List<Holding>) =
+            PublicationState.presenceOf(holdings = holdings, names = names, module = module)
     }
 }
