@@ -27,7 +27,7 @@ import org.gradle.api.logging.Logger
  * Performs the update of GitHub pages.
  */
 fun Task.updateGhPages(project: Project) {
-    val plugin = project.plugins.getPlugin(UpdateGitHubPages::class.java)
+    val plugin = project.plugins.getPlugin(PublishApiDocs::class.java)
 
     SshKey(plugin.rootFolder, logger).register()
 

@@ -36,6 +36,10 @@ name: Publishing
 # No `inputs`: the values that differ per consumer — the repository and its
 # secrets — arrive through the `github` context, which in a called workflow
 # is the caller's, and through `secrets: inherit`.
+#
+# The API documentation is not published here, but by the distributed
+# `publish-api-docs.yml`, so that neither publication can hold up or break
+# the other.
 
 on:
   workflow_call:
@@ -93,15 +97,6 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Decrypt Git SSH credentials
-        run: ./config/scripts/decrypt.sh "$GIT_CREDENTIALS_KEY" ./.github/keys/deploy_key_rsa.gpg ./deploy_key_rsa
-        env:
-          GIT_CREDENTIALS_KEY: ${{ secrets.GIT_CREDENTIALS_KEY }}
-
-        # Make sure the SSH key is not "too visible". SSH agent will not accept it otherwise.
-      - name: Set file system permissions
-        run: chmod 400 ./deploy_key_rsa && chmod +x ./config/scripts/register-ssh-key.sh
-
       - name: Decrypt GCS credentials
         run: ./config/scripts/decrypt.sh "$GCS_CREDENTIALS_KEY" ./.github/keys/gcs-auth-key.json.gpg ./gcs-auth-key.json
         env:
@@ -139,9 +134,8 @@ jobs:
       # a version, because the registries reject every overwrite.
       #
       # The task reads GitHub Packages with `GITHUB_TOKEN`, since it serves nothing
-      # without a token. `REPO_SLUG` is passed as it is to the publish step, since
-      # the build configures the same tasks; the other secrets of that step are needed
-      # only to upload.
+      # without a token. The other secrets of the publish step are needed only
+      # to upload.
       - name: Check whether the version is already published
         id: state
         shell: bash
@@ -164,7 +158,6 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO_SLUG: ${{ github.repository }}
 
       - name: Publish artifacts to Maven
         id: publish
@@ -205,9 +198,6 @@ jobs:
           -Dorg.gradle.internal.publish.checksums.insecure=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FORMAL_GIT_HUB_PAGES_AUTHOR: developers@spine.io
-          # https://docs.github.com/en/actions/reference/environment-variables
-          REPO_SLUG: ${{ github.repository }}    # e.g. SpineEventEngine/core-jvm
           GOOGLE_APPLICATION_CREDENTIALS: ./maven-publisher.json
           NPM_TOKEN: ${{ secrets.NPM_SECRET }}
 

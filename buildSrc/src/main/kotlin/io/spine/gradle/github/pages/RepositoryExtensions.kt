@@ -31,7 +31,7 @@ import org.gradle.api.Project
  * serves the documentation under the `spine.io` custom domain. Also, the username
  * and the email of the git user are automatically configured.
  *
- * The username is set to `"UpdateGitHubPages Plugin"`, and the email is derived from
+ * The username is set to `"PublishApiDocs Plugin"`, and the email is derived from
  * the `FORMAL_GIT_HUB_PAGES_AUTHOR` environment variable.
  *
  * @throws org.gradle.api.GradleException if any of the environment variables described above
@@ -40,7 +40,7 @@ import org.gradle.api.Project
 internal fun Repository.Factory.forPublishingDocumentation(project: Project): Repository {
     val host = RepoSlug.fromVar().gitHost()
 
-    val username = "UpdateGitHubPages Plugin"
+    val username = "PublishApiDocs Plugin"
     val userEmail = AuthorEmail.fromVar().toString()
     val user = UserInfo(username, userEmail)
 

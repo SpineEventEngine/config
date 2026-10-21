@@ -144,6 +144,10 @@ and `migrate` keeps it out of consumers through its `CONFIG_ONLY_WORKFLOWS` list
 publication steps in `config` is what makes `config` the signer of every consumer's artifact
 attestation; the comments in `publishing.yml` explain the mechanism.
 
+The API documentation is published apart from the artifacts, by the distributed
+[`publish-api-docs.yml`](.github-workflows/publish-api-docs.yml). It is a workflow of its own,
+not a caller of one hosted here, since nothing it publishes is attested.
+
 ### Replacing a distributed workflow in a single repository
 
 Occasionally a repository needs a CI workflow that diverges from the uniform one
