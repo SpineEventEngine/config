@@ -54,8 +54,8 @@ internal class RemoteFileSpec {
         storage.close()
     }
 
-    @Nested
-    inner class `read a file` {
+    @Nested inner class
+    `read a file` {
 
         @Test
         fun `answered with its text`() {
@@ -136,8 +136,8 @@ internal class RemoteFileSpec {
         }
     }
 
-    @Nested
-    inner class `follow a redirect` {
+    @Nested inner class
+    `follow a redirect` {
 
         @Test
         fun `to another origin, without the authorization`() {
@@ -208,8 +208,8 @@ internal class RemoteFileSpec {
         }
     }
 
-    @Nested
-    inner class `tell whether there is a file` {
+    @Nested inner class
+    `tell whether there is a file` {
 
         @Test
         fun `answered with a success`() {

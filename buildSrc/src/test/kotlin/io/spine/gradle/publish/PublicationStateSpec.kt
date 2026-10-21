@@ -29,8 +29,8 @@ import org.junit.jupiter.api.Test
 @DisplayName("`PublicationState` should")
 internal class PublicationStateSpec {
 
-    @Nested
-    inner class `find the version unpublished` {
+    @Nested inner class
+    `find the version unpublished` {
 
         @Test
         fun `when there is no publication to look up`() {
@@ -51,8 +51,8 @@ internal class PublicationStateSpec {
         Verdict.of(findings, commit) shouldBe Verdict.PUBLISHED
     }
 
-    @Nested
-    inner class `find the version partially published` {
+    @Nested inner class
+    `find the version partially published` {
 
         @Test
         fun `when some publications are not published`() {
@@ -81,8 +81,8 @@ internal class PublicationStateSpec {
         }
     }
 
-    @Nested
-    inner class `find a collision` {
+    @Nested inner class
+    `find a collision` {
 
         @Test
         fun `when an SBOM names another commit`() {
@@ -111,8 +111,8 @@ internal class PublicationStateSpec {
         }
     }
 
-    @Nested
-    inner class `leave the publisher unconfirmed` {
+    @Nested inner class
+    `leave the publisher unconfirmed` {
 
         @Test
         fun `when no published SBOM names a commit`() {
@@ -139,8 +139,8 @@ internal class PublicationStateSpec {
         }
     }
 
-    @Nested
-    inner class `find a publication` {
+    @Nested inner class
+    `find a publication` {
 
         @Test
         fun `absent when no repository has anything of it`() {
@@ -211,8 +211,8 @@ internal class PublicationStateSpec {
         }
     }
 
-    @Nested
-    inner class `tell what is missing from` {
+    @Nested inner class
+    `tell what is missing from` {
 
         @Test
         fun `each repository that lacks anything`() {
@@ -254,8 +254,8 @@ internal class PublicationStateSpec {
         }
     }
 
-    @Nested
-    inner class `read the revisions of an SBOM` {
+    @Nested inner class
+    `read the revisions of an SBOM` {
 
         @Test
         fun `of every module of the build`() {

@@ -133,8 +133,8 @@ internal class PublicationStateIgTest {
         }
     }
 
-    @Nested
-    inner class `fail when missing from a repository` {
+    @Nested inner class
+    `fail when missing from a repository` {
 
         @Test
         fun `a classified artifact`() {
