@@ -18,6 +18,7 @@ import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.comparables.shouldBeGreaterThanOrEqualTo
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -29,6 +30,8 @@ import java.net.InetSocketAddress
 import java.net.URI
 import java.net.URL
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTime
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -51,8 +54,8 @@ internal class RemoteFileSpec {
         storage.close()
     }
 
-    @Nested
-    inner class `read a file` {
+    @Nested inner class
+    `read a file` {
 
         @Test
         fun `answered with its text`() {
@@ -86,6 +89,26 @@ internal class RemoteFileSpec {
         }
 
         @Test
+        fun `retrying after a rate limit`() {
+            server.rateLimit(then = 200)
+
+            RemoteFile.readText(server.url("file.txt")) shouldBe body
+            server.requests.size shouldBe 2
+        }
+
+        @Test
+        fun `waiting before a retry as long as the server asks`() {
+            server.throttle(retryAfter = "2", then = 200)
+
+            val elapsed = measureTime {
+                RemoteFile.readText(server.url("file.txt")) shouldBe body
+            }
+
+            elapsed shouldBeGreaterThanOrEqualTo 2.seconds
+            server.requests.size shouldBe 2
+        }
+
+        @Test
         fun `failing after the last attempt`() {
             server.answer(500)
 
@@ -113,8 +136,8 @@ internal class RemoteFileSpec {
         }
     }
 
-    @Nested
-    inner class `follow a redirect` {
+    @Nested inner class
+    `follow a redirect` {
 
         @Test
         fun `to another origin, without the authorization`() {
@@ -185,8 +208,8 @@ internal class RemoteFileSpec {
         }
     }
 
-    @Nested
-    inner class `tell whether there is a file` {
+    @Nested inner class
+    `tell whether there is a file` {
 
         @Test
         fun `answered with a success`() {
@@ -211,11 +234,21 @@ internal class RemoteFileSpec {
         }
 
         @Test
-        fun `redirected to another origin, without following`() {
+        fun `redirected to another origin, following without the authorization`() {
             server.redirect(storage.url("blob/file.txt").toString())
+            storage.answer(200)
 
             RemoteFile.exists(server.url("file.txt"), authorization) shouldBe true
-            storage.requests.size shouldBe 0
+            storage.requests shouldContainExactly
+                    listOf(Request(method = "HEAD", path = "/blob/file.txt", authorization = null))
+        }
+
+        @Test
+        fun `redirected to another origin that has no such file`() {
+            server.redirect(storage.url("blob/file.txt").toString())
+            storage.answer(404)
+
+            RemoteFile.exists(server.url("file.txt")) shouldBe false
         }
 
         @Test
@@ -321,6 +354,37 @@ private class Server : AutoCloseable {
             if (index == 0 || then == null) {
                 location?.let { exchange.responseHeaders.add("Location", it) }
                 exchange.sendResponseHeaders(302, -1)
+            } else {
+                exchange.reply(then)
+            }
+        }
+    }
+
+    /**
+     * Refuses the first request for exceeding a rate limit, as GitHub does with
+     * `403 Forbidden` and a `Retry-After` header, and answers the next ones with
+     * the given status.
+     */
+    fun rateLimit(then: Int) {
+        respond = { exchange, index ->
+            if (index == 0) {
+                exchange.responseHeaders.add("Retry-After", "1")
+                exchange.sendResponseHeaders(403, -1)
+            } else {
+                exchange.reply(then)
+            }
+        }
+    }
+
+    /**
+     * Answers the first request with `429 Too Many Requests` and the given `Retry-After`
+     * header, and the next ones with the given status.
+     */
+    fun throttle(retryAfter: String, then: Int) {
+        respond = { exchange, index ->
+            if (index == 0) {
+                exchange.responseHeaders.add("Retry-After", retryAfter)
+                exchange.sendResponseHeaders(429, -1)
             } else {
                 exchange.reply(then)
             }

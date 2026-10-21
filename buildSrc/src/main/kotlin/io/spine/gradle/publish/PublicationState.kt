@@ -48,16 +48,16 @@ import org.gradle.api.tasks.UntrackedTask
  * publishes to, such as Artifact Registry and GitHub Packages — and decides:
  *
  *  - no file of any publication is there — `unpublished`, the run publishes;
- *  - every publication is complete in every destination, and the SBOMs published next
- *    to the artifacts name the [commit] — `published`: an earlier run of the same commit
- *    uploaded the version, e.g. a duplicate run of one push, and this run has nothing
- *    to do;
+ *  - every publication is complete in every destination, and every copy of the SBOMs
+ *    published next to the artifacts names the [commit] — `published`: an earlier run of
+ *    the same commit uploaded the version, e.g. a duplicate run of one push, and this
+ *    run has nothing to do;
  *  - any other state fails the task, before a single upload. A gap anywhere — a file
  *    or a whole publication missing from a destination — is left over from a failed
  *    run, or from GitHub Packages pruning the version. A version published from another
- *    commit is a collision. A version published with no SBOM naming a commit, or with
- *    no commit to compare, cannot be confirmed as this run's. No run can publish any
- *    of these.
+ *    commit, in any destination, is a collision. A version with an SBOM copy naming no
+ *    commit, or with no commit to compare, cannot be confirmed as this run's. No run can
+ *    publish any of these.
  *
  * The state is written to the [stateFile] as `unpublished` or `published`.
  *
@@ -197,7 +197,7 @@ abstract class PublicationState : DefaultTask() {
                 "The version is published, but this build cannot tell which commit" +
                         " it publishes: `GITHUB_SHA` is not set."
             } else {
-                "The version is published, but no published SBOM names the commit" +
+                "The version is published, but a published SBOM does not name the commit" +
                         " it was published from."
             }
             Verdict.UNPUBLISHED, Verdict.PUBLISHED ->
@@ -216,7 +216,8 @@ abstract class PublicationState : DefaultTask() {
         val gaps = incomplete.flatMap { finding ->
             when (finding.presence) {
                 Presence.ABSENT -> listOf("${finding.label}: the whole publication")
-                else -> finding.gaps.map { "${finding.label}: $it" }
+                Presence.PARTIAL, Presence.COMPLETE ->
+                    finding.gaps.map { "${finding.label}: $it" }
             }
         }
         val gitHub = gitHubPackages.get()
@@ -226,7 +227,8 @@ abstract class PublicationState : DefaultTask() {
         val pruned = if (gitHubOnly) {
             "\nEvery gap is in GitHub Packages, which keeps only the latest snapshot versions" +
                     " of a package. If the version is an old one, it was pruned from there," +
-                    " and there is nothing to fix."
+                    " and the failure needs no action; if it is the latest, follow the advice" +
+                    " below."
         } else {
             ""
         }
@@ -275,10 +277,13 @@ abstract class PublicationState : DefaultTask() {
      * @property path The path to the artifact in a Maven repository.
      * @property version The version of the publication.
      * @property presence How much of the publication is published.
-     * @property commits The commits named by the SBOM of the publication, if it is
-     *   [complete][Presence.COMPLETE]. Empty otherwise, or if it has no SBOM.
+     * @property commits The commits named by the copies of the SBOM of the publication in
+     *   its destinations, if it is [complete][Presence.COMPLETE]. Empty otherwise, or if it
+     *   has no SBOM.
      * @property gaps What is missing from each destination, if anything.
      * @property incomplete The destinations missing anything of the publication.
+     * @property unconfirmed Tells whether the publication has an SBOM, and a copy of it in
+     *   some destination names no commit, as one built outside GitHub Actions does.
      */
     internal data class Finding(
         val path: String,
@@ -286,7 +291,8 @@ abstract class PublicationState : DefaultTask() {
         val presence: Presence,
         val commits: Set<String> = emptySet(),
         val gaps: List<String> = emptyList(),
-        val incomplete: Set<String> = emptySet()
+        val incomplete: Set<String> = emptySet(),
+        val unconfirmed: Boolean = false
     ) {
 
         /**
@@ -301,10 +307,14 @@ abstract class PublicationState : DefaultTask() {
         fun describe(): String = when (presence) {
             Presence.ABSENT -> "$label is not published."
             Presence.PARTIAL -> "$label is partially published; missing: ${gaps.joinToString()}."
-            Presence.COMPLETE -> if (commits.isEmpty()) {
-                "$label is published, with no SBOM naming its commit."
-            } else {
-                "$label is published from ${commits.joinToString { "`$it`" }}."
+            Presence.COMPLETE -> {
+                val from = commits.joinToString { "`$it`" }
+                when {
+                    commits.isEmpty() -> "$label is published, with no SBOM naming its commit."
+                    unconfirmed -> "$label is published from $from, but a copy of its SBOM" +
+                            " names no commit."
+                    else -> "$label is published from $from."
+                }
             }
         }
     }
@@ -321,8 +331,8 @@ abstract class PublicationState : DefaultTask() {
         UNPUBLISHED("unpublished"),
 
         /**
-         * Every publication is complete in every destination, and the SBOMs name
-         * the commit being published.
+         * Every publication is complete in every destination, and every copy of the SBOMs
+         * names the commit being published.
          */
         PUBLISHED("published"),
 
@@ -332,10 +342,13 @@ abstract class PublicationState : DefaultTask() {
          */
         PARTIAL(null),
 
-        /** Every publication is published, but an SBOM names another commit. */
+        /** Every publication is published, but a copy of an SBOM names another commit. */
         COLLISION(null),
 
-        /** Every publication is published, but the commit cannot be compared. */
+        /**
+         * Every publication is published, but the commit cannot be compared: the commit
+         * being published is unknown, or a copy of an SBOM names no commit.
+         */
         UNCONFIRMED(null);
 
         companion object {
@@ -353,8 +366,9 @@ abstract class PublicationState : DefaultTask() {
                     findings.all { it.presence == Presence.ABSENT } -> UNPUBLISHED
                     findings.any { it.presence != Presence.COMPLETE } -> PARTIAL
                     commit == null || commits.isEmpty() -> UNCONFIRMED
-                    commits == setOf(commit) -> PUBLISHED
-                    else -> COLLISION
+                    commits != setOf(commit) -> COLLISION
+                    findings.any { it.unconfirmed } -> UNCONFIRMED
+                    else -> PUBLISHED
                 }
             }
         }
@@ -373,8 +387,7 @@ abstract class PublicationState : DefaultTask() {
          * Matches the revision in the source information that the SPDX Gradle Plugin
          * writes for a module of this build: `git+<uri>@<revision>#<name>[<path>]`.
          *
-         * The revision is a full commit hash: 40 hexadecimal digits of SHA-1, or 64 of
-         * SHA-256.
+         * The revision is a full commit hash: 40 hexadecimal digits of SHA-1, or 64 of SHA-256.
          */
         private val scmRevision = Regex("""git\+[^"\s]+?@([0-9a-f]{64}|[0-9a-f]{40})#""")
 
@@ -538,10 +551,10 @@ private class Inspector(
             names = names,
             module = module
         )
-        val commits = if (presence == PublicationState.Presence.COMPLETE) {
+        val sbomCopies = if (presence == PublicationState.Presence.COMPLETE) {
             sbomCommits(holdings = holdings, path = path, version = version, names = names)
         } else {
-            emptySet()
+            emptyList()
         }
         val gaps = PublicationState.gapsOf(
             holdings = holdings,
@@ -553,9 +566,10 @@ private class Inspector(
             path = path,
             version = version,
             presence = presence,
-            commits = commits,
+            commits = sbomCopies.flatten().toSet(),
             gaps = gaps.values.flatten(),
-            incomplete = gaps.keys
+            incomplete = gaps.keys,
+            unconfirmed = sbomCopies.any { it.isEmpty() }
         )
     }
 
@@ -569,27 +583,28 @@ private class Inspector(
         RemoteFile.exists(url(destination, file), authorization(destination))
 
     /**
-     * Obtains the commits named by the SBOM of a complete publication.
+     * Obtains the commits named by each copy of the SBOM of a complete publication, one
+     * set for each of its [holdings].
      *
-     * The SBOM is read from a destination that needs no token, if there is one.
+     * Every copy is read, as each destination may hold a copy uploaded by another run.
+     * A copy naming no commit gives an empty set, and so does one that cannot be read.
      *
-     * Returns an empty set if the publication has no SBOM.
+     * Returns an empty list if the publication has no SBOM.
      */
     private fun sbomCommits(
         holdings: List<PublicationState.Holding>,
         path: String,
         version: String,
         names: List<String>
-    ): Set<String> {
+    ): List<Set<String>> {
         val sbom = names.firstOrNull { it.endsWith(".${PublicationSbom.sbomExtension}") }
-        val destination = holdings.map { it.destination }.minByOrNull { it in gitHubPackages }
-        val text = if (sbom != null && destination != null) {
-            val sbomUrl = url(destination, "$path/$version/$sbom")
-            RemoteFile.readText(sbomUrl, authorization(destination))
-        } else {
-            null
+            ?: return emptyList()
+        return holdings.map { holding ->
+            val sbomUrl = url(holding.destination, "$path/$version/$sbom")
+            RemoteFile.readText(sbomUrl, authorization(holding.destination))
+                ?.let(PublicationState::sbomRevisions)
+                ?: emptySet()
         }
-        return text?.let(PublicationState::sbomRevisions) ?: emptySet()
     }
 
     private fun authorization(destination: String): String? =

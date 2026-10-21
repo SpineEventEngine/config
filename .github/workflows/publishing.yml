@@ -97,24 +97,6 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Decrypt GCS credentials
-        run: ./config/scripts/decrypt.sh "$GCS_CREDENTIALS_KEY" ./.github/keys/gcs-auth-key.json.gpg ./gcs-auth-key.json
-        env:
-          GCS_CREDENTIALS_KEY: ${{ secrets.GCS_CREDENTIALS_KEY }}
-
-      - name: Decrypt GCAR credentials
-        run: ./config/scripts/decrypt.sh "$MAVEN_PUBLISHER_KEY" ./.github/keys/maven-publisher.json.gpg ./maven-publisher.json
-        env:
-          MAVEN_PUBLISHER_KEY: ${{ secrets.MAVEN_PUBLISHER_KEY }}
-
-      - name: Decrypt Gradle Plugin Portal credentials
-        run: ./config/scripts/decrypt.sh "$GRADLE_PORTAL_CREDENTIALS_KEY" ./.github/keys/gradle-plugin-portal.secret.properties.gpg ./gradle-plugin-portal.secret.properties
-        env:
-          GRADLE_PORTAL_CREDENTIALS_KEY: ${{ secrets.GRADLE_PORTAL_CREDENTIALS_KEY }}
-
-      - name: Append Gradle properties
-        run: cat ./gradle-plugin-portal.secret.properties >> ./gradle.properties
-
       # Asks the registries whether the version is already published, before anything
       # is built. `publicationState` (see `PublicationState.kt`) looks for the files of
       # each publication in each remote repository it is published to, such as Artifact
@@ -127,6 +109,14 @@ jobs:
       #    uploaded and nothing attested: the attestation of the version belongs to the
       #    run that uploaded it.
       #
+      #    The check covers the Maven repositories only, and the whole `publish`
+      #    invocation is skipped, so the other tasks `publish` depends on are not run
+      #    either, such as an npm publication (`publishJs`). If an earlier run failed
+      #    in one of them after its Maven uploads, a re-run cannot complete it, as it
+      #    could not before this check: it would stop at the first Maven upload,
+      #    rejected as an overwrite. The notice below says so, rather than letting
+      #    the green run imply otherwise.
+      #
       # Any other published state fails the task before a single upload: a gap in any
       # repository (left by an earlier run that failed, or by GitHub Packages pruning
       # old versions), a version published from another commit, or a version published
@@ -135,7 +125,9 @@ jobs:
       #
       # The task reads GitHub Packages with `GITHUB_TOKEN`, since it serves nothing
       # without a token. The other secrets of the publish step are needed only
-      # to upload.
+      # to upload. So the check runs before any publishing credential is decrypted:
+      # an already published version needs none of them, and the consumer's build
+      # that the check runs finds none of them on disk.
       - name: Check whether the version is already published
         id: state
         shell: bash
@@ -154,10 +146,35 @@ jobs:
           esac
           echo "state=$state" >> "$GITHUB_OUTPUT"
           if [ "$state" = published ]; then
-            echo "::notice title=Already published::This commit has already published its version to every repository, so this run uploads and attests nothing."
+            echo "::notice title=Already published::This commit has already published its version to every Maven repository, so this run uploads and attests nothing. It does not run the other tasks 'publish' depends on either, such as an npm publication: if an earlier run failed in one of them, run it separately."
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The credentials below serve the publication alone, so they are prepared only
+      # when the check above finds the version unpublished: a missing or rotated one
+      # must not fail a run that has nothing to upload.
+      - name: Decrypt GCS credentials
+        if: steps.state.outputs.state == 'unpublished'
+        run: ./config/scripts/decrypt.sh "$GCS_CREDENTIALS_KEY" ./.github/keys/gcs-auth-key.json.gpg ./gcs-auth-key.json
+        env:
+          GCS_CREDENTIALS_KEY: ${{ secrets.GCS_CREDENTIALS_KEY }}
+
+      - name: Decrypt GCAR credentials
+        if: steps.state.outputs.state == 'unpublished'
+        run: ./config/scripts/decrypt.sh "$MAVEN_PUBLISHER_KEY" ./.github/keys/maven-publisher.json.gpg ./maven-publisher.json
+        env:
+          MAVEN_PUBLISHER_KEY: ${{ secrets.MAVEN_PUBLISHER_KEY }}
+
+      - name: Decrypt Gradle Plugin Portal credentials
+        if: steps.state.outputs.state == 'unpublished'
+        run: ./config/scripts/decrypt.sh "$GRADLE_PORTAL_CREDENTIALS_KEY" ./.github/keys/gradle-plugin-portal.secret.properties.gpg ./gradle-plugin-portal.secret.properties
+        env:
+          GRADLE_PORTAL_CREDENTIALS_KEY: ${{ secrets.GRADLE_PORTAL_CREDENTIALS_KEY }}
+
+      - name: Append Gradle properties
+        if: steps.state.outputs.state == 'unpublished'
+        run: cat ./gradle-plugin-portal.secret.properties >> ./gradle.properties
 
       - name: Publish artifacts to Maven
         id: publish
@@ -283,12 +300,11 @@ jobs:
     # as though that were what consumers resolve. A missing attestation is a
     # gap, but a wrong one is a false statement. "Re-run all jobs" cannot
     # recover either: the repeated `publish` finds the version already
-    # published from this commit, uploads nothing, and leaves no manifest to
-    # attest.
+    # published from this commit and uploads nothing, so there is no manifest
+    # to attest.
     #
-    # The `if` skips the job when `publish` uploaded nothing, because this
-    # commit has already published the version. A skipped job leaves the run
-    # green.
+    # The `if` skips the job when `publish` uploaded nothing, since this commit
+    # has already published the version. A skipped job leaves the run green.
     needs: publish
     if: needs.publish.outputs.manifest != ''
     runs-on: ubuntu-latest

@@ -36,11 +36,14 @@ internal object GitHubPackages {
     const val repositoryName = "GitHub-Packages"
 
     /**
-     * Obtains an instance of the GitHub Packages repository with the given name.
+     * Obtains an instance of the GitHub Packages repository of the given GitHub repository.
+     *
+     * @param slug The name of the GitHub repository of Spine Event Engine, without
+     *   the organization, such as `core-jvm`.
      */
-    fun repository(repoName: String): Repository {
+    fun repository(slug: String): Repository {
         val githubActor: String = actor()
-        val url = "https://maven.pkg.github.com/SpineEventEngine/$repoName"
+        val url = "https://maven.pkg.github.com/SpineEventEngine/$slug"
         return Repository(
             name = repositoryName,
             releases = url,
@@ -51,12 +54,13 @@ internal object GitHubPackages {
     /**
      * Tells whether the given Maven repository is a GitHub Packages one, as registered
      * for publishing by [repository].
+     *
+     * The name tells it, whichever repository at GitHub Packages the [candidate] is.
      */
-    fun isRepository(candidate: MavenArtifactRepository): Boolean {
-        val registered = repository(repoName = "")
-        return candidate.name == registered.name(snapshots = false) ||
-                candidate.name == registered.name(snapshots = true)
-    }
+    fun isRepository(candidate: MavenArtifactRepository): Boolean =
+        candidate.name in listOf(false, true).map { snapshots ->
+            Repository.publishingName(name = repositoryName, snapshots = snapshots)
+        }
 
     /**
      * Obtains the user to authenticate with at GitHub Packages, along with a token.
