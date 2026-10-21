@@ -51,12 +51,13 @@ internal object GitHubPackages {
     /**
      * Tells whether the given Maven repository is a GitHub Packages one, as registered
      * for publishing by [repository].
+     *
+     * The name tells it, whichever repository at GitHub Packages the [candidate] is.
      */
-    fun isRepository(candidate: MavenArtifactRepository): Boolean {
-        val registered = repository(repoName = "")
-        return candidate.name == registered.name(snapshots = false) ||
-                candidate.name == registered.name(snapshots = true)
-    }
+    fun isRepository(candidate: MavenArtifactRepository): Boolean =
+        candidate.name in listOf(false, true).map { snapshots ->
+            Repository.publishingName(name = repositoryName, snapshots = snapshots)
+        }
 
     /**
      * Obtains the user to authenticate with at GitHub Packages, along with a token.
