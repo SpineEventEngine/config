@@ -200,6 +200,24 @@ internal class PublicationStateIgTest {
     }
 
     @Test
+    fun `fail when a copy of an SBOM in one repository names another commit`() {
+        rewriteSbom(repository = "github/sample", path = api, revision = otherCommit)
+
+        val output = runner().buildAndFail().output
+
+        output shouldContain "The version is published from another commit: `$otherCommit`"
+    }
+
+    @Test
+    fun `fail when a copy of an SBOM names no commit`() {
+        rewriteSbom(repository = "github/sample", path = backend, revision = "unknown")
+
+        val output = runner().buildAndFail().output
+
+        output shouldContain "a published SBOM does not name the commit"
+    }
+
+    @Test
     fun `fail when the commit being published is unknown`() {
         val output = runner(commit = null).buildAndFail().output
 
@@ -237,6 +255,21 @@ internal class PublicationStateIgTest {
 
         output shouldContain "Reusing configuration cache."
         stateFile.readText().trim() shouldBe "published"
+    }
+
+    /**
+     * Rewrites the copy of the SBOM of the artifact at the given [path] in the given
+     * [repository] of the registry, so that it names the given [revision] instead of
+     * the commit the build published.
+     */
+    private fun rewriteSbom(repository: String, path: String, revision: String) {
+        val artifactId = path.substringAfterLast('/')
+        val sbom = registry.root.resolve(
+            "$repository/$path/$version/$artifactId-$version.spdx.json"
+        )
+        val text = sbom.readText()
+        check(commit in text) { "The SBOM `$sbom` does not name the commit `$commit`." }
+        sbom.writeText(text.replace(commit, revision))
     }
 
     private val project: File

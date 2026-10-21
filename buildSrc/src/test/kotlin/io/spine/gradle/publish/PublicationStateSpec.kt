@@ -95,6 +95,20 @@ internal class PublicationStateSpec {
 
             Verdict.of(findings, commit) shouldBe Verdict.COLLISION
         }
+
+        @Test
+        fun `when the copies of one SBOM in its destinations name different commits`() {
+            val findings = listOf(
+                Finding(
+                    path = api,
+                    version = version,
+                    presence = Presence.COMPLETE,
+                    commits = setOf(commit, otherCommit)
+                )
+            )
+
+            Verdict.of(findings, commit) shouldBe Verdict.COLLISION
+        }
     }
 
     @Nested
@@ -109,6 +123,19 @@ internal class PublicationStateSpec {
         fun `when the commit being published is unknown`() {
             Verdict.of(listOf(complete(api, commit)), commit = null) shouldBe
                     Verdict.UNCONFIRMED
+        }
+
+        @Test
+        fun `when a copy of an SBOM names no commit, beside a confirmed publication`() {
+            val unknownRevision = Finding(
+                path = backend,
+                version = version,
+                presence = Presence.COMPLETE,
+                unconfirmed = true
+            )
+            val findings = listOf(complete(api, commit), unknownRevision)
+
+            Verdict.of(findings, commit) shouldBe Verdict.UNCONFIRMED
         }
     }
 
