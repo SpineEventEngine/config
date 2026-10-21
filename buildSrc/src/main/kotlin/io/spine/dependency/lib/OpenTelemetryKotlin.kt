@@ -77,11 +77,28 @@ object OpenTelemetryKotlin : Dependency() {
      */
     val compat = "$group:compat:$version"
 
+    /**
+     * The export machinery of the Kotlin SDK, such as `batchLogRecordProcessor`.
+     *
+     * Use it together with [implementation] and an exporter artifact,
+     * such as [exportersOtlp].
+     */
+    val exportersCore = "$group:exporters-core:$version"
+
+    /**
+     * The OTLP exporters of the Kotlin SDK.
+     *
+     * Use it together with [exportersCore].
+     */
+    val exportersOtlp = "$group:exporters-otlp:$version"
+
     override val modules: List<String> = listOf(
         "$group:api",
         "$group:noop",
         "$group:core",
         "$group:implementation",
         "$group:compat",
+        "$group:exporters-core",
+        "$group:exporters-otlp",
     )
 }
