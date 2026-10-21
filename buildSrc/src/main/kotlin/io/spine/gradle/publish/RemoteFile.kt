@@ -43,10 +43,9 @@ import kotlin.time.toKotlinDuration
  * is not retried.
  *
  * An `Authorization` header passed with a request is sent to the origin of the given URL
- * only. When reading a file, a redirect to another origin, such as the storage GitHub
- * Packages redirects a download to, is followed without it; [exists] does not follow
- * such a redirect. A redirect is followed to an HTTP(S) URL only, and never from HTTPS
- * to plain HTTP.
+ * only. A redirect to another origin, such as the storage GitHub Packages redirects
+ * a download to, is followed without it. A redirect is followed to an HTTP(S) URL only,
+ * and never from HTTPS to plain HTTP.
  */
 internal object RemoteFile {
 
@@ -119,14 +118,14 @@ internal object RemoteFile {
     /**
      * Tells whether there is a file at the given [url], without downloading it.
      *
-     * A redirect within the origin of the [url] is followed. A redirect to another origin
-     * counts as an existing file, and is not followed: GitHub Packages redirects only
-     * the download of a file it has, and the storage it redirects to answers the `GET` it
-     * signed the URL for, not a `HEAD`.
+     * A redirect is followed, and the answer at its end tells whether the file exists:
+     * a redirect alone proves nothing, as a server may redirect every request, e.g.,
+     * from HTTP to HTTPS. Neither Artifact Registry nor GitHub Packages redirects
+     * a `HEAD` request: GitHub Packages redirects only the download of a file.
      *
      * @param url The URL of the file.
      * @param authorization The value of the `Authorization` header to send, if any.
-     *   It goes to the origin of the [url] only.
+     *   It goes to the origin of the [url] only, never to a redirect target elsewhere.
      * @throws IOException if the server could not be asked within the allowed attempts.
      * @throws IllegalStateException if the server refuses the request with a client error
      *   that another attempt would not change, or redirects it too many times.
@@ -206,7 +205,7 @@ internal object RemoteFile {
 
     /**
      * Tells whether the response to this `HEAD` request finds a file, following
-     * a redirect within the origin.
+     * a redirect with no `Authorization` header if it leads to another origin.
      */
     private fun HttpURLConnection.exists(authorization: String?, redirectsLeft: Int): Boolean {
         val status = status()
@@ -216,9 +215,9 @@ internal object RemoteFile {
             status in redirects -> {
                 check(redirectsLeft > 0) { "Too many redirects asking for `${url.shown()}`." }
                 val next = target()
-                !url.sameOrigin(next) || existsOnce(
+                existsOnce(
                     url = next,
-                    authorization = authorization,
+                    authorization = authorization.takeIf { url.sameOrigin(next) },
                     redirectsLeft = redirectsLeft - 1
                 )
             }

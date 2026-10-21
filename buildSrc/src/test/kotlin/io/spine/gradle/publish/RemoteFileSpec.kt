@@ -234,11 +234,21 @@ internal class RemoteFileSpec {
         }
 
         @Test
-        fun `redirected to another origin, without following`() {
+        fun `redirected to another origin, following without the authorization`() {
             server.redirect(storage.url("blob/file.txt").toString())
+            storage.answer(200)
 
             RemoteFile.exists(server.url("file.txt"), authorization) shouldBe true
-            storage.requests.size shouldBe 0
+            storage.requests shouldContainExactly
+                    listOf(Request(method = "HEAD", path = "/blob/file.txt", authorization = null))
+        }
+
+        @Test
+        fun `redirected to another origin that has no such file`() {
+            server.redirect(storage.url("blob/file.txt").toString())
+            storage.answer(404)
+
+            RemoteFile.exists(server.url("file.txt")) shouldBe false
         }
 
         @Test
