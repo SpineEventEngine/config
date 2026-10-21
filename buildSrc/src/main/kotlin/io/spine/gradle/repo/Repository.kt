@@ -80,6 +80,12 @@ data class Repository(
     fun hasOneTarget() = snapshots == releases
 
     /**
+     * Obtains the URLs of the destinations of this repository: the `snapshots` one, and
+     * the `releases` one unless it is the same destination.
+     */
+    fun targets(): List<String> = listOf(snapshots, releases).distinct()
+
+    /**
      * Obtains the publishing password credentials to this repository.
      *
      * If the credentials are represented by a `.properties` file, reads the file and parses

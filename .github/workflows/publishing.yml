@@ -19,7 +19,7 @@ name: Publishing
 # Two jobs, not one, for the two SLSA Build L3 rules a single job leaves open:
 #
 #  - `id-token: write` is granted per job, and the runner hands the token
-#    endpoint to every step of that job. The Gradle step runs the consumer's
+#    endpoint to every step of that job. The Gradle steps run the consumer's
 #    build scripts, so in one job those scripts could mint a token naming this
 #    file as signer. Here they cannot: `publish` has no `id-token`, and
 #    `attest`, which has it, runs no consumer code.
@@ -45,11 +45,29 @@ jobs:
     name: Publish to Maven repositories
     runs-on: ubuntu-latest
 
+    # One publication at a time per GitHub repository. Published versions are
+    # immutable, so two overlapping runs of the same commit — GitHub
+    # may deliver one push twice — would race for the same files, and the
+    # registry rejects every upload but the first. With the runs serialized,
+    # the second one finds the version already published from its own commit
+    # and ends green (see the `state` step below). The group is per repository
+    # rather than per commit, so that runs of different commits do not add up
+    # to throttling at the registry either.
+    #
+    # `queue: max` keeps up to 100 runs waiting instead of the default of one:
+    # a waiting run is the only publication of its commit's version, so having
+    # a newer run cancel it would leave that version unpublished. The `attest`
+    # job stays outside the group; it uploads nothing to Maven.
+    concurrency:
+      group: maven-publishing-${{ github.repository }}
+      queue: max
+
     # This block is exhaustive: a scope missing here is set to `none`, not
     # left at the default. `packages: write` is what `GITHUB_TOKEN` needs to
     # publish to GitHub Packages — it is used as the Maven password, see
-    # `GitHubPackages.kt`. The scopes that serve the attestation belong to the
-    # `attest` job alone, see the top of the file.
+    # `GitHubPackages.kt` — and it covers reading the packages, as the `state`
+    # step does. The scopes that serve the attestation belong to the `attest`
+    # job alone, see the top of the file.
     permissions:
       contents: read
       packages: write
@@ -75,11 +93,6 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Decrypt CloudRepo credentials
-        run: ./config/scripts/decrypt.sh "$CLOUDREPO_CREDENTIALS_KEY" ./.github/keys/cloudrepo.properties.gpg ./cloudrepo.properties
-        env:
-          CLOUDREPO_CREDENTIALS_KEY: ${{ secrets.CLOUDREPO_CREDENTIALS_KEY }}
-
       - name: Decrypt Git SSH credentials
         run: ./config/scripts/decrypt.sh "$GIT_CREDENTIALS_KEY" ./.github/keys/deploy_key_rsa.gpg ./deploy_key_rsa
         env:
@@ -99,7 +112,7 @@ jobs:
         env:
           MAVEN_PUBLISHER_KEY: ${{ secrets.MAVEN_PUBLISHER_KEY }}
 
-      - name: Decrypt Git SSH credentials
+      - name: Decrypt Gradle Plugin Portal credentials
         run: ./config/scripts/decrypt.sh "$GRADLE_PORTAL_CREDENTIALS_KEY" ./.github/keys/gradle-plugin-portal.secret.properties.gpg ./gradle-plugin-portal.secret.properties
         env:
           GRADLE_PORTAL_CREDENTIALS_KEY: ${{ secrets.GRADLE_PORTAL_CREDENTIALS_KEY }}
@@ -107,8 +120,55 @@ jobs:
       - name: Append Gradle properties
         run: cat ./gradle-plugin-portal.secret.properties >> ./gradle.properties
 
+      # Asks the registries whether the version is already published, before anything
+      # is built. `publicationState` (see `PublicationState.kt`) looks for the files of
+      # each publication in each remote repository it is published to, such as Artifact
+      # Registry and GitHub Packages, and writes:
+      #
+      #  - `unpublished` when none of them is there;
+      #  - `published` when every publication is complete in every repository and the
+      #    published SBOMs name this very commit, as for a duplicate run, or a re-run of
+      #    a commit whose upload already succeeded. Such a run ends green with nothing
+      #    uploaded and nothing attested: the attestation of the version belongs to the
+      #    run that uploaded it.
+      #
+      # Any other published state fails the task before a single upload: a gap in any
+      # repository (left by an earlier run that failed, or by GitHub Packages pruning
+      # old versions), a version published from another commit, or a version published
+      # from a commit that cannot be determined. No re-run can complete or replace such
+      # a version, because the registries reject every overwrite.
+      #
+      # The task reads GitHub Packages with `GITHUB_TOKEN`, since it serves nothing
+      # without a token. `REPO_SLUG` is passed as it is to the publish step, since
+      # the build configures the same tasks; the other secrets of that step are needed
+      # only to upload.
+      - name: Check whether the version is already published
+        id: state
+        shell: bash
+        # The value is checked before it leaves the step: the file is written by
+        # the consumer's build, and an unexpected value would skip the publication
+        # and end the run green.
+        run: |
+          ./gradlew :publicationState --stacktrace
+          state=$(cat build/publication/state.txt)
+          case "$state" in
+            published|unpublished) ;;
+            *)
+              echo "::error title=Unexpected publication state::'build/publication/state.txt' holds '$state', not 'published' or 'unpublished'."
+              exit 1
+              ;;
+          esac
+          echo "state=$state" >> "$GITHUB_OUTPUT"
+          if [ "$state" = published ]; then
+            echo "::notice title=Already published::This commit has already published its version to every repository, so this run uploads and attests nothing."
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_SLUG: ${{ github.repository }}
+
       - name: Publish artifacts to Maven
         id: publish
+        if: steps.state.outputs.state == 'unpublished'
         # Since we're in the `master` branch already, this means that tests of a PR passed.
         # So, no need to run the tests again when publishing.
         #
@@ -120,7 +180,29 @@ jobs:
         # the digests and the uploads are of the same bytes. The task writing the SBOM
         # published next to each artifact (`*.spdx.json`) is such a producer: the SBOM
         # records when it was written. It is attested like any other published file.
-        run: ./gradlew publish publicationChecksums -x test --stacktrace
+        #
+        # The `-D` flags tune the uploads of this invocation only:
+        #  - `retry.max.attempts` and `retry.initial.backOff` raise the uploads to five
+        #    attempts. By default, Gradle makes three attempts at a PUT that failed with
+        #    a `429`, a `5xx` or a network error, waiting 1 and 2 seconds between them,
+        #    too briefly to outlast the throttling of the registry. Five attempts starting
+        #    at 5 seconds wait 5 + 10 + 20 + 40 seconds between them, 75 seconds in all.
+        #    The cost: a retry of a PUT that the registry stored, but whose response was
+        #    lost, fails with a `400`, since the file already exists.
+        #  - `publish.checksums.insecure` skips the `.sha256` and `.sha512` files
+        #    uploaded next to each artifact. Neither Gradle nor Maven reads them when
+        #    resolving, and a failure to upload them only logs a misleading "doesn't
+        #    support SHA-256" warning. Each file still gets its `.sha1` and `.md5`, and
+        #    the attestation carries the SHA-256 digests computed by
+        #    `publicationChecksums`.
+        #
+        # All three are internal Gradle system properties, with no public replacement.
+        # The first two are read by `NetworkOperationBackOffAndRetry`.
+        run: >-
+          ./gradlew publish publicationChecksums -x test --stacktrace
+          -Dorg.gradle.internal.network.retry.max.attempts=5
+          -Dorg.gradle.internal.network.retry.initial.backOff=5000
+          -Dorg.gradle.internal.publish.checksums.insecure=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FORMAL_GIT_HUB_PAGES_AUTHOR: developers@spine.io
@@ -129,34 +211,58 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ./maven-publisher.json
           NPM_TOKEN: ${{ secrets.NPM_SECRET }}
 
-      # A failed publication on `master` is most often a version collision: a stale
-      # duplicate bump merged before `revalidate-versions.yml` could turn it red (the
-      # narrow auto-merge race). The artifact is safe — the registry rejects the
-      # overwrite — but the fix needs a human/agent, so make the failure loud and
+      # A publication of a version that is already taken — by a stale duplicate bump
+      # merged before `revalidate-versions.yml` could turn it red (the narrow
+      # auto-merge race), or by a failed earlier run — is stopped by the `state`
+      # step, before any upload. The artifacts are safe, as the registries reject the
+      # overwrite, but the fix needs a human/agent, so make the failure loud and
       # actionable instead of a quiet red run.
+      - name: Report a version that cannot be published
+        if: failure() && steps.state.outcome == 'failure'
+        shell: bash
+        run: |
+          echo "::error title=Publication state check failed::Checking the published state of the version failed on the base branch. Read the ':publicationState' output."
+          echo "If the task reports the version as partially published, as published"
+          echo "from another commit, or as published from a commit that cannot be"
+          echo "determined, the version is taken and immutable:"
+          echo "  1. Bump 'version.gradle.kts' on the base branch to the next free version."
+          echo "  2. Merge the bump: the run of that merge publishes the new version."
+          echo "Stale duplicate bumps are normally caught before merge by 'revalidate-versions.yml'."
+          echo "If every gap is in GitHub Packages and the commit is an old one, GitHub"
+          echo "Packages pruned the version, and there is nothing to fix."
+          echo
+          echo "If the check could not reach a registry instead, nothing has been"
+          echo "uploaded: re-run this 'Publish' workflow. A registry that refuses the"
+          echo "request ('401' or '403') needs credentials the check does not have:"
+          echo "it reads Artifact Registry anonymously, and GitHub Packages with"
+          echo "'GITHUB_TOKEN'."
+
       - name: Report a failed publication
         if: failure() && steps.publish.outcome == 'failure'
         shell: bash
         run: |
-          echo "::error title=Publish failed::Publishing to Maven, or computing the attestation manifest, failed on the base branch. Read the Gradle output to see which task failed - the two need opposite responses."
-          echo "If ':publish' failed on a version collision, the version is already"
-          echo "published and immutable:"
-          echo "  1. Bump 'version.gradle.kts' on the base branch to the next free version."
-          echo "  2. Re-run this 'Publish' workflow."
-          echo "Stale duplicate bumps are normally caught before merge by 'revalidate-versions.yml'."
+          echo "::error title=Publish failed::Publishing to Maven, or computing the attestation manifest, failed on the base branch. Read the Gradle output to see which task failed - the two need different responses."
+          echo "If ':publish' failed, re-run this 'Publish' workflow. Its first check"
+          echo "tells whether the version can still be published: if the failed run"
+          echo "uploaded part of it, the check fails, and the version needs a bump in"
+          echo "'version.gradle.kts' on the base branch."
           echo
           echo "If ':publicationChecksums' failed instead, the artifacts are published"
           echo "and intact, and only their attestation is missing. Do NOT bump the"
-          echo "version: re-publishing an immutable one cannot succeed, and this"
-          echo "workflow publishes before it attests, so a plain re-run stops there."
-          echo "Fix the manifest failure and publish the next version to attest it."
+          echo "version for this. A re-run ends green without attesting, since the"
+          echo "version has already been published from this commit. Fix the manifest"
+          echo "failure and publish the next version to attest it."
 
       # The manifest leaves this job as an output rather than through the
       # artifact store, see the top of the file. `awk 1` terminates the last
       # line even when the file does not, so the heredoc delimiter always
       # stands on a line of its own.
+      #
+      # A skipped publication writes no manifest, so the step runs only after
+      # a publication that succeeded.
       - name: Export the attestation manifest
         id: manifest
+        if: steps.publish.outcome == 'success'
         shell: bash
         run: |
           manifest=build/attestation/subject-checksums.txt
@@ -185,8 +291,16 @@ jobs:
     # a build that is not bit-for-bit reproducible cannot promise to reproduce
     # the published bytes, and would attest whatever it happened to rebuild,
     # as though that were what consumers resolve. A missing attestation is a
-    # gap, but a wrong one is a false statement.
+    # gap, but a wrong one is a false statement. "Re-run all jobs" cannot
+    # recover either: the repeated `publish` finds the version already
+    # published from this commit, uploads nothing, and leaves no manifest to
+    # attest.
+    #
+    # The `if` skips the job when `publish` uploaded nothing, because this
+    # commit has already published the version. A skipped job leaves the run
+    # green.
     needs: publish
+    if: needs.publish.outputs.manifest != ''
     runs-on: ubuntu-latest
 
     # `id-token` mints the OIDC token Sigstore issues a signing certificate

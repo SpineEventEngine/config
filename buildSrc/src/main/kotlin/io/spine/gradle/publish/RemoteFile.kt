@@ -1,0 +1,287 @@
+/*
+ * Copyright 2026 CodeMatters, Lda.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions
+ * and limitations under the License.
+ */
+
+package io.spine.gradle.publish
+
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URI
+import java.net.URL
+import java.net.URLConnection
+import kotlin.time.Duration.Companion.seconds
+
+/**
+ * Reads the files of a remote Maven repository, such as `maven-metadata.xml`.
+ *
+ * Each request is bounded by timeouts, so that an unresponsive registry fails the build
+ * instead of stalling it. A request that fails with an I/O error, a server error, or
+ * a [transient] client error is retried, up to three attempts in all, with the delay
+ * doubling from one second. A missing file is not an error, and a request the server
+ * refuses for good, such as one answered with `403 Forbidden`, is not retried.
+ *
+ * An `Authorization` header passed with a request is sent to the origin of the given URL
+ * only. A redirect to another origin, such as the storage GitHub Packages redirects
+ * a download to, is followed without it. A redirect is followed to an HTTP(S) URL only,
+ * and never from HTTPS to plain HTTP.
+ */
+internal object RemoteFile {
+
+    private const val attempts = 3
+    private const val maxRedirects = 5
+    private val connectTimeout = 10.seconds
+    private val readTimeout = 30.seconds
+    private val initialBackoff = 1.seconds
+
+    /**
+     * `429 Too Many Requests`, which `HttpURLConnection` has no constant for.
+     */
+    private const val tooManyRequests = 429
+
+    /**
+     * The HTTP statuses of successful responses, `2xx`.
+     */
+    private val successes = HttpURLConnection.HTTP_OK..<HttpURLConnection.HTTP_MULT_CHOICE
+
+    /**
+     * The HTTP statuses of redirects, `3xx`.
+     */
+    private val redirects =
+        HttpURLConnection.HTTP_MULT_CHOICE..<HttpURLConnection.HTTP_BAD_REQUEST
+
+    /**
+     * The HTTP statuses of client errors, `4xx`.
+     */
+    private val clientErrors =
+        HttpURLConnection.HTTP_BAD_REQUEST..<HttpURLConnection.HTTP_INTERNAL_ERROR
+
+    /**
+     * The HTTP statuses that mean there is no such file.
+     */
+    private val missing = setOf(
+        HttpURLConnection.HTTP_NOT_FOUND,
+        HttpURLConnection.HTTP_GONE
+    )
+
+    /**
+     * The HTTP client errors that may go away on a later attempt.
+     */
+    private val transient = setOf(
+        HttpURLConnection.HTTP_CLIENT_TIMEOUT,
+        tooManyRequests
+    )
+
+    /**
+     * Reads the text of the file at the given [url].
+     *
+     * @param url The URL of the file.
+     * @param authorization The value of the `Authorization` header to send, if any.
+     *   It goes to the origin of the [url] only, never to a redirect target elsewhere.
+     * @return the text of the file, or `null` if there is no such file.
+     * @throws IOException if the file could not be read within the allowed attempts.
+     * @throws IllegalStateException if the server refuses the request with a client error
+     *   that another attempt would not change, or if it redirects the request too many
+     *   times, with no `Location`, or to a URL that may not be followed.
+     */
+    fun readText(url: URL, authorization: String? = null): String? =
+        withRetries {
+            readOnce(url = url, authorization = authorization, redirectsLeft = maxRedirects)
+        }
+
+    /**
+     * Tells whether there is a file at the given [url], without downloading it.
+     *
+     * A redirect within the origin of the [url] is followed. A redirect to another origin
+     * counts as an existing file, and is not followed: GitHub Packages redirects only
+     * the download of a file it has, and the storage it redirects to answers the `GET` it
+     * signed the URL for, not a `HEAD`.
+     *
+     * @param url The URL of the file.
+     * @param authorization The value of the `Authorization` header to send, if any.
+     *   It goes to the origin of the [url] only.
+     * @throws IOException if the server could not be asked within the allowed attempts.
+     * @throws IllegalStateException if the server refuses the request with a client error
+     *   that another attempt would not change, or redirects it too many times.
+     */
+    fun exists(url: URL, authorization: String? = null): Boolean =
+        withRetries {
+            existsOnce(url = url, authorization = authorization, redirectsLeft = maxRedirects)
+        }
+
+    private fun <T> withRetries(request: () -> T): T {
+        var backoff = initialBackoff
+        // All attempts but the last one, whose failure propagates.
+        repeat(attempts - 1) {
+            try {
+                return request()
+            } catch (_: IOException) {
+                Thread.sleep(backoff.inWholeMilliseconds)
+                backoff *= 2
+            }
+        }
+        return request()
+    }
+
+    private fun readOnce(url: URL, authorization: String?, redirectsLeft: Int): String? {
+        val connection = open(url, authorization)
+        return try {
+            if (connection is HttpURLConnection) {
+                connection.read(authorization = authorization, redirectsLeft = redirectsLeft)
+            } else {
+                connection.getInputStream().bufferedReader().use { it.readText() }
+            }
+        } catch (_: FileNotFoundException) {
+            // A `file:` URL to a missing file.
+            null
+        } finally {
+            (connection as? HttpURLConnection)?.errorStream?.close()
+        }
+    }
+
+    /**
+     * Reads the response to this connection, following a redirect.
+     */
+    private fun HttpURLConnection.read(authorization: String?, redirectsLeft: Int): String? =
+        when (status()) {
+            in missing -> null
+            in redirects -> {
+                check(redirectsLeft > 0) { "Too many redirects reading `${url.shown()}`." }
+                val next = target()
+                inputStream.close()
+                readOnce(
+                    url = next,
+                    authorization = authorization.takeIf { url.sameOrigin(next) },
+                    redirectsLeft = redirectsLeft - 1
+                )
+            }
+            else -> inputStream.bufferedReader().use { it.readText() }
+        }
+
+    private fun existsOnce(url: URL, authorization: String?, redirectsLeft: Int): Boolean {
+        val connection = open(url, authorization)
+        return try {
+            if (connection is HttpURLConnection) {
+                connection.requestMethod = "HEAD"
+                connection.exists(authorization = authorization, redirectsLeft = redirectsLeft)
+            } else {
+                connection.getInputStream().close()
+                true
+            }
+        } catch (_: FileNotFoundException) {
+            // A `file:` URL to a missing file.
+            false
+        } finally {
+            (connection as? HttpURLConnection)?.errorStream?.close()
+        }
+    }
+
+    /**
+     * Tells whether the response to this `HEAD` request finds a file, following
+     * a redirect within the origin.
+     */
+    private fun HttpURLConnection.exists(authorization: String?, redirectsLeft: Int): Boolean {
+        val status = status()
+        return when {
+            status in missing -> false
+            status in successes -> true
+            status in redirects -> {
+                check(redirectsLeft > 0) { "Too many redirects asking for `${url.shown()}`." }
+                val next = target()
+                !url.sameOrigin(next) || existsOnce(
+                    url = next,
+                    authorization = authorization,
+                    redirectsLeft = redirectsLeft - 1
+                )
+            }
+            else -> throw IOException("`${url.shown()}` answered with `$status`.")
+        }
+    }
+
+    private fun open(url: URL, authorization: String?): URLConnection {
+        val connection = url.openConnection()
+        connection.connectTimeout = connectTimeout.inWholeMilliseconds.toInt()
+        connection.readTimeout = readTimeout.inWholeMilliseconds.toInt()
+        if (connection is HttpURLConnection) {
+            connection.instanceFollowRedirects = false
+        }
+        authorization?.let { connection.setRequestProperty("Authorization", it) }
+        return connection
+    }
+
+    /**
+     * Obtains the status of the response if it is a success, a redirect, or a sign that
+     * there is no such file.
+     *
+     * @throws IOException for a server error or a [transient] client error, which may go
+     *   away on another attempt.
+     * @throws IllegalStateException for any other client error.
+     */
+    private fun HttpURLConnection.status(): Int {
+        val status = responseCode
+        if (status >= HttpURLConnection.HTTP_INTERNAL_ERROR || status in transient ||
+            isRateLimited(status)) {
+            throw IOException("`${url.shown()}` answered with `$status $responseMessage`.")
+        }
+        check(status !in clientErrors || status in missing) {
+            "Cannot read `${url.shown()}`: the server answered with `$status $responseMessage`."
+        }
+        return status
+    }
+
+    /**
+     * Obtains the URL that this connection redirects to.
+     *
+     * @throws IllegalStateException if there is no such URL, or it may not be followed:
+     *   a URL that is not HTTP(S), or a plain HTTP one redirected to from HTTPS.
+     */
+    private fun HttpURLConnection.target(): URL {
+        val location = checkNotNull(getHeaderField("Location")) {
+            "`${url.shown()}` redirects with no `Location`."
+        }
+        val target = runCatching { url.toURI().resolve(URI.create(location)).toURL() }
+            .getOrElse { error("`${url.shown()}` redirects to an invalid location.") }
+        val allowed = target.protocol == url.protocol ||
+                (url.protocol == "http" && target.protocol == "https")
+        check(allowed) {
+            "`${url.shown()}` redirects to `${target.shown()}`, which may not be followed."
+        }
+        return target
+    }
+}
+
+/**
+ * Tells whether this response with the given [status] refuses the request for exceeding
+ * a rate limit, as GitHub answers with `403 Forbidden` and a `Retry-After` header, or
+ * no remaining requests.
+ */
+private fun HttpURLConnection.isRateLimited(status: Int): Boolean =
+    status == HttpURLConnection.HTTP_FORBIDDEN &&
+            (getHeaderField("Retry-After") != null ||
+                    getHeaderField("X-RateLimit-Remaining") == "0")
+
+/**
+ * Tells whether the given URL has the origin of this one: the protocol, the host,
+ * and the port.
+ */
+private fun URL.sameOrigin(other: URL): Boolean =
+    protocol == other.protocol && host.equals(other.host, ignoreCase = true) &&
+            effectivePort() == other.effectivePort()
+
+private fun URL.effectivePort(): Int = if (port == -1) defaultPort else port
+
+/**
+ * Shows this URL with no query, which may carry a signature, as a redirect
+ * to a storage service does.
+ */
+private fun URL.shown(): String = "$protocol://$authority$path"

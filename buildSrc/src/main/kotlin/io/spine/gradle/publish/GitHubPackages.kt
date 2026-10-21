@@ -19,11 +19,21 @@ import io.spine.gradle.repo.Repository
 import io.spine.gradle.buildDirectory
 import net.lingala.zip4j.ZipFile
 import org.gradle.api.Project
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 
 /**
  * Maven repositories of Spine Event Engine projects hosted at GitHub Packages.
  */
 internal object GitHubPackages {
+
+    /**
+     * The name of the GitHub Packages repository.
+     *
+     * The Maven repository that a project publishes to is named after it:
+     * `GitHub-Packages` for releases, and `GitHub-Packages-snapshots` for snapshots
+     * (see `Repository.name(snapshots)`).
+     */
+    const val repositoryName = "GitHub-Packages"
 
     /**
      * Obtains an instance of the GitHub Packages repository with the given name.
@@ -32,13 +42,26 @@ internal object GitHubPackages {
         val githubActor: String = actor()
         val url = "https://maven.pkg.github.com/SpineEventEngine/$repoName"
         return Repository(
-            name = "GitHub-Packages",
+            name = repositoryName,
             releases = url,
             snapshots = url
         ) { project -> project.credentialsWithToken(githubActor) }
     }
 
-    private fun actor(): String {
+    /**
+     * Tells whether the given Maven repository is a GitHub Packages one, as registered
+     * for publishing by [repository].
+     */
+    fun isRepository(candidate: MavenArtifactRepository): Boolean {
+        val registered = repository(repoName = "")
+        return candidate.name == registered.name(snapshots = false) ||
+                candidate.name == registered.name(snapshots = true)
+    }
+
+    /**
+     * Obtains the user to authenticate with at GitHub Packages, along with a token.
+     */
+    fun actor(): String {
         var githubActor: String? = System.getenv("GITHUB_ACTOR")
         githubActor = if (githubActor.isNullOrEmpty()) {
             "developers@spine.io"
