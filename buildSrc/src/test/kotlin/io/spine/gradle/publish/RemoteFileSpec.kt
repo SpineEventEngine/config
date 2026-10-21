@@ -18,6 +18,7 @@ import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.comparables.shouldBeGreaterThanOrEqualTo
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -29,6 +30,8 @@ import java.net.InetSocketAddress
 import java.net.URI
 import java.net.URL
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTime
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -90,6 +93,18 @@ internal class RemoteFileSpec {
             server.rateLimit(then = 200)
 
             RemoteFile.readText(server.url("file.txt")) shouldBe body
+            server.requests.size shouldBe 2
+        }
+
+        @Test
+        fun `waiting before a retry as long as the server asks`() {
+            server.throttle(retryAfter = "2", then = 200)
+
+            val elapsed = measureTime {
+                RemoteFile.readText(server.url("file.txt")) shouldBe body
+            }
+
+            elapsed shouldBeGreaterThanOrEqualTo 2.seconds
             server.requests.size shouldBe 2
         }
 
@@ -345,6 +360,21 @@ private class Server : AutoCloseable {
             if (index == 0) {
                 exchange.responseHeaders.add("Retry-After", "1")
                 exchange.sendResponseHeaders(403, -1)
+            } else {
+                exchange.reply(then)
+            }
+        }
+    }
+
+    /**
+     * Answers the first request with `429 Too Many Requests` and the given `Retry-After`
+     * header, and the next ones with the given status.
+     */
+    fun throttle(retryAfter: String, then: Int) {
+        respond = { exchange, index ->
+            if (index == 0) {
+                exchange.responseHeaders.add("Retry-After", retryAfter)
+                exchange.sendResponseHeaders(429, -1)
             } else {
                 exchange.reply(then)
             }

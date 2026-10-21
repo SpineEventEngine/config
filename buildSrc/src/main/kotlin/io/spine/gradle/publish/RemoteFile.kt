@@ -22,7 +22,13 @@ import java.net.URI
 import java.net.URISyntaxException
 import java.net.URL
 import java.net.URLConnection
+import java.time.Instant
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toKotlinDuration
 
 /**
  * Reads the files of a remote Maven repository, such as `maven-metadata.xml`.
@@ -30,9 +36,11 @@ import kotlin.time.Duration.Companion.seconds
  * Each request is bounded by timeouts, so that an unresponsive registry fails the build
  * instead of stalling it. A request that fails with an I/O error, a server error,
  * a [transient] client error, or a rate-limit `403 Forbidden` is retried, up to three
- * attempts in all, with the delay doubling from one second. A missing file is not
- * an error, and a request the server refuses for good, such as one answered with
- * `401 Unauthorized` or a plain `403 Forbidden`, is not retried.
+ * attempts in all, with the delay doubling from one second. A response with
+ * a `Retry-After` header makes the next attempt wait at least as long as it asks,
+ * up to a minute. A missing file is not an error, and a request the server refuses
+ * for good, such as one answered with `401 Unauthorized` or a plain `403 Forbidden`,
+ * is not retried.
  *
  * An `Authorization` header passed with a request is sent to the origin of the given URL
  * only. When reading a file, a redirect to another origin, such as the storage GitHub
@@ -47,6 +55,11 @@ internal object RemoteFile {
     private val connectTimeout = 10.seconds
     private val readTimeout = 30.seconds
     private val initialBackoff = 1.seconds
+
+    /**
+     * The longest wait before another attempt that a `Retry-After` header may impose.
+     */
+    private val maxRetryAfter = 60.seconds
 
     /**
      * `429 Too Many Requests`, which `HttpURLConnection` has no constant for.
@@ -129,8 +142,9 @@ internal object RemoteFile {
         repeat(attempts - 1) {
             try {
                 return request()
-            } catch (_: IOException) {
-                Thread.sleep(backoff.inWholeMilliseconds)
+            } catch (e: IOException) {
+                val asked = (e as? RetryLaterException)?.delay ?: Duration.ZERO
+                Thread.sleep(maxOf(backoff, asked).inWholeMilliseconds)
                 backoff *= 2
             }
         }
@@ -228,14 +242,17 @@ internal object RemoteFile {
      * there is no such file.
      *
      * @throws IOException for a server error, a [transient] client error, or a rate limit,
-     *   which may go away on another attempt.
+     *   which may go away on another attempt; a [RetryLaterException] if the response
+     *   tells how long to wait before it.
      * @throws IllegalStateException for any other client error.
      */
     private fun HttpURLConnection.status(): Int {
         val status = responseCode
         if (status >= HttpURLConnection.HTTP_INTERNAL_ERROR || status in transient ||
             isRateLimited(status)) {
-            throw IOException("`${url.shown()}` answered with `$status $responseMessage`.")
+            val message = "`${url.shown()}` answered with `$status $responseMessage`."
+            val delay = retryAfter(maxRetryAfter)
+            throw if (delay == null) IOException(message) else RetryLaterException(message, delay)
         }
         check(status !in clientErrors || status in missing) {
             "Cannot read `${url.shown()}`: the server answered with `$status $responseMessage`."
@@ -279,6 +296,37 @@ private fun HttpURLConnection.resolve(location: String): URL? =
     } catch (_: URISyntaxException) {
         null
     } catch (_: MalformedURLException) {
+        null
+    }
+
+/**
+ * An I/O failure whose response asks to wait for the given [delay] before trying again.
+ */
+private class RetryLaterException(message: String, val delay: Duration) : IOException(message)
+
+/**
+ * Obtains how long this response asks to wait before trying again, by its `Retry-After`
+ * header in seconds or as an HTTP date, but no longer than the given [limit].
+ *
+ * @return the delay, or `null` if the response has no such header, or it cannot be parsed.
+ */
+private fun HttpURLConnection.retryAfter(limit: Duration): Duration? {
+    val value = getHeaderField("Retry-After")?.trim() ?: return null
+    val delay = value.toLongOrNull()?.seconds ?: untilHttpDate(value)
+    return delay?.coerceIn(Duration.ZERO, limit)
+}
+
+/**
+ * Obtains the time from now until the given HTTP date, such as
+ * `Wed, 21 Oct 2026 07:28:00 GMT`.
+ *
+ * @return the time until the date, or `null` if [value] is not an HTTP date.
+ */
+private fun untilHttpDate(value: String): Duration? =
+    try {
+        val date = ZonedDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME)
+        java.time.Duration.between(Instant.now(), date.toInstant()).toKotlinDuration()
+    } catch (_: DateTimeParseException) {
         null
     }
 
