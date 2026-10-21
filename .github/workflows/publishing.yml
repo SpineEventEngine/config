@@ -132,6 +132,14 @@ jobs:
       #    uploaded and nothing attested: the attestation of the version belongs to the
       #    run that uploaded it.
       #
+      #    The check covers the Maven repositories only, and the whole `publish`
+      #    invocation is skipped, so the other tasks `publish` depends on are not run
+      #    either: the GitHub Pages update (`updateGitHubPages`) and an npm publication
+      #    (`publishJs`). If an earlier run failed in one of them after its Maven
+      #    uploads, a re-run cannot complete it, as it could not before this check:
+      #    it would stop at the first Maven upload, rejected as an overwrite. The
+      #    notice below says so, rather than letting the green run imply otherwise.
+      #
       # Any other published state fails the task before a single upload: a gap in any
       # repository (left by an earlier run that failed, or by GitHub Packages pruning
       # old versions), a version published from another commit, or a version published
@@ -160,7 +168,7 @@ jobs:
           esac
           echo "state=$state" >> "$GITHUB_OUTPUT"
           if [ "$state" = published ]; then
-            echo "::notice title=Already published::This commit has already published its version to every repository, so this run uploads and attests nothing."
+            echo "::notice title=Already published::This commit has already published its version to every Maven repository, so this run uploads and attests nothing. It does not run the other tasks 'publish' depends on either, such as the GitHub Pages update: if an earlier run failed in one of them, run it separately."
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
