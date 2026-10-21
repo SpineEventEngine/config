@@ -112,7 +112,7 @@ jobs:
       #    The check covers the Maven repositories only, and the whole `publish`
       #    invocation is skipped, so the other tasks `publish` depends on are not run
       #    either, such as an npm publication (`publishJs`). If an earlier run failed
-      #    in one of them after its Maven uploads, a re-run cannot complete it, as it
+      #    in one of them after the Maven uploads, a re-run cannot complete it, as it
       #    could not before this check: it would stop at the first Maven upload,
       #    rejected as an overwrite. The notice below says so, rather than letting
       #    the green run imply otherwise.
@@ -124,8 +124,8 @@ jobs:
       # a version, because the registries reject every overwrite.
       #
       # The task reads GitHub Packages with `GITHUB_TOKEN`, since it serves nothing
-      # without a token. The other secrets of the publish step are needed only
-      # to upload. So the check runs before any publishing credential is decrypted:
+      # without a token. The other secrets, the decryption keys and `NPM_SECRET`,
+      # are needed only to upload. So the check runs before any publishing credential is decrypted:
       # an already published version needs none of them, and the consumer's build
       # that the check runs finds none of them on disk.
       - name: Check whether the version is already published
@@ -146,7 +146,7 @@ jobs:
           esac
           echo "state=$state" >> "$GITHUB_OUTPUT"
           if [ "$state" = published ]; then
-            echo "::notice title=Already published::This commit has already published its version to every Maven repository, so this run uploads and attests nothing. It does not run the other tasks 'publish' depends on either, such as an npm publication: if an earlier run failed in one of them, run it separately."
+            echo "::notice title=Already published::This commit has already published its version to every Maven repository, so this run uploads and attests nothing. It does not run the other tasks 'publish' depends on either, such as an npm publication: if an earlier run failed in one of them, run that task separately."
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

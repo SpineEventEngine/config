@@ -35,7 +35,7 @@ import org.gradle.api.tasks.TaskProvider
  * of a particular Gradle project, generated in Javadoc and HTML format.
  *
  * The generated documentation is appended to the `spine.io` site
- * via GitHub pages by pushing commits to the `gh-pages` branch.
+ * via GitHub Pages by pushing commits to the `gh-pages` branch.
  *
  * The task is not a part of the Maven publication. It is run by the `publish-api-docs.yml`
  * workflow, apart from `publish.yml`, through the `publishApiDocs` task of the root
@@ -52,8 +52,8 @@ import org.gradle.api.tasks.TaskProvider
  * the SSH private (encrypted `deploy_key_rsa`) and the public
  * ("GitHub Pages publisher" on GitHub) keys.
  *
- * Another requirement is an environment variable `REPO_SLUG`, which is set by the CI
- * environment, such as the `Publish API docs` GitHub Actions workflow. It points to
+ * Another requirement is an environment variable `REPO_SLUG`, which a CI workflow sets,
+ * such as the `Publish API docs` GitHub Actions workflow. It points to
  * the repository for which the documentation is published. E.g.:
  *
  * ```
@@ -155,7 +155,7 @@ class PublishApiDocs : Plugin<Project> {
 
     /**
      * Registers the [TaskName.publishApiDocs] task of this project, or takes the task
-     * that is registered already.
+     * that is already registered.
      *
      * In a single-project build, the root project is both the documented project and
      * the owner of [the aggregate][registerAggregate], so whichever of this plugin and
@@ -201,8 +201,8 @@ class PublishApiDocs : Plugin<Project> {
          * workflow run it in any repository that publishes: Gradle fails on a task
          * that is missing from the build.
          *
-         * If [root] applies this plugin itself, as a single-project build does,
-         * the task also publishes the documentation of [root].
+         * If [root] applies this plugin itself, as in a single-project build, the task
+         * also publishes the documentation of [root], published or not.
          *
          * The plugin registers the task of a project once that project is evaluated,
          * so the tasks to depend on are looked up only when Gradle resolves

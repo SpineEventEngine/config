@@ -154,7 +154,7 @@ internal object PublicationSbom {
      * Whether a project is a JVM or a multiplatform module is known only once it is
      * evaluated, so the registration waits until then. It is idempotent, because
      * `spinePublishing { }` may reach one project twice, as the documentation of
-     * `PublicationChecksums.registerTasks` explains.
+     * [PublicationChecksums.registerTasks] explains.
      */
     fun registerTasks(host: Project, published: Set<Project>) {
         published.forEach { project ->
