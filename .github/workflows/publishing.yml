@@ -93,33 +93,6 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Decrypt Git SSH credentials
-        run: ./config/scripts/decrypt.sh "$GIT_CREDENTIALS_KEY" ./.github/keys/deploy_key_rsa.gpg ./deploy_key_rsa
-        env:
-          GIT_CREDENTIALS_KEY: ${{ secrets.GIT_CREDENTIALS_KEY }}
-
-        # Make sure the SSH key is not "too visible". SSH agent will not accept it otherwise.
-      - name: Set file system permissions
-        run: chmod 400 ./deploy_key_rsa && chmod +x ./config/scripts/register-ssh-key.sh
-
-      - name: Decrypt GCS credentials
-        run: ./config/scripts/decrypt.sh "$GCS_CREDENTIALS_KEY" ./.github/keys/gcs-auth-key.json.gpg ./gcs-auth-key.json
-        env:
-          GCS_CREDENTIALS_KEY: ${{ secrets.GCS_CREDENTIALS_KEY }}
-
-      - name: Decrypt GCAR credentials
-        run: ./config/scripts/decrypt.sh "$MAVEN_PUBLISHER_KEY" ./.github/keys/maven-publisher.json.gpg ./maven-publisher.json
-        env:
-          MAVEN_PUBLISHER_KEY: ${{ secrets.MAVEN_PUBLISHER_KEY }}
-
-      - name: Decrypt Gradle Plugin Portal credentials
-        run: ./config/scripts/decrypt.sh "$GRADLE_PORTAL_CREDENTIALS_KEY" ./.github/keys/gradle-plugin-portal.secret.properties.gpg ./gradle-plugin-portal.secret.properties
-        env:
-          GRADLE_PORTAL_CREDENTIALS_KEY: ${{ secrets.GRADLE_PORTAL_CREDENTIALS_KEY }}
-
-      - name: Append Gradle properties
-        run: cat ./gradle-plugin-portal.secret.properties >> ./gradle.properties
-
       # Asks the registries whether the version is already published, before anything
       # is built. `publicationState` (see `PublicationState.kt`) looks for the files of
       # each publication in each remote repository it is published to, such as Artifact
@@ -149,7 +122,9 @@ jobs:
       # The task reads GitHub Packages with `GITHUB_TOKEN`, since it serves nothing
       # without a token. `REPO_SLUG` is set as in the publish step, since the build
       # configures the same tasks; the other secrets of that step are needed only
-      # to upload.
+      # to upload. So the check runs before any publishing credential is decrypted:
+      # an already published version needs none of them, and the consumer's build
+      # that the check runs finds none of them on disk.
       - name: Check whether the version is already published
         id: state
         shell: bash
@@ -173,6 +148,42 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_SLUG: ${{ github.repository }}
+
+      # The credentials below serve the publication alone, so they are prepared only
+      # when the check above finds the version unpublished: a missing or rotated one
+      # must not fail a run that has nothing to upload.
+      - name: Decrypt Git SSH credentials
+        if: steps.state.outputs.state == 'unpublished'
+        run: ./config/scripts/decrypt.sh "$GIT_CREDENTIALS_KEY" ./.github/keys/deploy_key_rsa.gpg ./deploy_key_rsa
+        env:
+          GIT_CREDENTIALS_KEY: ${{ secrets.GIT_CREDENTIALS_KEY }}
+
+        # Make sure the SSH key is not "too visible". SSH agent will not accept it otherwise.
+      - name: Set file system permissions
+        if: steps.state.outputs.state == 'unpublished'
+        run: chmod 400 ./deploy_key_rsa && chmod +x ./config/scripts/register-ssh-key.sh
+
+      - name: Decrypt GCS credentials
+        if: steps.state.outputs.state == 'unpublished'
+        run: ./config/scripts/decrypt.sh "$GCS_CREDENTIALS_KEY" ./.github/keys/gcs-auth-key.json.gpg ./gcs-auth-key.json
+        env:
+          GCS_CREDENTIALS_KEY: ${{ secrets.GCS_CREDENTIALS_KEY }}
+
+      - name: Decrypt GCAR credentials
+        if: steps.state.outputs.state == 'unpublished'
+        run: ./config/scripts/decrypt.sh "$MAVEN_PUBLISHER_KEY" ./.github/keys/maven-publisher.json.gpg ./maven-publisher.json
+        env:
+          MAVEN_PUBLISHER_KEY: ${{ secrets.MAVEN_PUBLISHER_KEY }}
+
+      - name: Decrypt Gradle Plugin Portal credentials
+        if: steps.state.outputs.state == 'unpublished'
+        run: ./config/scripts/decrypt.sh "$GRADLE_PORTAL_CREDENTIALS_KEY" ./.github/keys/gradle-plugin-portal.secret.properties.gpg ./gradle-plugin-portal.secret.properties
+        env:
+          GRADLE_PORTAL_CREDENTIALS_KEY: ${{ secrets.GRADLE_PORTAL_CREDENTIALS_KEY }}
+
+      - name: Append Gradle properties
+        if: steps.state.outputs.state == 'unpublished'
+        run: cat ./gradle-plugin-portal.secret.properties >> ./gradle.properties
 
       - name: Publish artifacts to Maven
         id: publish
