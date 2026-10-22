@@ -112,8 +112,8 @@ class PublishApiDocs : Plugin<Project> {
     }
 
     /**
-     * Registers the [TaskName.publishApiDocs] task that performs no actual update,
-     * but tells that the update is skipped, since the project is in its `SNAPSHOT`
+     * Registers the [TaskName.publishApiDocs] task that publishes nothing, but tells
+     * that the documentation is not published, since the project is in its `SNAPSHOT`
      * version.
      */
     private fun Project.registerNoOpTask() {
@@ -191,7 +191,7 @@ class PublishApiDocs : Plugin<Project> {
             description = "Publishes the API documentation to the `gh-pages` branch"
             doLast {
                 try {
-                    updateGhPages(project)
+                    publishToGitHubPages(project)
                 } finally {
                     cleanup()
                 }

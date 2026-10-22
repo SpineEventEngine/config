@@ -25,29 +25,36 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 
 /**
- * Performs the update of GitHub pages.
+ * Publishes the API documentation of the given [project] to GitHub Pages.
+ *
+ * The documentation in each format is copied into a clone of the `gh-pages` branch
+ * and committed there, and the commits are pushed.
  */
-fun Task.updateGhPages(project: Project) {
+internal fun Task.publishToGitHubPages(project: Project) {
     val plugin = project.plugins.getPlugin(PublishApiDocs::class.java)
 
     SshKey(plugin.rootFolder, logger).register()
 
     val repository = Repository.forPublishingDocumentation(project)
 
-    val updateJavadocFormat =
-        UpdateJavadocFormat(project, plugin.javadocOutputFolder, repository, logger)
-
-    val updateHtmlFormat =
-        UpdateHtmlFormat(project, plugin.htmlOutputFolder, repository, logger)
+    val javadoc = JavadocPublication(project, plugin.javadocOutputFolder, repository, logger)
+    val html = HtmlPublication(project, plugin.htmlOutputFolder, repository, logger)
 
     repository.use {
-        updateJavadocFormat.run()
-        updateHtmlFormat.run()
+        javadoc.publish()
+        html.publish()
         repository.push()
     }
 }
 
-private abstract class UpdateDocumentation(
+/**
+ * Publishes the documentation of a [project] in one format to the clone of
+ * the [repository] serving GitHub Pages.
+ *
+ * The documentation goes to the folder of its version, and also replaces the most
+ * recent documentation of the project, unless a newer version is already published.
+ */
+private abstract class DocsPublication(
     private val project: Project,
     private val docsSourceFolder: Path,
     private val repository: Repository,
@@ -65,7 +72,7 @@ private abstract class UpdateDocumentation(
     protected abstract val docsDestinationFolder: String
 
     /**
-     * The name of the format of the documentation to update.
+     * The name of the format of the documentation to publish.
      *
      * This name will appear in logs as part of a message.
      */
@@ -89,20 +96,23 @@ private abstract class UpdateDocumentation(
         }
     }
 
-    fun run() {
+    /**
+     * Copies the documentation into the repository and commits it.
+     */
+    fun publish() {
         val module = project.name
-        log { "Update of the `$formatName` documentation for the module `$module` started." }
+        log { "Publishing the `$formatName` documentation of the module `$module`." }
 
         val documentation = replaceMostRecentDocs()
         copyIntoVersionDir(documentation)
 
         val version = project.version
-        val updateMessage =
-            "Update `$formatName` documentation for the module" +
-                    " `$module` with the version `$version`."
-        repository.commitAllChanges(updateMessage)
+        val commitMessage =
+            "Publish the `$formatName` documentation of the module" +
+                    " `$module` for the version `$version`."
+        repository.commitAllChanges(commitMessage)
 
-        log { "Update of the `$formatName` documentation for `$module` successfully finished." }
+        log { "Published the `$formatName` documentation of the module `$module`." }
     }
 
     /**
@@ -155,12 +165,12 @@ private abstract class UpdateDocumentation(
     }
 }
 
-private class UpdateJavadocFormat(
+private class JavadocPublication(
     project: Project,
     docsSourceFolder: Path,
     repository: Repository,
     logger: Logger
-) : UpdateDocumentation(project, docsSourceFolder, repository, logger) {
+) : DocsPublication(project, docsSourceFolder, repository, logger) {
 
     override val docsDestinationFolder: String
         get() = "javadoc"
@@ -168,12 +178,12 @@ private class UpdateJavadocFormat(
         get() = "javadoc"
 }
 
-private class UpdateHtmlFormat(
+private class HtmlPublication(
     project: Project,
     docsSourceFolder: Path,
     repository: Repository,
     logger: Logger
-) : UpdateDocumentation(project, docsSourceFolder, repository, logger) {
+) : DocsPublication(project, docsSourceFolder, repository, logger) {
 
     override val docsDestinationFolder: String
         get() = "reference"

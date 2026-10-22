@@ -53,7 +53,10 @@ the extension, and the DSL around it.
   - References: `Update.kt`, `RepositoryExtensions.kt` (commit author name
     `PublishApiDocs Plugin`), `DokkaExts.kt` (`docsShippingTaskNames`, KDoc),
     `jvm-module.gradle.kts`, `DokkaSetupIgTest`, KDoc and comments.
-  - `updateGhPages()` keeps its name: like the package, it names the mechanism.
+  - `git mv` `Update.kt` → `DocsPublication.kt`: `updateGhPages()` →
+    `internal publishToGitHubPages()`, `UpdateDocumentation` → `DocsPublication`
+    (`run()` → `publish()`), `UpdateJavadocFormat`/`UpdateHtmlFormat` →
+    `JavadocPublication`/`HtmlPublication`; no "update" wording is left.
 - [x] `migrate`: delete the stale `UpdateGitHubPages.kt` and
       `UpdateGitHubPagesExtension.kt` from a consumer's `buildSrc`, as it does for
       `ProtoData.kt` and the other retired files.
@@ -137,6 +140,8 @@ repositories, run from the `summit` repository.
   to the removed `TaskName.updateGitHubPages`.
   - `buildSrc/src/main/kotlin/io/spine/gradle/github/pages/UpdateGitHubPages.kt`
   - `buildSrc/src/main/kotlin/io/spine/gradle/github/pages/UpdateGitHubPagesExtension.kt`
+  - `buildSrc/src/main/kotlin/io/spine/gradle/github/pages/Update.kt`, now
+    `DocsPublication.kt`; the stale copy refers to the removed `UpdateGitHubPages`.
 
   `github/pages/TaskName.kt` stays; only its constant is renamed.
 - `.github/workflows/publish-api-docs.yml` is added, from `.github-workflows/`,
@@ -156,7 +161,8 @@ repositories, run from the `summit` repository.
   Before, every merge also pushed the docs of its `-SNAPSHOT.N` version to the
   site.
 - The commits on `gh-pages` are authored by `PublishApiDocs Plugin` instead of
-  `UpdateGitHubPages Plugin`.
+  `UpdateGitHubPages Plugin`, and their messages say "Publish the `<format>`
+  documentation of the module …" instead of "Update `<format>` documentation …".
 
 ### The new names
 
@@ -304,3 +310,7 @@ repository that publishes has them.
   per-module `PublishApiDocs` plugin into `internal object PublishAllApiDocs`
   (`PublishAllApiDocs.kt`), as `PublicationChecksums` does; the task stays
   a plain lifecycle one, with no action of its own.
+- 2026-10-22 — no "update" wording left in the publication code, at the user's
+  request: `Update.kt` is now `DocsPublication.kt`, with `publishToGitHubPages()`,
+  `DocsPublication`, `JavadocPublication`, `HtmlPublication`; `migrate` also deletes
+  a consumer's stale `Update.kt`. Not committed yet, for the user's review.
