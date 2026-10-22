@@ -44,7 +44,7 @@ never corrupts an artifact. The Publish workflow **must not write to `master`**.
 |---|---|---|
 | Where does the increment check live? | **Inside the `CheckVersionIncrement` Gradle task** | Covers both the CI-PR path and the local `publishToMavenLocal` path with one edit; unit-testable in `buildSrc` (config has no root `version.gradle.kts`); no required gate depending on the *floating* `.agents/shared` submodule. |
 | Force stale PRs red after a merge? | **Active re-validation** workflow on push to base | Config-shippable; no merge-queue adoption; no "require up to date" rebuild storm. |
-| Re-run the PR workflow vs. post a commit status? | **Commit status** (context `Version Guard`) | `gh run rerun` replays the old event and is fragile to locate; a SHA-bound commit status is deterministic and self-clears on the re-bump push. |
+| Re-run the PR workflow vs. post a commit status? | **Commit status** (context `Version bump`) | `gh run rerun` replays the old event and is fragile to locate; a SHA-bound commit status is deterministic and self-clears on the re-bump push. |
 | Make publish never collide (self-heal / derive number)? | **Rejected** | Would require the Publish workflow to write `master` (or a large version-model rework). User: do not write `master`; a rare red Publish is acceptable. |
 | Merge queue? | **Rejected** | Serializes merges → slows parallel agents. |
 | "Require branches up to date before merging"? | **Off** | Rebuild storm at N parallel agents; the publish backstop already guarantees no corruption. |
@@ -79,9 +79,9 @@ publish-collision check on the publish path. Keep it load-bearing.
 - [x] `.github-workflows/increment-guard.yml`: targeted base fetch
       `git fetch --no-tags --depth=1 origin +refs/heads/$GITHUB_BASE_REF:refs/remotes/origin/$GITHUB_BASE_REF`.
 
-### B. PR path emits the shared `Version Guard` commit status (self-clearing) — DONE
+### B. PR path emits the shared `Version bump` commit status (self-clearing) — DONE
 - [x] `increment-guard.yml`: `permissions: { contents: read, statuses: write }`;
-      `if: always()` step posts `state=success|failure, context="Version Guard"`
+      `if: always()` step posts `state=success|failure, context="Version bump"`
       to the PR head SHA, so a re-bump push self-clears a failure. **Guarded to
       non-fork PRs** (`github.event.pull_request.head.repo.fork == false`) — forks
       get a read-only token and are handled by a maintainer.
@@ -97,7 +97,7 @@ publish-collision check on the publish path. Keep it load-bearing.
       a stale draft must be marked failed; `increment-guard.yml` also adds the
       `ready_for_review` trigger so the draft->ready transition re-checks),
       reads each head's `version.gradle.kts` via the contents API, and posts
-      `Version Guard = failure` on stale heads. **Comparison uses `sort -V`**,
+      `Version bump = failure` on stale heads. **Comparison uses `sort -V`**,
       consistent with `version-bumped.sh` (qualifier-edge concern does not apply to
       a project's own successive snapshot numbers) — so the separate headless
       comparator (old step D) was **dropped** as unnecessary.
@@ -126,8 +126,10 @@ publish-collision check on the publish path. Keep it load-bearing.
       advanced vs. base", naming the registry immutability as the collision backstop.
 
 ### H. Manual repo-admin (per consumer repo — cannot be shipped/tested by config)
-- [ ] Require the status context **`Version Guard`** (replace the old
-      `Check version increment` check-run requirement).
+- [ ] Require the status context **`Version bump`** (replace the old
+      `Check version increment` check-run requirement). Do it only after the repo
+      has pulled the renamed status (see the 2026-10-22 log entry); a required
+      context that no workflow posts blocks every PR.
 - [ ] Leave **"require branches up to date before merging" OFF**.
 - [ ] Runbook for the rare red Publish: bump `master` `.NNN → .NNN+1` (small PR)
       and re-run Publish — the Publish workflow does not self-heal.
@@ -170,3 +172,13 @@ publish-collision check on the publish path. Keep it load-bearing.
   (take 1) — harmless now, but a cleaner home for the check. Lesson:
   `GITHUB_BASE_REF` is **not** a "this is the version-guard job" signal; it is
   ambient in all PR builds. Distinguish the guard context explicitly.
+- 2026-10-22 — H was never done. A survey of the 24 non-archived repos with
+  `increment-guard.yml` found none requiring the status: 15 rulesets still require
+  the `Check version increment` check run (all with "up to date" ON); logging,
+  change, money, and testlib require no guard check; Chords, Chords-Gradle-plugin,
+  doc-tools, embed-code-gradle-plugin, and gradle-execfork-plugin still run the
+  pre-status workflow. So revalidation's failure was shown but never blocked a
+  merge. Renamed the status context `Version Guard` → `Version bump`: the old
+  name repeated the workflow's, so the PR checks list showed two "Version Guard"
+  rows (the job's check run and the status). Nothing required the status, so the
+  rename breaks no gate; H now names the new context.
