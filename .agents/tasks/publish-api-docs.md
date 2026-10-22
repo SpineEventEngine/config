@@ -58,7 +58,8 @@ the extension, and the DSL around it.
       `UpdateGitHubPagesExtension.kt` from a consumer's `buildSrc`, as it does for
       `ProtoData.kt` and the other retired files.
 - [x] Decouple: drop `publish.dependsOn(updateGitHubPages)` from `jvm-module`.
-- [x] Root aggregate `:publishAllApiDocs`, registered by `spinePublishing { }` next to
+- [x] Root aggregate `:publishAllApiDocs`, a plain lifecycle task registered by
+      `internal object PublishAllApiDocs`, which `spinePublishing { }` calls next to
       `:publicationState`:
   - depends on the `publishApiDocs` task of each published module that has one
     (the modules `spinePublishing` publishes), resolved once all projects are
@@ -299,3 +300,7 @@ repository that publishes has them.
   the user's request. The module task and the no-op go back to a plain
   `register`; the aggregate depends on `TaskProvider`s, the root's own task
   included in a single-project build. The workflow runs `:publishAllApiDocs`.
+- 2026-10-22 — the aggregate's registration moves out of the companion of the
+  per-module `PublishApiDocs` plugin into `internal object PublishAllApiDocs`
+  (`PublishAllApiDocs.kt`), as `PublicationChecksums` does; the task stays
+  a plain lifecycle one, with no action of its own.
