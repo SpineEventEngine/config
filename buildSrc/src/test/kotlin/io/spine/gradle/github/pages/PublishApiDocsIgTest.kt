@@ -17,7 +17,9 @@ package io.spine.gradle.github.pages
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import java.io.File
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
@@ -30,7 +32,8 @@ import org.junit.jupiter.api.io.TempDir
  * `spinePublishing { }`, brings into a build.
  *
  * The builds that would publish documentation run with `--dry-run`, so that nothing
- * is pushed to GitHub Pages.
+ * is pushed to GitHub Pages. The builds of a snapshot version run for real, as they
+ * publish nothing.
  *
  * In the multi-module build, `api` and `backend` are published and document
  * themselves, `testing` documents itself, but is not published, as a module of
@@ -145,6 +148,41 @@ internal class PublishApiDocsIgTest {
 
     @Test
     fun `publish the docs of the project in a single-project build`() {
+        writeSingleProjectBuild(version = "1.0.0")
+
+        val planned = dryRun(":$taskName")
+
+        planned.docsTasks() shouldBe listOf(":$taskName")
+        planned shouldContain ":${TaskName.copyJavadocDocs}"
+    }
+
+    @Test
+    fun `publish no docs of a snapshot version`() {
+        writeMultiModuleBuild(documented = setOf("api", "backend", "testing"), version = snapshot)
+
+        val result = runner(":$taskName").build()
+
+        val paths = result.tasks.map { it.path }
+        paths.docsTasks() shouldContainExactlyInAnyOrder listOf(
+            ":$taskName",
+            ":api:$taskName",
+            ":backend:$taskName"
+        )
+        paths shouldNotContain ":api:${TaskName.copyJavadocDocs}"
+        result.output shouldContain "`$snapshot` is a snapshot version"
+    }
+
+    @Test
+    fun `publish no docs of a snapshot version in a single-project build`() {
+        writeSingleProjectBuild(version = snapshot)
+
+        val result = runner(":$taskName").build()
+
+        result.tasks.map { it.path } shouldBe listOf(":$taskName")
+        result.output shouldContain "`$snapshot` is a snapshot version"
+    }
+
+    private fun writeSingleProjectBuild(version: String) {
         file("settings.gradle.kts").writeText("""rootProject.name = "single-sample"""")
         file("build.gradle.kts").writeText(
             """
@@ -154,7 +192,7 @@ internal class PublishApiDocsIgTest {
             import io.spine.gradle.publish.spinePublishing
 
             group = "io.spine.sample"
-            version = "1.0.0"
+            version = "$version"
 
             apply(plugin = "java-library")
             $generatorStub
@@ -168,14 +206,9 @@ internal class PublishApiDocsIgTest {
             }
             """.trimIndent()
         )
-
-        val planned = dryRun(":$taskName")
-
-        planned.docsTasks() shouldBe listOf(":$taskName")
-        planned shouldContain ":${TaskName.copyJavadocDocs}"
     }
 
-    private fun writeMultiModuleBuild(documented: Set<String>) {
+    private fun writeMultiModuleBuild(documented: Set<String>, version: String = "1.0.0") {
         val modules = listOf("api", "backend", "bare", "testing")
         modules.forEach { file(it).mkdirs() }
         file("settings.gradle.kts").writeText(
@@ -193,7 +226,7 @@ internal class PublishApiDocsIgTest {
 
             allprojects {
                 group = "io.spine.sample"
-                version = "1.0.0"
+                version = "$version"
             }
 
             subprojects {
@@ -271,6 +304,9 @@ internal class PublishApiDocsIgTest {
     private companion object {
 
         const val taskName = TaskName.publishApiDocs
+
+        /** A version in the format the Spine SDK publishes from every merge. */
+        const val snapshot = "1.0.0-SNAPSHOT.1"
 
         /**
          * A task standing in for the Dokka one whose output the plugin copies, and on

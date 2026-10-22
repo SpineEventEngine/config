@@ -9,6 +9,10 @@ name: Publish API docs
 # so it exists in every repository that publishes, and does nothing where no
 # module documents itself.
 #
+# Only release versions are published. For a snapshot version, which most merges
+# produce, the task of each module only says that it skips the documentation,
+# and the run ends green without generating or pushing any.
+#
 # A failed run can be re-run as it is: each module commits its documentation
 # even when nothing changed, and retries a failed push after rebasing onto
 # `gh-pages`.

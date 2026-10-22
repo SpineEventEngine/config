@@ -36,6 +36,11 @@ the extension, and the DSL around it.
 - Repositories that publish but document nothing: `bootstrap`, `template`.
 - No deprecated aliases for the old names, as agreed with Alexander Yevsyukov.
   Consumer builds break until the `summit` wave updates them.
+- Only release versions publish their docs. The plugin skipped snapshot versions
+  until `bf19ed33` (2025-11-24) commented the skip out, pending a new publishing
+  procedure; `2f1ee940` (2026-04-06) removed the commented-out code. This change
+  restores it, as agreed with Alexander Yevsyukov: before, every merge pushed
+  a `v/<version>` folder for its `-SNAPSHOT.N` version.
 
 ## Plan
 
@@ -74,7 +79,11 @@ the extension, and the DSL around it.
       the docs of the published documented modules only; `publish` plans no docs
       task; a build with no documented module runs `:publishApiDocs`; in a
       single-project build `:publishApiDocs` is the project's own docs task;
-      a module that opens `spinePublishing { }` itself is included too.
+      a module that opens `spinePublishing { }` itself is included too; a snapshot
+      version publishes nothing, in a multi-module and in a single-project build.
+- [x] Snapshot versions: the plugin registers a no-op `publishApiDocs` that only
+      says it skips the docs, through `getOrRegister`, so that it merges with the
+      root aggregate in a single-project build.
 - [x] `.github-workflows/publish-api-docs.yml`, self-contained (no caller/reusable
       split, see below): push to `master`; `concurrency` per repository with
       `queue: max`; `contents: read`, `packages: read`; checkout with submodules,
@@ -138,6 +147,11 @@ repositories, run from the `summit` repository.
 - `publish.yml` is re-pinned to a `publishing.yml` that no longer decrypts the
   deploy key or passes `REPO_SLUG`/`FORMAL_GIT_HUB_PAGES_AUTHOR`.
 - `spinePublishing { }` now registers `:publishApiDocs` in the root project.
+- **Behavior change:** only release versions publish their docs. For a snapshot
+  version, the task of each module only logs that it skips the docs, so a
+  `publish-api-docs.yml` run in a repository on a snapshot version ends green
+  without pushing anything. Before, every merge pushed the docs of its
+  `-SNAPSHOT.N` version.
 - The commits on `gh-pages` are authored by `PublishApiDocs Plugin` instead of
   `UpdateGitHubPages Plugin`.
 
@@ -216,13 +230,13 @@ This list was checked against each repository's `master` on 2026-10-21, by the
   a top-level call in change's `module.gradle.kts`). **Behavior change:**
   both registered the docs tasks but did not run them (their `gh-pages` branches
   have not changed since 2025-12-02 and 2025-12-22, respectively); now
-  `:publishApiDocs` publishes the docs of their published modules, as agreed
-  with Alexander Yevsyukov.
+  `:publishApiDocs` publishes the docs of their published modules on their next
+  release version, as agreed with Alexander Yevsyukov.
 - Archived on GitHub, so out of scope: web, dart, text, model-compiler,
   model-tools.
 - Chords and Chords-Gradle-plugin: the pull erases the `-x updateGitHubPages`
   hand-edited into their `publish.yml`. **Behavior change:** their docs get
-  published by the new workflow. Check that each repository has
+  published by the new workflow, from their next release version. Check that each repository has
   `.github/keys/deploy_key_rsa.gpg` and `GIT_CREDENTIALS_KEY`, or drop the plugin
   call if their docs were off on purpose.
 - Repositories that document nothing (bootstrap, template): nothing to do;
@@ -269,3 +283,6 @@ repository that publishes has them.
   GitHub Pages update among the tasks of `publish`. Merged tree: 295 tests green.
 - 2026-10-21 — pre-PR pass: `kotlin-engineer`, `spine-code-review` approve;
   `review-docs` approves with changes, applied.
+- 2026-10-22 — restored the snapshot skip at the user's request: a snapshot
+  version registers a no-op `publishApiDocs`, merged with the root aggregate in
+  a single-project build. Two new `PublishApiDocsIgTest` cases.

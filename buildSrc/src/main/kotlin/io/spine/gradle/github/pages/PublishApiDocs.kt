@@ -22,6 +22,7 @@ import io.spine.gradle.getOrRegister
 import io.spine.gradle.github.pages.TaskName.copyHtmlDocs
 import io.spine.gradle.github.pages.TaskName.copyJavadocDocs
 import io.spine.gradle.github.pages.TaskName.publishApiDocs
+import io.spine.gradle.isSnapshot
 import java.io.File
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -36,6 +37,7 @@ import org.gradle.api.tasks.TaskProvider
  *
  * The generated documentation is appended to the `spine.io` site
  * via GitHub Pages by pushing commits to the `gh-pages` branch.
+ * The documentation of a snapshot version is not published.
  *
  * The task is not a part of the Maven publication. It is run by the `publish-api-docs.yml`
  * workflow, apart from `publish.yml`, through the `publishApiDocs` task of the root
@@ -91,11 +93,44 @@ class PublishApiDocs : Plugin<Project> {
 
     /**
      * Applies the plugin to the specified [project].
+     *
+     * If the project version says it is a snapshot, the plugin registers a no-op task.
+     *
+     * Even in such a case, the extension object is still created in the given project
+     * to allow customization of the parameters in its build script for later usage
+     * when the project version changes to non-snapshot.
      */
     override fun apply(project: Project) {
         val extension = PublishApiDocsExtension.createIn(project)
         project.afterEvaluate {
-            registerTasks(extension)
+            if (version.toString().isSnapshot()) {
+                registerNoOpTask()
+            } else {
+                registerTasks(extension)
+            }
+        }
+    }
+
+    /**
+     * Registers the [TaskName.publishApiDocs] task that performs no actual update,
+     * but tells that the update is skipped, since the project is in its `SNAPSHOT`
+     * version.
+     *
+     * Like [registerPublishTask], it takes the task of the root project that is
+     * already registered as [the aggregate][registerAggregate] in a single-project build.
+     */
+    private fun Project.registerNoOpTask() {
+        val module = name
+        val snapshotVersion = version.toString()
+        tasks.getOrRegister(publishApiDocs).configure {
+            group = SpineTaskGroup.name
+            description = "Skips publishing the API documentation of snapshot versions"
+            doLast {
+                logger.lifecycle(
+                    "The API documentation of `$module` is not published, since" +
+                            " `$snapshotVersion` is a snapshot version."
+                )
+            }
         }
     }
 
@@ -194,7 +229,7 @@ class PublishApiDocs : Plugin<Project> {
          * The task depends on the `publishApiDocs` task of each of the [published]
          * projects that has one, that is, applies this plugin. A project that applies
          * the plugin, but is not published, such as a module of integration tests,
-         * is left out.
+         * is left out. The task of a project with a snapshot version publishes nothing.
          *
          * The task is registered even when none of the projects has the documentation
          * to publish, and then does nothing. This lets the `publish-api-docs.yml`
