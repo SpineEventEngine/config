@@ -44,7 +44,7 @@ fail=0
 pass() { echo "PASS: $1"; }
 f-ail() { echo "FAIL: $1" >&2; fail=1; }
 
-for required in migrate scripts/update-gitignore.sh .gitignore \
+for required in migrate scripts/update-gitignore.sh scripts/migrate-publish-api-docs.sh .gitignore \
                 .github-workflows/publish.yml .github/workflows/publishing.yml; do
   [ -f "$config_dir/$required" ] \
     || { echo "FAIL: cannot find '$required' under $config_dir" >&2; exit 1; }
@@ -86,6 +86,7 @@ make_consumer() {
 
   cp "$config_dir/migrate"                          "$fake_config/migrate"
   cp "$config_dir/scripts/update-gitignore.sh"      "$fake_config/scripts/"
+  cp "$config_dir/scripts/migrate-publish-api-docs.sh" "$fake_config/scripts/"
   cp "$config_dir/.gitignore"                       "$fake_config/.gitignore"
   cp "$config_dir/.github-workflows/publish.yml"    "$fake_config/.github-workflows/"
   cp "$config_dir/.github/workflows/publishing.yml" "$fake_config/.github/workflows/"

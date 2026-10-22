@@ -14,26 +14,26 @@
 
 set -euo pipefail
 
-# Moves a consumer's own Gradle scripts from the `updateGitHubPages { }` API to
+# Rewrites a consumer's own Gradle scripts from the `updateGitHubPages { }` API to
 # `publishApiDocs { }`. Called by `migrate`.
 #
 # The `UpdateGitHubPages` plugin was renamed `PublishApiDocs`, with no deprecated
-# aliases, and its API docs left `publish` for the `publish-api-docs.yml` workflow,
-# which runs the root `publishAllApiDocs` task. `migrate` deletes the stale plugin
-# sources, but it preserves `buildSrc/src/main/kotlin/module.gradle.kts`, and most
-# consumers call the old API from there; their `buildSrc` then stops compiling
+# aliases, and its API docs moved out of `publish` into the `publish-api-docs.yml`
+# workflow, which runs the root `publishAllApiDocs` task. `migrate` deletes the stale
+# plugin sources, but it preserves `buildSrc/src/main/kotlin/module.gradle.kts`, and
+# most consumers call the old API from there; their `buildSrc` then stops compiling
 # (`Unresolved reference 'updateGitHubPages'`).
 #
-# The files looked at are the Kotlin sources and scripts under `buildSrc/src` and the
-# tracked `*.gradle.kts` files elsewhere that name the old API. The ones `config`
-# distributes no longer do, so what is found is the consumer's own. In each, the
-# script rewrites the forms the consumers are known to use:
+# The script looks at the Kotlin sources and scripts under `buildSrc/src` and the
+# tracked `*.gradle.kts` files elsewhere that name the old API. The files that
+# `config` distributes no longer name it, so what is found is the consumer's own.
+# In each, the script rewrites the forms the consumers are known to use:
 #
 #   * `import io.spine.gradle.github.pages.updateGitHubPages`
 #       -> `import io.spine.gradle.github.pages.publishApiDocs`;
 #   * `updateGitHubPages {` and `updateGitHubPages() {` -> `publishApiDocs {`;
 #   * the dependency of `publish` on the docs task, deleted with the blank line
-#     before it, in either known form:
+#     before it (or else the one after it), in either known form:
 #
 #         tasks.named("publish") {
 #             dependsOn("${project.path}:updateGitHubPages")
@@ -47,16 +47,16 @@ set -euo pipefail
 #     Kept, it would fail `publish` with "Task with path ':x:updateGitHubPages'
 #     not found". It is not renamed: the docs are no longer a part of `publish`;
 #   * a top-level `fun <Receiver>.configureGitHubPages()` of a `*.gradle.kts` script,
-#     and its calls -> `configureApiDocs()`, with the KDoc of the same function in
-#     `jvm-module.gradle.kts` when it has none. A script's top-level functions are
-#     visible only in the script, so all the calls are in the same file.
+#     and its calls -> `configureApiDocs()`, with the KDoc of `configureApiDocs()`
+#     from `jvm-module.gradle.kts` when the function has none. A script's top-level
+#     functions are visible only in the script, so all the calls are in the same file.
 #
 # Every rewrite matches only the old form, so a second run changes nothing. A
 # file is written only when its content changes, and keeps its CRLF line endings.
 #
-# Any use of the old API left afterwards, and any tracked workflow that names the
-# old task, is a form this script does not know. It is reported, with the file,
-# the line, and the replacement, for the developer to fix by hand. The script
+# Any use of the old API left afterwards is in a form this script does not know;
+# it is reported, with the file, the line, and the replacements, for the developer
+# to fix by hand. So is any tracked workflow that names the old task. The script
 # fails only when it cannot read or write a file.
 #
 # Usage: migrate-publish-api-docs.sh [ROOT]
@@ -74,50 +74,61 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   in_git=true
 fi
 
+# Prints the paths of the tracked files that match the given pathspecs and name the
+# old API, one per line. `-z` keeps Git from quoting a path with non-ASCII characters.
+function tracked_naming_old_api() {
+  [ "$in_git" = true ] || return 0
+  git ls-files -z -- "$@" \
+  | while IFS= read -r -d '' f; do
+      if [ -f "$f" ] && grep -qE "$old_api" "$f"; then
+        printf '%s\n' "$f"
+      fi
+    done
+}
+
 # Prints the paths of the files to rewrite, one per line.
 function scripts_to_rewrite() {
   if [ -d buildSrc/src ]; then
     grep -rlE --include='*.kt' --include='*.kts' "$old_api" buildSrc/src || true
   fi
-  if [ "$in_git" = true ]; then
-    # `config` is excluded for a consumer that holds it as a plain directory rather
-    # than as a submodule, whose files Git does not list.
-    git ls-files -- '*.gradle.kts' ':(exclude)buildSrc/' ':(exclude)config/' \
-    | while IFS= read -r f; do
-        if [ -f "$f" ] && grep -qE "$old_api" "$f"; then
-          printf '%s\n' "$f"
-        fi
-      done
-  fi
+  # Git lists a submodule only as a gitlink, so excluding `config` matters only for
+  # a consumer that holds it as a plain directory.
+  tracked_naming_old_api '*.gradle.kts' ':(exclude)buildSrc/' ':(exclude)config/'
 }
 
 # Prints the paths of the tracked workflows that name the old task, one per line.
 function workflows_naming_old_task() {
-  if [ "$in_git" = true ]; then
-    git ls-files -- '.github/workflows/*' \
-    | while IFS= read -r f; do
-        if [ -f "$f" ] && grep -qE "$old_api" "$f"; then
-          printf '%s\n' "$f"
-        fi
-      done
-  fi
+  tracked_naming_old_api '.github/workflows/*'
 }
 
-# Rewrites the file named by `FILENAME` into the file named by the `out` variable,
-# and prints `1` when the content changed, `0` otherwise. The `script` variable is
-# `1` for a `*.gradle.kts` script.
+# The KDoc of `configureApiDocs()` in `jvm-module.gradle.kts`, word for word.
+IFS= read -r -d '' kdoc <<'KDOC' || true
+/**
+ * Applies the plugin that registers the `publishApiDocs` task of this module.
+ *
+ * The `publish-api-docs.yml` workflow runs the task through `publishAllApiDocs` of
+ * the root project, which depends on it for the published modules only. It is not
+ * a part of `publish`.
+ */
+KDOC
+
+# Rewrites the file named by `FILENAME` into the file named by `MIGRATE_OUT`, and
+# prints `1` when the content changed, `0` otherwise. The `script` variable is `1` for
+# a `*.gradle.kts` script; `MIGRATE_KDOC` holds the KDoc to add. The paths and the
+# KDoc come through the environment, which, unlike `-v`, leaves backslashes alone.
 #
 # Regular expressions use bracket expressions for literal punctuation and `[ \t]`
-# for white space, which every `awk` in use reads the same way: BSD `awk` on macOS,
+# for whitespace; every `awk` in use reads these the same way: BSD `awk` on macOS,
 # `gawk` in Git Bash, `mawk` on Debian and Ubuntu.
 read -r -d '' rewrite <<'AWK' || true
 function blank(s) { return s ~ /^[ \t]*$/ }
 
 function closing_brace(s) { return s ~ /^[ \t]*[}][ \t]*$/ }
 
-# A statement of its own that makes a task depend on the docs task.
+# A statement of its own that makes a task depend on the docs task, and on nothing
+# else: a `dependsOn` with more arguments is left as it is, and reported.
 function docs_dependency(s) {
-    return s ~ /^[ \t]*(publish[?]?[.])?dependsOn[(].*updateGitHubPages.*[)][ \t]*$/
+    return s ~ /^[ \t]*(publish[?]?[.])?dependsOn[(]"[^"]*updateGitHubPages"[)][ \t]*$/
 }
 
 # Marks the lines `a` to `b` dropped, with the blank line before them, or else
@@ -150,6 +161,13 @@ function emit(s, i) {
     printf "%s%s\n", s, (cr[i] ? "\r" : "") > out
 }
 
+BEGIN {
+    out = ENVIRON["MIGRATE_OUT"]
+    kdoc_text = ENVIRON["MIGRATE_KDOC"]
+    sub(/\n$/, "", kdoc_text)
+    kdoc_lines = split(kdoc_text, kdoc, "\n")
+}
+
 {
     cr[NR] = sub(/\r$/, "")
     line[NR] = $0
@@ -161,6 +179,12 @@ END {
     new_import = "^import[ \t]+io[.]spine[.]gradle[.]github[.]pages[.]publishApiDocs[ \t]*$"
     old_function = "^fun[ \t]+[A-Za-z0-9_.<>]+[.]configureGitHubPages[(]"
     new_function = "^fun[ \t]+[A-Za-z0-9_.<>]+[.]configureApiDocs[(]"
+    # A declaration, such as `fun Project.updateGitHubPages(...) {`, is not a call.
+    declaration = "^[ \t]*([a-z]+[ \t]+)*fun[ \t]"
+    named_publish = "^[ \t]*tasks[.]named[(]\"publish\"[)][ \t]*[{][ \t]*$"
+    after_evaluate = "^[ \t]*(project[.])?afterEvaluate[ \t]*[{][ \t]*$"
+    find_publish = "^[ \t]*val[ \t]+publish[ \t]*=[ \t]*" \
+        "tasks[.]findByName[(]\"publish\"[)][ \t]*$"
     # A string, not a `/.../` literal: a `/` ends a literal even inside brackets.
     kdoc_end = "[*]/[ \t]*$"
 
@@ -175,11 +199,10 @@ END {
     rename_function = script && defines_old && !defines_new
 
     for (i = 1; i <= n; i++) {
-        if (line[i] ~ /^[ \t]*tasks[.]named[(]"publish"[)][ \t]*[{][ \t]*$/ \
+        if (line[i] ~ named_publish \
                 && docs_dependency(line[i + 1]) && closing_brace(line[i + 2])) {
             drop(i, i + 2)
-        } else if (line[i] ~ /^[ \t]*(project[.])?afterEvaluate[ \t]*[{][ \t]*$/ \
-                && line[i + 1] ~ /^[ \t]*val[ \t]+publish[ \t]*=[ \t]*tasks[.]findByName[(]"publish"[)][ \t]*$/ \
+        } else if (line[i] ~ after_evaluate && line[i + 1] ~ find_publish \
                 && docs_dependency(line[i + 2]) && closing_brace(line[i + 3])) {
             drop(i, i + 3)
         }
@@ -198,16 +221,14 @@ END {
             s = "import io.spine.gradle.github.pages.publishApiDocs"
             imported = 1
         }
-        s = replace(s, "updateGitHubPages([(][)])?[ \t]*[{]", "publishApiDocs {")
+        if (s !~ declaration) {
+            s = replace(s, "updateGitHubPages([(][)])?[ \t]*[{]", "publishApiDocs {")
+        }
         if (rename_function) {
             if (s ~ old_function && line[i - 1] !~ kdoc_end) {
-                emit("/**", i)
-                emit(" * Applies the plugin that registers the `publishApiDocs` task of this module.", i)
-                emit(" *", i)
-                emit(" * The `publish-api-docs.yml` workflow runs the task through `publishAllApiDocs` of", i)
-                emit(" * the root project, which depends on it for the published modules only. It is not", i)
-                emit(" * a part of `publish`.", i)
-                emit(" */", i)
+                for (k = 1; k <= kdoc_lines; k++) {
+                    emit(kdoc[k], i)
+                }
             }
             s = replace(s, "configureGitHubPages[(]", "configureApiDocs(")
         }
@@ -220,8 +241,11 @@ END {
 }
 AWK
 
-tmp=""
-trap 'rm -f "$tmp"' EXIT
+# The rewritten text goes outside the consumer's tree, so that a killed run leaves
+# nothing for the closing `git add ./buildSrc/src` of `migrate` to stage.
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+tmp="$work/rewritten"
 
 while IFS= read -r f; do
   [ -n "$f" ] || continue
@@ -229,31 +253,32 @@ while IFS= read -r f; do
   case "$f" in
     *.gradle.kts) script=1 ;;
   esac
-  tmp=$(mktemp "$f.XXXXXX")
-  changed=$(awk -v out="$tmp" -v script="$script" "$rewrite" "$f")
+  changed=$(MIGRATE_OUT="$tmp" MIGRATE_KDOC="$kdoc" awk -v script="$script" "$rewrite" "$f")
   if [ "$changed" = 1 ]; then
-    # `cp` onto the target keeps its mode; `mv` would leave mktemp's 0600.
+    # `cp` onto the target keeps its mode.
     cp "$tmp" "$f"
-    echo "Moved \`$f\` to \`publishApiDocs\`"
+    echo "Rewrote \`$f\` for \`publishApiDocs\`"
   fi
-  rm -f "$tmp"
-  tmp=""
 done < <(scripts_to_rewrite | sort -u)
 
 # Reports what is left of the old API in the files above and in the workflows.
 left=$( { scripts_to_rewrite; workflows_naming_old_task; } | sort -u \
         | while IFS= read -r f; do
-            grep -nE "$old_api" "$f" | sed "s|^|  $f:|" || true
+            grep -nE "$old_api" "$f" | while IFS= read -r hit; do
+              printf '  %s:%s\n' "$f" "$hit"
+            done || true
           done )
 if [ -n "$left" ]; then
   {
     echo "WARNING: these lines still use the API that \`PublishApiDocs\` replaced:"
     printf '%s\n' "$left"
-    echo "  Change them by hand, in the same commit as the pull:"
-    echo "    \`updateGitHubPages { }\` -> \`publishApiDocs { }\`, from \`io.spine.gradle.github.pages\`;"
+    echo "  Change them by hand, in the same commit as the \`config\` pull:"
+    echo "    \`updateGitHubPages { }\` -> \`publishApiDocs { }\`" \
+         "(import it from \`io.spine.gradle.github.pages\`);"
     echo "    \`UpdateGitHubPagesExtension\` -> \`PublishApiDocsExtension\`;"
     echo "    \`TaskName.updateGitHubPages\` -> \`TaskName.publishApiDocs\`;"
-    echo "    a dependency of \`publish\` on the \`updateGitHubPages\` task, or \`-x updateGitHubPages\`"
+    echo "    a dependency of \`publish\` on the \`updateGitHubPages\` task," \
+         "or \`-x updateGitHubPages\`"
     echo "      -> delete it: the \`publish-api-docs.yml\` workflow publishes the docs"
     echo "      with the \`publishAllApiDocs\` task of the root project."
   } >&2

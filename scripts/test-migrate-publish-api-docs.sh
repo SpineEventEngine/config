@@ -12,21 +12,26 @@
 # either express or implied. See the License for the specific language governing permissions
 # and limitations under the License.
 
-# Regression checks for `scripts/migrate-publish-api-docs.sh`, which moves a
+# Regression checks for `scripts/migrate-publish-api-docs.sh`, which rewrites a
 # consumer's own Gradle scripts from `updateGitHubPages { }` to `publishApiDocs { }`:
 #
 #   * each form the consumers are known to use is rewritten to the expected text.
 #     The fixtures reproduce them: `setupDocPublishing()` with
-#     `tasks.named("publish")` (compiler, validation, core-jvm, ...), the root
-#     `build.gradle.kts` of gcloud-jvm, `configureGitHubPages()` with
-#     `project.afterEvaluate` (time, base-libraries, testlib), and a top-level call
-#     in a script (change). The expected `module.gradle.kts` is what `time` got by
-#     hand;
+#     `tasks.named("publish")` (`compiler`, `validation`, `core-jvm`, ...), the root
+#     `build.gradle.kts` of `gcloud-jvm`, `configureGitHubPages()` with
+#     `project.afterEvaluate` (`time`, `base-libraries`, `testlib`), and a top-level
+#     call in a script (`change`). The expected `module.gradle.kts` is `time`'s fix by hand;
 #   * a form the script does not know is left as it is, and reported with its file
-#     and line; so is a workflow that names the old task;
+#     and line: a `dependsOn` with more than the docs task, a declaration of
+#     `updateGitHubPages()`, the extension type; so is a workflow that names the
+#     old task;
+#   * a function's own KDoc is kept, and the KDoc the script adds is the one of
+#     `jvm-module.gradle.kts`;
 #   * files that do not name the old API, and untracked scripts outside `buildSrc`,
-#     are not touched; CRLF line endings and file modes are kept;
-#   * a second run changes nothing;
+#     are not touched; a path with non-ASCII characters is not missed; CRLF line
+#     endings and file modes are kept;
+#   * a second run changes nothing; outside a Git work tree, only `buildSrc` is
+#     rewritten;
 #   * the REAL `migrate` restores the consumer's `module.gradle.kts`, rewrites it,
 #     and stages it. The fixture follows `scripts/test-migrate-ide-files.sh`; read
 #     the header there for why `adopt-shared-agents` is stubbed and why
@@ -42,7 +47,8 @@ fail=0
 pass() { echo "PASS: $1"; }
 f-ail() { echo "FAIL: $1" >&2; fail=1; }
 
-for required in migrate scripts/migrate-publish-api-docs.sh scripts/update-gitignore.sh .gitignore; do
+for required in migrate scripts/migrate-publish-api-docs.sh scripts/update-gitignore.sh \
+                .gitignore buildSrc/src/main/kotlin/jvm-module.gradle.kts; do
   [ -f "$config_dir/$required" ] \
     || { echo "FAIL: cannot find '$required' under $config_dir" >&2; exit 1; }
 done
@@ -192,10 +198,49 @@ fun Module.setupDocPublishing() {
 KTS
 
 # The root `build.gradle.kts` of `gcloud-jvm`: a tracked script outside `buildSrc`.
-sed 's/Module\.setupDocPublishing/Project.setupPublishing/; s/setupDocPublishing()/setupPublishing()/' \
-    "$fixtures/named-publish.before" > "$fixtures/root.before"
-sed 's/Module\.setupDocPublishing/Project.setupPublishing/; s/setupDocPublishing()/setupPublishing()/' \
-    "$fixtures/named-publish.after" > "$fixtures/root.after"
+to_root='s/Module\.setupDocPublishing/Project.setupPublishing/;'
+to_root+=' s/setupDocPublishing()/setupPublishing()/'
+sed "$to_root" "$fixtures/named-publish.before" > "$fixtures/root.before"
+sed "$to_root" "$fixtures/named-publish.after"  > "$fixtures/root.after"
+
+# A `configureGitHubPages()` with a KDoc of its own, which stays, and a `dependsOn`
+# with more than the docs task, which stays as it is and is reported.
+cat > "$fixtures/kept.before" <<'KTS'
+import io.spine.gradle.github.pages.updateGitHubPages
+
+/**
+ * Publishes the docs of this module.
+ */
+fun Module.configureGitHubPages() {
+    updateGitHubPages {
+        rootFolder.set(rootDir)
+    }
+
+    tasks.named("publish") {
+        dependsOn("generateStuff", "${project.path}:updateGitHubPages")
+    }
+}
+
+configureGitHubPages()
+KTS
+cat > "$fixtures/kept.after" <<'KTS'
+import io.spine.gradle.github.pages.publishApiDocs
+
+/**
+ * Publishes the docs of this module.
+ */
+fun Module.configureApiDocs() {
+    publishApiDocs {
+        rootFolder.set(rootDir)
+    }
+
+    tasks.named("publish") {
+        dependsOn("generateStuff", "${project.path}:updateGitHubPages")
+    }
+}
+
+configureApiDocs()
+KTS
 
 # The form of `change`: a top-level call in a script. The script imports the new
 # name already, so the old import goes.
@@ -219,7 +264,8 @@ publishApiDocs {
 project.forceDependencies()
 KTS
 
-# Forms the script does not know: they must stay as they are, and be reported.
+# Forms the script does not know: they must stay as they are, and be reported. A
+# declaration of `updateGitHubPages()` is not a call.
 cat > "$fixtures/Unknown.kt" <<'KT'
 package io.acme.gradle
 
@@ -228,6 +274,10 @@ import org.gradle.api.Project
 
 fun Project.docs(): UpdateGitHubPagesExtension =
     extensions.getByType(UpdateGitHubPagesExtension::class.java)
+
+fun Project.updateGitHubPages() {
+    docs()
+}
 KT
 cat > "$fixtures/custom.yml" <<'YML'
 name: Custom publish
@@ -239,30 +289,51 @@ jobs:
       - run: ./gradlew publish -x updateGitHubPages
 YML
 
+# The KDoc the script adds must stay the one of `configureApiDocs()` in
+# `jvm-module.gradle.kts`, which the expected text above holds.
+kdoc_of_configure_api_docs() {
+  awk '/^\/\*\*/ { kdoc = "" } { kdoc = kdoc $0 "\n" }
+       /^fun Module[.]configureApiDocs[(]/ { printf "%s", kdoc; exit }' "$1" \
+  | sed '$d'
+}
+jvm_module="$config_dir/buildSrc/src/main/kotlin/jvm-module.gradle.kts"
+kdoc_of_configure_api_docs "$jvm_module" > "$work/kdoc.jvm-module"
+kdoc_of_configure_api_docs "$fixtures/after-evaluate.after" > "$work/kdoc.expected"
+if [ -s "$work/kdoc.jvm-module" ] && diff -u "$work/kdoc.jvm-module" "$work/kdoc.expected"; then
+  pass "the expected KDoc is the one of 'configureApiDocs()' in 'jvm-module.gradle.kts'"
+else
+  f-ail "the expected KDoc differs from the one in 'jvm-module.gradle.kts'"
+fi
+
 # =============================================================================
 # (1) The script on a consumer that holds every form.
 # =============================================================================
 consumer="$work/consumer"
 kotlin="$consumer/buildSrc/src/main/kotlin"
+# A path with non-ASCII characters, which Git quotes unless told otherwise.
+accented="módulo"
 mkdir -p "$kotlin/io/acme/gradle" "$consumer/.github/workflows" "$consumer/server" \
-         "$consumer/scratch"
+         "$consumer/$accented" "$consumer/scratch"
 cp "$fixtures/after-evaluate.before" "$kotlin/module.gradle.kts"
 cp "$fixtures/top-level.before"      "$kotlin/docs.gradle.kts"
+cp "$fixtures/kept.before"           "$kotlin/kept.gradle.kts"
 cp "$fixtures/Unknown.kt"            "$kotlin/io/acme/gradle/Unknown.kt"
 cp "$fixtures/root.before"           "$consumer/build.gradle.kts"
+cp "$fixtures/root.before"           "$consumer/$accented/build.gradle.kts"
 crlf < "$fixtures/named-publish.before" > "$consumer/server/build.gradle.kts"
 cp "$fixtures/custom.yml"            "$consumer/.github/workflows/custom.yml"
 printf 'plugins { java }\n'        > "$kotlin/other.gradle.kts"
 # Untracked, so not the consumer's: a build output, for example.
 cp "$fixtures/root.before"           "$consumer/scratch/untracked.gradle.kts"
 chmod 644 "$kotlin/module.gradle.kts"
+tracked=(buildSrc .github build.gradle.kts server "$accented")
 
 git -C "$consumer" init -q
 git -C "$consumer" config user.email test@example.com
 git -C "$consumer" config user.name  test
 # Keep the CRLF fixture as it is, whatever the host's `core.autocrlf`.
 git -C "$consumer" config core.autocrlf false
-git -C "$consumer" add buildSrc .github build.gradle.kts server
+git -C "$consumer" add "${tracked[@]}"
 git -C "$consumer" commit -qm "A consumer on the old API"
 
 out1="$work/run-1.out"; err1="$work/run-1.err"
@@ -273,11 +344,15 @@ else
 fi
 
 expect_file "$kotlin/module.gradle.kts" "$fixtures/after-evaluate.after" \
-  "'configureGitHubPages()' with 'project.afterEvaluate' rewritten as 'time' was by hand"
+  "'configureGitHubPages()' with 'project.afterEvaluate' rewritten as it was by hand in 'time'"
 expect_file "$kotlin/docs.gradle.kts" "$fixtures/top-level.after" \
   "a top-level call in another 'buildSrc' script rewritten, the old import dropped"
+expect_file "$kotlin/kept.gradle.kts" "$fixtures/kept.after" \
+  "a function's own KDoc kept, a 'dependsOn' with more arguments left as it is"
 expect_file "$consumer/build.gradle.kts" "$fixtures/root.after" \
   "a tracked script outside 'buildSrc' rewritten"
+expect_file "$consumer/$accented/build.gradle.kts" "$fixtures/root.after" \
+  "a tracked script under a non-ASCII path rewritten"
 crlf < "$fixtures/named-publish.after" > "$fixtures/named-publish.after.crlf"
 expect_file "$consumer/server/build.gradle.kts" "$fixtures/named-publish.after.crlf" \
   "'tasks.named(\"publish\")' form rewritten, CRLF line endings kept"
@@ -288,9 +363,11 @@ expect_file "$consumer/.github/workflows/custom.yml" "$fixtures/custom.yml" \
 expect_file "$consumer/scratch/untracked.gradle.kts" "$fixtures/root.before" \
   "an untracked script outside 'buildSrc' left as it is"
 
-for moved in buildSrc/src/main/kotlin/module.gradle.kts buildSrc/src/main/kotlin/docs.gradle.kts \
-             build.gradle.kts server/build.gradle.kts; do
-  if grep -qxF "Moved \`$moved\` to \`publishApiDocs\`" "$out1"; then
+for moved in buildSrc/src/main/kotlin/module.gradle.kts \
+             buildSrc/src/main/kotlin/docs.gradle.kts \
+             buildSrc/src/main/kotlin/kept.gradle.kts \
+             build.gradle.kts server/build.gradle.kts "$accented/build.gradle.kts"; do
+  if grep -qxF "Rewrote \`$moved\` for \`publishApiDocs\`" "$out1"; then
     pass "reported the rewrite of '$moved'"
   else
     f-ail "did not report the rewrite of '$moved'; output: $(cat "$out1")"
@@ -305,6 +382,8 @@ fi
 for left in 'buildSrc/src/main/kotlin/io/acme/gradle/Unknown.kt:3:' \
             'buildSrc/src/main/kotlin/io/acme/gradle/Unknown.kt:6:' \
             'buildSrc/src/main/kotlin/io/acme/gradle/Unknown.kt:7:' \
+            'buildSrc/src/main/kotlin/io/acme/gradle/Unknown.kt:9:' \
+            'buildSrc/src/main/kotlin/kept.gradle.kts:12:' \
             '.github/workflows/custom.yml:7:'; do
   if grep -qF "  $left" "$err1"; then
     pass "warned about '$left'"
@@ -329,8 +408,8 @@ else
   f-ail "'module.gradle.kts' has mode $(mode_of "$kotlin/module.gradle.kts"), expected 644"
 fi
 
-# The script writes through `mktemp "<file>.XXXXXX"`.
-leaked="$(find "$consumer" -name '*.kt*.??????' -not -path '*/.git/*' -print)"
+# The script writes its temporary files outside the consumer's tree.
+leaked="$(find "$consumer" -type f -name '*.??????' -not -path '*/.git/*' -print)"
 if [ -z "$leaked" ]; then
   pass "no temp files left behind"
 else
@@ -340,12 +419,12 @@ fi
 # =============================================================================
 # (2) A second run changes nothing.
 # =============================================================================
-git -C "$consumer" add -A buildSrc .github build.gradle.kts server
-git -C "$consumer" commit -qm "Moved to the new API"
+git -C "$consumer" add -A "${tracked[@]}"
+git -C "$consumer" commit -qm "Rewritten for the new API"
 
 out2="$work/run-2.out"; err2="$work/run-2.err"
 if bash "$script" "$consumer" > "$out2" 2> "$err2"; then
-  pass "second run completed (exit 0)"
+  pass "the second run ran to completion (exit 0)"
 else
   f-ail "second run exited non-zero:"; cat "$out2" "$err2" >&2
 fi
@@ -354,14 +433,33 @@ if [ -s "$out2" ]; then
 else
   pass "second run rewrote nothing"
 fi
-if [ -z "$(git -C "$consumer" status --porcelain -- buildSrc .github build.gradle.kts server)" ]; then
+if [ -z "$(git -C "$consumer" status --porcelain -- "${tracked[@]}")" ]; then
   pass "second run left the tracked files as they were"
 else
   f-ail "second run changed tracked files:"; git -C "$consumer" status --porcelain >&2
 fi
 
 # =============================================================================
-# (3) The real `migrate` restores the consumer's script, rewrites, and stages it.
+# (2b) A consumer that is not a Git work tree: `buildSrc` only.
+# =============================================================================
+plain="$work/plain"
+mkdir -p "$plain/buildSrc/src/main/kotlin"
+cp "$fixtures/after-evaluate.before" "$plain/buildSrc/src/main/kotlin/module.gradle.kts"
+# With no Git, the script cannot tell a consumer's script from a build output.
+cp "$fixtures/root.before" "$plain/build.gradle.kts"
+if bash "$script" "$plain" > "$work/plain.out" 2> "$work/plain.err"; then
+  pass "the script ran to completion outside a Git work tree (exit 0)"
+else
+  f-ail "the script exited non-zero outside a Git work tree:"
+  cat "$work/plain.out" "$work/plain.err" >&2
+fi
+expect_file "$plain/buildSrc/src/main/kotlin/module.gradle.kts" \
+  "$fixtures/after-evaluate.after" "outside a Git work tree, 'buildSrc' rewritten"
+expect_file "$plain/build.gradle.kts" "$fixtures/root.before" \
+  "outside a Git work tree, scripts outside 'buildSrc' left as they are"
+
+# =============================================================================
+# (3) The real `migrate` restores, rewrites, and stages the consumer's script.
 # =============================================================================
 consumer="$work/pulling"
 kotlin="$consumer/buildSrc/src/main/kotlin"
@@ -383,7 +481,8 @@ cp "$config_dir/migrate"                                "$fake_config/migrate"
 cp "$config_dir/scripts/update-gitignore.sh"            "$fake_config/scripts/"
 cp "$config_dir/scripts/migrate-publish-api-docs.sh"    "$fake_config/scripts/"
 cp "$config_dir/.gitignore"                             "$fake_config/.gitignore"
-printf '// The seed of a new consumer.\n' > "$fake_config/buildSrc/src/main/kotlin/module.gradle.kts"
+printf '// The seed of a new consumer.\n' \
+    > "$fake_config/buildSrc/src/main/kotlin/module.gradle.kts"
 printf '#!/usr/bin/env bash\nexit 0\n' > "$fake_config/adopt-shared-agents"
 chmod +x "$fake_config/adopt-shared-agents"
 

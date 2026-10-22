@@ -466,16 +466,16 @@ if [ "$IS_JVM" = "true" ]; then
     copy_workflows .github/workflows
     pin_publishing_workflow
 
-    # Move the consumer's own Gradle scripts, the `module.gradle.kts` restored above
-    # among them, from `updateGitHubPages { }` to `publishApiDocs { }`; with the
+    # Rewrite the consumer's own Gradle scripts, including the `module.gradle.kts`
+    # restored above, from `updateGitHubPages { }` to `publishApiDocs { }`; with the
     # plugin renamed, they would no longer compile. What the script cannot rewrite,
     # it reports. It runs after the workflows are copied so that it reports only the
     # workflows the consumer keeps itself. The closing `git add ./buildSrc/src`
-    # stages the rewritten `buildSrc` files; the others are left for the developer
-    # to commit.
-    echo "Moving the consumer's Gradle scripts to \`publishApiDocs\`"
+    # stages the rewritten `buildSrc` files; the developer commits any other scripts.
+    echo "Rewriting the consumer's Gradle scripts for \`publishApiDocs\`"
     bash scripts/migrate-publish-api-docs.sh \
-        || echo "WARNING: could not move the Gradle scripts to \`publishApiDocs\`; see the errors above." >&2
+        || echo "WARNING: could not rewrite the Gradle scripts for \`publishApiDocs\`;" \
+                "see the errors above." >&2
 
     echo "Updating Gradle Wrapper"
     cp -R ./gradle ..
