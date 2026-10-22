@@ -187,7 +187,9 @@ that repository blocks on it.
 Every `Publish` run attests the files it publishes: the `attest` job of the reusable
 `publishing.yml` above signs SLSA build provenance for each of them. If that job fails, the files
 stay published without provenance until it is re-run; the comments in `publishing.yml` describe
-the recovery. How consumers check the provenance of a file is described on spine.io, in
+the recovery. A run that finds its commit's version already published, such as a duplicate run
+of one push, uploads and attests nothing: the provenance belongs to the run that uploaded the
+files. How consumers check the provenance of a file is described on spine.io, in
 [Verifying artifacts][verifying-artifacts].
 
 ## Further reading
