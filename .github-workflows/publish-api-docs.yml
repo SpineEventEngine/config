@@ -18,6 +18,10 @@ name: Publish API docs
 # even when nothing changed, and retries a failed push after rebasing onto
 # `gh-pages`.
 #
+# Each module clones only the tip of `gh-pages` and checks out only its own most
+# recent documentation and the folder of its version, so that a run does not
+# fetch the documentation of every version of every module.
+#
 # This job does not ask whether `publish.yml` could publish the version, as that
 # would couple the two again. When `publish.yml` stops because the version is
 # already taken, which the version checks of pull requests normally prevent,

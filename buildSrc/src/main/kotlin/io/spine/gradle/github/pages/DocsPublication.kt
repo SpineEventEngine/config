@@ -29,6 +29,11 @@ import org.gradle.api.logging.Logger
  *
  * The documentation in each format is copied into a clone of the `gh-pages` branch
  * and committed there, and the commits are pushed.
+ *
+ * The clone has only the most recent documentation of the [project] and the folder of
+ * its version checked out, without the folders of the versions published earlier.
+ * The branch holds the documentation of every version of every module, which is too
+ * much to check out for a change to a single module.
  */
 internal fun Task.publishToGitHubPages(project: Project) {
     val plugin = project.plugins.getPlugin(PublishApiDocs::class.java)
@@ -41,6 +46,7 @@ internal fun Task.publishToGitHubPages(project: Project) {
     val html = HtmlPublication(project, plugin.htmlOutputFolder, repository, logger)
 
     repository.use {
+        repository.checkOutOnly(javadoc.checkoutPatterns() + html.checkoutPatterns())
         javadoc.publish()
         html.publish()
         repository.push()
@@ -78,8 +84,15 @@ private abstract class DocsPublication(
      */
     protected abstract val formatName: String
 
+    /**
+     * The path of the folder with the documentation of the [project] in this format,
+     * relative to the repository root.
+     */
+    private val folder: String
+        get() = "$docsDestinationFolder/${project.name}"
+
     private val mostRecentFolder by lazy {
-        File("${repository.location}/${docsDestinationFolder}/${project.name}")
+        File("${repository.location}/$folder")
     }
 
     /**
@@ -87,7 +100,7 @@ private abstract class DocsPublication(
      * named after the version.
      */
     private val versionsFolder by lazy {
-        File(mostRecentFolder, "v")
+        File(mostRecentFolder, VERSIONS_FOLDER)
     }
 
     private fun log(message: () -> String) {
@@ -95,6 +108,13 @@ private abstract class DocsPublication(
             logger.debug(message())
         }
     }
+
+    /**
+     * Obtains the patterns of the paths this publication writes, for
+     * [checking out][Repository.checkOutOnly] just those paths.
+     */
+    fun checkoutPatterns(): List<String> =
+        docsCheckoutPatterns(folder, project.version.toString())
 
     /**
      * Copies the documentation into the repository and commits it.
@@ -145,12 +165,15 @@ private abstract class DocsPublication(
     /**
      * Obtains the versions whose documentation is published, as named by the folders
      * under `v/`.
+     *
+     * The names are read from the tree of the current commit, as the folders of
+     * the other versions are not checked out.
      */
     private fun publishedVersions(): List<String> =
-        versionsFolder.listFiles(File::isDirectory)?.map { it.name } ?: emptyList()
+        repository.listFolders("$folder/$VERSIONS_FOLDER")
 
     private fun copyDocs(source: FileCollection, destination: File) {
-        destination.mkdir()
+        destination.mkdirs()
         project.copy {
             from(source)
             into(destination)
@@ -200,3 +223,32 @@ private class HtmlPublication(
  */
 internal fun Iterable<String>.newestAbove(version: String): String? =
     maxWithOrNull(VersionComparator)?.takeIf { VersionComparator.compare(it, version) > 0 }
+
+/**
+ * The name of the folder that holds the documentation of each published version
+ * in a subfolder named after the version.
+ */
+private const val VERSIONS_FOLDER = "v"
+
+/**
+ * Returns the patterns, in the `.gitignore` syntax, of the paths that a publication
+ * of the documentation in the given [folder] writes: the most recent documentation,
+ * and the folder of the given [version] under `v/`, but not the folders of the other
+ * versions.
+ *
+ * The folders under `v/` are excluded one by one, and the folder of the [version]
+ * is included again after them, as the last matching pattern wins. This is how
+ * `git sparse-checkout` lays out its patterns in cone mode.
+ *
+ * For example, for the `javadoc/core` folder and the version `1.2.0`, the patterns
+ * select everything in `javadoc/core`, exclude each folder in `javadoc/core/v`, and
+ * select `javadoc/core/v/1.2.0` again.
+ *
+ * @param folder the path of the documentation folder, relative to the repository root.
+ * @param version the version whose folder is included.
+ */
+internal fun docsCheckoutPatterns(folder: String, version: String): List<String> = listOf(
+    "/$folder/*",
+    "!/$folder/$VERSIONS_FOLDER/*/",
+    "/$folder/$VERSIONS_FOLDER/$version/",
+)
