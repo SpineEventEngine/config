@@ -19,7 +19,7 @@ set -euo pipefail
 # Runs from `revalidate-versions.yml` on a push to a release base branch (i.e. when a
 # pull request merges). For every OTHER open PR targeting that base whose
 # `version.gradle.kts` version is now less than or equal to the new base version, it
-# posts a failing `Version Guard` commit status on the PR's head commit, so the PR
+# posts a failing `Version bump` commit status on the PR's head commit, so the PR
 # cannot merge until the author re-bumps. The status self-clears: the re-bump push runs
 # `increment-guard.yml`, which posts a fresh `success` on the new head.
 #
@@ -186,7 +186,7 @@ gh pr list --repo "$REPO" --base "$BASE_REF" --state open --limit 200 \
       echo "  PR #$number: version $head_version <= base $base_version -> marking stale."
       gh api -X POST "repos/$REPO/statuses/$sha" \
         -f state=failure \
-        -f context="Version Guard" \
+        -f context="Version bump" \
         -f description="Base advanced to $base_version; re-bump required (head $head_version)." \
         >/dev/null 2>&1 \
         || echo "  PR #$number: could not post status (continuing)."
