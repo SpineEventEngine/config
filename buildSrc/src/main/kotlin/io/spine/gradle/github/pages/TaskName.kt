@@ -17,9 +17,15 @@ package io.spine.gradle.github.pages
 object TaskName {
 
     /**
-     * The name of the task that publishes the API documentation.
+     * The name of the task that publishes the API documentation of a project.
      */
     const val publishApiDocs = "publishApiDocs"
+
+    /**
+     * The name of the task of the root project that publishes the API documentation
+     * of all the published projects of the build.
+     */
+    const val publishAllApiDocs = "publishAllApiDocs"
 
     /**
      * The name of the helper task to gather the generated Javadoc format

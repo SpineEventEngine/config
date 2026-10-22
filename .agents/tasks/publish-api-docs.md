@@ -58,7 +58,7 @@ the extension, and the DSL around it.
       `UpdateGitHubPagesExtension.kt` from a consumer's `buildSrc`, as it does for
       `ProtoData.kt` and the other retired files.
 - [x] Decouple: drop `publish.dependsOn(updateGitHubPages)` from `jvm-module`.
-- [x] Root aggregate `:publishApiDocs`, registered by `spinePublishing { }` next to
+- [x] Root aggregate `:publishAllApiDocs`, registered by `spinePublishing { }` next to
       `:publicationState`:
   - depends on the `publishApiDocs` task of each published module that has one
     (the modules `spinePublishing` publishes), resolved once all projects are
@@ -67,28 +67,28 @@ the extension, and the DSL around it.
     `spinePublishing`, no longer does; none is known;
   - exists in every repository that runs the distributed workflows, including
     those with no documented module, where it does nothing;
-  - in a single-project build it is the project's own docs task: both sides
-    register the task idempotently.
+  - a name of its own, distinct from the `publishApiDocs` of the modules, so that
+    it never collides with the root's own task in a single-project build, and so
+    that `./gradlew publishAllApiDocs` needs no path to select only it;
   - Why `spinePublishing`: it is the only root-level hook that every repository
     that publishes has, and it knows which modules are published.
   - Neither job depends on the other: `publish` and `publishApiDocs` do not
     depend on each other's tasks.
   - The `getOrRegister` helper moves from `PublicationChecksums.kt` to
     `io/spine/gradle/TaskName.kt`, so both places use it.
-- [x] Test `PublishApiDocsIgTest` (TestKit, `--dry-run`): `:publishApiDocs` plans
+- [x] Test `PublishApiDocsIgTest` (TestKit, `--dry-run`): `:publishAllApiDocs` plans
       the docs of the published documented modules only; `publish` plans no docs
-      task; a build with no documented module runs `:publishApiDocs`; in a
-      single-project build `:publishApiDocs` is the project's own docs task;
+      task; a build with no documented module runs `:publishAllApiDocs`; in a
+      single-project build it runs the project's own `:publishApiDocs`;
       a module that opens `spinePublishing { }` itself is included too; a snapshot
       version publishes nothing, in a multi-module and in a single-project build.
 - [x] Snapshot versions: the plugin registers a no-op `publishApiDocs` that only
-      says it skips the docs, through `getOrRegister`, so that it merges with the
-      root aggregate in a single-project build.
+      says it skips the docs.
 - [x] `.github-workflows/publish-api-docs.yml`, self-contained (no caller/reusable
       split, see below): push to `master`; `concurrency` per repository with
       `queue: max`; `contents: read`, `packages: read`; checkout with submodules,
       JDK 17, `setup-gradle`, decrypt `deploy_key_rsa`, `chmod`, then
-      `./gradlew :publishApiDocs` with `GITHUB_TOKEN`, `FORMAL_GIT_HUB_PAGES_AUTHOR`,
+      `./gradlew :publishAllApiDocs` with `GITHUB_TOKEN`, `FORMAL_GIT_HUB_PAGES_AUTHOR`,
       `REPO_SLUG`.
 - [x] `publishing.yml`: remove `Decrypt Git SSH credentials`,
       `Set file system permissions`, and the `FORMAL_GIT_HUB_PAGES_AUTHOR` and
@@ -146,7 +146,7 @@ repositories, run from the `summit` repository.
   secret, as `publishing.yml` did before.
 - `publish.yml` is re-pinned to a `publishing.yml` that no longer decrypts the
   deploy key or passes `REPO_SLUG`/`FORMAL_GIT_HUB_PAGES_AUTHOR`.
-- `spinePublishing { }` now registers `:publishApiDocs` in the root project.
+- `spinePublishing { }` now registers `publishAllApiDocs` in the root project.
 - **Behavior change:** only release versions publish their docs to the site. For
   a snapshot version, the task of each module only logs that it skips the docs,
   so a `publish-api-docs.yml` run in a repository on a snapshot version ends green
@@ -168,7 +168,7 @@ All in `io.spine.gradle.github.pages`, with no deprecated aliases:
 | `UpdateGitHubPages` (plugin) | `PublishApiDocs` |
 | `TaskName.updateGitHubPages` | `TaskName.publishApiDocs` |
 | extension `updateGitHubPages` | extension `publishApiDocs` |
-| task `updateGitHubPages` | task `publishApiDocs`, plus `:publishApiDocs` in the root project |
+| task `updateGitHubPages` | task `publishApiDocs`, plus `publishAllApiDocs` in the root project |
 
 ### What each consumer must change, in the same PR as the pull
 
@@ -209,10 +209,10 @@ script that calls it stops compiling. In every consumer-owned Gradle file
 
 Find every place: `git grep -nE 'updateGitHubPages|UpdateGitHubPages'` (it does
 not descend into the `config` submodule) — expect no hits afterwards. Check:
-`./gradlew :publishApiDocs --dry-run` lists the docs tasks of the published
-modules, and `./gradlew publish --dry-run` lists no `publishApiDocs` task.
+`./gradlew publishAllApiDocs --dry-run` lists the `publishApiDocs` tasks of the
+published modules, and `./gradlew publish --dry-run` lists no `publishApiDocs` task.
 
-Always name the task with its path, `:publishApiDocs`. Unqualified,
+Publish the docs of the whole build with `publishAllApiDocs`. An unqualified
 `publishApiDocs` selects the task of every project that has one, including the
 modules that are not published.
 
@@ -232,17 +232,17 @@ This list was checked against each repository's `master` on 2026-10-21, by the
   a top-level call in change's `module.gradle.kts`). **Behavior change:**
   both registered the docs tasks but did not run them (their `gh-pages` branches
   have not changed since 2025-12-02 and 2025-12-22, respectively); now
-  `:publishApiDocs` publishes the docs of their published modules on their next
+  `publishAllApiDocs` publishes the docs of their published modules on their next
   release version, as agreed with Alexander Yevsyukov.
 - Archived on GitHub, so out of scope: web, dart, text, model-compiler,
   model-tools.
 - Chords and Chords-Gradle-plugin: the pull erases the `-x updateGitHubPages`
   hand-edited into their `publish.yml`. **Behavior change:** their docs get
-  published by the new workflow, from their next release version. Check that each repository has
-  `.github/keys/deploy_key_rsa.gpg` and `GIT_CREDENTIALS_KEY`, or drop the plugin
-  call if their docs were off on purpose.
+  published by the new workflow, from their next release version. Check that
+  each repository has `.github/keys/deploy_key_rsa.gpg` and `GIT_CREDENTIALS_KEY`,
+  or drop the plugin call if their docs were off on purpose.
 - Repositories that document nothing (bootstrap, template): nothing to do;
-  `:publishApiDocs` does nothing there.
+  `publishAllApiDocs` does nothing there.
 - core-java-1x `publish-v1.yml` runs the v1 line with its own `buildSrc`: out of
   scope.
 
@@ -295,3 +295,7 @@ repository that publishes has them.
 - 2026-10-22 — pinned that the snapshot skip concerns the site only: a new
   `PublishApiDocsIgTest` case shows that `publish` of a snapshot version still
   plans Dokka and `javadocJar`, and no `publishApiDocs`.
+- 2026-10-22 — the root aggregate gets a name of its own, `publishAllApiDocs`, at
+  the user's request. The module task and the no-op go back to a plain
+  `register`; the aggregate depends on `TaskProvider`s, the root's own task
+  included in a single-project build. The workflow runs `:publishAllApiDocs`.

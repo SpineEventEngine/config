@@ -333,8 +333,8 @@ open class SpinePublishing(private val project: Project) {
         // After `PublicationSbom`: its `projectsEvaluated` callback adds the SBOM artifacts
         // that the one of `PublicationState` collects.
         PublicationState.registerOn(project.rootProject)
-        // The root `publishApiDocs` is registered here, as this is where the published
-        // modules are known. It is not tied to `publish`: neither task depends on the other.
+        // `publishAllApiDocs` is registered here, as this is where the published modules
+        // are known. It is not tied to `publish`: neither task depends on the other.
         PublishApiDocs.registerAggregate(project.rootProject, projectsToPublish)
     }
 

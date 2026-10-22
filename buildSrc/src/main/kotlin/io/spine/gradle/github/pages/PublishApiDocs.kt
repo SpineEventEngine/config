@@ -21,6 +21,7 @@ import io.spine.gradle.fs.LazyTempPath
 import io.spine.gradle.getOrRegister
 import io.spine.gradle.github.pages.TaskName.copyHtmlDocs
 import io.spine.gradle.github.pages.TaskName.copyJavadocDocs
+import io.spine.gradle.github.pages.TaskName.publishAllApiDocs
 import io.spine.gradle.github.pages.TaskName.publishApiDocs
 import io.spine.gradle.isSnapshot
 import java.io.File
@@ -41,7 +42,7 @@ import org.gradle.api.tasks.TaskProvider
  * HTML archives are still built by Dokka and published to Maven repositories by `publish`.
  *
  * The task is not a part of the Maven publication. It is run by the `publish-api-docs.yml`
- * workflow, apart from `publish.yml`, through the `publishApiDocs` task of the root
+ * workflow, apart from `publish.yml`, through the `publishAllApiDocs` task of the root
  * project, which [publishes the documentation of the published modules that apply
  * this plugin][registerAggregate].
  *
@@ -116,14 +117,11 @@ class PublishApiDocs : Plugin<Project> {
      * Registers the [TaskName.publishApiDocs] task that performs no actual update,
      * but tells that the update is skipped, since the project is in its `SNAPSHOT`
      * version.
-     *
-     * Like [registerPublishTask], it takes the task of the root project that is
-     * already registered as [the aggregate][registerAggregate] in a single-project build.
      */
     private fun Project.registerNoOpTask() {
         val module = name
         val snapshotVersion = version.toString()
-        tasks.getOrRegister(publishApiDocs).configure {
+        tasks.register(publishApiDocs) {
             group = SpineTaskGroup.name
             description = "Skips publishing the API documentation of snapshot versions"
             doLast {
@@ -189,18 +187,8 @@ class PublishApiDocs : Plugin<Project> {
         return inputs
     }
 
-    /**
-     * Registers the [TaskName.publishApiDocs] task of this project, or takes the task
-     * that is already registered.
-     *
-     * In a single-project build, the root project is both the documented project and
-     * the owner of [the aggregate][registerAggregate], so whichever of this plugin and
-     * `spinePublishing { }` comes first registers the task. The plugin configures it
-     * here either way, so that it also publishes the documentation of this project.
-     */
     private fun TaskContainer.registerPublishTask(): TaskProvider<Task> {
-        val task = getOrRegister(publishApiDocs)
-        task.configure {
+        return register(publishApiDocs) {
             group = SpineTaskGroup.name
             description = "Publishes the API documentation to the `gh-pages` branch"
             doLast {
@@ -211,7 +199,6 @@ class PublishApiDocs : Plugin<Project> {
                 }
             }
         }
-        return task
     }
 
     private fun cleanup() {
@@ -224,21 +211,20 @@ class PublishApiDocs : Plugin<Project> {
     internal companion object {
 
         /**
-         * Registers the [TaskName.publishApiDocs] task in the [root] project.
+         * Registers the [TaskName.publishAllApiDocs] task in the [root] project.
          * The task publishes the API documentation of the [published] projects.
          *
-         * The task depends on the `publishApiDocs` task of each of the [published]
-         * projects that has one, that is, applies this plugin. A project that applies
-         * the plugin, but is not published, such as a module of integration tests,
-         * is left out. The task of a project with a snapshot version publishes nothing.
+         * The task depends on the [TaskName.publishApiDocs] task of each of
+         * the [published] projects that has one, that is, applies this plugin. This
+         * includes [root] when it is published itself, as in a single-project build.
+         * A project that applies the plugin, but is not published, such as a module
+         * of integration tests, is left out. The task of a project with a snapshot
+         * version publishes nothing.
          *
          * The task is registered even when none of the projects has the documentation
          * to publish, and then does nothing. This lets the `publish-api-docs.yml`
          * workflow run it in any repository that publishes: Gradle fails on a task
          * that is missing from the build.
-         *
-         * If [root] applies this plugin itself, as in a single-project build, the task
-         * also publishes the documentation of [root], published or not.
          *
          * The plugin registers the task of a project once that project is evaluated,
          * so the tasks to depend on are looked up only when Gradle resolves
@@ -246,15 +232,15 @@ class PublishApiDocs : Plugin<Project> {
          * task, as `spinePublishing { }` may run more than once in a build.
          */
         fun registerAggregate(root: Project, published: Set<Project>) {
-            val task = root.tasks.getOrRegister(publishApiDocs) {
+            val task = root.tasks.getOrRegister(publishAllApiDocs) {
                 group = SpineTaskGroup.name
-                description = "Publishes the API documentation of the published modules"
+                description = "Publishes the API documentation of all the published modules"
             }
             task.configure {
                 dependsOn(root.provider {
                     published
-                        .filter { it != root && publishApiDocs in it.tasks.names }
-                        .map { "${it.path}:$publishApiDocs" }
+                        .filter { publishApiDocs in it.tasks.names }
+                        .map { it.tasks.named(publishApiDocs) }
                 })
             }
         }

@@ -5,9 +5,10 @@ name: Publish API docs
 #
 # The job runs apart from `publish.yml`, and neither waits for the other: a
 # failure here leaves the Maven publication intact, and the other way round.
-# `:publishApiDocs` is registered in the root project by `spinePublishing { }`,
+# `:publishAllApiDocs` is registered in the root project by `spinePublishing { }`,
 # so it exists in every repository that publishes, and does nothing where no
-# module documents itself.
+# module documents itself. It runs the `publishApiDocs` task of each published
+# module.
 #
 # Only release versions are published. For a snapshot version, which most merges
 # produce, the task of each module only says that it skips the documentation,
@@ -77,7 +78,7 @@ jobs:
         run: chmod 400 ./deploy_key_rsa && chmod +x ./config/scripts/register-ssh-key.sh
 
       - name: Publish API docs
-        run: ./gradlew :publishApiDocs --stacktrace
+        run: ./gradlew :publishAllApiDocs --stacktrace
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FORMAL_GIT_HUB_PAGES_AUTHOR: developers@spine.io

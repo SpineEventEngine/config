@@ -28,8 +28,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
 /**
- * Verifies which tasks the `publishApiDocs` task of the root project, registered by
- * `spinePublishing { }`, brings into a build.
+ * Verifies which tasks the `publishAllApiDocs` task of the root project, registered by
+ * `spinePublishing { }`, brings into a build: the `publishApiDocs` tasks of the projects.
  *
  * The builds that would publish documentation run with `--dry-run`, so that nothing
  * is pushed to GitHub Pages. The builds of a snapshot version run for real, as they
@@ -42,7 +42,7 @@ import org.junit.jupiter.api.io.TempDir
  * No build applies Dokka. A task named like the Dokka one stands in for it, as
  * the plugin and the `javadocJar` of `spinePublishing` look the task up by name.
  */
-@DisplayName("`publishApiDocs` task of the root project should")
+@DisplayName("`publishAllApiDocs` task should")
 internal class PublishApiDocsIgTest {
 
     @TempDir
@@ -52,8 +52,10 @@ internal class PublishApiDocsIgTest {
     fun `publish the docs of each published module that documents itself`() {
         writeMultiModuleBuild(documented = setOf("api", "backend", "testing"))
 
-        dryRun(":$taskName").docsTasks() shouldContainExactlyInAnyOrder listOf(
-            ":$taskName",
+        val planned = dryRun(":$aggregate")
+
+        planned shouldContain ":$aggregate"
+        planned.docsTasks() shouldContainExactlyInAnyOrder listOf(
             ":api:$taskName",
             ":backend:$taskName"
         )
@@ -119,8 +121,7 @@ internal class PublishApiDocsIgTest {
         }
         file("api").mkdirs()
 
-        dryRun(":$taskName").docsTasks() shouldContainExactlyInAnyOrder listOf(
-            ":$taskName",
+        dryRun(":$aggregate").docsTasks() shouldContainExactlyInAnyOrder listOf(
             ":api:$taskName",
             ":lib:$taskName"
         )
@@ -133,6 +134,7 @@ internal class PublishApiDocsIgTest {
         val planned = dryRun("publish")
 
         planned shouldContain ":api:publish"
+        planned shouldNotContain ":$aggregate"
         planned.docsTasks().shouldBeEmpty()
     }
 
@@ -140,17 +142,17 @@ internal class PublishApiDocsIgTest {
     fun `do nothing in a build that documents no module`() {
         writeMultiModuleBuild(documented = emptySet())
 
-        val result = runner(":$taskName").build()
+        val result = runner(":$aggregate").build()
 
-        result.tasks.map { it.path }.docsTasks() shouldBe listOf(":$taskName")
-        result.task(":$taskName")?.outcome shouldBe TaskOutcome.UP_TO_DATE
+        result.tasks.map { it.path } shouldBe listOf(":$aggregate")
+        result.task(":$aggregate")?.outcome shouldBe TaskOutcome.UP_TO_DATE
     }
 
     @Test
     fun `publish the docs of the project in a single-project build`() {
         writeSingleProjectBuild(version = "1.0.0")
 
-        val planned = dryRun(":$taskName")
+        val planned = dryRun(":$aggregate")
 
         planned.docsTasks() shouldBe listOf(":$taskName")
         planned shouldContain ":${TaskName.copyJavadocDocs}"
@@ -160,11 +162,10 @@ internal class PublishApiDocsIgTest {
     fun `publish no docs of a snapshot version`() {
         writeMultiModuleBuild(documented = setOf("api", "backend", "testing"), version = snapshot)
 
-        val result = runner(":$taskName").build()
+        val result = runner(":$aggregate").build()
 
         val paths = result.tasks.map { it.path }
         paths.docsTasks() shouldContainExactlyInAnyOrder listOf(
-            ":$taskName",
             ":api:$taskName",
             ":backend:$taskName"
         )
@@ -202,9 +203,12 @@ internal class PublishApiDocsIgTest {
     fun `publish no docs of a snapshot version in a single-project build`() {
         writeSingleProjectBuild(version = snapshot)
 
-        val result = runner(":$taskName").build()
+        val result = runner(":$aggregate").build()
 
-        result.tasks.map { it.path } shouldBe listOf(":$taskName")
+        result.tasks.map { it.path } shouldContainExactlyInAnyOrder listOf(
+            ":$taskName",
+            ":$aggregate"
+        )
         result.output shouldContain "`$snapshot` is a snapshot version"
     }
 
@@ -330,6 +334,8 @@ internal class PublishApiDocsIgTest {
     private companion object {
 
         const val taskName = TaskName.publishApiDocs
+
+        const val aggregate = TaskName.publishAllApiDocs
 
         /** A version in the format the Spine SDK publishes from every merge. */
         const val snapshot = "1.0.0-SNAPSHOT.1"
