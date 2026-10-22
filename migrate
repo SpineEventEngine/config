@@ -453,8 +453,9 @@ if [ "$IS_JVM" = "true" ]; then
 
     # Remove the sources of the plugin that was renamed `PublishApiDocs`, for the same
     # reason: the stale copies would not compile against the renamed `TaskName` constant
-    # and plugin class. `Update.kt` is now `DocsPublication.kt`. Consumer build scripts
-    # that call `updateGitHubPages { }` must switch to `publishApiDocs { }`.
+    # and plugin class. `Update.kt` is now `DocsPublication.kt`. The consumer's own
+    # scripts that call `updateGitHubPages { }` are moved to `publishApiDocs { }`
+    # below, once the workflows are copied.
     echo "Removing the renamed \`UpdateGitHubPages\` plugin sources"
     rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/github/pages/UpdateGitHubPages.kt
     rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/github/pages/UpdateGitHubPagesExtension.kt
@@ -464,6 +465,17 @@ if [ "$IS_JVM" = "true" ]; then
     copy_workflows .github-workflows
     copy_workflows .github/workflows
     pin_publishing_workflow
+
+    # Move the consumer's own Gradle scripts, the `module.gradle.kts` restored above
+    # among them, from `updateGitHubPages { }` to `publishApiDocs { }`; with the
+    # plugin renamed, they would no longer compile. What the script cannot rewrite,
+    # it reports. It runs after the workflows are copied so that it reports only the
+    # workflows the consumer keeps itself. The closing `git add ./buildSrc/src`
+    # stages the rewritten `buildSrc` files; the others are left for the developer
+    # to commit.
+    echo "Moving the consumer's Gradle scripts to \`publishApiDocs\`"
+    bash scripts/migrate-publish-api-docs.sh \
+        || echo "WARNING: could not move the Gradle scripts to \`publishApiDocs\`; see the errors above." >&2
 
     echo "Updating Gradle Wrapper"
     cp -R ./gradle ..
