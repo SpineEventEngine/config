@@ -265,7 +265,7 @@ project.forceDependencies()
 KTS
 
 # Forms the script does not know: they must stay as they are, and be reported. A
-# declaration of `updateGitHubPages()` is not a call.
+# declaration of `updateGitHubPages()` is not a call, with an annotation too.
 cat > "$fixtures/Unknown.kt" <<'KT'
 package io.acme.gradle
 
@@ -278,7 +278,18 @@ fun Project.docs(): UpdateGitHubPagesExtension =
 fun Project.updateGitHubPages() {
     docs()
 }
+
+@Suppress("unused") internal fun Settings.updateGitHubPages() {
+}
 KT
+
+# A script that holds nothing but the dependency on the docs task: it is left empty.
+cat > "$fixtures/dependency-only.before" <<'KTS'
+tasks.named("publish") {
+    dependsOn("${project.path}:updateGitHubPages")
+}
+KTS
+: > "$fixtures/empty"
 cat > "$fixtures/custom.yml" <<'YML'
 name: Custom publish
 on: push
@@ -317,6 +328,8 @@ mkdir -p "$kotlin/io/acme/gradle" "$consumer/.github/workflows" "$consumer/serve
 cp "$fixtures/after-evaluate.before" "$kotlin/module.gradle.kts"
 cp "$fixtures/top-level.before"      "$kotlin/docs.gradle.kts"
 cp "$fixtures/kept.before"           "$kotlin/kept.gradle.kts"
+# Rewritten after other files: it must not get the text of the one before it.
+cp "$fixtures/dependency-only.before" "$kotlin/zz-dependency-only.gradle.kts"
 cp "$fixtures/Unknown.kt"            "$kotlin/io/acme/gradle/Unknown.kt"
 cp "$fixtures/root.before"           "$consumer/build.gradle.kts"
 cp "$fixtures/root.before"           "$consumer/$accented/build.gradle.kts"
@@ -349,6 +362,8 @@ expect_file "$kotlin/docs.gradle.kts" "$fixtures/top-level.after" \
   "a top-level call in another 'buildSrc' script rewritten, the old import dropped"
 expect_file "$kotlin/kept.gradle.kts" "$fixtures/kept.after" \
   "a function's own KDoc kept, a 'dependsOn' with more arguments left as it is"
+expect_file "$kotlin/zz-dependency-only.gradle.kts" "$fixtures/empty" \
+  "a script of nothing but the docs dependency, rewritten after another, left empty"
 expect_file "$consumer/build.gradle.kts" "$fixtures/root.after" \
   "a tracked script outside 'buildSrc' rewritten"
 expect_file "$consumer/$accented/build.gradle.kts" "$fixtures/root.after" \
@@ -366,6 +381,7 @@ expect_file "$consumer/scratch/untracked.gradle.kts" "$fixtures/root.before" \
 for moved in buildSrc/src/main/kotlin/module.gradle.kts \
              buildSrc/src/main/kotlin/docs.gradle.kts \
              buildSrc/src/main/kotlin/kept.gradle.kts \
+             buildSrc/src/main/kotlin/zz-dependency-only.gradle.kts \
              build.gradle.kts server/build.gradle.kts "$accented/build.gradle.kts"; do
   if grep -qxF "Rewrote \`$moved\` for \`publishApiDocs\`" "$out1"; then
     pass "reported the rewrite of '$moved'"
@@ -383,6 +399,7 @@ for left in 'buildSrc/src/main/kotlin/io/acme/gradle/Unknown.kt:3:' \
             'buildSrc/src/main/kotlin/io/acme/gradle/Unknown.kt:6:' \
             'buildSrc/src/main/kotlin/io/acme/gradle/Unknown.kt:7:' \
             'buildSrc/src/main/kotlin/io/acme/gradle/Unknown.kt:9:' \
+            'buildSrc/src/main/kotlin/io/acme/gradle/Unknown.kt:13:' \
             'buildSrc/src/main/kotlin/kept.gradle.kts:12:' \
             '.github/workflows/custom.yml:7:'; do
   if grep -qF "  $left" "$err1"; then
@@ -457,6 +474,21 @@ expect_file "$plain/buildSrc/src/main/kotlin/module.gradle.kts" \
   "$fixtures/after-evaluate.after" "outside a Git work tree, 'buildSrc' rewritten"
 expect_file "$plain/build.gradle.kts" "$fixtures/root.before" \
   "outside a Git work tree, scripts outside 'buildSrc' left as they are"
+
+# =============================================================================
+# (2c) The first file rewritten loses every line: there is no earlier output.
+# =============================================================================
+only="$work/only"
+mkdir -p "$only/buildSrc/src/main/kotlin"
+cp "$fixtures/dependency-only.before" "$only/buildSrc/src/main/kotlin/docs.gradle.kts"
+if bash "$script" "$only" > "$work/only.out" 2> "$work/only.err"; then
+  pass "the script ran to completion when the first rewrite drops every line (exit 0)"
+else
+  f-ail "the script exited non-zero when the first rewrite drops every line:"
+  cat "$work/only.out" "$work/only.err" >&2
+fi
+expect_file "$only/buildSrc/src/main/kotlin/docs.gradle.kts" "$fixtures/empty" \
+  "a script of nothing but the docs dependency, rewritten first, left empty"
 
 # =============================================================================
 # (3) The real `migrate` restores, rewrites, and stages the consumer's script.

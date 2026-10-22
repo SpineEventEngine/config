@@ -179,8 +179,10 @@ END {
     new_import = "^import[ \t]+io[.]spine[.]gradle[.]github[.]pages[.]publishApiDocs[ \t]*$"
     old_function = "^fun[ \t]+[A-Za-z0-9_.<>]+[.]configureGitHubPages[(]"
     new_function = "^fun[ \t]+[A-Za-z0-9_.<>]+[.]configureApiDocs[(]"
-    # A declaration, such as `fun Project.updateGitHubPages(...) {`, is not a call.
-    declaration = "^[ \t]*([a-z]+[ \t]+)*fun[ \t]"
+    # A declaration, such as `fun Project.updateGitHubPages() {`, is not a call. The
+    # keyword is looked for anywhere in the line, after annotations and modifiers
+    # alike: `fun` is a hard keyword, so it cannot be a name.
+    declaration = "(^|[^A-Za-z0-9_])fun[ \t<]"
     named_publish = "^[ \t]*tasks[.]named[(]\"publish\"[)][ \t]*[{][ \t]*$"
     after_evaluate = "^[ \t]*(project[.])?afterEvaluate[ \t]*[{][ \t]*$"
     find_publish = "^[ \t]*val[ \t]+publish[ \t]*=[ \t]*" \
@@ -253,6 +255,9 @@ while IFS= read -r f; do
   case "$f" in
     *.gradle.kts) script=1 ;;
   esac
+  # `awk` opens the output at its first line; a rewrite that drops every line would
+  # otherwise leave the previous file's text there.
+  : > "$tmp"
   changed=$(MIGRATE_OUT="$tmp" MIGRATE_KDOC="$kdoc" awk -v script="$script" "$rewrite" "$f")
   if [ "$changed" = 1 ]; then
     # `cp` onto the target keeps its mode.

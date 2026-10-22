@@ -98,6 +98,11 @@ Every file imports `io.spine.gradle.github.pages.updateGitHubPages`.
   `jvm-module.gradle.kts`; each new guard, reverted, fails it. The outputs for
   the 13 real files did not change. The JVM fixtures of the publishing-pin and
   wrapper-validation suites now carry the script.
+- 2026-10-22 — PR review (Codex, Copilot), both applied. A declaration is now any
+  line with the `fun` keyword, so an annotation before it no longer hides it;
+  the temporary output is emptied before each file, so a rewrite that drops
+  every line leaves the file empty instead of copying the previous file's text
+  (or failing, when it is the first). 43 checks; each fix, reverted, fails them.
 - 2026-10-22 — `publish-api-docs.yml` gets the swap step of `build-on-ubuntu.yml`,
   before the deploy key is decrypted, after a Codex finding on `time#202`: for
   a release, the job runs Dokka for every published module, in parallel.
