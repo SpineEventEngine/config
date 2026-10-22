@@ -37,7 +37,8 @@ import org.gradle.api.tasks.TaskProvider
  *
  * The generated documentation is appended to the `spine.io` site
  * via GitHub Pages by pushing commits to the `gh-pages` branch.
- * The documentation of a snapshot version is not published.
+ * The documentation of a snapshot version is not published to the site. Its Javadoc and
+ * HTML archives are still built by Dokka and published to Maven repositories by `publish`.
  *
  * The task is not a part of the Maven publication. It is run by the `publish-api-docs.yml`
  * workflow, apart from `publish.yml`, through the `publishApiDocs` task of the root

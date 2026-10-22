@@ -147,11 +147,13 @@ repositories, run from the `summit` repository.
 - `publish.yml` is re-pinned to a `publishing.yml` that no longer decrypts the
   deploy key or passes `REPO_SLUG`/`FORMAL_GIT_HUB_PAGES_AUTHOR`.
 - `spinePublishing { }` now registers `:publishApiDocs` in the root project.
-- **Behavior change:** only release versions publish their docs. For a snapshot
-  version, the task of each module only logs that it skips the docs, so a
-  `publish-api-docs.yml` run in a repository on a snapshot version ends green
-  without pushing anything. Before, every merge pushed the docs of its
-  `-SNAPSHOT.N` version.
+- **Behavior change:** only release versions publish their docs to the site. For
+  a snapshot version, the task of each module only logs that it skips the docs,
+  so a `publish-api-docs.yml` run in a repository on a snapshot version ends green
+  without pushing anything. The Javadoc and HTML archives of a snapshot version
+  are still built by Dokka and published to Maven repositories by `publish`.
+  Before, every merge also pushed the docs of its `-SNAPSHOT.N` version to the
+  site.
 - The commits on `gh-pages` are authored by `PublishApiDocs Plugin` instead of
   `UpdateGitHubPages Plugin`.
 
@@ -290,3 +292,6 @@ repository that publishes has them.
   older release run could overwrite the most recent docs. A run now replaces
   them only if no newer version is published under `v/` (`newestAbove`, by
   `VersionComparator`); `NewestAboveSpec`. 302 tests green.
+- 2026-10-22 — pinned that the snapshot skip concerns the site only: a new
+  `PublishApiDocsIgTest` case shows that `publish` of a snapshot version still
+  plans Dokka and `javadocJar`, and no `publishApiDocs`.

@@ -172,6 +172,32 @@ internal class PublishApiDocsIgTest {
         result.output shouldContain "`$snapshot` is a snapshot version"
     }
 
+    /**
+     * Only the publication to GitHub Pages skips a snapshot version. The archives of
+     * its documentation, built by Dokka, are still published to Maven repositories.
+     */
+    @Test
+    fun `leave the docs archives of a snapshot version to the Maven publication`() {
+        writeMultiModuleBuild(documented = setOf("api"), version = snapshot)
+        file("build.gradle.kts").appendText(
+            "\n" + """
+            project("api") {
+                apply(plugin = "maven-publish")
+                the<PublishingExtension>().repositories.maven {
+                    name = "remote"
+                    url = uri(rootDir.resolve("remote-repo"))
+                }
+            }
+            """.trimIndent()
+        )
+
+        val planned = dryRun(":api:publish")
+
+        planned shouldContain ":api:javadocJar"
+        planned shouldContain ":api:dokkaGeneratePublicationJavadoc"
+        planned.docsTasks().shouldBeEmpty()
+    }
+
     @Test
     fun `publish no docs of a snapshot version in a single-project build`() {
         writeSingleProjectBuild(version = snapshot)
