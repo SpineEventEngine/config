@@ -286,3 +286,7 @@ repository that publishes has them.
 - 2026-10-22 — restored the snapshot skip at the user's request: a snapshot
   version registers a no-op `publishApiDocs`, merged with the root aggregate in
   a single-project build. Two new `PublishApiDocsIgTest` cases.
+- 2026-10-22 — Codex review: queued runs may start out of commit order, so an
+  older release run could overwrite the most recent docs. A run now replaces
+  them only if no newer version is published under `v/` (`newestAbove`, by
+  `VersionComparator`); `NewestAboveSpec`. 302 tests green.

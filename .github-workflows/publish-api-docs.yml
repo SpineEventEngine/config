@@ -38,7 +38,9 @@ jobs:
     # One run at a time per repository, since every run pushes to `gh-pages`.
     # `queue: max` keeps up to 100 runs waiting, instead of letting a newer run
     # cancel the waiting one: each run also adds the documentation of its own
-    # version, which no later run would publish.
+    # version, which no later run would publish. The waiting runs may start in
+    # another order than their commits, so a run replaces the most recent
+    # documentation of a module only if no newer version is published already.
     concurrency:
       group: api-docs-publishing-${{ github.repository }}
       queue: max
