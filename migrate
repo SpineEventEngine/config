@@ -382,6 +382,7 @@ if [ "$IS_HUGO_DOCS" = "true" ]; then
         rm -f ../.github/workflows/ensure-reports-updated.yml
         rm -f ../.github/workflows/increment-guard.yml
         rm -f ../.github/workflows/publish.yml
+        rm -f ../.github/workflows/publish-api-docs.yml
         rm -f ../.github/workflows/remove-obsolete-artifacts-from-packages.yaml
         rm -f ../.github/workflows/detekt-code-analysis.yml
     fi
@@ -449,6 +450,15 @@ if [ "$IS_JVM" = "true" ]; then
     echo "Removing retired JaCoCo script plugins (jacoco-kotlin-jvm, jacoco-kmm-jvm)"
     rm -f ../buildSrc/src/main/kotlin/jacoco-kotlin-jvm.gradle.kts
     rm -f ../buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts
+
+    # Remove the sources of the plugin that was renamed `PublishApiDocs`, for the same
+    # reason: the stale copies would not compile against the renamed `TaskName` constant
+    # and plugin class. `Update.kt` is now `DocsPublication.kt`. Consumer build scripts
+    # that call `updateGitHubPages { }` must switch to `publishApiDocs { }`.
+    echo "Removing the renamed \`UpdateGitHubPages\` plugin sources"
+    rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/github/pages/UpdateGitHubPages.kt
+    rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/github/pages/UpdateGitHubPagesExtension.kt
+    rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/github/pages/Update.kt
 
     echo "Updating GitHub workflows (JVM)"
     copy_workflows .github-workflows

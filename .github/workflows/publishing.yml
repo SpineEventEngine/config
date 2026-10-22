@@ -36,6 +36,10 @@ name: Publishing
 # No `inputs`: the values that differ per consumer — the repository and its
 # secrets — arrive through the `github` context, which in a called workflow
 # is the caller's, and through `secrets: inherit`.
+#
+# The API documentation is not published here, but by the distributed
+# `publish-api-docs.yml`, so that neither publication can hold up or break
+# the other.
 
 on:
   workflow_call:
@@ -107,11 +111,11 @@ jobs:
       #
       #    The check covers the Maven repositories only, and the whole `publish`
       #    invocation is skipped, so the other tasks `publish` depends on are not run
-      #    either: the GitHub Pages update (`updateGitHubPages`) and an npm publication
-      #    (`publishJs`). If an earlier run failed in one of them after its Maven
-      #    uploads, a re-run cannot complete it, as it could not before this check:
-      #    it would stop at the first Maven upload, rejected as an overwrite. The
-      #    notice below says so, rather than letting the green run imply otherwise.
+      #    either, such as an npm publication (`publishJs`). If an earlier run failed
+      #    in one of them after the Maven uploads, a re-run cannot complete it, as it
+      #    could not before this check: it would stop at the first Maven upload,
+      #    rejected as an overwrite. The notice below says so, rather than letting
+      #    the green run imply otherwise.
       #
       # Any other published state fails the task before a single upload: a gap in any
       # repository (left by an earlier run that failed, or by GitHub Packages pruning
@@ -120,9 +124,8 @@ jobs:
       # a version, because the registries reject every overwrite.
       #
       # The task reads GitHub Packages with `GITHUB_TOKEN`, since it serves nothing
-      # without a token. `REPO_SLUG` is set as in the publish step, since the build
-      # configures the same tasks; the other secrets of that step are needed only
-      # to upload. So the check runs before any publishing credential is decrypted:
+      # without a token. The other secrets, the decryption keys and `NPM_SECRET`,
+      # are needed only to upload. So the check runs before any publishing credential is decrypted:
       # an already published version needs none of them, and the consumer's build
       # that the check runs finds none of them on disk.
       - name: Check whether the version is already published
@@ -143,26 +146,14 @@ jobs:
           esac
           echo "state=$state" >> "$GITHUB_OUTPUT"
           if [ "$state" = published ]; then
-            echo "::notice title=Already published::This commit has already published its version to every Maven repository, so this run uploads and attests nothing. It does not run the other tasks 'publish' depends on either, such as the GitHub Pages update: if an earlier run failed in one of them, run it separately."
+            echo "::notice title=Already published::This commit has already published its version to every Maven repository, so this run uploads and attests nothing. It does not run the other tasks 'publish' depends on either, such as an npm publication: if an earlier run failed in one of them, run that task separately."
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO_SLUG: ${{ github.repository }}
 
       # The credentials below serve the publication alone, so they are prepared only
       # when the check above finds the version unpublished: a missing or rotated one
       # must not fail a run that has nothing to upload.
-      - name: Decrypt Git SSH credentials
-        if: steps.state.outputs.state == 'unpublished'
-        run: ./config/scripts/decrypt.sh "$GIT_CREDENTIALS_KEY" ./.github/keys/deploy_key_rsa.gpg ./deploy_key_rsa
-        env:
-          GIT_CREDENTIALS_KEY: ${{ secrets.GIT_CREDENTIALS_KEY }}
-
-        # Make sure the SSH key is not "too visible". SSH agent will not accept it otherwise.
-      - name: Set file system permissions
-        if: steps.state.outputs.state == 'unpublished'
-        run: chmod 400 ./deploy_key_rsa && chmod +x ./config/scripts/register-ssh-key.sh
-
       - name: Decrypt GCS credentials
         if: steps.state.outputs.state == 'unpublished'
         run: ./config/scripts/decrypt.sh "$GCS_CREDENTIALS_KEY" ./.github/keys/gcs-auth-key.json.gpg ./gcs-auth-key.json
@@ -224,9 +215,6 @@ jobs:
           -Dorg.gradle.internal.publish.checksums.insecure=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FORMAL_GIT_HUB_PAGES_AUTHOR: developers@spine.io
-          # https://docs.github.com/en/actions/reference/environment-variables
-          REPO_SLUG: ${{ github.repository }}    # e.g. SpineEventEngine/core-jvm
           GOOGLE_APPLICATION_CREDENTIALS: ./maven-publisher.json
           NPM_TOKEN: ${{ secrets.NPM_SECRET }}
 
