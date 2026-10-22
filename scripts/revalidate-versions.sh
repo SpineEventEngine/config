@@ -162,10 +162,10 @@ if [ -z "$base_version" ]; then
 fi
 echo "revalidate-versions: base '$BASE_REF' publishes '$key' = $base_version."
 
-# Drafts are included: a draft that goes stale must be marked failed too, because
-# converting it to ready-for-review does not re-run the PR guard on its own. The
-# failing status is bound to the head SHA and persists across the draft -> ready
-# transition, so the stale draft cannot merge until it is re-bumped.
+# Drafts are included: a draft that goes stale must be marked failed too. The failing
+# status is bound to the head SHA and persists across the draft -> ready transition,
+# where `increment-guard.yml` re-checks the version on `ready_for_review` as well, so the
+# stale draft cannot merge until it is re-bumped.
 gh pr list --repo "$REPO" --base "$BASE_REF" --state open --limit 200 \
   --json number,headRefOid \
   --jq '.[] | [.number, .headRefOid] | @tsv' \

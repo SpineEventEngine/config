@@ -40,14 +40,14 @@ concurrency:
 
 jobs:
   revalidate:
-    name: Revalidate open PRs
+    name: Mark stale version bumps
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
           submodules: 'true'
 
-      - name: Revalidate open PRs against the new base version
+      - name: Mark open PRs whose version is not above the new base
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
