@@ -60,13 +60,16 @@ object ToolBase {
     /**
      * Stub Gradle plugins for the tests of the `gradle-plugin-api` module.
      *
-     * The module is internal to `tool-base`, which excludes it from publishing.
-     * No remote repository carries it at any version. Only `publishToMavenLocal`
-     * installs it, so these coordinates resolve only from a local `~/.m2` copy.
+     * The `gradle-plugin-api-test-fixtures` module that provides them is internal
+     * to `tool-base`, which never publishes it to a remote repository. Only
+     * `publishToMavenLocal` installs it, so these coordinates resolve only from
+     * a local `~/.m2` copy.
      *
      * @deprecated There is no replacement. Remove the usage.
      */
-    @Deprecated("The module is internal to `tool-base` and is not published.")
+    @Deprecated(
+        "The artifact is internal to `tool-base` and is not published remotely. Remove the usage."
+    )
     const val gradlePluginApiTestFixtures = "$group:gradle-plugin-api-test-fixtures:$version"
 
     const val jvmTools = "$group:jvm-tools:$version"
