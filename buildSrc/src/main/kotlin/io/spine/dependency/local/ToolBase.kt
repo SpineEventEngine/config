@@ -56,6 +56,17 @@ object ToolBase {
 
     const val rootGradlePlugins = "$group:root-gradle-plugins:$version"
     const val gradlePluginApi = "$group:gradle-plugin-api:$version"
+
+    /**
+     * Stub Gradle plugins for the tests of the `gradle-plugin-api` module.
+     *
+     * The module is internal to `tool-base`, which excludes it from publishing.
+     * No remote repository carries it at any version. Only `publishToMavenLocal`
+     * installs it, so these coordinates resolve only from a local `~/.m2` copy.
+     *
+     * @deprecated There is no replacement. Remove the usage.
+     */
+    @Deprecated("The module is internal to `tool-base` and is not published.")
     const val gradlePluginApiTestFixtures = "$group:gradle-plugin-api-test-fixtures:$version"
 
     const val jvmTools = "$group:jvm-tools:$version"
