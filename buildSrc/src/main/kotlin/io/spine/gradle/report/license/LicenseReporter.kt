@@ -132,8 +132,9 @@ object LicenseReporter {
             val assembleTask = project.tasks.named("assemble")
             val sourceProjects: Iterable<Project> = sourceProjects(rootProject)
             sourceProjects.forEach {
-                // Obtained rather than configured lazily: in a single-project build, the task
-                // is in the container whose action this is, which Gradle forbids configuring.
+                // Obtained rather than configured lazily: in a single-project build, this
+                // action belongs to the container that holds the task, and Gradle forbids
+                // configuring a task of a container from such an action.
                 val perProjectTask = it.tasks.named(projectTaskName).get()
                 consolidationTask.dependsOn(perProjectTask)
                 perProjectTask.dependsOn(assembleTask)

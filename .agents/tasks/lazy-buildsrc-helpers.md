@@ -69,7 +69,7 @@ Protobuf plugin uses here, stay. `core-jvm` applies `idea` without configuring i
 it there spares `extractProto`, but leaves IntelliJ without the Proto directories that the
 Protobuf plugin marks. That is a consumer-side decision outside this task.
 
-Decision: 1.
+Decision: 1, keep it as is.
 
 ### `PublicationSbom.pinPackaging()`
 
@@ -106,7 +106,7 @@ Decision: 2, taken by the maintainer on 2026-10-29. `StandardJavaPublicationHand
 POM of `mavenJava` is written: it fails the build unless the publication has exactly one
 main artifact (no classifier, the SBOM aside), and that artifact is a JAR. It skips
 the check if the build has set a packaging of its own. Its result is an input of the POM
-task, so the task does not stay up to date when the artifacts change. A first version
+task, so an up-to-date task does not hide a mismatch. A first version
 checked when the POM task was created; review found that this would also fail
 `./gradlew tasks`, and take the artifacts of the component into the publication too early
 if anything created the task before the publication was final.
@@ -133,8 +133,8 @@ and `uber-jar-module` publishes with custom publishing, so neither is affected.
 - 2026-10-29 — pre-PR review. Fixed a regression found by `kotlin-engineer`: in
   a single-project build, `mergeAllReports()` configured a task of the container from
   a lazy action of that container, which Gradle forbids, so `build` failed. Covered by
-  `DependencyReportOutputTest`. `setRemoteDebug()` checks the type of the task at once
-  again, without creating it (`BuildExtensionsSpec`). The POM guard moved to the time
+  `DependencyReportOutputTest`. `setRemoteDebug()` again checks the type of the task
+  at once, without creating it (`BuildExtensionsSpec`). The POM guard moved to the time
   the POM is written.
 
 [issue-820]: https://github.com/SpineEventEngine/config/issues/820

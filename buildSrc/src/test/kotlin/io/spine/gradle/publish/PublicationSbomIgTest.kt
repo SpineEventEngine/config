@@ -243,6 +243,10 @@ internal class PublicationSbomIgTest {
      *
      * The case checks `StandardJavaPublicationHandler`, but shares the fixture of this
      * class, whose `api` module is a standard publication with an SBOM.
+     *
+     * The build of the fixture has written the POM of `api` already. So the case also shows
+     * that the result of the check is an input of the task: without it, the task would be
+     * up to date, and skip the check.
      */
     @Test
     fun `fail to write the POM of a standard publication whose JAR is classified`() {

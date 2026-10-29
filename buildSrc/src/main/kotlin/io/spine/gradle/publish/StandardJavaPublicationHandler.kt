@@ -137,11 +137,10 @@ class StandardJavaPublicationHandler private constructor(
      * the packaging in every build, so that the SBOM it adds does not change it.
      *
      * Writing the POM fails if the publication turns out to have a main artifact other
-     * than one JAR, rather than publishes a misleading POM. The artifacts are checked
+     * than one JAR, so that a misleading POM is not published. The artifacts are checked
      * when the POM is written, so that the check neither creates the tasks producing them
      * nor takes the artifacts of the component into the publication before it is final.
-     * The result is an input of the task, so the task does not stay up to date
-     * when the artifacts change.
+     * The result is an input of the task, so an up-to-date task does not hide a mismatch.
      */
     private fun MavenPublication.declareJarPackaging() {
         pom.packaging = JAR

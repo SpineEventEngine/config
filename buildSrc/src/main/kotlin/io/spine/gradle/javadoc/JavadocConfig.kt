@@ -67,8 +67,8 @@ object JavadocConfig {
      * Applies the Javadoc settings to the `javadoc` task of the given [project],
      * or disables the task if the project is not a production module.
      *
-     * The task is configured when Gradle creates it, so calling this function
-     * does not create the task.
+     * The task must be registered. It is configured when Gradle creates it,
+     * so calling this function does not create the task.
      */
     fun applyTo(project: Project) {
         project.tasks.javadocTask().configure {

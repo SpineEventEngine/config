@@ -76,7 +76,7 @@ class DependencyReportOutputTest {
 
     /**
      * In a build of one project, the report to merge is that of the root project, whose
-     * task is in the same container as the merging one.
+     * task is in the same task container as the merging task.
      */
     @Test
     fun `merge the license report of a single-project build`() {
