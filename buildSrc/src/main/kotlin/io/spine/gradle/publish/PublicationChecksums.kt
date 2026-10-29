@@ -374,7 +374,7 @@ private fun MavenPublication.rejectMavenSnapshot() {
  * Returns the part of the name of a `generate...` task that identifies
  * this publication.
  */
-private fun MavenPublication.taskSuffix(): String =
+internal fun MavenPublication.taskSuffix(): String =
     "${name.replaceFirstChar { it.titlecase(Locale.ROOT) }}Publication"
 
 /**
