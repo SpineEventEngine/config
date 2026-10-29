@@ -20,7 +20,6 @@ import com.github.jk1.license.LicenseReportPlugin
 import io.spine.dependency.local.Spine
 import io.spine.gradle.SpineTaskGroup
 import io.spine.gradle.applyPlugin
-import io.spine.gradle.getTask
 import io.spine.gradle.report.license.Paths.outputFilename
 import io.spine.gradle.report.license.Paths.relativePath
 import java.io.File
@@ -130,20 +129,21 @@ object LicenseReporter {
             group = SpineTaskGroup.name
             description = "Merges per-project license reports into a single repository-wide report"
             val consolidationTask = this
-            val assembleTask = project.getTask<Task>("assemble")
+            val assembleTask = project.tasks.named("assemble")
             val sourceProjects: Iterable<Project> = sourceProjects(rootProject)
             sourceProjects.forEach {
-                val perProjectTask = it.getTask<Task>(projectTaskName)
+                val perProjectTask = it.tasks.named(projectTaskName)
                 consolidationTask.dependsOn(perProjectTask)
-                perProjectTask.dependsOn(assembleTask)
+                perProjectTask.configure { dependsOn(assembleTask) }
             }
             doLast {
                 mergeReports(sourceProjects, rootProject)
             }
             dependsOn(assembleTask)
         }
-        project.getTask<Task>("build")
-            .finalizedBy(mergeTask)
+        project.tasks.named("build").configure {
+            finalizedBy(mergeTask)
+        }
     }
 
     /**
