@@ -62,8 +62,12 @@ that applies `idea` (`ProtobufPlugin.groovy:272`, `postConfigure` →
    extracted by an earlier local build, so a local `publishToMavenLocal` would publish
    the same `proto` JARs as CI.
 
-The lever is the `idea` plugin, not `hasProto()`. Applying it only during an IDE sync is
-a consumer-side decision outside this task.
+The lever is the `idea` plugin, not `hasProto()`. Gradle 9.8 deprecates only its tasks
+generating IDEA project files (and `idea.pathVariables`), for removal in Gradle 10.
+The plugin and its `idea { }` DSL, which IntelliJ reads on a Gradle import and which the
+Protobuf plugin uses here, stay. `core-jvm` applies `idea` without configuring it. Dropping
+it there spares `extractProto`, but leaves IntelliJ without the Proto directories that the
+Protobuf plugin marks. That is a consumer-side decision outside this task.
 
 ### `PublicationSbom.pinPackaging()`
 
