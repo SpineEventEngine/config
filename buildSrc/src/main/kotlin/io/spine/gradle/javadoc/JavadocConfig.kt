@@ -26,12 +26,16 @@ import productionModules
 
 /**
  * Finds a [Javadoc] Gradle task by the passed name without creating it.
+ *
+ * The task must be registered.
  */
 fun TaskContainer.javadocTask(named: String): TaskProvider<Javadoc> =
     this.named(named, Javadoc::class.java)
 
 /**
  * Finds a default [Javadoc] Gradle task without creating it.
+ *
+ * The task must be registered.
  */
 fun TaskContainer.javadocTask(): TaskProvider<Javadoc> = javadocTask("javadoc")
 
@@ -59,15 +63,21 @@ object JavadocConfig {
 
     val encoding = Encoding("UTF-8")
 
+    /**
+     * Applies the Javadoc settings to the `javadoc` task of the given [project],
+     * or disables the task if the project is not a production module.
+     *
+     * The task is configured when Gradle creates it, so calling this function
+     * does not create the task.
+     */
     fun applyTo(project: Project) {
         project.tasks.javadocTask().configure {
-            val javadocTask = this
             if (!isProductionModule(project)) {
-                javadocTask.enabled = false
+                enabled = false
                 return@configure
             }
-            discardJavaModulesInLinks(javadocTask)
-            val docletOptions = javadocTask.options as StandardJavadocDocletOptions
+            discardJavaModulesInLinks(this)
+            val docletOptions = options as StandardJavadocDocletOptions
             configureDoclet(docletOptions)
         }
     }

@@ -21,6 +21,7 @@ import org.gradle.api.publish.maven.tasks.GenerateMavenPom
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.withType
 
 /**
  * A publication for a typical Java project.
@@ -58,6 +59,12 @@ class StandardJavaPublicationHandler private constructor(
          * The name of the publication created by [StandardJavaPublicationHandler].
          */
         const val PUBLICATION_NAME = "mavenJava"
+
+        /**
+         * The packaging of a POM whose main artifact is a JAR,
+         * and the extension of that artifact.
+         */
+        private const val JAR = "jar"
 
         override fun create(
             project: Project,
@@ -129,36 +136,47 @@ class StandardJavaPublicationHandler private constructor(
      * of the publication, which creates the tasks producing them. [PublicationSbom] reads
      * the packaging in every build, so that the SBOM it adds does not change it.
      *
-     * The packaging is checked once the task generating the POM is created, so that a build
-     * whose main artifact is not one JAR fails rather than publishes a misleading POM.
+     * Writing the POM fails if the publication turns out to have a main artifact other
+     * than one JAR, rather than publishes a misleading POM. The artifacts are checked
+     * when the POM is written, so that the check neither creates the tasks producing them
+     * nor takes the artifacts of the component into the publication before it is final.
+     * The result is an input of the task, so the task does not stay up to date
+     * when the artifacts change.
      */
     private fun MavenPublication.declareJarPackaging() {
-        pom.packaging = "jar"
+        pom.packaging = JAR
         val publication = this
-        val pomTask = "generatePomFileFor${taskSuffix()}"
-        project.tasks.withType(GenerateMavenPom::class.java)
+        val pomTask = pomTaskName()
+        project.tasks.withType<GenerateMavenPom>()
             .named { it == pomTask }
             .configureEach {
-                publication.checkMainArtifactIsJar()
+                val mismatch = project.provider { publication.jarPackagingMismatch() }
+                inputs.property("jarPackagingMismatch", mismatch.orElse(""))
+                doFirst {
+                    mismatch.orNull?.let { throw IllegalStateException(it) }
+                }
             }
     }
 
     /**
-     * Fails if this publication keeps the `jar` packaging, but has a main artifact other
-     * than one JAR, the SBOM aside.
+     * Describes how this publication contradicts the `jar` packaging, or returns `null`
+     * if it does not.
      *
-     * Such is the case if the build gives the `jar` task a classifier,
-     * or adds an artifact without one.
+     * The publication contradicts it if it keeps the `jar` packaging, but does not have
+     * exactly one main artifact, a JAR, the SBOM not counted. Such is the case if
+     * the build gives the `jar` task a classifier, or adds an artifact without one.
      */
-    private fun MavenPublication.checkMainArtifactIsJar() {
-        if (pom.packaging != "jar") {
+    private fun MavenPublication.jarPackagingMismatch(): String? {
+        if (pom.packaging != JAR) {
             // The build has set a packaging of its own.
-            return
+            return null
         }
         val mainArtifacts = artifacts.filter {
             it.classifier.isNullOrEmpty() && it.extension != PublicationSbom.sbomExtension
         }
-        check(mainArtifacts.singleOrNull()?.extension == "jar") {
+        return if (mainArtifacts.singleOrNull()?.extension == JAR) {
+            null
+        } else {
             val found = if (mainArtifacts.isEmpty()) {
                 "no main artifact"
             } else {

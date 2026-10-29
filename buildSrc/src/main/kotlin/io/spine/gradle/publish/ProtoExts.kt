@@ -77,7 +77,8 @@ internal fun Project.generateProto(): TaskCollection<Task> =
     tasks.named { it == "generateProto" }
 
 /**
- * Makes this [Jar] task depend on the [generateProto] task, if it exists in the same project.
+ * Makes this [Jar] task depend on the [generateProto] task, once that task is registered
+ * in the same project.
  */
 internal fun Jar.dependOnGenerateProto() {
     this.dependsOn(project.generateProto())

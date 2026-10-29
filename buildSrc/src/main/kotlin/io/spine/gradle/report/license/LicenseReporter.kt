@@ -132,9 +132,11 @@ object LicenseReporter {
             val assembleTask = project.tasks.named("assemble")
             val sourceProjects: Iterable<Project> = sourceProjects(rootProject)
             sourceProjects.forEach {
-                val perProjectTask = it.tasks.named(projectTaskName)
+                // Obtained rather than configured lazily: in a single-project build, the task
+                // is in the container whose action this is, which Gradle forbids configuring.
+                val perProjectTask = it.tasks.named(projectTaskName).get()
                 consolidationTask.dependsOn(perProjectTask)
-                perProjectTask.configure { dependsOn(assembleTask) }
+                perProjectTask.dependsOn(assembleTask)
             }
             doLast {
                 mergeReports(sourceProjects, rootProject)

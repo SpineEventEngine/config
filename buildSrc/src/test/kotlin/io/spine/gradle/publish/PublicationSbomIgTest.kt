@@ -205,8 +205,8 @@ internal class PublicationSbomIgTest {
      * the artifacts of the publication. A standard publication sets its packaging
      * as it is created, so a build that does not publish creates none of them.
      *
-     * The init script reports the tasks created before the task graph is ready,
-     * leaving out those that the fixture creates to report the SBOMs.
+     * The init script reports the tasks created before the task graph is ready, which
+     * excludes those that the fixture creates later, to report the SBOMs.
      */
     @Test
     fun `create no archive task of a standard publication in a build that does not publish`() {
@@ -240,6 +240,9 @@ internal class PublicationSbomIgTest {
      * A standard publication declares the `jar` packaging before its artifacts are known,
      * so writing its POM fails if the build gives the `jar` task a classifier,
      * rather than publish a POM that names no main artifact.
+     *
+     * The case checks `StandardJavaPublicationHandler`, but shares the fixture of this
+     * class, whose `api` module is a standard publication with an SBOM.
      */
     @Test
     fun `fail to write the POM of a standard publication whose JAR is classified`() {

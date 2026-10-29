@@ -167,7 +167,8 @@ fun Project.configureTaskDependencies() {
      * Creates a dependency between the Gradle task of *this* name
      * onto the task with `taskName`.
      *
-     * If either of the tasks does not exist in the enclosing `Project`,
+     * Neither task is created by this method. A task registered later is matched too.
+     * If either of the tasks never exists in the enclosing `Project`,
      * this method does nothing.
      *
      * This extension is kept local to the `configureTaskDependencies` extension
@@ -269,17 +270,14 @@ fun JavaExec.remoteDebug(enabled: Boolean = true) {
  * does not create the task.
  *
  * @param enabled If `true` the task will be suspended.
- * @throws IllegalStateException if the task with the given name is not found, or,
- *  once the task is created, if it is not of [JavaExec] type.
+ * @throws IllegalStateException if the task with the given name is not found.
+ * @throws org.gradle.api.InvalidUserDataException if the task is not of [JavaExec] type.
  */
 fun Project.setRemoteDebug(taskName: String, enabled: Boolean = true) {
     check(taskName in tasks.names) {
         "Could not find a task named `$taskName` in the project `$name`."
     }
-    tasks.named(taskName).configure {
-        check(this is JavaExec) {
-            "The task `$taskName` is not of type `JavaExec`."
-        }
+    tasks.named(taskName, JavaExec::class.java).configure {
         remoteDebug(enabled)
     }
 }
