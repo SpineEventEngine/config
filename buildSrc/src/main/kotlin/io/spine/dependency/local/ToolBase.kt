@@ -73,8 +73,11 @@ object ToolBase {
     const val gradlePluginApiTestFixtures = "$group:gradle-plugin-api-test-fixtures:$version"
 
     const val jvmTools = "$group:jvm-tools:$version"
-    const val jvmToolPluginDogfooding = "$group:jvm-tool-plugins-all:$dogfoodingVersion"
-    const val jvmToolPlugins = "$group:jvm-tool-plugins-all:$version"
+
+    // The plain plugin JAR. `jvm-tool-plugins-all` is no longer published
+    // as of `2.0.0-SNAPSHOT.440`. See https://github.com/SpineEventEngine/tool-base/pull/201
+    const val jvmToolPluginDogfooding = "$group:jvm-tool-plugins:$dogfoodingVersion"
+    const val jvmToolPlugins = "$group:jvm-tool-plugins:$version"
 
     const val protobufSetupPlugins = "$group:protobuf-setup-plugins:$version"
 
