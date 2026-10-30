@@ -74,8 +74,8 @@ object ToolBase {
 
     const val jvmTools = "$group:jvm-tools:$version"
 
-    // Not `jvm-tool-plugins-all`: `tool-base` stops publishing that fat JAR. See
-    // https://github.com/SpineEventEngine/tool-base/issues/200.
+    // The plain plugin JAR. `jvm-tool-plugins-all` is no longer published
+    // as of `2.0.0-SNAPSHOT.440`. See https://github.com/SpineEventEngine/tool-base/pull/201
     const val jvmToolPluginDogfooding = "$group:jvm-tool-plugins:$dogfoodingVersion"
     const val jvmToolPlugins = "$group:jvm-tool-plugins:$version"
 
