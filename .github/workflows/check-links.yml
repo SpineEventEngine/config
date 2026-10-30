@@ -239,9 +239,32 @@ jobs:
             exit 1
           fi
 
+      # Lychee prints broken links to this step's log only; the run page
+      # shows just "Process completed with exit code 2". `tee` keeps the
+      # report in the log and saves a copy, which the next step adds to the
+      # run summary. (`--output` would not do: it moves the report from the
+      # log to the file.) `pipefail` keeps Lychee's exit code. Without it,
+      # the step would take `tee`'s 0 and pass despite broken links.
       - name: Check links
         if: steps.docs.outputs.present == 'true'
         run: |
+          set -o pipefail
           ./lychee/lychee --config lychee.toml --timeout 60 \
           --base-url http://localhost:1313/ \
-          '${{ steps.docs.outputs.work_dir }}/public/**/*.html'
+          '${{ steps.docs.outputs.work_dir }}/public/**/*.html' \
+          | tee lychee-report.txt
+
+      # Runs after a failed `Check links` too, which is when the report
+      # matters most. `hashFiles` skips this step when Lychee never ran.
+      # `!cancelled()` needs the `${{ }}` wrapper: a bare leading `!` is
+      # a YAML tag.
+      - name: Publish link report
+        if: ${{ !cancelled() && hashFiles('lychee-report.txt') != '' }}
+        run: |
+          {
+            echo '## Link check'
+            echo
+            echo '```text'
+            cat lychee-report.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
