@@ -73,8 +73,11 @@ object ToolBase {
     const val gradlePluginApiTestFixtures = "$group:gradle-plugin-api-test-fixtures:$version"
 
     const val jvmTools = "$group:jvm-tools:$version"
-    const val jvmToolPluginDogfooding = "$group:jvm-tool-plugins-all:$dogfoodingVersion"
-    const val jvmToolPlugins = "$group:jvm-tool-plugins-all:$version"
+
+    // Not `jvm-tool-plugins-all`: `tool-base` stops publishing that fat JAR. See
+    // https://github.com/SpineEventEngine/tool-base/issues/200.
+    const val jvmToolPluginDogfooding = "$group:jvm-tool-plugins:$dogfoodingVersion"
+    const val jvmToolPlugins = "$group:jvm-tool-plugins:$version"
 
     const val protobufSetupPlugins = "$group:protobuf-setup-plugins:$version"
 
