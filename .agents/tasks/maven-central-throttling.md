@@ -108,7 +108,8 @@ for the network.
 - [ ] Make the re-run policy explicit in the workflow docs: a `403`/`429`
       from Central is an infrastructure signal; re-run the job once (a new
       runner means a new egress), never loop.
-- [ ] (deferred 2026-08-20) Give the Windows CI job a cache to restore from.
+- [x] (deferred 2026-08-20; done 2026-11-02) Give the Windows CI job a cache
+      to restore from.
       Diagnosed and costed; held pending evidence that it is needed.
       - `windows-latest` runs in exactly one workflow — `build-on-windows.yml`,
         triggered `on: pull_request` only. Every workflow that runs on the
@@ -133,6 +134,19 @@ for the network.
       - **Re-open when** another Central `403`/`429` fails a CI job. Option (a)
         is the first move; the `setup-gradle` read-only default is worth
         confirming from a real run's Gradle job summary at that point.
+      - **Re-opened 2026-11-02 on build time, not on a new `403`.** In
+        `tool-base`, Windows CI (median ~15 min) is the slowest required
+        check, so it sets the time-to-green of every PR. Its runs confirm the
+        diagnosis: `cache-read-only: true`, "Gradle User Home cache not
+        found", "0 restored, 0 saved"; the first project task starts ~213 s
+        in, against ~98 s on Ubuntu with a restored cache.
+      - **Done.** `build-on-windows.yml` also runs on `push` to
+        `**master`/`**main` — option (a), but on `push` rather than on a
+        schedule. A schedule in a distributed template would run daily in
+        every consumer, active or not, and would leave the cache stale right
+        after a dependency refresh, when the most PRs run. On `push`, the cost
+        scales with merges, and the merge that changes the dependencies
+        re-seeds the cache.
 
 ### Phase 2 — Shared offline stub fixture  (`tool-base`)
 
