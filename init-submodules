@@ -304,7 +304,15 @@ git submodule status 2>/dev/null | awk '$1 ~ /^-/ { print $2 }' | while read -r 
     # Bring the floated submodule's own submodules to the commits its new HEAD
     # pins (see the header). `--init --recursive` repeats what the
     # initialization above did, now at the new HEAD, so a submodule the tip adds
-    # is cloned too. The update strategy is the one the initialization copied
+    # is cloned too.
+    #
+    # The URLs are synced first. The initialization copied each one from the
+    # pin's `.gitmodules`, and `--init` never overwrites a URL already in the
+    # active config, so a nested submodule whose URL the new HEAD changes would
+    # otherwise go on fetching from the old remote and miss a pin that only the
+    # new one has. The sync needs no network.
+    #
+    # The update strategy, by contrast, stays the one the initialization copied
     # from the pin's `.gitmodules`, which can be stale: `config` declared
     # `update = checkout` for `.agents/shared` until 2026-06-16 and
     # `update = merge` since. Unlike `./config/pull`, which converges it, this
@@ -316,6 +324,7 @@ git submodule status 2>/dev/null | awk '$1 ~ /^-/ { print $2 }' | while read -r 
     # updates them again.
     [ -f "$path/.gitmodules" ] || continue
     echo "init-submodules: updating the submodules of '$path'"
+    git -C "$path" submodule sync --quiet --recursive </dev/null >/dev/null 2>&1 || true
     git -C "$path" submodule update --quiet --init --recursive </dev/null \
         || echo "init-submodules: WARNING — could not update the submodules of" \
                 "'$path'; run './config/pull' to retry." >&2

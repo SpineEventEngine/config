@@ -41,7 +41,14 @@
 # `init-submodules` can leave it, is cloned now; that is the retry the warnings
 # there point to.
 #
-# First, the update strategy each submodule declares in `$1/.gitmodules` is
+# First, the URLs are synced from `.gitmodules`, as step 2 does one level up. Git
+# copies a URL into the active config once, at `git submodule init`, so a nested
+# submodule whose URL the new HEAD changes would otherwise go on fetching from
+# the old remote and miss a pin that only the new one has. `git submodule sync`
+# touches only submodules that already have a URL there, so it writes nothing for
+# one never initialized, and it needs no network.
+#
+# Next, the update strategy each submodule declares in `$1/.gitmodules` is
 # re-asserted where the active config of `$1` holds one, for the reason given at
 # step 2 below: Git copies `update` there once, at `git submodule init`. This is
 # not hypothetical. `config` declared `update = checkout` for `.agents/shared`
@@ -56,6 +63,7 @@
 # A failure is warned about, never fatal.
 update_nested() {
     [ -f "$1/.gitmodules" ] || return 0
+    git -C "$1" submodule sync --quiet --recursive >/dev/null 2>&1 || true
     git config -f "$1/.gitmodules" --get-regexp '^submodule\..*\.update$' 2>/dev/null \
     | while read -r key strategy; do
         case $strategy in
