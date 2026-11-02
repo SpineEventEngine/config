@@ -39,6 +39,25 @@
 # it hands a fresh worktree, CI checkout, or cloud session hook scripts, skills,
 # and guidelines that are months out of date.
 #
+# The float moves the submodule but not its own submodules: the initialization
+# checked those out at the commits the superproject's pin records, and neither
+# `git checkout` nor `git merge` touches them. A floated `config` would then
+# report its `.agents/shared` as modified to every recursive check —
+# `git status --ignore-submodules=none`, or the uncommitted-changes warning Claude
+# Code shows when a session is archived — while plain `git status` says nothing,
+# because `config`'s `.gitmodules` declares `ignore = all` for it. So once a float
+# succeeds, the floated submodule's own submodules are updated to the commits its
+# new HEAD pins.
+#
+# They go to that pin even when they declare a tracked `branch` themselves, as
+# `config`'s `.agents/shared` does, rather than being floated in turn. Unlike the
+# superproject's pin, theirs is maintained: it belongs to the history just floated
+# to, and `config` bumps its `.agents/shared` in commits of its own. Floating them
+# to their tip would leave the floated submodule modified whenever that branch
+# moves past the pin — the very mismatch this step removes. Nor does a consumer
+# read anything through them: its `.agents/skills` and the other links resolve
+# through its own `.agents/shared`, which is floated directly.
+#
 # A submodule may declare `branch = .`, which gitmodules(5) defines as the branch
 # the superproject is on rather than a branch name. It is resolved before it
 # reaches a refspec, because `git fetch origin .` is a `fatal: invalid refspec`.
@@ -277,9 +296,24 @@ git submodule status 2>/dev/null | awk '$1 ~ /^-/ { print $2 }' | while read -r 
                git checkout --quiet -b "$branch" \
                    "refs/remotes/origin/$branch"; \
            fi \
-        && git merge --quiet --ff-only "refs/remotes/origin/$branch" ) </dev/null \
-        || echo "init-submodules: WARNING — could not float '$path' to" \
-                "origin/$branch; run './config/pull' to retry." >&2
+        && git merge --quiet --ff-only "refs/remotes/origin/$branch" ) </dev/null || {
+        echo "init-submodules: WARNING — could not float '$path' to" \
+             "origin/$branch; run './config/pull' to retry." >&2
+        continue
+    }
+    # Bring the floated submodule's own submodules to the commits its new HEAD
+    # pins (see the header). `--init --recursive` repeats what the
+    # initialization above did, now at the new HEAD, so a submodule the tip adds
+    # is cloned too. Each keeps the update strategy it declares: with
+    # `update = merge`, the new pin is merged into the detached `HEAD` this run
+    # just cloned, which fast-forwards it when the pin descends from the old
+    # one. A failure is warned about and leaves them wherever the steps that did
+    # succeed put them; `./config/pull` updates them again.
+    [ -f "$path/.gitmodules" ] || continue
+    echo "init-submodules: updating the submodules of '$path'"
+    git -C "$path" submodule update --quiet --init --recursive </dev/null \
+        || echo "init-submodules: WARNING — could not update the submodules of" \
+                "'$path'; run './config/pull' to retry." >&2
 done
 
 # Route Git hooks to the shared hooks directory so the secret-scan `pre-commit`

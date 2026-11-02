@@ -9,7 +9,9 @@
 # *config-managed* submodule — those declared with a tracked `branch` in
 # `.gitmodules` (the shared `agents` submodule at `.agents/shared`, and any shared
 # submodule added in the future) — to the tip of that branch, leaving each on the
-# branch rather than in a detached `HEAD`.
+# branch rather than in a detached `HEAD`. Each submodule it moves, `config`
+# included, then has its own checked-out submodules updated to the commits its
+# new HEAD pins.
 #
 # Submodules the consumer owns (a Hugo theme, a vendored library, ...) declare no
 # tracked branch and are deliberately left untouched: this script never advances
@@ -25,6 +27,25 @@
 #
 ################################################################################
 
+# Updates the submodules of the submodule at `$1`, which has just moved, to the
+# commits its new HEAD pins. `git checkout`, `git pull`, and `git merge` move a
+# submodule but leave its own submodules where they were, so a floated `config`
+# would report its `.agents/shared` as modified to every recursive check, though
+# plain `git status` hides that behind `ignore = all`. They go to the pin rather
+# than to their own branch tip, for the reasons given in `init-submodules`.
+#
+# Unlike `init-submodules`, which clones `$1` and its submodules in the same run,
+# this moves only the submodules already checked out: without `--init`, a
+# consumer that never materialized `config/.agents/shared`, which it reads
+# nothing through, does not start cloning it here. Each keeps the update strategy
+# it declares, so with `update = merge` one already past the pin is not rewound.
+# A failure is warned about, never fatal.
+update_nested() {
+    [ -f "$1/.gitmodules" ] || return 0
+    git -C "$1" submodule update --quiet --recursive \
+        || echo "  WARNING: could not update the submodules of '$1'; left as-is." >&2
+}
+
 # ---------------------------------------------------------------------------
 # 1. Bring `config` itself to the tip of `origin/master`, on the `master`
 #    branch (not a detached `HEAD`). Pulling here also refreshes `migrate`,
@@ -34,6 +55,7 @@
 echo "Updating 'config' to the latest 'master'"
 ( cd ./config && git checkout master && git pull --ff-only ) \
     || { echo "Error: failed to update the 'config' submodule."; exit 1; }
+update_nested config
 
 # ---------------------------------------------------------------------------
 # 2. Float the config-managed submodules to the tip of their tracked branch.
@@ -133,7 +155,7 @@ if [ -f .gitmodules ]; then
         # be reported, never overwritten. Nothing here force-moves a ref but
         # the remote-tracking ref the fetch owns, which a default clone
         # force-updates anyway.
-        ( cd "$path" \
+        if ( cd "$path" \
             && git fetch --quiet origin \
                    "+refs/heads/$branch:refs/remotes/origin/$branch" \
             && if git show-ref --verify --quiet "refs/heads/$branch"; then \
@@ -142,8 +164,11 @@ if [ -f .gitmodules ]; then
                    git checkout --quiet -b "$branch" \
                        "refs/remotes/origin/$branch"; \
                fi \
-            && git merge --quiet --ff-only "refs/remotes/origin/$branch" ) \
-        || echo "  WARNING: could not float '$path' to origin/$branch; left as-is." >&2
+            && git merge --quiet --ff-only "refs/remotes/origin/$branch" ); then
+            update_nested "$path"
+        else
+            echo "  WARNING: could not float '$path' to origin/$branch; left as-is." >&2
+        fi
     done
 fi
 
