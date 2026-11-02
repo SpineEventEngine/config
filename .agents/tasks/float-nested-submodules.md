@@ -30,17 +30,22 @@ fresh consumer worktree is clean.
     bumps `.agents/shared` in its own commits), floating it would bring the
     mismatch back whenever `agents` moves on, and a consumer reads nothing
     through `config/.agents/shared`;
-  - `init-submodules` passes `--init --recursive`, repeating its own
-    initialization at the new HEAD; `pull` passes `--recursive` only, so it
-    initializes no nested submodule, since many consumers never initialized
-    `config/.agents/shared`. One initialized but never cloned is cloned, which is
-    the retry `init-submodules` points to (review: Copilot on #828);
-  - `pull` re-asserts each nested `update` strategy from the moved submodule's
-    `.gitmodules` where the active config holds one, as step 2 does one level up.
-    `config` declared `update = checkout` until 2026-06-16, so an old init would
-    otherwise rewind a nested submodule past the pin (review: Codex on #828).
-    `init-submodules` needs no convergence: its nested submodules were cloned
-    moments earlier in the same run;
+  - `init-submodules` initializes the submodule without `--recursive` and its
+    own submodules only after the float, with `--init --recursive`, at whatever
+    HEAD it ended on. Cloned then, Git checks each one out exactly at its pin
+    whatever `merge` strategy it declares, and its URL and strategy come from the
+    new `.gitmodules`. Updating clones made at the old pin merged a rollback pin
+    into them, leaving a merge commit or a conflict (review: Codex on #828);
+  - `pull` passes no `--init`, so it initializes no nested submodule, since many
+    consumers never initialized `config/.agents/shared`. One initialized but
+    never cloned is cloned, which is the retry `init-submodules` points to
+    (review: Copilot on #828);
+  - `pull` goes one level at a time, recursing into each checked-out submodule
+    after updating a level. At each level it syncs URLs (`--init` never
+    overwrites one) and re-asserts each `update` strategy from `.gitmodules`
+    where the active config holds one, as step 2 does one level up. `config`
+    declared `update = checkout` until 2026-06-16, so an old init would
+    otherwise rewind a nested submodule past the pin (review: Codex on #828);
   - a failed nested update warns and never fails the session or the pull.
 
 ## Plan

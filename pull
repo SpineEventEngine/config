@@ -57,13 +57,17 @@
 # declared `update = merge`, one already past the pin stays where it is. Where
 # the active config holds no strategy, Git falls back to `.gitmodules` by itself,
 # so nothing is written for a submodule never initialized. A `!command` is not
-# copied, as `git submodule init` refuses to copy one too. Only the submodules
-# `$1` declares itself are converged; `config`'s go no deeper.
+# copied, as `git submodule init` refuses to copy one too.
+#
+# It goes one level at a time rather than with `--recursive`: a submodule's
+# `.gitmodules` is known only once it has moved, so the URLs and strategies of
+# its own submodules can be synced and converged only then. After updating the
+# level of `$1`, it calls itself for each submodule there that is checked out.
 #
 # A failure is warned about, never fatal.
 update_nested() {
     [ -f "$1/.gitmodules" ] || return 0
-    git -C "$1" submodule sync --quiet --recursive >/dev/null 2>&1 || true
+    git -C "$1" submodule sync --quiet >/dev/null 2>&1 || true
     git config -f "$1/.gitmodules" --get-regexp '^submodule\..*\.update$' 2>/dev/null \
     | while read -r key strategy; do
         case $strategy in
@@ -73,8 +77,13 @@ update_nested() {
         git -C "$1" config --local --get "$key" >/dev/null 2>&1 \
             && git -C "$1" config --local "$key" "$strategy"
     done
-    git -C "$1" submodule update --quiet --recursive \
+    git -C "$1" submodule update --quiet \
         || echo "  WARNING: could not update the submodules of '$1'; left as-is." >&2
+    # shellcheck disable=SC2016  # `foreach` expands `$sm_path`, not this shell.
+    git -C "$1" submodule foreach --quiet 'printf "%s\n" "$sm_path"' 2>/dev/null \
+    | while read -r sub; do
+        update_nested "$1/$sub"
+    done
 }
 
 # ---------------------------------------------------------------------------
