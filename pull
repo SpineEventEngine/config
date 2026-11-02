@@ -48,16 +48,19 @@
 # touches only submodules that already have a URL there, so it writes nothing for
 # one never initialized, and it needs no network.
 #
-# Next, the update strategy each submodule declares in `$1/.gitmodules` is
-# re-asserted where the active config of `$1` holds one, for the reason given at
-# step 2 below: Git copies `update` there once, at `git submodule init`. This is
-# not hypothetical. `config` declared `update = checkout` for `.agents/shared`
-# until 2026-06-16, so a submodule initialized from a pin of that time would
-# otherwise be detached at the pin, and rewound if it is past it. With the
-# declared `update = merge`, one already past the pin stays where it is. Where
-# the active config holds no strategy, Git falls back to `.gitmodules` by itself,
-# so nothing is written for a submodule never initialized. A `!command` is not
-# copied, as `git submodule init` refuses to copy one too.
+# Next, each update strategy the active config of `$1` holds is made to match
+# what `$1/.gitmodules` declares, for the reason given at step 2 below: Git
+# copies `update` there once, at `git submodule init`. This is not hypothetical.
+# `config` declared `update = checkout` for `.agents/shared` until 2026-06-16, so
+# a submodule initialized from a pin of that time would otherwise be detached at
+# the pin, and rewound if it is past it. With the declared `update = merge`, one
+# already past the pin stays where it is. A strategy `.gitmodules` no longer
+# declares is removed, so Git applies its default, `checkout`, rather than a
+# stale `merge` that would leave the submodule past a pin rolled back. Only the
+# strategies the active config holds are visited, so nothing is written for a
+# submodule never initialized, for which Git reads `.gitmodules` by itself. A
+# declared `!command` is not copied, as `git submodule init` refuses to copy one
+# too.
 #
 # It goes one level at a time rather than with `--recursive`: a submodule's
 # `.gitmodules` is known only once it has moved, so the URLs and strategies of
@@ -68,14 +71,15 @@
 update_nested() {
     [ -f "$1/.gitmodules" ] || return 0
     git -C "$1" submodule sync --quiet >/dev/null 2>&1 || true
-    git config -f "$1/.gitmodules" --get-regexp '^submodule\..*\.update$' 2>/dev/null \
-    | while read -r key strategy; do
-        case $strategy in
-            checkout | rebase | merge | none) ;;
-            *) continue ;;
+    git -C "$1" config --local --get-regexp '^submodule\..*\.update$' 2>/dev/null \
+    | while read -r key active; do
+        declared=$(git config -f "$1/.gitmodules" --get "$key" 2>/dev/null)
+        case $declared in
+            "") git -C "$1" config --local --unset "$key" ;;
+            "$active") ;;
+            checkout | rebase | merge | none)
+                git -C "$1" config --local "$key" "$declared" ;;
         esac
-        git -C "$1" config --local --get "$key" >/dev/null 2>&1 \
-            && git -C "$1" config --local "$key" "$strategy"
     done
     git -C "$1" submodule update --quiet \
         || echo "  WARNING: could not update the submodules of '$1'; left as-is." >&2

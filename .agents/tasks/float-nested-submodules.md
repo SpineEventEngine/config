@@ -42,10 +42,12 @@ fresh consumer worktree is clean.
     (review: Copilot on #828);
   - `pull` goes one level at a time, recursing into each checked-out submodule
     after updating a level. At each level it syncs URLs (`--init` never
-    overwrites one) and re-asserts each `update` strategy from `.gitmodules`
-    where the active config holds one, as step 2 does one level up. `config`
-    declared `update = checkout` until 2026-06-16, so an old init would
-    otherwise rewind a nested submodule past the pin (review: Codex on #828);
+    overwrites one), and makes each `update` strategy the active config holds
+    match `.gitmodules`, as step 2 does one level up. `config` declared
+    `update = checkout` until 2026-06-16, so an old init would otherwise rewind
+    a nested submodule past the pin. A strategy `.gitmodules` no longer declares
+    is removed, so a stale `merge` can't keep a submodule past a rolled-back pin
+    (review: Codex on #828);
   - a failed nested update warns and never fails the session or the pull.
 
 ## Plan
