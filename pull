@@ -9,7 +9,9 @@
 # *config-managed* submodule — those declared with a tracked `branch` in
 # `.gitmodules` (the shared `agents` submodule at `.agents/shared`, and any shared
 # submodule added in the future) — to the tip of that branch, leaving each on the
-# branch rather than in a detached `HEAD`.
+# branch rather than in a detached `HEAD`. Each submodule it moves, `config`
+# included, then has its own initialized submodules updated to the commits its
+# new HEAD pins.
 #
 # Submodules the consumer owns (a Hugo theme, a vendored library, ...) declare no
 # tracked branch and are deliberately left untouched: this script never advances
@@ -25,6 +27,69 @@
 #
 ################################################################################
 
+# Updates the submodules of the submodule at `$1`, which has just moved, to the
+# commits its new HEAD pins. `git checkout`, `git pull`, and `git merge` move a
+# submodule but leave its own submodules where they were, so a floated `config`
+# would report its `.agents/shared` as modified to every recursive check, though
+# plain `git status` hides that behind `ignore = all`. They go to the pin rather
+# than to their own branch tip, for the reasons given in `init-submodules`.
+#
+# Unlike `init-submodules`, it passes no `--init`, so it touches only the
+# submodules already initialized in `$1`: a consumer that never initialized
+# `config/.agents/shared`, which it reads nothing through, does not start cloning
+# it here. One that was initialized but whose clone failed, as an offline
+# `init-submodules` can leave it, is cloned now; that is the retry the warnings
+# there point to.
+#
+# First, the URLs are synced from `.gitmodules`, as step 2 does one level up. Git
+# copies a URL into the active config once, at `git submodule init`, so a nested
+# submodule whose URL the new HEAD changes would otherwise go on fetching from
+# the old remote and miss a pin that only the new one has. `git submodule sync`
+# touches only submodules that already have a URL there, so it writes nothing for
+# one never initialized, and it needs no network.
+#
+# Next, each update strategy the active config of `$1` holds is made to match
+# what `$1/.gitmodules` declares, for the reason given at step 2 below: Git
+# copies `update` there once, at `git submodule init`. This is not hypothetical.
+# `config` declared `update = checkout` for `.agents/shared` until 2026-06-16, so
+# a submodule initialized from a pin of that time would otherwise be detached at
+# the pin, and rewound if it is past it. With the declared `update = merge`, one
+# already past the pin stays where it is. A strategy `.gitmodules` no longer
+# declares is removed, so Git applies its default, `checkout`, rather than a
+# stale `merge` that would leave the submodule past a pin rolled back. Only the
+# strategies the active config holds are visited, so nothing is written for a
+# submodule never initialized, for which Git reads `.gitmodules` by itself. A
+# declared `!command` is not copied, as `git submodule init` refuses to copy one
+# too.
+#
+# It goes one level at a time rather than with `--recursive`: a submodule's
+# `.gitmodules` is known only once it has moved, so the URLs and strategies of
+# its own submodules can be synced and converged only then. After updating the
+# level of `$1`, it calls itself for each submodule there that is checked out.
+#
+# A failure is warned about, never fatal.
+update_nested() {
+    [ -f "$1/.gitmodules" ] || return 0
+    git -C "$1" submodule sync --quiet >/dev/null 2>&1 || true
+    git -C "$1" config --local --get-regexp '^submodule\..*\.update$' 2>/dev/null \
+    | while read -r key active; do
+        declared=$(git config -f "$1/.gitmodules" --get "$key" 2>/dev/null)
+        case $declared in
+            "") git -C "$1" config --local --unset "$key" ;;
+            "$active") ;;
+            checkout | rebase | merge | none)
+                git -C "$1" config --local "$key" "$declared" ;;
+        esac
+    done
+    git -C "$1" submodule update --quiet \
+        || echo "  WARNING: could not update the submodules of '$1'; left as-is." >&2
+    # shellcheck disable=SC2016  # `foreach` expands `$sm_path`, not this shell.
+    git -C "$1" submodule foreach --quiet 'printf "%s\n" "$sm_path"' 2>/dev/null \
+    | while read -r sub; do
+        update_nested "$1/$sub"
+    done
+}
+
 # ---------------------------------------------------------------------------
 # 1. Bring `config` itself to the tip of `origin/master`, on the `master`
 #    branch (not a detached `HEAD`). Pulling here also refreshes `migrate`,
@@ -34,6 +99,7 @@
 echo "Updating 'config' to the latest 'master'"
 ( cd ./config && git checkout master && git pull --ff-only ) \
     || { echo "Error: failed to update the 'config' submodule."; exit 1; }
+update_nested config
 
 # ---------------------------------------------------------------------------
 # 2. Float the config-managed submodules to the tip of their tracked branch.
@@ -133,7 +199,7 @@ if [ -f .gitmodules ]; then
         # be reported, never overwritten. Nothing here force-moves a ref but
         # the remote-tracking ref the fetch owns, which a default clone
         # force-updates anyway.
-        ( cd "$path" \
+        if ( cd "$path" \
             && git fetch --quiet origin \
                    "+refs/heads/$branch:refs/remotes/origin/$branch" \
             && if git show-ref --verify --quiet "refs/heads/$branch"; then \
@@ -142,8 +208,11 @@ if [ -f .gitmodules ]; then
                    git checkout --quiet -b "$branch" \
                        "refs/remotes/origin/$branch"; \
                fi \
-            && git merge --quiet --ff-only "refs/remotes/origin/$branch" ) \
-        || echo "  WARNING: could not float '$path' to origin/$branch; left as-is." >&2
+            && git merge --quiet --ff-only "refs/remotes/origin/$branch" ); then
+            update_nested "$path"
+        else
+            echo "  WARNING: could not float '$path' to origin/$branch; left as-is." >&2
+        fi
     done
 fi
 
