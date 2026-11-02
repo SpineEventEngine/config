@@ -44,6 +44,8 @@ jobs:
       # Detect the Hugo site root (`docs/` or `site/`) by looking for a Hugo
       # config file. Hugo config may live directly in the site root or in a
       # `config/` or `config/_default/` subdirectory (both layouts are valid).
+      # A repo may also keep its only Hugo config in the `_preview/` sub-tree
+      # (e.g. `docs/_preview/hugo.toml`), so the same paths count there too.
       # Outputs `present=true|false` and `work_dir` (the directory where
       # `npm ci` / `hugo` commands should run — either `$dir/_preview` for
       # repos that use a separate preview sub-tree, or `$dir` for repos whose
@@ -57,7 +59,10 @@ jobs:
           for dir in docs site; do
             for cfg in hugo.toml hugo.yaml \
                        config/hugo.toml config/hugo.yaml \
-                       config/_default/hugo.toml config/_default/hugo.yaml; do
+                       config/_default/hugo.toml config/_default/hugo.yaml \
+                       _preview/hugo.toml _preview/hugo.yaml \
+                       _preview/config/hugo.toml _preview/config/hugo.yaml \
+                       _preview/config/_default/hugo.toml _preview/config/_default/hugo.yaml; do
               if [ -f "$dir/$cfg" ]; then
                 if [ -f "$dir/_preview/package-lock.json" ]; then
                   echo "work_dir=$dir/_preview" >> "$GITHUB_OUTPUT"
