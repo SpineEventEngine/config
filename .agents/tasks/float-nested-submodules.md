@@ -31,11 +31,16 @@ fresh consumer worktree is clean.
     mismatch back whenever `agents` moves on, and a consumer reads nothing
     through `config/.agents/shared`;
   - `init-submodules` passes `--init --recursive`, repeating its own
-    initialization at the new HEAD; `pull` passes `--recursive` only, so it moves
-    nested submodules already checked out and clones none, since many consumers
-    never materialized `config/.agents/shared`;
-  - each nested submodule's own update strategy applies, so with `update = merge`
-    one already past the pin is not rewound;
+    initialization at the new HEAD; `pull` passes `--recursive` only, so it
+    initializes no nested submodule, since many consumers never initialized
+    `config/.agents/shared`. One initialized but never cloned is cloned, which is
+    the retry `init-submodules` points to (review: Copilot on #828);
+  - `pull` re-asserts each nested `update` strategy from the moved submodule's
+    `.gitmodules` where the active config holds one, as step 2 does one level up.
+    `config` declared `update = checkout` until 2026-06-16, so an old init would
+    otherwise rewind a nested submodule past the pin (review: Codex on #828).
+    `init-submodules` needs no convergence: its nested submodules were cloned
+    moments earlier in the same run;
   - a failed nested update warns and never fails the session or the pull.
 
 ## Plan

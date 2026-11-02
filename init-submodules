@@ -304,11 +304,16 @@ git submodule status 2>/dev/null | awk '$1 ~ /^-/ { print $2 }' | while read -r 
     # Bring the floated submodule's own submodules to the commits its new HEAD
     # pins (see the header). `--init --recursive` repeats what the
     # initialization above did, now at the new HEAD, so a submodule the tip adds
-    # is cloned too. Each keeps the update strategy it declares: with
-    # `update = merge`, the new pin is merged into the detached `HEAD` this run
-    # just cloned, which fast-forwards it when the pin descends from the old
-    # one. A failure is warned about and leaves them wherever the steps that did
-    # succeed put them; `./config/pull` updates them again.
+    # is cloned too. The update strategy is the one the initialization copied
+    # from the pin's `.gitmodules`, which can be stale: `config` declared
+    # `update = checkout` for `.agents/shared` until 2026-06-16 and
+    # `update = merge` since. Unlike `./config/pull`, which converges it, this
+    # script can apply either one safely, because this run cloned these
+    # submodules moments ago and they hold nothing to keep: `checkout` puts each
+    # exactly on the new pin, and `merge` fast-forwards its detached `HEAD` there
+    # when the pin descends from the old one. A failure is warned about and
+    # leaves them wherever the steps that did succeed put them; `./config/pull`
+    # updates them again.
     [ -f "$path/.gitmodules" ] || continue
     echo "init-submodules: updating the submodules of '$path'"
     git -C "$path" submodule update --quiet --init --recursive </dev/null \
