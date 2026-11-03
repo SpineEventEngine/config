@@ -80,9 +80,5 @@ private const val TESTKIT_DIR_PROPERTY: String = "org.gradle.testkit.dir"
  *
  * Unlike a directory under `build/`, it is not reset by `clean`. Delete it to make
  * the TestKit builds start from an empty one.
- *
- * The value is duplicated in `buildSrc/build.gradle.kts`, which is evaluated
- * before this code is compiled and so cannot use this constant. Keep the two
- * values in sync.
  */
 private const val SHARED_TESTKIT_DIR: String = "caches/spine-testkit"
