@@ -33,12 +33,10 @@ import org.gradle.kotlin.dsl.withType
  *
  *  1. Resolves the standalone JaCoCo agent JAR ([Jacoco.agent]) through a
  *     dedicated [AGENT_CONFIGURATION] configuration.
- *  2. Passes the agent JAR path, a per-module exec directory
- *     (`build/`[TESTKIT_COVERAGE_DIR]), and a [TestKit directory][SHARED_TESTKIT_HOME]
- *     shared by all modules to the test JVM as system properties. The
- *     `plugin-testlib` harness reads these and attaches `-javaagent:…` to the
- *     worker JVM. A harness version that supports the shared directory points its
- *     runners at it; an older one keeps a TestKit directory per module.
+ *  2. Passes the agent JAR path and a per-module exec directory
+ *     (`build/`[TESTKIT_COVERAGE_DIR]) to the test JVM as system properties.
+ *     The `plugin-testlib` harness reads these and attaches `-javaagent:…` to the
+ *     worker JVM.
  *  3. Wipes the exec directory at most once per build invocation, from the
  *     `doFirst` of the first `Test` task that actually executes, so stale worker
  *     coverage from a previous run does not accumulate. Two failure modes are
@@ -60,6 +58,11 @@ import org.gradle.kotlin.dsl.withType
  *     coverage. An up-to-date (non-cache) run is unaffected: the previous run's
  *     files remain on disk and the guarded `doFirst` never deletes them.
  *
+ * The method does not choose the TestKit directory of the worker builds.
+ * The `module-testing` and `kmp-module` script plugins point the `Test` tasks
+ * of a module at a shared one (see [useSharedTestKitDir]), which a harness
+ * that passes its own directory to `withTestKitDir(...)` does not use.
+ *
  * The produced `.exec` files are merged into the Kover reports by
  * [io.spine.gradle.report.coverage.KoverConfig]. The agent emits binary
  * execution data rather than an XML report because that is its only file output,
@@ -78,9 +81,6 @@ fun Project.enableTestKitCoverage() {
 
     val agentPath = agent.elements.map { it.single().asFile.absolutePath }
     val execDir = layout.buildDirectory.dir(TESTKIT_COVERAGE_DIR)
-    // Not a task input: where the worker builds keep their caches does not
-    // affect the test results.
-    val testKitHome = gradle.gradleUserHomeDir.resolve(SHARED_TESTKIT_HOME)
 
     // Wiped at most once per build invocation, by the first `Test` task that
     // actually executes — see the KDoc above for why this is a guarded `doFirst`
@@ -101,7 +101,6 @@ fun Project.enableTestKitCoverage() {
             dir.mkdirs()
             systemProperty(AGENT_PROPERTY, agentPath.get())
             systemProperty(EXEC_DIR_PROPERTY, dir.absolutePath)
-            systemProperty(TESTKIT_HOME_PROPERTY, testKitHome.absolutePath)
         }
     }
 }
@@ -141,38 +140,6 @@ private const val AGENT_PROPERTY: String =
  */
 private const val EXEC_DIR_PROPERTY: String =
     "io.spine.tools.gradle.testkit.coverage.execDir"
-
-/**
- * The name of the system property carrying the absolute path to the TestKit
- * directory shared by the worker builds of all modules.
- *
- * A `plugin-testlib` version that predates the property ignores it and keeps a
- * TestKit directory per module.
- *
- * The constant is duplicated in `io.spine.tools.gradle.testing.TestKitCoverage`
- * of the `plugin-testlib` module. Keep the two values in sync.
- */
-private const val TESTKIT_HOME_PROPERTY: String =
-    "io.spine.tools.gradle.testkit.coverage.home"
-
-/**
- * The path, relative to the Gradle user home of the build, of the TestKit
- * directory shared by the worker builds of all modules.
- *
- * A TestKit directory is the Gradle user home of the worker builds. It holds
- * mostly Gradle's instrumented copies of the JARs on the classpath of the plugin
- * under test, and the compiled build scripts of the test projects. An empty one
- * makes the worker builds of each test JVM recreate them, which is slow on a CI
- * runner. The directory is placed under `caches/`, which
- * `gradle/actions/setup-gradle` saves and restores by default. It is saved only by
- * runs on the default branch, so a pull request run starts with a warm one once
- * such a run has saved it. Locally, it is shared by the builds of every project
- * that uses this setup.
- *
- * Unlike a directory under `build/`, it is not reset by `clean`. Delete it to make
- * the worker builds start from an empty one.
- */
-private const val SHARED_TESTKIT_HOME: String = "caches/spine-testkit"
 
 /**
  * The name of the dedicated, resolvable configuration that holds the standalone
