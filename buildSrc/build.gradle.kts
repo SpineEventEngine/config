@@ -177,6 +177,16 @@ val junitVersion = "6.1.3"
  */
 val kotestVersion = "6.2.5"
 
+/**
+ * The path, relative to the Gradle user home, of the TestKit directory shared by
+ * the TestKit builds of all modules.
+ *
+ * The value is duplicated from `SHARED_TESTKIT_DIR` in
+ * `io/spine/gradle/testing/TestKitDir.kt`, which this script cannot use.
+ * Keep the two values in sync.
+ */
+val sharedTestKitDir = "caches/spine-testkit"
+
 configurations.all {
     resolutionStrategy {
         force(
@@ -248,6 +258,16 @@ tasks.test {
     jvmArgumentProviders.add(CommandLineArgumentProvider {
         listOf("-DbuildSrc.classpath=${mainClasspath.asPath}")
     })
+
+    // The TestKit builds of these tests share their TestKit directory with those
+    // of other modules, as `useSharedTestKitDir()` arranges for them. This script
+    // cannot call that function: it is evaluated before the function is compiled.
+    // The property is set at execution time, so that its absolute path is not
+    // an input of the task.
+    val testKitDir = gradle.gradleUserHomeDir.resolve(sharedTestKitDir)
+    doFirst {
+        systemProperty("org.gradle.testkit.dir", testKitDir.absolutePath)
+    }
 }
 
 dependOnBuildSrcJar()
