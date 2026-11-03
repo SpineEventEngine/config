@@ -159,14 +159,15 @@ private const val TESTKIT_HOME_PROPERTY: String =
  * The path, relative to the Gradle user home of the build, of the TestKit
  * directory shared by the worker builds of all modules.
  *
- * A TestKit directory is the Gradle user home of the worker builds. An empty one
- * makes the first worker builds of each test JVM redo the work they keep there,
- * chiefly instrumenting the JARs on the classpath of the plugin under test, which
- * is slow on a CI runner. The directory is placed under `caches/`, which
- * `gradle/actions/setup-gradle` saves and restores by default. So it is kept
- * between CI runs, and once a run on the default branch has saved it, a pull
- * request run starts with a warm one. Locally, it is shared by the builds of
- * every project that uses this setup.
+ * A TestKit directory is the Gradle user home of the worker builds. It holds
+ * mostly Gradle's instrumented copies of the JARs on the classpath of the plugin
+ * under test, and the compiled build scripts of the test projects. An empty one
+ * makes the worker builds of each test JVM recreate them, which is slow on a CI
+ * runner. The directory is placed under `caches/`, which
+ * `gradle/actions/setup-gradle` saves and restores by default. It is saved only by
+ * runs on the default branch, so a pull request run starts with a warm one once
+ * such a run has saved it. Locally, it is shared by the builds of every project
+ * that uses this setup.
  *
  * Unlike a directory under `build/`, it is not reset by `clean`. Delete it to make
  * the worker builds start from an empty one.
