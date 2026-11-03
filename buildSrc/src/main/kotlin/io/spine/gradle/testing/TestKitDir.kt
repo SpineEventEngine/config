@@ -46,6 +46,14 @@ import org.gradle.kotlin.dsl.withType
  * The function applies to all the `Test` tasks of the project, whether they
  * run TestKit builds or not, and whether the project collects the coverage of
  * those builds or not (see [enableTestKitCoverage]).
+ *
+ * Starting from ToolBase `2.0.0-SNAPSHOT.460`, the `GradleProject` API of
+ * `plugin-testlib` uses this directory, `caches/spine-testkit` under the Gradle
+ * user home, as the default for a project set up with
+ * `withSharedTestKitDirectory()`. Earlier versions put such a project's TestKit
+ * directory under the repository root, in `.gradle-test-kit`. `GradleProject`
+ * computes the path itself, from the Gradle user home that the test JVM sees,
+ * so keep [SHARED_TESTKIT_DIR] in sync with it.
  */
 fun Project.useSharedTestKitDir() {
     val testKitDir = gradle.gradleUserHomeDir.resolve(SHARED_TESTKIT_DIR)
