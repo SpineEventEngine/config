@@ -9,9 +9,10 @@
 # *config-managed* submodule — those declared with a tracked `branch` in
 # `.gitmodules` (the shared `agents` submodule at `.agents/shared`, and any shared
 # submodule added in the future) — to the tip of that branch, leaving each on the
-# branch rather than in a detached `HEAD`. Each submodule it moves, `config`
-# included, then has its own initialized submodules updated to the commits its
-# new HEAD pins.
+# branch rather than in a detached `HEAD`, and stages the pointer it moved to the
+# branch tip, so that committing the pull records the version floated to. Each submodule it moves,
+# `config` included, then has its own initialized submodules updated to the
+# commits its new HEAD pins.
 #
 # Submodules the consumer owns (a Hugo theme, a vendored library, ...) declare no
 # tracked branch and are deliberately left untouched: this script never advances
@@ -115,6 +116,22 @@ update_nested config
 #    stays on `checkout` forever, and a bare `git submodule update` would then
 #    detach the float back to the pinned commit. Re-syncing here makes the policy
 #    converge on every pull instead of only on fresh clones.
+#
+#    Each floated submodule is then staged, so that the commit of this pull
+#    records the version it floated to, as it records the new `config`. Nothing
+#    else would: `.gitmodules` declares `ignore = all` for such a submodule,
+#    which hides the moved pointer from `git status` and `git diff`, and makes
+#    `git add` skip it without `--force`. Left unstaged, the pin stays at the
+#    commit of the day the submodule was adopted (see `init-submodules`).
+#
+#    It is staged only when it sits exactly at `origin/<branch>`. The
+#    `--ff-only` merge also succeeds when a local branch is *ahead* of the
+#    remote, and a pin to a commit nobody else can fetch would break every
+#    other checkout of the superproject. A float that failed leaves the
+#    submodule where it was and stages nothing.
+#
+#    Commit the pull on its own, as with the new `config` pointer: anything
+#    committed from this index afterwards carries the staged pointer with it.
 # ---------------------------------------------------------------------------
 
 if [ -f .gitmodules ]; then
@@ -210,6 +227,19 @@ if [ -f .gitmodules ]; then
                fi \
             && git merge --quiet --ff-only "refs/remotes/origin/$branch" ); then
             update_nested "$path"
+            # Stage the floated pointer (see the note above).
+            current=$(git -C "$path" rev-parse --verify --quiet HEAD)
+            tip=$(git -C "$path" rev-parse --verify --quiet "refs/remotes/origin/$branch")
+            if [ -n "$current" ] && [ "$current" = "$tip" ]; then
+                if git add --force -- "$path"; then
+                    echo "  Staged '$path' at ${current:0:12}"
+                else
+                    echo "  WARNING: could not stage the floated '$path'." >&2
+                fi
+            else
+                echo "  NOTE: '$path' is not at origin/$branch;" \
+                     "its pointer is not staged." >&2
+            fi
         else
             echo "  WARNING: could not float '$path' to origin/$branch; left as-is." >&2
         fi
