@@ -31,7 +31,8 @@ submodule at `.agents/shared` (tracking `master`) and exposed through symlinks
 (`.agents/skills`, `.agents/scripts`, `.agents/guidelines`, `.claude/commands`,
 `.claude/agents`, plus `.claude/skills` and `.junie/skills`, which alias
 `.agents/skills`). This eliminates per-repo file churn — skills update everywhere
-via `git submodule update --remote` with no commits in consumer repos. `config`
+as the submodule floats, and the only change a consumer commits for them is the
+submodule pointer, which `./config/pull` stages for the consumer. `config`
 itself consumes this submodule (it dogfoods the same setup).
 
 Per-repo content stays local and is never overwritten: `docs/project.md`,

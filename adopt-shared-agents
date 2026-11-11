@@ -140,6 +140,8 @@ git config "submodule.$SHARED_PATH.update" merge
 # `master` at that tip keeps the working tree on a branch — less confusing, and the
 # precondition for the `update = merge` resilience noted above. `ignore = all`
 # already hides the advanced commit from status/diff, so this never churns PRs.
+# This script does not stage the pointer; only `./config/pull` does, so that its
+# commit records it.
 git -C "$SHARED_PATH" checkout -q -B master origin/master
 
 # --- 3. (re)create the symlinks ------------------------------------------------
