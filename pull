@@ -9,9 +9,11 @@
 # *config-managed* submodule — those declared with a tracked `branch` in
 # `.gitmodules` (the shared `agents` submodule at `.agents/shared`, and any shared
 # submodule added in the future) — to the tip of that branch, leaving each on the
-# branch rather than in a detached `HEAD`. Each submodule it moves, `config`
-# included, then has its own initialized submodules updated to the commits its
-# new HEAD pins.
+# branch rather than in a detached `HEAD`. Once `migrate` has run, it stages the
+# pointer of each that sits at the tip of its branch on the declared remote, so that
+# committing the pull records the version floated to. Each submodule it moves,
+# `config` included, then has its own initialized submodules updated to the
+# commits its new HEAD pins.
 #
 # Submodules the consumer owns (a Hugo theme, a vendored library, ...) declare no
 # tracked branch and are deliberately left untouched: this script never advances
@@ -115,6 +117,9 @@ update_nested config
 #    stays on `checkout` forever, and a bare `git submodule update` would then
 #    detach the float back to the pinned commit. Re-syncing here makes the policy
 #    converge on every pull instead of only on fresh clones.
+#
+#    The pointers of the floated submodules are staged at step 4, once
+#    `migrate` has run.
 # ---------------------------------------------------------------------------
 
 if [ -f .gitmodules ]; then
@@ -220,9 +225,63 @@ fi
 # 3. Apply the shared files. `migrate` runs with `config` as the working dir.
 # ---------------------------------------------------------------------------
 
+root=$(pwd)
 cd ./config || { echo "Error: 'config' directory is missing."; exit 1; }
 
 # Handle file operations related to the migration from the previous version(s).
 source migrate
+
+# ---------------------------------------------------------------------------
+# 4. Stage the pointers of the config-managed submodules, so that the commit of
+#    this pull records the version each was floated to, as it records the new
+#    `config`. Nothing else would: `.gitmodules` declares `ignore = all` for
+#    such a submodule, which hides the moved pointer from `git status` and
+#    `git diff`, and makes `git add` skip it without `--force`. Left unstaged,
+#    the pin stays at the commit of the day the submodule was adopted (see
+#    `init-submodules`).
+#
+#    This runs after `migrate`, because `migrate` may move a submodule again: it
+#    adopts `.agents/shared` from the canonical remote, which rewrites the URL,
+#    fetches from it, and resets `master` to that remote's tip. A pointer staged
+#    before that could name a commit only a fork has.
+#
+#    A pointer is staged only when the submodule's `HEAD` is the tip of its
+#    branch on the remote the superproject declares, read from that remote now.
+#    Every other checkout of the superproject fetches from there, so a commit
+#    only a fork or a local branch has would break them. This also keeps a
+#    float that failed, or a local branch ahead of its remote, from being
+#    staged.
+#
+#    Commit the pull on its own, as with the new `config` pointer: anything
+#    committed from this index afterwards carries the staged pointer with it.
+# ---------------------------------------------------------------------------
+
+cd "$root" || { echo "Error: cannot return to '$root'."; exit 1; }
+if [ -f .gitmodules ]; then
+    git config -f .gitmodules --get-regexp '^submodule\..*\.branch$' 2>/dev/null \
+    | while read -r key branch; do
+        name=${key#submodule.}; name=${name%.branch}
+        path=$(git config -f .gitmodules --get "submodule.$name.path") || continue
+        # Resolved as at step 2, which already warned about a detached superproject.
+        [ "$branch" = "." ] && branch=$(git branch --show-current 2>/dev/null)
+        [ -n "$branch" ] || continue
+        current=$(git -C "$path" rev-parse --verify --quiet HEAD) || continue
+        # Sync the active URL from `.gitmodules`, resolving a relative one.
+        git submodule sync -- "$path" >/dev/null 2>&1 || true
+        url=$(git config --get "submodule.$name.url")
+        tip=$(git ls-remote "$url" "refs/heads/$branch" 2>/dev/null | cut -f1)
+        if [ -z "$tip" ]; then
+            echo "  WARNING: could not read '$branch' from '$url';" \
+                 "the pointer of '$path' is not staged." >&2
+        elif [ "$current" != "$tip" ]; then
+            echo "  NOTE: '$path' is not at the tip of '$branch' on '$url';" \
+                 "its pointer is not staged." >&2
+        elif git add --force -- "$path"; then
+            echo "Staged '$path' at ${current:0:12}"
+        else
+            echo "  WARNING: could not stage the pointer of '$path'." >&2
+        fi
+    done
+fi
 
 echo "Done."
