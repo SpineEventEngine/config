@@ -456,10 +456,11 @@ if [ "$IS_JVM" = "true" ]; then
     # `Project.getTask()`, so the consumer's `buildSrc` build reports warnings. A consumer
     # whose own scripts still call `JacocoConfig` keeps these sources until the
     # `raise-coverage` skill moves it to Kover: removing them earlier would break its
-    # build. `git grep` exits with 1 only when nothing matches, so anything else, an
-    # error included, keeps the sources.
+    # build. The search covers scripts not committed yet, too, skipping ignored files such
+    # as build outputs. `git grep` exits with 1 only when nothing matches, so anything
+    # else, an error included, keeps the sources.
     COVERAGE_DIR="buildSrc/src/main/kotlin/io/spine/gradle/report/coverage"
-    git -C .. grep -q -w JacocoConfig -- '*.kts' '*.kt' ":!$COVERAGE_DIR"
+    git -C .. grep -q -w --untracked JacocoConfig -- '*.kts' '*.kt' ":!$COVERAGE_DIR"
     if [ $? -eq 1 ]; then
       echo "Removing retired JaCoCo report sources (JacocoConfig and its helpers)"
       for retired in CodebaseFilter FileExtension FileExtensions FileFilter \
