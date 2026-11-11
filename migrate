@@ -451,6 +451,33 @@ if [ "$IS_JVM" = "true" ]; then
     rm -f ../buildSrc/src/main/kotlin/jacoco-kotlin-jvm.gradle.kts
     rm -f ../buildSrc/src/main/kotlin/jacoco-kmm-jvm.gradle.kts
 
+    # Remove the vanilla-JaCoCo report sources retired together with the script plugins
+    # above. A stale `JacocoConfig.kt` still compiles, but it calls the deprecated
+    # `Project.getTask()`, so the consumer's `buildSrc` build reports warnings. A consumer
+    # whose own scripts still call `JacocoConfig` keeps these sources until the
+    # `raise-coverage` skill moves it to Kover: removing them earlier would break its
+    # build. `git grep` exits with 1 only when nothing matches, so anything else, an
+    # error included, keeps the sources.
+    COVERAGE_DIR="buildSrc/src/main/kotlin/io/spine/gradle/report/coverage"
+    git -C .. grep -q -w JacocoConfig -- '*.kts' '*.kt' ":!$COVERAGE_DIR"
+    if [ $? -eq 1 ]; then
+      echo "Removing retired JaCoCo report sources (JacocoConfig and its helpers)"
+      for retired in CodebaseFilter FileExtension FileExtensions FileFilter \
+                     JacocoConfig PathMarker TaskName; do
+        rm -f "../$COVERAGE_DIR/$retired.kt"
+      done
+    else
+      echo "Keeping the retired JaCoCo report sources: the build still calls \`JacocoConfig\`."
+      echo "  Move it to Kover with the \`raise-coverage\` skill; the next pull removes them."
+    fi
+
+    # Remove the copy of `VersionComparator` left in `io.spine.gradle.report.pom` after it
+    # moved to `io.spine.gradle`, together with its test. The object is `internal`, so no
+    # consumer script can refer to it.
+    echo "Removing the moved \`VersionComparator\` from \`report/pom\`"
+    rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/report/pom/VersionComparator.kt
+    rm -f ../buildSrc/src/test/kotlin/io/spine/gradle/report/pom/VersionComparatorSpec.kt
+
     # Remove the sources of the plugin that was renamed `PublishApiDocs`, for the same
     # reason: the stale copies would not compile against the renamed `TaskName` constant
     # and plugin class. `Update.kt` is now `DocsPublication.kt`. The consumer's own
