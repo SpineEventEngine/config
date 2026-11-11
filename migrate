@@ -461,10 +461,10 @@ if [ "$IS_JVM" = "true" ]; then
     rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/github/pages/UpdateGitHubPagesExtension.kt
     rm -f ../buildSrc/src/main/kotlin/io/spine/gradle/github/pages/Update.kt
 
-    # Remove the other `buildSrc` files `config` deleted in the last two years, which
-    # `cp -R buildSrc ..` cannot delete either, unless the consumer's own code still uses
-    # them; the script reports each file it removes and each one it keeps, with the use
-    # found. The lists above stay: their files go even when still used.
+    # Remove the other `buildSrc` files `config` deleted in the last two years, except
+    # those the consumer's own code still uses. `cp -R buildSrc ..` cannot delete them
+    # either. The script reports each file it removes and each one it keeps, with the
+    # use found. The lists above stay: their files go even when still used.
     echo "Removing the \`buildSrc\` files \`config\` retired"
     bash scripts/remove-retired-buildsrc.sh \
         || echo "WARNING: could not remove the retired \`buildSrc\` files;" \

@@ -19,7 +19,7 @@ set -eo pipefail
 # consumer's own code still uses them.
 #
 # The fixture is a fake `config` Git repository with backdated commits. It ships files,
-# deletes most of them six months ago, deletes one more than two years ago, and ships
+# deletes most of them six months ago, deletes one file over two years ago, and ships
 # one deleted file again. A consumer holds every file `config` once shipped, plus its
 # own code, which uses some of the retired ones in each way the script knows:
 #
@@ -35,10 +35,11 @@ set -eo pipefail
 #     files `config` ships again, are not touched.
 #
 # Then: `--dry-run` removes nothing; a second run changes nothing; a shallow clone of
-# `config` removes nothing; and the REAL `migrate` runs the script and stages the
-# deletions. That run follows `scripts/test-migrate-ide-files.sh`: read its header for
-# why `adopt-shared-agents` is stubbed and why `cp: No such file or directory` noise in
-# the captured log is expected.
+# `config` removes nothing; a retired file with local changes keeps its package; a file
+# the script cannot read stops it before it removes anything; and the real `migrate`
+# runs the script and stages the deletions. That run follows
+# `scripts/test-migrate-ide-files.sh`: read its header for why `adopt-shared-agents` is
+# stubbed and why `cp: No such file or directory` noise in the captured log is expected.
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 config_dir="$(cd "$script_dir/.." && pwd)"
@@ -153,7 +154,7 @@ put "$template" "$kotlin/io/spine/own/Mine.kt" "package io.spine.own" \
 put "$template" ".gitignore" "build/"
 put "$template" "build/generated.kts" "val ignored = io.spine.ignored.Ign"
 
-# Makes a consumer from the template at `$1`: all committed but `extra.gradle.kts`.
+# Makes a consumer from the template at `$1`: all committed except `extra.gradle.kts`.
 new_consumer() {
   cp -R "$template" "$1"
   new_repo "$1"
@@ -234,17 +235,17 @@ if [ -d "$consumer/$kotlin/io/spine/comment" ]; then
 else
   pass "the directory left empty removed"
 fi
-# Expects the report of keeping the unit `$1` of `$2` files, for the reason `$3`.
+# Expects the report of keeping the unit `$1` with the retired files `$2`, for `$3`.
 expect_kept() {
-  expect_output "$work/run.log" "Keeping \`$1\` ($2 retired file(s)): $3."
+  expect_output "$work/run.log" "Keeping \`$1\` ($2): $3."
 }
-expect_kept io.spine.cov 2 "\`build.gradle.kts\` uses \`Jacoco\`"
-expect_kept io.spine.dep 1 "\`$kotlin/io/spine/cov/Jacoco.kt\` uses \`Dep\`"
-expect_kept io.spine.star 1 "\`build.gradle.kts\` imports \`io.spine.star.*\`"
-expect_kept io.spine.own 1 "\`$kotlin/io/spine/own/Mine.kt\` is in the package"
-expect_kept io.spine.mod 1 "\`$kotlin/module.gradle.kts\` uses \`ModUsed\`"
-expect_kept io.spine.untracked 1 "\`extra.gradle.kts\` uses \`Untr\`"
-expect_kept kept-plugin 1 "\`build.gradle.kts\` applies \`kept-plugin\`"
+expect_kept io.spine.cov "2 retired files" "\`build.gradle.kts\` uses \`Jacoco\`"
+expect_kept io.spine.dep "1 retired file" "\`$kotlin/io/spine/cov/Jacoco.kt\` uses \`Dep\`"
+expect_kept io.spine.star "1 retired file" "\`build.gradle.kts\` imports \`io.spine.star.*\`"
+expect_kept io.spine.own "1 retired file" "\`$kotlin/io/spine/own/Mine.kt\` is in the package"
+expect_kept io.spine.mod "1 retired file" "\`$kotlin/module.gradle.kts\` uses \`ModUsed\`"
+expect_kept io.spine.untracked "1 retired file" "\`extra.gradle.kts\` uses \`Untr\`"
+expect_kept kept-plugin "1 retired file" "\`build.gradle.kts\` applies \`kept-plugin\`"
 expect_output "$work/run.log" \
     "Keeping \`buildSrc/src/main/groovy/legacy.gradle\`: neither a Kotlin file"
 
@@ -274,7 +275,39 @@ else
 fi
 expect_output "$work/shallow.log" "is a shallow clone"
 
-# --- (5) The real `migrate` runs the script and stages the deletions. ---------------
+# --- (5) A retired file with local changes keeps its package: Git could not restore it.
+consumer="$work/consumer-changed"
+new_consumer "$consumer"
+printf '%s\n' "// A local fix." >> "$consumer/$kotlin/io/spine/pom/Comparator.kt"
+bash "$cfg/scripts/remove-retired-buildsrc.sh" "$consumer" > "$work/changed.log" 2>&1
+if [ -e "$consumer/$kotlin/io/spine/pom/Comparator.kt" ] \
+   && [ -e "$consumer/buildSrc/src/test/kotlin/io/spine/pom/ComparatorSpec.kt" ]; then
+  pass "a retired file with local changes keeps its package"
+else
+  f-ail "a retired file with local changes was removed, or its package was"
+fi
+expect_output "$work/changed.log" \
+    "\`$kotlin/io/spine/pom/Comparator.kt\` has changes not committed to Git."
+
+# --- (6) A file the script cannot read stops it before anything is removed. ---------
+consumer="$work/consumer-unreadable"
+new_consumer "$consumer"
+chmod 000 "$consumer/$kotlin/io/spine/own/Mine.kt"
+before="$(cd "$consumer" && find buildSrc -type f | sort)"
+if bash "$cfg/scripts/remove-retired-buildsrc.sh" "$consumer" > "$work/unreadable.log" 2>&1
+then
+  f-ail "the script exited 0 although it could not read a file"
+else
+  pass "the script fails when it cannot read a file"
+fi
+chmod 644 "$consumer/$kotlin/io/spine/own/Mine.kt"
+if [ "$before" = "$(cd "$consumer" && find buildSrc -type f | sort)" ]; then
+  pass "a file the script cannot read stops it before it removes anything"
+else
+  f-ail "files were removed although the script could not read a file"
+fi
+
+# --- (7) The real `migrate` runs the script and stages the deletions. ---------------
 consumer="$work/consumer-migrate"
 new_consumer "$consumer"
 git -C "$consumer" -c protocol.file.allow=always submodule add -q "$origin" config

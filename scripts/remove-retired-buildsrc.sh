@@ -24,10 +24,10 @@ export LC_ALL=C   # One collation for every `sort` and `comm` below.
 # `config` drops stays in every consumer that received it, still compiled, unless it is
 # removed here or by an explicit `rm -f` in `migrate`.
 #
-# Candidates. The files deleted under `buildSrc/src` of `config` in the last two years
-# (`git log --since`), less those `config` ships again, that the consumer has, committed
-# or not. A shallow clone of `config` holds less history, so fewer files are found; none
-# is removed wrongly.
+# Candidates are the files that `config` deleted under its `buildSrc/src` in the last two
+# years (`git log --since`), that it does not ship again, and that the consumer has,
+# committed or not. A shallow clone of `config` holds less history, so fewer files are
+# found; no file is removed by mistake.
 #
 # Units. Files are kept or removed together:
 #
@@ -52,9 +52,11 @@ export LC_ALL=C   # One collation for every `sort` and `comm` below.
 # units a kept one needs stay as well. The rest are removed; `migrate` stages their
 # deletion with `git add ./buildSrc/src`.
 #
-# The check reads text and compiles nothing, and every doubt keeps the file. Should a
-# needed file go after all, the build fails, and `git checkout -- <file>` restores it:
-# `migrate` does not commit.
+# The check reads text and compiles nothing, and every doubt keeps the file: a unit with
+# a file that has changes not committed to Git is kept, and an error that leaves the
+# check unsure stops the script before anything is removed. So only committed files with
+# no local changes go, and should a needed one go after all, the build fails and
+# `git checkout -- <file>` restores it: `migrate` does not commit.
 #
 # Usage: remove-retired-buildsrc.sh [--dry-run] [ROOT]
 #   --dry-run  report what would be removed, and remove nothing
@@ -120,6 +122,15 @@ unit_of() {
   }' "$1"
 }
 
+# The candidates Git could not restore once removed: not committed, or changed since.
+: > "$work/changed"
+while IFS= read -r file; do
+  if ! git ls-files --error-unmatch -- "$file" >/dev/null 2>&1 \
+     || ! git diff --quiet HEAD -- "$file" 2>/dev/null; then
+    echo "$file" >> "$work/changed"
+  fi
+done < "$work/candidates"
+
 unit_of "$work/candidates" > "$work/candidate-units"
 cut -f2 "$work/candidate-units" | sort -u > "$work/units"
 
@@ -130,19 +141,35 @@ if [ -f buildSrc/src/main/kotlin/module.gradle.kts ]; then
 fi
 unit_of "$work/own" > "$work/own-units"
 
-# The text that may use a candidate, as `<path>:<line>`.
-with_path() {
-  # `grep -I` passes text files only.
-  if [ -f "$1" ] && grep -Iq . "$1"; then
-    awk -v path="$1" '{ print path ":" $0 }' "$1"
-  fi
+# Stops the script, before anything is removed, when the check cannot be sure.
+give_up() {
+  echo "$1; leaving the retired \`buildSrc\` files in place." >&2
+  exit 1
 }
-{
-  git grep -I --untracked -e '' -- '*.kts' '*.kt' '*.gradle' ':!buildSrc' || true
-  while IFS= read -r file; do
-    with_path "$file"
-  done < "$work/own"
-} > "$work/text"
+
+# Prints the file `$1` as `<path>:<line>` lines; nothing for a binary or empty file.
+with_path() {
+  local status=0
+  [ -f "$1" ] || return 0
+  grep -Iq . "$1" || status=$?
+  case "$status" in
+    0) awk -v path="$1" '{ print path ":" $0 }' "$1" ;;
+    1) ;;
+    *) give_up "Cannot read \`$1\`" ;;
+  esac
+}
+
+# The text that may use a candidate. `git grep` exits with 1 when it finds no file at all;
+# anything above that is an error.
+status=0
+git grep -I --untracked -e '' -- '*.kts' '*.kt' '*.gradle' ':!buildSrc' \
+  > "$work/text" || status=$?
+if [ "$status" -gt 1 ]; then
+  give_up "Cannot search the consumer's scripts (\`git grep\` exited with $status)"
+fi
+while IFS= read -r file; do
+  with_path "$file"
+done < "$work/own" >> "$work/text"
 
 # Prints the files of a unit, one per line.
 files_of() {
@@ -180,9 +207,18 @@ is_subpackage() {
   return 1
 }
 
-# Prints why the unit is in use, or nothing.
-reason_in_use() {
-  local unit="$1" pkg path name hit
+# Prints why the unit must stay, or nothing. Runs in the main shell, not in `$(...)`,
+# where Bash turns `set -e` off: an error stops the script instead of reading as "unused".
+reason_to_keep() {
+  local unit="$1" pkg path name hit status line
+  files_of "$unit" > "$work/unit-files"
+  path="$(awk -v list="$work/changed" '
+            BEGIN { while ((getline entry < list) > 0) changed[entry] = 1 }
+            ($0 in changed) && !found { print; found = 1 }' "$work/unit-files")"
+  if [ -n "$path" ]; then
+    echo "\`$path\` has changes not committed to Git"
+    return
+  fi
   case "$unit" in
     pkg:*)
       pkg="${unit#pkg:}"
@@ -192,7 +228,6 @@ reason_in_use() {
         echo "\`$path\` is in the package"
         return
       fi
-      files_of "$unit" > "$work/unit-files"
       names_used_from "$pkg" > "$work/names"
       while IFS="$(printf '\t')" read -r path name; do
         if [ "$name" = "*" ]; then
@@ -202,7 +237,12 @@ reason_in_use() {
         is_subpackage "$pkg" "$name" && continue
         hit=false
         while IFS= read -r file; do
-          if grep -q -w -F -e "$name" "$file"; then
+          status=0
+          grep -q -w -F -e "$name" "$file" || status=$?
+          if [ "$status" -gt 1 ]; then
+            give_up "Cannot read \`$file\`"
+          fi
+          if [ "$status" -eq 0 ]; then
             hit=true
             break
           fi
@@ -215,9 +255,13 @@ reason_in_use() {
       ;;
     plugin:*)
       name="${unit#plugin:}"
-      path="$(grep -w -F -e "$name" "$work/text" | head -n 1 | cut -d: -f1 || true)"
-      if [ -n "$path" ]; then
-        echo "\`$path\` applies \`$name\`"
+      status=0
+      line="$(grep -m 1 -w -F -e "$name" "$work/text")" || status=$?
+      if [ "$status" -gt 1 ]; then
+        give_up "Cannot search for the plugin \`$name\`"
+      fi
+      if [ "$status" -eq 0 ]; then
+        echo "\`${line%%:*}\` applies \`$name\`"
       fi
       ;;
     other:*)
@@ -241,7 +285,8 @@ while [ "$changed" = "true" ]; do
     if is_kept "$unit"; then
       continue
     fi
-    reason="$(reason_in_use "$unit")"
+    reason_to_keep "$unit" > "$work/reason"
+    reason="$(cat "$work/reason")"
     if [ -n "$reason" ]; then
       printf '%s\t%s\n' "$unit" "$reason" >> "$work/kept"
       changed=true
@@ -256,9 +301,13 @@ done
 
 while IFS="$(printf '\t')" read -r unit reason; do
   count="$(files_of "$unit" | wc -l | tr -d ' ')"
+  files="files"
+  if [ "$count" -eq 1 ]; then
+    files="file"
+  fi
   case "$unit" in
     other:*) echo "Keeping \`${unit#other:}\`: $reason." ;;
-    *) echo "Keeping \`${unit#*:}\` ($count retired file(s)): $reason." ;;
+    *) echo "Keeping \`${unit#*:}\` ($count retired $files): $reason." ;;
   esac
 done < "$work/kept"
 

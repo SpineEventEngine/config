@@ -16,7 +16,8 @@ line in `migrate` can no longer leave stale sources behind.
 
 - `migrate` copies `buildSrc` with `cp -R buildSrc ..`, which never deletes. Retired files
   were removed only through hand-written `rm -f` lists, and `JacocoConfig.kt` with its six
-  helpers (`30b50335`, 2026-06-06) never got one: consumers kept them for five months, and
+  helpers (`30b50335`, 2026-06-06) never got an `rm -f` line: consumers kept them for five
+  months, and
   core-jvm's CI warned about them. config#841 fixes that case; this task generalizes it.
 - Stacked on #841 (`fix-stale-buildsrc-warnings`); retarget to `master` when #841 merges.
 - Scope set by the owner: only files deleted in the last two years.
@@ -39,5 +40,9 @@ line in `migrate` can no longer leave stale sources behind.
   all 9 orphans; logging and time keep the `JacocoConfig` package).
 - 2026-11-11 — implemented. New suite 60/60; the six existing script suites pass;
   shellcheck clean. `--dry-run` over the 13 checkouts matches the prototype. Known
-  over-keeping (safe): a name `config` still ships that also occurs in an orphan's text
-  keeps that orphan's package (`Compiler` in `dependency.local`).
+  over-keeping (safe): if an orphan's text mentions a name that `config` still ships
+  (`Compiler` in `dependency.local`), the orphan's package is kept.
+- 2026-11-11 — review fixes: the script stops before removing anything when a search or
+  read fails (it used to fail open), and keeps a unit with a file not committed or changed
+  since, so whatever it removes `git checkout` can restore. Folded into #841 at the
+  owner's request; the Gradle 9.9.1 and Kotlin bump go to a PR of their own.
