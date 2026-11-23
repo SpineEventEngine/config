@@ -374,10 +374,12 @@ Replace eager APIs with their lazy siblings where one exists:
   the configuration cache stored and reused. It also checks that uploads to
   an HTTP repository carry them, with and without the configuration cache.
   In `tool-base` on Gradle 9.8.1, `help` no longer warns about an external
-  process; the other warnings are unchanged. See `gradle-9.8-deprecations.md`.
+  process; the other warnings are unchanged. See [PR #791][pr-791].
 - 2026-10-12 — `checkCredentials` no longer calls `Task.project` from its
   action (same branch). Every `publish` run printed that deprecation. The
   task resolves its project at configuration time, and it is not compatible
   with the configuration cache, which cannot store a `Project`.
   `PublishingCredentialsIgTest` runs it with `--warning-mode all`: no
   `Task.project` warning now, while the old code printed that warning.
+
+[pr-791]: https://github.com/SpineEventEngine/config/pull/791
