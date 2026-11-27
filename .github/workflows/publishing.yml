@@ -128,6 +128,21 @@ jobs:
       # are needed only to upload. So the check runs before any publishing credential is decrypted:
       # an already published version needs none of them, and the consumer's build
       # that the check runs finds none of them on disk.
+      #
+      # The Gradle User Home cache is disabled, so this invocation resolves
+      # the `buildSrc` classpath cold. Gradle retries a `429` inside
+      # `ErrorHandlingModuleComponentRepository`. Once the attempts are spent,
+      # it disables the repository. The default is three attempts, waiting 1
+      # and 2 seconds: `org.gradle.internal.repository.max.tentatives` and
+      # `org.gradle.internal.repository.initial.backoff` (3 and 1000). The
+      # `-D` flags below raise that to five attempts starting at 5 seconds,
+      # waiting 5 + 10 + 20 + 40 seconds, 75 in all. The upload step allows
+      # the same wait for PUTs, through a different pair of properties. Those
+      # (`org.gradle.internal.network.retry.*`) are read by
+      # `NetworkOperationBackOffAndRetry`, which wraps uploads. A GET is
+      # governed by the repository properties. Both pairs are internal system
+      # properties, with no public replacement. Spent attempts fail the
+      # build; the report step below then says to re-run the workflow.
       - name: Check whether the version is already published
         id: state
         shell: bash
@@ -135,7 +150,9 @@ jobs:
         # the consumer's build, and an unexpected value would skip the publication
         # and end the run green.
         run: |
-          ./gradlew :publicationState --stacktrace
+          ./gradlew :publicationState --stacktrace \
+            -Dorg.gradle.internal.repository.max.tentatives=5 \
+            -Dorg.gradle.internal.repository.initial.backoff=5000
           state=$(cat build/publication/state.txt)
           case "$state" in
             published|unpublished) ;;
@@ -191,7 +208,11 @@ jobs:
         # published next to each artifact (`*.spdx.json`) is such a producer: the SBOM
         # records when it was written. It is attested like any other published file.
         #
-        # The `-D` flags tune the uploads of this invocation only:
+        # The `-D` flags apply to this invocation only:
+        #  - `repository.max.tentatives` and `repository.initial.backoff` repeat
+        #    the resolution budget the state check passes. This invocation
+        #    resolves configurations the state check left untouched, and the
+        #    dependency cache is still disabled.
         #  - `retry.max.attempts` and `retry.initial.backOff` raise the uploads to five
         #    attempts. By default, Gradle makes three attempts at a PUT that failed with
         #    a `429`, a `5xx` or a network error, waiting 1 and 2 seconds between them,
@@ -206,10 +227,13 @@ jobs:
         #    the attestation carries the SHA-256 digests computed by
         #    `publicationChecksums`.
         #
-        # All three are internal Gradle system properties, with no public replacement.
-        # The first two are read by `NetworkOperationBackOffAndRetry`.
+        # All five are internal Gradle system properties, with no public replacement.
+        # `ErrorHandlingModuleComponentRepository` reads the `repository` pair.
+        # `NetworkOperationBackOffAndRetry` reads the `retry` pair.
         run: >-
           ./gradlew publish publicationChecksums -x test --stacktrace
+          -Dorg.gradle.internal.repository.max.tentatives=5
+          -Dorg.gradle.internal.repository.initial.backoff=5000
           -Dorg.gradle.internal.network.retry.max.attempts=5
           -Dorg.gradle.internal.network.retry.initial.backOff=5000
           -Dorg.gradle.internal.publish.checksums.insecure=true
